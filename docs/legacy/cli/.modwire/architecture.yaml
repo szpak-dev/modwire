@@ -1,0 +1,42 @@
+boundaries:
+  tags:
+    - name: package
+      match: src/modwire_cli
+    - name: tests
+      match: tests
+    - name: scripts
+      match: scripts
+  flow:
+    module_tag: package
+    realms:
+      - name: tests
+        module_tag: tests
+      - name: scripts
+        module_tag: scripts
+    analyzers:
+      - module-boundaries
+      - no-cycles
+      - no-reentry
+shape:
+  realms:
+    - name: package
+      match: src/modwire_cli
+      shape:
+        max_classes_per_file: 1
+        max_interfaces_per_file: 0
+        max_types_per_file: 0
+        max_abstract_classes_per_file: -1
+        max_functions_per_file: 0
+        max_methods_per_class: -1
+        max_declared_args: -1
+        max_function_lines: -1
+        max_method_lines: -1
+        max_class_lines: -1
+        allow_optional_function_args: false
+        allow_optional_method_args: false
+        allow_optional_class_properties: false
+        allow_import_aliases: false
+        require_joined_imports: true
+        allowed_import_crossing_types:
+          - module
+          - symbol

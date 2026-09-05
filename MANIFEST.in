@@ -1,0 +1,9 @@
+include LICENSE
+include README.md
+recursive-include src *.py *.typed *.php *.js *.mjs *.ts *.json *.lock *.md *.yaml
+recursive-include tests *.py *.json *.ts *.tsx *.js *.jsx *.php
+recursive-include docs *.md *.yaml *.json
+recursive-include .modwire *.yaml *.md
+recursive-include scripts *.py
+prune verification
+global-exclude __pycache__ *.py[cod]

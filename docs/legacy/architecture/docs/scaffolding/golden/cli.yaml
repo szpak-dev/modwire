@@ -1,0 +1,44 @@
+contract_version: 1
+variables:
+  ecosystem: modwire
+  repository: example-cli
+  distribution: example-cli
+  import_package: example_cli
+  source_root: src
+  language: python
+  repository_kind: cli
+  modules:
+    - name: shared
+      path: src/example_cli/shared
+      dependencies: []
+      layers: []
+    - name: commands
+      path: src/example_cli/commands
+      dependencies:
+        - shared
+      layers:
+        - application
+        - adapters
+  exclusions:
+    - tests/fixtures/**
+expected_paths:
+  - path: pyproject.toml
+    owner: uv-package
+  - path: uv.lock
+    owner: uv-package
+  - path: src/example_cli/__init__.py
+    owner: uv-package
+  - path: .modwire/repository.yaml
+    owner: modwire-repository
+  - path: .modwire/shape.yaml
+    owner: modwire-repository
+  - path: .modwire/boundaries.yaml
+    owner: modwire-repository
+  - path: src/example_cli/shared/__init__.py
+    owner: modwire-repository
+  - path: src/example_cli/commands/__init__.py
+    owner: modwire-repository
+extension_points:
+  console_entry_point:
+    owner: uv-package
+    location: pyproject.toml

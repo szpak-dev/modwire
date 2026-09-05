@@ -1,0 +1,11 @@
+{
+  "modwire_architecture.architecture.boundaries.collector.FlowReport": "modwire.architecture.boundaries.models.flow_report.FlowReport",
+  "modwire_architecture.architecture.insights.reporters.base.InsightReport": "modwire.architecture.insights.models.insight_report.InsightReport",
+  "modwire_architecture.architecture.insights.reporters.callables.CallablesReport": "modwire.architecture.insights.models.callables_report.CallablesReport",
+  "modwire_architecture.architecture.insights.reporters.clusters.ClustersReport": "modwire.architecture.insights.models.clusters_report.ClustersReport",
+  "modwire_architecture.architecture.insights.reporters.coherence.CoherenceReport": "modwire.architecture.insights.models.coherence_report.CoherenceReport",
+  "modwire_architecture.architecture.insights.reporters.exports.ExportsReport": "modwire.architecture.insights.models.exports_report.ExportsReport",
+  "modwire_architecture.architecture.insights.reporters.hotspots.HotspotsReport": "modwire.architecture.insights.models.hotspots_report.HotspotsReport",
+  "modwire_architecture.architecture.map.collector.MapReport": "modwire.architecture.report.models.map_report.MapReport",
+  "modwire_architecture.architecture.shape.collector.ShapeReport": "modwire.architecture.shape.models.shape_report.ShapeReport"
+}

@@ -1,0 +1,113 @@
+excluded_patterns:
+  - .dev/**
+  - tests/**
+  - scripts/**
+  - build/**
+  - dist/**
+  - "**/__pycache__/**"
+  - setup.py
+  - src/modwire/__init__.py
+  - src/modwire/_version.py
+
+boundaries:
+  tags:
+    - {name: context, match: "src/modwire/*", excluded_patterns: ["src/modwire/*.py"]}
+    - {name: module, match: "src/modwire/*/*", excluded_patterns: ["src/modwire/*/*.py"]}
+    - {name: facade, match: "src/modwire/*/facade.py"}
+    - {name: application, match: "src/modwire/*/*/application.py"}
+    - {name: domain, match: "src/modwire/*/*/domain.py"}
+    - {name: model, match: "src/modwire/*/*/models"}
+    - {name: service, match: "src/modwire/*/*/services"}
+    - {name: shared, match: "src/modwire/shared"}
+    - {name: package-entrypoint, match: "src/modwire/__main__.py"}
+    - {name: cli-entrypoint, match: "src/modwire/cli/__init__.py"}
+    - {name: python-helper, match: "src/modwire/cli/resources/extractors/python/script.py"}
+  rules:
+    - {realm: contexts, source: facade, allow: [facade, model]}
+    - {realm: contexts, source: context, allow: [model, shared]}
+    - {realm: modules, source: facade, allow: [application, model]}
+    - {realm: modules, source: application, allow: [application, domain, model]}
+    - {realm: modules, source: context, allow: [shared]}
+    - {realm: modules, source: module, allow: [model]}
+    - {realm: contexts, source: package-entrypoint, allow: [cli-entrypoint]}
+    - {realm: modules, source: python-helper, allow: [facade]}
+  flow:
+    standalone_tags: [package-entrypoint]
+    realms: [{name: contexts, module_tag: context}, {name: modules, module_tag: module}]
+    analyzers: [module-boundaries, backward-flow, no-cycles, no-reentry]
+shape:
+  realms:
+    - name: architecture
+      match: src/modwire/architecture
+      excluded_patterns: [src/modwire/architecture/config/application.py]
+      shape:
+        max_functions_per_file: 0
+    - name: runtime-configuration
+      match: src/modwire/architecture/config/application.py
+      shape:
+        max_classes_per_file: 1
+        max_functions_per_file: 0
+        allow_optional_class_properties: true
+    - name: cli
+      match: src/modwire/cli
+      excluded_patterns: [src/modwire/cli/__init__.py]
+      shape:
+        max_classes_per_file: 1
+        max_interfaces_per_file: 0
+        max_types_per_file: 0
+        max_abstract_classes_per_file: -1
+        max_functions_per_file: 0
+        allow_optional_function_args: false
+        allow_optional_method_args: false
+        allow_optional_class_properties: false
+        allow_import_aliases: false
+        require_joined_imports: true
+        allowed_import_crossing_types: [module, symbol]
+    - name: cli-entrypoint
+      match: src/modwire/cli/__init__.py
+      shape:
+        max_classes_per_file: 0
+        max_functions_per_file: 1
+    - name: extraction
+      match: src/modwire/extraction
+      shape:
+        max_classes_per_file: 1
+        max_functions_per_file: 0
+        allow_optional_function_args: false
+        allow_optional_method_args: false
+        allow_optional_class_properties: false
+        allow_import_aliases: false
+        require_joined_imports: true
+    - name: shared
+      match: src/modwire/shared
+      excluded_patterns: ["src/modwire/shared/*/models/**"]
+      shape:
+        max_classes_per_file: 1
+        max_functions_per_file: 0
+        allow_optional_function_args: false
+        allow_optional_method_args: false
+        allow_optional_class_properties: false
+        allow_import_aliases: false
+        require_joined_imports: true
+    - name: shared-models
+      match: "src/modwire/shared/*/models"
+      shape:
+        max_classes_per_file: 1
+        max_functions_per_file: 0
+        allow_optional_method_args: true
+        allow_optional_class_properties: true
+    - name: bootstrap
+      match: src/modwire/__init__.py
+      shape:
+        max_functions_per_file: 0
+        allow_optional_function_args: false
+        allow_optional_method_args: false
+        allow_optional_class_properties: false
+        allow_import_aliases: false
+        require_joined_imports: true
+    - name: entrypoint
+      match: src/modwire/__main__.py
+      shape:
+        max_functions_per_file: 0
+        allow_import_aliases: false
+        require_joined_imports: true

@@ -14,3 +14,19 @@ Enclosure MCP is the single source of truth for project guidance, architecture a
 After the local merge, package/CLI verification and usable Enclosure project management with the canonical diagrams and real architecture/health evidence, **stop for the user's explicit acceptance of the local implementation**. Repository transfer, organization Projects setup, publication, performance improvements and Enclosure dependency upgrades are later work requiring a subsequent instruction. See the handoff for current MCP retrieval blockers.
 
 [Planning diagrams](docs/planning/diagrams/README.md) · [Pinned source baselines](docs/planning/baselines.json)
+
+<!-- generated:public-api:start -->
+## Command reference
+
+Provide `modwire init` for setup and `modwire report` for architecture feedback.
+
+Existing `modwire --language <language>` automation continues to run reports.
+
+| Command | Purpose |
+| --- | --- |
+| `modwire init` | Create `.modwire/` guidance and a strict architecture template. |
+| `modwire report --language <language>` | Analyse the configured project and render violations. |
+| `modwire --language <language>` | Backwards-compatible form of `report`. |
+
+Use `--summary` with `report` to render module-to-layer membership without files.
+<!-- generated:public-api:end -->

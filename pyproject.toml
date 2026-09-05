@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=77", "setuptools-scm>=8", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "modwire"
+dynamic = ["version"]
+description = "Code extraction, architecture analysis and the Modwire CLI."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+authors = [{name = "Tomasz Szpak"}]
+dependencies = ["pydantic>=2.12", "pydantic-yaml>=1.7", "rich>=13", "wireup>=2.12.0"]
+classifiers = [
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/modwire/modwire"
+Repository = "https://github.com/modwire/modwire"
+Issues = "https://github.com/modwire/modwire/issues"
+
+[project.scripts]
+modwire = "modwire.cli.entrypoint:main"
+
+[project.optional-dependencies]
+dev = ["build>=1.3", "pytest>=9", "ruff>=0.14,<0.16", "pyright>=1.1", "twine>=6"]
+
+[dependency-groups]
+dev = ["build>=1.3", "pytest>=9", "ruff>=0.14,<0.16", "pyright>=1.1", "twine>=6"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = true
+exclude = ["*.__pycache__", "*.__pycache__.*"]
+
+[tool.setuptools.package-data]
+"modwire" = ["py.typed"]
+"modwire.cli.resources" = ["templates/*", "extractors/php/*", "extractors/typescript/*", "extractors/python/*.py"]
+
+[tool.setuptools_scm]
+tag_regex = '^v(?P<version>\d+\.\d+\.\d+)$'
+fallback_version = "8.0.0.dev0"
+local_scheme = "no-local-version"
+version_file = "src/modwire/_version.py"
+
+[tool.pytest.ini_options]
+cache_dir = ".dev/cache/pytest"
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = ["-ra", "--strict-config", "--strict-markers", "--import-mode=importlib"]
+
+[tool.ruff]
+cache-dir = ".dev/cache/ruff"
+line-length = 120
+target-version = "py312"
+extend-exclude = ["**/_version.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.pyright]
+include = ["src/modwire"]
+extraPaths = ["src"]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.12"
+typeCheckingMode = "strict"

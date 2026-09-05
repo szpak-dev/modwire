@@ -1,0 +1,44 @@
+tags:
+  - name: module
+    match: "*"
+    excluded_patterns:
+      - "__init__"
+      - "_version"
+      - "cli"
+
+  - name: cli
+    match: "cli"
+
+  - name: cli
+    match: "shared/cli_apps"
+
+  - name: application
+    match: "*/app"
+
+  - name: config
+    match: "shared/config"
+
+  - name: report
+    match: "shared/report"
+
+  - name: domain
+    match: "*/base"
+
+  - name: collector
+    match: "*/collector"
+
+rules: []
+
+flow:
+  module_tag: module
+  layers:
+    - cli
+    - application
+    - collector
+    - domain
+    - report
+    - config
+  analyzers:
+    - backward-flow
+    - no-cycles
+    - no-reentry

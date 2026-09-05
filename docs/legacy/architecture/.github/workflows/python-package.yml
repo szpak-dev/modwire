@@ -1,0 +1,84 @@
+name: Reusable Python package verification
+
+on:
+  workflow_call:
+    inputs:
+      python-versions:
+        description: JSON array of supported Python versions.
+        required: false
+        type: string
+        default: '["3.12", "3.13", "3.14"]'
+      build-python-version:
+        description: Python version used to build distributions once.
+        required: false
+        type: string
+        default: "3.12"
+      working-directory:
+        description: Package directory relative to the repository root.
+        required: false
+        type: string
+        default: "."
+      upload-artifacts:
+        description: Upload verified distributions for later jobs.
+        required: false
+        type: boolean
+        default: false
+      artifact-name:
+        description: Uploaded distribution artifact name.
+        required: false
+        type: string
+        default: python-package-distributions
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJSON(inputs.python-versions) }}
+
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package and verification tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run tests
+        run: python -m pytest
+
+      - name: Run static checks
+        run: python -m ruff check .
+
+      - name: Build distributions
+        if: matrix.python-version == inputs.build-python-version
+        run: python -m build --outdir dist
+
+      - name: Check distribution metadata
+        if: matrix.python-version == inputs.build-python-version
+        run: python -m twine check dist/*
+
+      - name: Upload verified distributions
+        if: inputs.upload-artifacts && matrix.python-version == inputs.build-python-version
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.working-directory }}/dist/
+          if-no-files-found: error
