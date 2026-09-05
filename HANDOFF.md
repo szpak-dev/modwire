@@ -5,8 +5,48 @@
 Open `~/Projects/modwire` in VS Code. Its `origin` is `https://github.com/modwire/modwire.git`.
 The user chose a fresh repository; all three source repositories remain intact.
 
-**Next action:** read [issue #2](https://github.com/modwire/modwire/issues/2), confirm the pinned source/package mapping, then perform [issue #3's mechanical local merge](https://github.com/modwire/modwire/issues/3).
+**Current work:** [issue #2](https://github.com/modwire/modwire/issues/2) preflight is documented in [preflight.md](docs/planning/preflight.md) on local branch `issue-2-preflight`; record its completion before starting [issue #3's mechanical local merge](https://github.com/modwire/modwire/issues/3) on a separate local branch. Follow issues one at a time; the user authorizes correcting their wording and blockers when necessary.
 Do not restart a broad strategy or portfolio discussion. Do not make caching, organization transfer or Projects setup prerequisites for the local merge.
+
+## User clarification — local acceptance and Enclosure authority
+
+The user clarified on 2026-09-05 that the immediate destination is a **reviewable local implementation**, merging extraction, architecture and CLI into one package and managing that project through Enclosure MCP. **Stop there for the user's explicit acceptance.** The later epic roadmap does not authorize automatic transfer, publication, organization Projects setup, performance work or Enclosure runtime upgrades. Subsequent work needs a further instruction after acceptance.
+
+Enclosure MCP is the **single source of truth** for project operating guidance, architecture and diagrams. The three diagrams exported under `docs/planning/diagrams/` must remain available in Enclosure under their existing IDs. Update canonical diagrams through MCP, then refresh the local exports and provenance. GitHub supplies the actual issue/blocker graph; reconcile it into Enclosure, subject to the user's acceptance gate. Local files are bootstrap context or exports, not a competing authority.
+
+The acceptance package must include:
+
+- The local merge diff and immutable source/package mapping, preserving behavior and Wireup-only service construction.
+- Package, CLI, clean distribution installation and pipx verification, plus a nonempty architecture map covering all three components with preserved effective constraints and passing Enclosure health.
+- A real workspace registration/binding and usable operating guidance through Enclosure MCP; registration by itself is insufficient.
+- The canonical planning diagrams, with retrievable source/snapshots, validation and revision evidence matching refreshed docs exports. Clearly distinguish proposals from accepted implementation contracts.
+- An agent workflow record showing how Enclosure was used from bootstrap through demanding changes: context/guidance retrieval, diagram discovery and updates, configuration migration, registration, checks, failures and recovery. Successful receipts without usable content do not pass retrieval checks.
+- Exact completed and failed/unrun checks, remaining blockers, and the concrete local implementation presented for acceptance. Never describe an incomplete gate as accepted.
+
+## Latest instruction review — 2026-09-05
+
+### Subsequent #2 preflight and branch protection
+
+The user explicitly directed implementation to start, issues to be followed one at a time (editable when necessary), and work to use local branches with protected `main`. Created `issue-2-preflight` preserving the prior instruction changes. [preflight.md](docs/planning/preflight.md) records the exact mapping, Python >=3.12, local version 8.0.0.dev0, preserved import packages/resources, unified Wireup boundary and configuration migration requirements.
+
+Verified all three canonical remote tag commits with host-mode `git ls-remote`, including peeled annotated tags; they match `baselines.json`. Inspected pinned Git archives: 116 Python source files, 15 test modules, helper/template resources and legacy configuration. `git diff --check` passed. Package tests are not part of this documentation preflight and have not run. No source repositories were changed.
+
+Applied and read back GitHub `main` protection: one approving PR review, stale approvals dismissed, resolved conversations and linear history required, admin enforcement enabled, force pushes and deletion disabled. No required status checks were invented: the repository currently has no Actions workflows. Add real verified CI check names when those workflows are introduced. No implementation was pushed.
+
+The earlier review below is historical; its no-source-merge and MCP retrieval findings remain applicable until #3 supplies newer evidence.
+
+Read this handoff, local instructions, diagram exports/provenance, live epic #1, preflight #2, merge #3 and Enclosure diagram presentation issue #151. The live merge issue is blocked by #2. Source consolidation has not started; the next implementation issue remains #2, followed by #3.
+
+Actual MCP verification:
+
+- `get_workspace_context(root, task)` was called once for this task and returned `status: error`, HTTP 404, `Resource not found`. The workspace remains unregistered; no placeholder configuration was created.
+- `get_diagram_set` identified set `GkVyr2XEdDAWxCdSJaLu4X` but returned `status: incomplete`, `reason: presentation_incomplete`, with no follow-ups.
+- Individual `get_diagram` calls identified all three exported diagrams at the manifest revisions: `pRWegQjSZXEvfwWEoCxZzq` 19, `HUhdthFrEjBoLtZLtTrn4D` 43 and `PBLeM6dFuqQrawEuKFUGG9` 24. Each returned `status: incomplete`, without source, snapshot, draft/validation state or continuation. IDs/revisions match; content parity is **not reverified**.
+- `find_diagram_set_diagrams`, `get_diagram_kind(flowchart)` and a scoped `get_diagram_set_diagram` also returned incomplete presentations without follow-ups. `find_record_categories`, `find_records` and `search_records` did the same, preventing discovery/readback of canonical operating guidance.
+
+These are Enclosure MCP usability blockers, consistent with existing presentation work under [#148](https://github.com/szpak-dev/enclosure/issues/148), [#151](https://github.com/szpak-dev/enclosure/issues/151) and [#152](https://github.com/szpak-dev/enclosure/issues/152). Do not infer an empty collection from an incomplete response. The user's clarified acceptance contract is recorded locally pending reconciliation into canonical Enclosure guidance and diagrams when retrieval is usable; no canonical update or synchronization is claimed. GitHub issues were read, not edited, and still omit this explicit user acceptance checkpoint.
+
+This instruction review changed documentation only. No package tests, build, pipx, architecture map or project health checks were run because the checkout still has no merged source/configuration. The bootstrap verification below is historical, not current MCP retrieval evidence.
 
 ## Completed in bootstrap
 
@@ -22,7 +62,7 @@ Do not restart a broad strategy or portfolio discussion. Do not make caching, or
 
 1. Merge **extraction + architecture + CLI**. `modwire-hex` remains a separate consumer.
 2. Keep the merge local and mechanical: source/package moves, dependency consolidation, required import and wiring adjustments. Preserve observable behavior.
-3. **Wireup constructs every service and resolves all collaborators. No manual service instances or fallback construction paths.** Architecture and CLI declare Wireup; Extraction's current manifest does not, and its manual facade composition must be migrated rather than grandfathered in.
+3. **Wireup constructs every service and resolves all collaborators. No manual service instances or fallback construction paths.** Canonical preflight corrected the bootstrap assumption: only CLI declares Wireup at the pinned releases. Architecture 7.0.0 and Extraction 2.1.1 both have manual composition that must be migrated rather than grandfathered in.
 4. Merge the legacy `.modwire` configurations and relevant guidance along with source. Produce one reviewed effective shape/boundary configuration with correct roots/patterns/realms and preserved constraints.
 5. Verify a nonempty architecture map covering all three components and expected dependencies. Stale roots, unmatched patterns or excluded source must not create a false healthy result.
 6. Register/bind the real merged workspace in Enclosure with the actual configuration; attach package/CLI checks and passing architecture/health evidence before calling the merge complete. Never loosen rules merely to pass.
@@ -49,7 +89,7 @@ The split and combined configuration shapes differ. Normalize envelopes and rema
 
 ## Issue order
 
-Local preflight → merge → CLI/pipx and Enclosure impact checks → transfer to `szpak-dev/modwire` → organization Project → management handoff.
+Local preflight → merge → CLI/pipx verification and usable Enclosure project management/diagrams/health → **STOP: user acceptance of the local implementation**. The later roadmap, only after acceptance and a subsequent instruction, includes remaining Enclosure impact checks → transfer to `szpak-dev/modwire` → organization Project → management handoff.
 The following native blockers and linked issues govern the current order:
 
 | Issue | Work | Blocked by |
@@ -68,7 +108,7 @@ The following native blockers and linked issues govern the current order:
 | [szpak-dev/enclosure#160](https://github.com/szpak-dev/enclosure/issues/160) | Upgrade Mermaiden to 6 with verified persisted-snapshot migration | None |
 | [szpak-dev/enclosure#161](https://github.com/szpak-dev/enclosure/issues/161) | Verify and deliver the coordinated Modwire and Enclosure release train | [szpak-dev/enclosure#158](https://github.com/szpak-dev/enclosure/issues/158), [szpak-dev/enclosure#159](https://github.com/szpak-dev/enclosure/issues/159), [szpak-dev/enclosure#160](https://github.com/szpak-dev/enclosure/issues/160), [szpak-dev/enclosure#148](https://github.com/szpak-dev/enclosure/issues/148), [modwire/modwire#7](https://github.com/modwire/modwire/issues/7) |
 
-The epic completes when consolidation, transfer and management are verified. The linked performance and integrated-runtime delivery work is not falsely completed with it.
+The full epic completes when consolidation, transfer and management are verified; this is broader than the immediate local acceptance checkpoint. The linked performance and integrated-runtime delivery work is not falsely completed with it.
 
 ## Findings to preserve
 
@@ -89,7 +129,7 @@ The later release train verifies native/Docker cold, warm and edited-source beha
 ## Diagram authority and scope updates
 
 Enclosure diagram set: `GkVyr2XEdDAWxCdSJaLu4X`. See [diagram exports and provenance](docs/planning/diagrams/README.md).
-These are planning proposals, not accepted implementation contracts. Their original M/E ordering predates the user's local-merge/transfer/Projects decision; current issue dependencies supersede it. Notes now capture CLI inclusion, Wireup-only services and architecture configuration/health gates. Update the diagrams from Enclosure MCP before implementing changed structural contracts.
+These are planning proposals, not accepted implementation contracts. Their original M/E ordering predates the user's local-merge/transfer/Projects decision; current issue dependencies supersede it, subject to the explicit user acceptance checkpoint above. Exported notes capture CLI inclusion, Wireup-only services and architecture configuration/health gates but still need the new acceptance checkpoint reconciled through MCP. Update the diagrams from Enclosure MCP before implementing changed structural contracts. See the latest instruction review for the current retrieval blocker.
 
 ## Before leaving this workspace
 
