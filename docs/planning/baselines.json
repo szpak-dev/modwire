@@ -1,0 +1,35 @@
+{
+  "modwire/modwire-extraction": {
+    "repository": "modwire/modwire-extraction",
+    "tag": "v2.1.1",
+    "commit": "71808b1a924e1c496ddf19914ab3a577fe946228",
+    "architecture_files": [],
+    "tree_truncated": false
+  },
+  "modwire/modwire-architecture": {
+    "repository": "modwire/modwire-architecture",
+    "tag": "v7.0.0",
+    "commit": "c1ed25b1e71c5d800450a50a72906529947268fc",
+    "architecture_files": [
+      ".modwire/boundaries.yaml",
+      ".modwire/shape.yaml"
+    ],
+    "tree_truncated": false
+  },
+  "modwire/modwire-cli": {
+    "repository": "modwire/modwire-cli",
+    "tag": "v2.0.0",
+    "commit": "67f76cfa63ddfaf6114ca9168939a315bf94948e",
+    "architecture_files": [
+      ".modwire/INDEX.md",
+      ".modwire/architecture.yaml",
+      ".modwire/docs/ARCHITECTURE.md",
+      ".modwire/docs/MODWIRE.md",
+      ".modwire/docs/PROJECT.md",
+      ".modwire/docs/RULES.md",
+      ".modwire/docs/TESTING.md",
+      ".modwire/docs/WORKFLOW.md"
+    ],
+    "tree_truncated": false
+  }
+}
