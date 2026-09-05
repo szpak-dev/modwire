@@ -1,6 +1,6 @@
 excluded_patterns:
   - .dev/**
-  - tests/**
+  - tests/fixtures/**
   - scripts/**
   - build/**
   - dist/**
@@ -20,7 +20,9 @@ boundaries:
     - {name: service, match: "src/modwire/*/*/services"}
     - {name: shared, match: "src/modwire/shared"}
     - {name: package-entrypoint, match: "src/modwire/__main__.py"}
-    - {name: cli-entrypoint, match: "src/modwire/cli/__init__.py"}
+    - {name: public-application, match: "src/modwire/application.py"}
+    - {name: autowiring, match: "src/modwire/autowiring.py"}
+    - {name: tests, match: "tests"}
     - {name: python-helper, match: "src/modwire/cli/resources/extractors/python/script.py"}
   rules:
     - {realm: contexts, source: facade, allow: [facade, model]}
@@ -29,28 +31,25 @@ boundaries:
     - {realm: modules, source: application, allow: [application, domain, model]}
     - {realm: modules, source: context, allow: [shared]}
     - {realm: modules, source: module, allow: [model]}
-    - {realm: contexts, source: package-entrypoint, allow: [cli-entrypoint]}
-    - {realm: modules, source: python-helper, allow: [facade]}
+    - {realm: contexts, source: public-application, allow: [facade, model]}
+    - {realm: modules, source: public-application, allow: [facade, model]}
+    - {realm: contexts, source: autowiring, allow: [public-application, facade]}
+    - {realm: modules, source: autowiring, allow: [public-application, facade]}
+    - {realm: contexts, source: python-helper, allow: [autowiring]}
+    - {realm: modules, source: python-helper, allow: [autowiring]}
+    - {realm: test-api, source: tests, allow: [public-application]}
   flow:
-    standalone_tags: [package-entrypoint]
-    realms: [{name: contexts, module_tag: context}, {name: modules, module_tag: module}]
+    standalone_tags: [package-entrypoint, public-application, autowiring]
+    realms: [{name: contexts, module_tag: context}, {name: modules, module_tag: module}, {name: test-api, module_tag: tests}]
     analyzers: [module-boundaries, backward-flow, no-cycles, no-reentry]
 shape:
   realms:
     - name: architecture
       match: src/modwire/architecture
-      excluded_patterns: [src/modwire/architecture/config/application.py]
       shape:
         max_functions_per_file: 0
-    - name: runtime-configuration
-      match: src/modwire/architecture/config/application.py
-      shape:
-        max_classes_per_file: 1
-        max_functions_per_file: 0
-        allow_optional_class_properties: true
     - name: cli
       match: src/modwire/cli
-      excluded_patterns: [src/modwire/cli/__init__.py]
       shape:
         max_classes_per_file: 1
         max_interfaces_per_file: 0
@@ -63,11 +62,21 @@ shape:
         allow_import_aliases: false
         require_joined_imports: true
         allowed_import_crossing_types: [module, symbol]
-    - name: cli-entrypoint
-      match: src/modwire/cli/__init__.py
+    - name: autowiring
+      match: src/modwire/autowiring.py
       shape:
         max_classes_per_file: 0
-        max_functions_per_file: 1
+        max_functions_per_file: 2
+    - name: public-application
+      match: src/modwire/application.py
+      shape:
+        max_classes_per_file: 1
+        max_functions_per_file: 0
+    - name: tests
+      match: tests
+      shape:
+        max_classes_per_file: 1
+        max_functions_per_file: 0
     - name: extraction
       match: src/modwire/extraction
       shape:

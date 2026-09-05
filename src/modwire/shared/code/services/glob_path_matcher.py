@@ -3,7 +3,7 @@ from fnmatch import fnmatchcase
 
 from wireup import injectable
 
-from modwire.shared.code.domain import PathMatcher
+from ..domain import PathMatcher
 
 
 @injectable(as_type=PathMatcher)

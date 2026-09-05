@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Literal
 
-from modwire.shared.values.models.value_model import ValueModel
+from ....shared.values.models.value_model import ValueModel
 
 
 class InitAsset(ValueModel):

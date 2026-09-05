@@ -1,6 +1,6 @@
-from modwire.shared.code.models.edge import Edge
-from modwire.shared.code.models.source_file import SourceFile
-from modwire.shared.values.models.value_model import ValueModel
+from ...values.models.value_model import ValueModel
+from .edge import Edge
+from .source_file import SourceFile
 
 
 class DependencyEdgeResult(ValueModel):

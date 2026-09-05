@@ -3,7 +3,7 @@ from pathlib import Path
 
 from wireup import injectable
 
-from modwire.cli.resources.models.init_asset import InitAsset
+from ...resources.models.init_asset import InitAsset
 
 
 @injectable

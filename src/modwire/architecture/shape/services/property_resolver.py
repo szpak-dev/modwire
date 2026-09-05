@@ -3,11 +3,11 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.architecture.config.models.shape_rules import ShapeRules
-from modwire.architecture.shape.domain import BaseShapeResolver, SymbolShapeResolverInterface
-from modwire.architecture.shape.models.shape_realm_architecture_map import ShapeRealmArchitectureMap
-from modwire.architecture.shape.models.shape_violation import ShapeViolation
-from modwire.shared.code.models.source_class_property import SourceClassProperty
+from ....shared.code.models.source_class_property import SourceClassProperty
+from ...config.models.shape_rules import ShapeRules
+from ..domain import BaseShapeResolver, SymbolShapeResolverInterface
+from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
+from ..models.shape_violation import ShapeViolation
 
 
 @injectable(as_type=SymbolShapeResolverInterface, qualifier="property")

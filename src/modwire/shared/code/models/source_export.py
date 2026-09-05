@@ -1,6 +1,6 @@
-from modwire.shared.code.models.identity import ImportSpecifier
-from modwire.shared.code.models.types import ImportCrossingType, SourceExportKind
-from modwire.shared.values.models.value_model import ValueModel
+from ...values.models.value_model import ValueModel
+from .identity import ImportSpecifier
+from .types import ImportCrossingType, SourceExportKind
 
 
 class SourceExport(ValueModel):

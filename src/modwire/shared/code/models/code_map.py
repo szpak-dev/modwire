@@ -2,9 +2,9 @@ from typing import Any
 
 from pydantic import ConfigDict
 
-from modwire.shared.code.models.dependency_graph import DependencyGraph
-from modwire.shared.code.models.source_extraction import SourceExtraction
-from modwire.shared.values.models.value_model import ValueModel
+from ...values.models.value_model import ValueModel
+from .dependency_graph import DependencyGraph
+from .source_extraction import SourceExtraction
 
 
 class CodeMap(ValueModel):

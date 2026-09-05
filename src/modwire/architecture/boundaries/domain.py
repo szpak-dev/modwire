@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
-from modwire.architecture.boundaries.models.flow_violation import FlowViolation
-from modwire.architecture.config.models.boundaries_config import BoundariesConfig
-from modwire.architecture.map.models.architecture_map import ArchitectureMap
+from ..config.models.boundaries_config import BoundariesConfig
+from ..map.models.architecture_map import ArchitectureMap
+from .models.flow_violation import FlowViolation
 
 
 class FlowAnalyzerInterface(ABC):

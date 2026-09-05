@@ -1,7 +1,7 @@
-from modwire.shared.code.models.identity import FileId
-from modwire.shared.code.models.node import Node
-from modwire.shared.code.models.source_file import SourceFile
-from modwire.shared.values.models.value_model import ValueModel
+from ...values.models.value_model import ValueModel
+from .identity import FileId
+from .node import Node
+from .source_file import SourceFile
 
 
 class DependencyNodeResult(ValueModel):

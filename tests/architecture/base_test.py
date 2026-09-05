@@ -1,51 +1,22 @@
-from modwire.architecture import ArchitectureConfig, ArchitectureFacade, ReportNode
-from modwire.shared import CodeMap, QueryableCodeMap
-from tests.support.service_test import ServiceTestCase
+from ..support.service_test import ServiceTestCase
 
 
 class ArchitectureTestCase(ServiceTestCase):
-    def analyze(self, config: ArchitectureConfig, code_map: QueryableCodeMap) -> tuple[ReportNode, ...]:
-        return self.service(ArchitectureFacade, config).analyze(code_map)
+    def report(self, report_id, config, code_map):
+        return next(item for item in self.application.analyze(code_map, config) if item.metadata.id == report_id)
 
-    def report[Report: ReportNode](
-        self, report_type: type[Report], config: ArchitectureConfig, code_map: QueryableCodeMap
-    ) -> Report:
-        return next(report for report in self.analyze(config, code_map) if isinstance(report, report_type))
+    def source_file(self, file_id: str) -> str:
+        return "class ExampleSource:\n    pass\n"
 
-    def source_file(self, file_id: str) -> dict[str, object]:
-        return {
-            "file_id": file_id,
-            "module_id": file_id.rsplit(".", 1)[0],
-            "imports": [],
-            "classes": [],
-            "functions": [],
-            "line_count": 1,
-            "code_line_count": 1,
-            "public_symbol_count": 0,
-        }
-
-    def queryable_map(
-        self, paths: tuple[str, ...], edges: tuple[tuple[str, str | None, str, str], ...]
-    ) -> QueryableCodeMap:
-        files = {path: self.source_file(path) for path in paths}
-        return QueryableCodeMap(
-            code_map=CodeMap.model_validate(
-                {
-                    "language": "python",
-                    "extraction": {
-                        "files": files,
-                        "modules": {path.rsplit(".", 1)[0]: path for path in paths},
-                        "files_found": len(paths),
-                        "files_excluded": 0,
-                    },
-                    "dependency_graph": {
-                        "nodes": {path: {"id": path, "kind": "file"} for path in paths},
-                        "edges": [
-                            {"from_id": source, "to_id": target, "specifier": specifier,
-                             "resolution": resolution, "kind": "import"}
-                            for source, target, resolution, specifier in edges
-                        ],
-                    },
-                }
-            )
-        )
+    def queryable_map(self, paths: tuple[str, ...], edges: tuple[tuple[str, str | None, str, str], ...]):
+        sources = {path: self.source_file(path) for path in paths}
+        for source, target, resolution, specifier in edges:
+            if target is not None:
+                module = target.removesuffix(".py").replace("/", ".")
+                statement = f"from {module} import ExampleSource\n"
+            elif resolution == "external":
+                statement = f"import {specifier}\n"
+            else:
+                statement = "from .example_missing import ExampleSource\n"
+            sources[source] = statement + sources[source]
+        return self.application.generate_queryable_map("python", self.project(sources), ())

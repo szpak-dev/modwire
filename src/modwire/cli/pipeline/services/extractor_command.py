@@ -6,34 +6,35 @@ from pathlib import Path
 from pydantic import ValidationError
 from wireup import injectable
 
-from modwire.shared.code.application import CodeApplication
-
-from ..models.python_batch_input import PythonBatchInput
-from ..models.python_command_input import PythonCommandInput
-from ..models.python_source_input import PythonSourceInput
+from ....shared.code.application import CodeApplication
+from ..models.extractor_batch_input import ExtractorBatchInput
+from ..models.extractor_command_input import ExtractorCommandInput
+from ..models.extractor_source_input import ExtractorSourceInput
 
 
 @injectable
 @dataclass(frozen=True)
-class PythonParserCommand:
+class ExtractorCommand:
     code: CodeApplication
 
-    def read(self) -> PythonCommandInput | None:
+    def read(self, language: str) -> ExtractorCommandInput | None:
         root = Path(sys.argv[2]).resolve() if len(sys.argv) > 2 else Path.cwd()
         batch = len(sys.argv) > 1 and sys.argv[1] == "--batch"
         if batch:
             try:
-                paths = PythonBatchInput.model_validate({"paths": json.load(sys.stdin)}).paths
+                paths = ExtractorBatchInput.model_validate({"paths": json.load(sys.stdin)}).paths
             except ValidationError:
-                print("Expected a JSON object mapping source ids to Python file paths.", file=sys.stderr)
+                print(
+                    f"Expected a JSON object mapping source ids to {language.capitalize()} file paths.", file=sys.stderr
+                )
                 return None
         else:
             path = Path(sys.argv[1]).resolve()
             paths = {self.code.file_id(root, path): str(path)}
-        return PythonCommandInput(
+        return ExtractorCommandInput(
             batch=batch,
             sources=tuple(
-                PythonSourceInput(
+                ExtractorSourceInput(
                     source_id=source_id,
                     path=Path(path).resolve(),
                     root=root,

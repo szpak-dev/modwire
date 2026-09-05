@@ -3,12 +3,12 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.architecture.boundaries.domain import FlowAnalyzerInterface
-from modwire.architecture.boundaries.models.flow_violation import FlowViolation
-from modwire.architecture.config.models.boundaries_config import BoundariesConfig
-from modwire.architecture.config.models.flow_rules import FlowRules
-from modwire.architecture.map.models.architecture_map import ArchitectureMap
-from modwire.architecture.map.models.architecture_realm import ArchitectureRealm
+from ...config.models.boundaries_config import BoundariesConfig
+from ...config.models.flow_rules import FlowRules
+from ...map.models.architecture_map import ArchitectureMap
+from ...map.models.architecture_realm import ArchitectureRealm
+from ..domain import FlowAnalyzerInterface
+from ..models.flow_violation import FlowViolation
 
 
 @injectable()

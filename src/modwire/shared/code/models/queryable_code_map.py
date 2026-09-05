@@ -1,26 +1,26 @@
 from collections.abc import Callable, Iterable
 
-from modwire.shared.code.models.code_map import CodeMap
-from modwire.shared.code.models.dependency_edge_result import DependencyEdgeResult
-from modwire.shared.code.models.dependency_node_result import DependencyNodeResult
-from modwire.shared.code.models.edge import Edge
-from modwire.shared.code.models.identity import FileId
-from modwire.shared.code.models.query_builder import QueryBuilder
-from modwire.shared.code.models.query_types import SourceItem, T
-from modwire.shared.code.models.source_abstract_class import SourceAbstractClass
-from modwire.shared.code.models.source_call import SourceCall
-from modwire.shared.code.models.source_callable import SourceCallable
-from modwire.shared.code.models.source_class import SourceClass
-from modwire.shared.code.models.source_export import SourceExport
-from modwire.shared.code.models.source_file import SourceFile
-from modwire.shared.code.models.source_file_result import SourceFileResult
-from modwire.shared.code.models.source_function import SourceFunction
-from modwire.shared.code.models.source_import import SourceImport
-from modwire.shared.code.models.source_interface import SourceInterface
-from modwire.shared.code.models.source_item_result import SourceItemResult
-from modwire.shared.code.models.source_type import SourceType
-from modwire.shared.code.models.source_value import SourceValue
-from modwire.shared.values.models.value_model import ValueModel
+from ...values.models.value_model import ValueModel
+from .code_map import CodeMap
+from .dependency_edge_result import DependencyEdgeResult
+from .dependency_node_result import DependencyNodeResult
+from .edge import Edge
+from .identity import FileId
+from .query_builder import QueryBuilder
+from .query_types import SourceItem, T
+from .source_abstract_class import SourceAbstractClass
+from .source_call import SourceCall
+from .source_callable import SourceCallable
+from .source_class import SourceClass
+from .source_export import SourceExport
+from .source_file import SourceFile
+from .source_file_result import SourceFileResult
+from .source_function import SourceFunction
+from .source_import import SourceImport
+from .source_interface import SourceInterface
+from .source_item_result import SourceItemResult
+from .source_type import SourceType
+from .source_value import SourceValue
 
 
 class QueryableCodeMap(ValueModel):

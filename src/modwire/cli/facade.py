@@ -4,25 +4,28 @@ from pathlib import Path
 
 from wireup import injectable
 
-from modwire.architecture.config.models.architecture_config import ArchitectureConfig
-from modwire.architecture.facade import ArchitectureFacade
-from modwire.cli.initialization.application import InitializationApplication
-from modwire.cli.pipeline.application import PipelineApplication
-from modwire.cli.pipeline.models.command_request import CommandRequest
-from modwire.extraction.facade import ExtractionFacade
-from modwire.shared.code.models.code_map import CodeMap
-from modwire.shared.code.models.queryable_code_map import QueryableCodeMap
+from ..architecture.config.models.architecture_config import ArchitectureConfig
+from ..architecture.report.models.report_node import ReportNode
+from ..extraction.extractors.models.extraction_request import ExtractionRequest
+from ..shared.code.models.source_extraction import SourceExtraction
+from .documentation.application import DocumentationApplication
+from .initialization.application import InitializationApplication
+from .pipeline.application import PipelineApplication
+from .pipeline.models.command_request import CommandRequest
+from .pipeline.models.extractor_command_input import ExtractorCommandInput
 
 
 @injectable
 @dataclass(frozen=True)
 class CliFacade:
-    """Coordinate initialization, extraction, architecture analysis and presentation."""
+    """Own command input, filesystem access, native processes and presentation."""
 
-    architecture: ArchitectureFacade
-    extraction: ExtractionFacade
     initialization: InitializationApplication
     pipeline: PipelineApplication
+    documentation: DocumentationApplication
+
+    def working_directory(self) -> Path:
+        return Path.cwd()
 
     def parse(self, argv: Sequence[str]) -> CommandRequest:
         return self.pipeline.parse(argv)
@@ -30,49 +33,23 @@ class CliFacade:
     def load_configuration(self, dot_dir: Path) -> ArchitectureConfig:
         return self.pipeline.load_configuration(dot_dir)
 
-    def run(self, request: CommandRequest) -> int:
-        if request.command == "init":
-            return self.initialization.initialize(Path.cwd(), request.dot_dir, request.force)
-        code_map = self.generate_queryable_map(
-            request.language, request.architecture_root, self.architecture.excluded_patterns()
-        )
-        reports = self.architecture.analyze(code_map)
-        return self.pipeline.run(reports, summary=request.summary)
+    def initialize(self, root: Path, dot_dir: Path, force: bool) -> int:
+        return self.initialization.initialize(root, dot_dir, force)
 
-    def discover(self, root: Path, excluded_patterns: tuple[str, ...]) -> tuple[str, ...]:
-        """Return supported languages found under the supplied source directory."""
-        return tuple(
-            language
-            for language in self.extraction.supported_languages()
-            if self.pipeline.has_source_files(
-                self.extraction.request(language, root).model_copy(update={"excluded_patterns": excluded_patterns})
-            )
-        )
+    def extract(self, request: ExtractionRequest) -> SourceExtraction:
+        return self.pipeline.extract(request)
 
-    def generate_map(self, language: str, root: Path, excluded_patterns: tuple[str, ...]) -> CodeMap:
-        """Read a project through its native extractor and return its dependency map."""
-        request = self.extraction.request(language, root).model_copy(update={"excluded_patterns": excluded_patterns})
-        return self.extraction.generate_map(language, self.pipeline.extract(request))
+    def has_source_files(self, request: ExtractionRequest) -> bool:
+        return self.pipeline.has_source_files(request)
 
-    def generate_queryable_map(
-        self, language: str, root: Path, excluded_patterns: tuple[str, ...]
-    ) -> QueryableCodeMap:
-        """Read a project and expose queryable source symbols and dependencies."""
-        return QueryableCodeMap(code_map=self.generate_map(language, root, excluded_patterns))
+    def render(self, reports: tuple[ReportNode, ...], summary: bool) -> int:
+        return self.pipeline.run(reports, summary=summary)
 
-    def parse_python_command(self) -> int:
-        request = self.pipeline.read_python()
-        if request is None:
-            return 1
-        if request.batch:
-            result: dict[str, object] = {
-                source.source_id: self.extraction.parse_python(
-                    source.content, source.path, source.root, source.source_id
-                )
-                for source in request.sources
-            }
-            return self.pipeline.write_python(result)
-        source = request.sources[0]
-        return self.pipeline.write_python(
-            self.extraction.parse_python(source.content, source.path, source.root, source.source_id)
-        )
+    def read_sources(self, language: str) -> ExtractorCommandInput | None:
+        return self.pipeline.read_sources(language)
+
+    def write_sources(self, result: dict[str, object]) -> int:
+        return self.pipeline.write_sources(result)
+
+    def generate_documentation(self, readme: Path, check: bool, description: str) -> int:
+        return self.documentation.generate(readme, check, description)

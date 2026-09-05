@@ -5,7 +5,7 @@ from pathlib import Path
 
 from wireup import injectable
 
-from modwire.cli.pipeline.models.command_request import CommandRequest
+from ..models.command_request import CommandRequest
 
 
 @injectable()

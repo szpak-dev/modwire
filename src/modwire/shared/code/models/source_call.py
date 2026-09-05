@@ -1,6 +1,6 @@
-from modwire.shared.code.models.identity import FileId
-from modwire.shared.code.models.types import SourceCallResolution
-from modwire.shared.values.models.value_model import ValueModel
+from ...values.models.value_model import ValueModel
+from .identity import FileId
+from .types import SourceCallResolution
 
 
 class SourceCall(ValueModel):

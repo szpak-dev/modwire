@@ -1,7 +1,7 @@
 from typing import cast
 
-from modwire.architecture.report.models.report_node import ReportNode
-from modwire.shared.values.models.value_model import ValueModel
+from ....architecture.report.models.report_node import ReportNode
+from ....shared.values.models.value_model import ValueModel
 
 
 class ReportPipelineContext(ValueModel):

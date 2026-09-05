@@ -1,5 +1,5 @@
-from modwire.architecture.insights.models.callable_report_entry import CallableReportEntry
-from modwire.architecture.report.models.report_item import ReportItem
+from ...report.models.report_item import ReportItem
+from .callable_report_entry import CallableReportEntry
 
 
 class CallablesReport(ReportItem):

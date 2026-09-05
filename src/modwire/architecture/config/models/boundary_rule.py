@@ -1,4 +1,4 @@
-from modwire.architecture.config.models.configuration_value import ConfigurationValue
+from .configuration_value import ConfigurationValue
 
 
 class BoundaryRule(ConfigurationValue):

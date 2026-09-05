@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from rich.console import Console
 from wireup import injectable
 
-from modwire.architecture.insights.models.hotspots_report import HotspotsReport
-from modwire.cli.pipeline.domain import ReportPipelineStep
-from modwire.cli.pipeline.models.report_pipeline_context import ReportPipelineContext
+from ....architecture.insights.models.hotspots_report import HotspotsReport
+from ..domain import ReportPipelineStep
+from ..models.report_pipeline_context import ReportPipelineContext
 
 
 @injectable(as_type=ReportPipelineStep, qualifier="60-hotspots")

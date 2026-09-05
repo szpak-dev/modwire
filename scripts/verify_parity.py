@@ -7,9 +7,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-from modwire import create_runtime
-from modwire.extraction.extractors.domain import PythonParser
-
 workspace = Path.cwd()
 arguments = argparse.ArgumentParser(description="Compare the merged package with pinned source exports.")
 arguments.add_argument("--baselines", required=True, type=Path)
@@ -50,19 +47,21 @@ print(json.dumps({
 """
 new_script = """import json, sys
 from pathlib import Path
-from modwire import create_runtime
-from modwire.extraction.extractors.application import ExtractorsApplication
-from modwire.architecture.report.application import ReportApplication
-from modwire.architecture.config.models.architecture_config import ArchitectureConfig
-with create_runtime(Path(sys.argv[1]), ArchitectureConfig.model_validate(json.loads(sys.argv[3]))) as runtime:
-    code=runtime.get(ExtractorsApplication).generate_queryable_map(sys.argv[2])
-    architecture=runtime.get(ReportApplication)
+from modwire.application import ModwireApplication
+from modwire.autowiring import container
+try:
+    app=container.get(ModwireApplication)
+    code=app.generate_queryable_map(sys.argv[2], Path(sys.argv[1]), ())
+    config=app.configure(json.loads(sys.argv[3]))
     print(json.dumps({
         'code': code.code_map.model_dump(mode='json'),
-        'reports': [r.model_dump(mode='json') for r in architecture.report(code)],
-        'catalog': architecture.reports().model_dump(mode='json'),
+        'reports': [r.model_dump(mode='json') for r in app.analyze(code, config)],
+        'catalog': app.catalog().model_dump(mode='json'),
     }, sort_keys=True))
+finally:
+    container.close()
 """
+
 model_mapping = json.loads((workspace / "docs/planning/report-model-migration.json").read_text())
 
 
@@ -79,7 +78,7 @@ def normalize(value):
 
 receipt = {}
 for language in ("python", "typescript", "php"):
-    fixture = workspace / "tests/extraction/fixtures" / language
+    fixture = workspace / "tests/fixtures/languages" / language
     outputs = {}
     for label, script in [("old", old_script), ("new", new_script)]:
         env = dict(os.environ)
@@ -119,9 +118,15 @@ result = subprocess.run(
     check=True,
 )
 expected = json.loads(result.stdout)
-with create_runtime(root) as runtime:
-    parser = runtime.get(PythonParser)
-    actual = {key: parser.extract(Path(path).read_text(), Path(path), root, key) for key, path in paths.items()}
+result = subprocess.run(
+    [sys.executable, str(workspace / "src/modwire/cli/resources/extractors/python/script.py"), "--batch", str(root)],
+    input=json.dumps(paths),
+    text=True,
+    capture_output=True,
+    check=True,
+)
+actual = json.loads(result.stdout)
+
 differences = [key for key in expected if expected[key] != actual[key]]
 print("Python corpus", len(paths), "files;", len(differences), "differences")
 for key in differences[:10]:

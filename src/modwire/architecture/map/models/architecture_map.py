@@ -1,7 +1,6 @@
-from modwire.architecture.map.models.architecture_realm import ArchitectureRealm
-from modwire.shared.code.models.queryable_code_map import QueryableCodeMap
-from modwire.shared.values.models.value_model import ValueModel
-
+from ....shared.code.models.queryable_code_map import QueryableCodeMap
+from ....shared.values.models.value_model import ValueModel
+from .architecture_realm import ArchitectureRealm
 from .tag_map import TagMap
 
 

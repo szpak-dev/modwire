@@ -2,11 +2,11 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.architecture.boundaries.domain import BaseFlowAnalyzer, FlowAnalyzerInterface
-from modwire.architecture.boundaries.models.flow_violation import FlowViolation
-from modwire.architecture.config.models.boundaries_config import BoundariesConfig
-from modwire.architecture.map.models.architecture_map import ArchitectureMap
-from modwire.shared.code.models.identity import FileId
+from ....shared.code.models.identity import FileId
+from ...config.models.boundaries_config import BoundariesConfig
+from ...map.models.architecture_map import ArchitectureMap
+from ..domain import BaseFlowAnalyzer, FlowAnalyzerInterface
+from ..models.flow_violation import FlowViolation
 
 
 @injectable(as_type=FlowAnalyzerInterface, qualifier="no_reentry")

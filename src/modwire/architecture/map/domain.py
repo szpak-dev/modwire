@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 
-from modwire.architecture.config.models.boundaries_config import BoundariesConfig
-from modwire.shared.code.models.queryable_code_map import QueryableCodeMap
-
+from ...shared.code.models.queryable_code_map import QueryableCodeMap
+from ..config.models.boundaries_config import BoundariesConfig
 from .models.architecture_map import ArchitectureMap
 
 

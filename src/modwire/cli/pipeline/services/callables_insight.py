@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from rich.console import Console
 from wireup import injectable
 
-from modwire.architecture.insights.models.callables_report import CallablesReport
-from modwire.cli.pipeline.domain import ReportPipelineStep
-from modwire.cli.pipeline.models.report_pipeline_context import ReportPipelineContext
+from ....architecture.insights.models.callables_report import CallablesReport
+from ..domain import ReportPipelineStep
+from ..models.report_pipeline_context import ReportPipelineContext
 
 
 @injectable(as_type=ReportPipelineStep, qualifier="80-callables")

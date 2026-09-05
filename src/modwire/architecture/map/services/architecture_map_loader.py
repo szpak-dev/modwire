@@ -2,13 +2,12 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.architecture.config.models.boundaries_config import BoundariesConfig
-from modwire.architecture.map.models.architecture_map import ArchitectureMap
-from modwire.architecture.map.models.architecture_realm import ArchitectureRealm
-from modwire.architecture.map.services.tag_matcher import TagMatcher
-from modwire.shared.code.models.queryable_code_map import QueryableCodeMap
-
+from ....shared.code.models.queryable_code_map import QueryableCodeMap
+from ...config.models.boundaries_config import BoundariesConfig
 from ..domain import ArchitectureMapper
+from ..models.architecture_map import ArchitectureMap
+from ..models.architecture_realm import ArchitectureRealm
+from .tag_matcher import TagMatcher
 
 
 @injectable(as_type=ArchitectureMapper)

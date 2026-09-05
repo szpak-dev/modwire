@@ -1,17 +1,17 @@
 from pydantic import Field
 
-from modwire.shared.code.models.identity import FileId, ModuleId
-from modwire.shared.code.models.source_abstract_class import SourceAbstractClass
-from modwire.shared.code.models.source_call import SourceCall
-from modwire.shared.code.models.source_callable import SourceCallable
-from modwire.shared.code.models.source_class import SourceClass
-from modwire.shared.code.models.source_export import SourceExport
-from modwire.shared.code.models.source_function import SourceFunction
-from modwire.shared.code.models.source_import import SourceImport
-from modwire.shared.code.models.source_interface import SourceInterface
-from modwire.shared.code.models.source_type import SourceType
-from modwire.shared.code.models.source_value import SourceValue
-from modwire.shared.values.models.value_model import ValueModel
+from ...values.models.value_model import ValueModel
+from .identity import FileId, ModuleId
+from .source_abstract_class import SourceAbstractClass
+from .source_call import SourceCall
+from .source_callable import SourceCallable
+from .source_class import SourceClass
+from .source_export import SourceExport
+from .source_function import SourceFunction
+from .source_import import SourceImport
+from .source_interface import SourceInterface
+from .source_type import SourceType
+from .source_value import SourceValue
 
 
 class SourceFile(ValueModel):

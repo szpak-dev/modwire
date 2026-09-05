@@ -1,5 +1,6 @@
 from collections.abc import Mapping
 from pathlib import Path
+from tempfile import mkdtemp
 
 import pytest
 
@@ -17,3 +18,11 @@ class BaseTestCase:
             target = self.workspace / name
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(content, encoding="utf-8")
+
+    def project(self, files: Mapping[str, str]) -> Path:
+        root = Path(mkdtemp(prefix="example-", dir=self.workspace))
+        for name, content in files.items():
+            target = root / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(content, encoding="utf-8")
+        return root

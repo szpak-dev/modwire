@@ -1,5 +1,5 @@
-from modwire.architecture.report.models.architecture_group import ArchitectureGroup
-from modwire.architecture.report.models.report_item import ReportItem
+from .architecture_group import ArchitectureGroup
+from .report_item import ReportItem
 
 
 class MapReport(ReportItem):

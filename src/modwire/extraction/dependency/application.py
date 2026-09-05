@@ -2,10 +2,9 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.shared.code.models.dependency_graph import DependencyGraph
-from modwire.shared.code.models.identity import FileId
-from modwire.shared.code.models.source_file import SourceFile
-
+from ...shared.code.models.dependency_graph import DependencyGraph
+from ...shared.code.models.identity import FileId
+from ...shared.code.models.source_file import SourceFile
 from .domain import GraphBuilder, ImportResolver
 
 

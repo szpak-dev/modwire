@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.architecture.config.models.shape_rules import ShapeRules
-from modwire.architecture.shape.domain import BaseShapeResolver, ShapeResolverInterface
-from modwire.architecture.shape.models.shape_realm_architecture_map import ShapeRealmArchitectureMap
-from modwire.architecture.shape.models.shape_violation import ShapeViolation
+from ...config.models.shape_rules import ShapeRules
+from ..domain import BaseShapeResolver, ShapeResolverInterface
+from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
+from ..models.shape_violation import ShapeViolation
 
 
 @injectable(as_type=ShapeResolverInterface, qualifier="file")

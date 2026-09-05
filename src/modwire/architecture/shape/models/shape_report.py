@@ -1,5 +1,5 @@
-from modwire.architecture.report.models.report_item import ReportItem
-from modwire.architecture.shape.models.shape_violation import ShapeViolation
+from ...report.models.report_item import ReportItem
+from .shape_violation import ShapeViolation
 
 
 class ShapeReport(ReportItem):

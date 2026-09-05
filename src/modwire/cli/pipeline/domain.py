@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
-from modwire.cli.pipeline.models.report_pipeline_context import ReportPipelineContext
-from modwire.extraction.extractors.models.extraction_request import ExtractionRequest
-from modwire.extraction.extractors.models.extractor_runtime import ExtractorRuntime
-from modwire.shared.code.models.source_extraction import SourceExtraction
+from ...extraction.extractors.models.extraction_request import ExtractionRequest
+from ...extraction.extractors.models.extractor_runtime import ExtractorRuntime
+from ...shared.code.models.source_extraction import SourceExtraction
+from .models.report_pipeline_context import ReportPipelineContext
 
 
 class ReportPipelineStep(ABC):

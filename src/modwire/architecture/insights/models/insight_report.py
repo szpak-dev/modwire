@@ -1,12 +1,12 @@
 from pydantic import Field
 
-from modwire.architecture.insights.models.callables_report import CallablesReport
-from modwire.architecture.insights.models.clusters_report import ClustersReport
-from modwire.architecture.insights.models.coherence_report import CoherenceReport
-from modwire.architecture.insights.models.exports_report import ExportsReport
-from modwire.architecture.insights.models.hotspots_report import HotspotsReport
-from modwire.architecture.report.models.report_node import ReportNode
-from modwire.architecture.report.models.report_section import ReportSection
+from ...report.models.report_node import ReportNode
+from ...report.models.report_section import ReportSection
+from .callables_report import CallablesReport
+from .clusters_report import ClustersReport
+from .coherence_report import CoherenceReport
+from .exports_report import ExportsReport
+from .hotspots_report import HotspotsReport
 
 
 class InsightReport(ReportSection):

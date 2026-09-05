@@ -3,9 +3,9 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.extraction.extractors.domain import SourceExtractor
-from modwire.extraction.extractors.models.batch_config import BatchConfig
-from modwire.extraction.extractors.models.extractor_runtime import ExtractorRuntime
+from ..domain import SourceExtractor
+from ..models.batch_config import BatchConfig
+from ..models.extractor_runtime import ExtractorRuntime
 
 
 @injectable(as_type=SourceExtractor, qualifier="python")

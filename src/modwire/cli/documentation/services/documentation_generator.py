@@ -4,8 +4,7 @@ from pathlib import Path
 
 from wireup import injectable
 
-from modwire.cli import main
-from modwire.cli.documentation.models.defaults import END, START
+from ..models.defaults import END, START
 
 
 @injectable()
@@ -13,13 +12,13 @@ from modwire.cli.documentation.models.defaults import END, START
 class DocumentationGenerator:
     """Render a concise README command reference from the public CLI docstring."""
 
-    def render(self) -> str:
+    def render(self, description: str) -> str:
         return "\n".join(
             (
                 START,
                 "## Command reference",
                 "",
-                cleandoc(main.__doc__ or ""),
+                cleandoc(description),
                 "",
                 "| Command | Purpose |",
                 "| --- | --- |",
@@ -32,14 +31,14 @@ class DocumentationGenerator:
             )
         )
 
-    def update(self, readme: Path, check: bool) -> bool:
+    def update(self, readme: Path, check: bool, description: str) -> bool:
         """Update the README section, or report whether it is current."""
         current = readme.read_text(encoding="utf-8")
         if START not in current or END not in current:
             raise ValueError(f"Missing generated documentation markers in {readme}")
         prefix, remainder = current.split(START, 1)
         _, suffix = remainder.split(END, 1)
-        expected = f"{prefix}{self.render()}{suffix}"
+        expected = f"{prefix}{self.render(description)}{suffix}"
         if current == expected:
             return True
         if not check:

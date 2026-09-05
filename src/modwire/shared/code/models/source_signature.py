@@ -1,5 +1,5 @@
-from modwire.shared.code.models.types import SourceSignatureKind
-from modwire.shared.values.models.value_model import ValueModel
+from ...values.models.value_model import ValueModel
+from .types import SourceSignatureKind
 
 
 class SourceSignature(ValueModel):

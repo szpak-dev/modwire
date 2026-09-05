@@ -1,5 +1,5 @@
-from modwire.architecture.insights.models.clusters_report_item import ClustersReportItem
-from modwire.architecture.report.models.report_item import ReportItem
+from ...report.models.report_item import ReportItem
+from .clusters_report_item import ClustersReportItem
 
 
 class ClustersReport(ReportItem):

@@ -1,9 +1,9 @@
 from pydantic import Field, model_validator
 
-from modwire.architecture.config.models.boundary_rule import BoundaryRule
-from modwire.architecture.config.models.configuration_value import ConfigurationValue
-from modwire.architecture.config.models.flow_rules import FlowRules
-from modwire.architecture.config.models.tag_rule import TagRule
+from .boundary_rule import BoundaryRule
+from .configuration_value import ConfigurationValue
+from .flow_rules import FlowRules
+from .tag_rule import TagRule
 
 
 class BoundariesConfig(ConfigurationValue):

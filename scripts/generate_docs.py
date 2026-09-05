@@ -1,8 +1,13 @@
+import sys
 from pathlib import Path
 
-from modwire import create_runtime
-from modwire.cli.documentation.application import DocumentationApplication
+from modwire.application import ModwireApplication
+from modwire.autowiring import container
 
 if __name__ == "__main__":
-    with create_runtime(Path.cwd()) as runtime:
-        raise SystemExit(runtime.get(DocumentationApplication).run())
+    try:
+        raise SystemExit(
+            container.get(ModwireApplication).generate_documentation(Path("README.md"), "--check" in sys.argv)
+        )
+    finally:
+        container.close()

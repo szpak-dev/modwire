@@ -2,10 +2,9 @@ from typing import Any
 
 from pydantic import Field, computed_field, model_serializer
 
-from modwire.architecture.report.models.report_metadata import ReportMetadata
-from modwire.shared.values.models.value_model import ValueModel
-
+from ....shared.values.models.value_model import ValueModel
 from .report_descriptor import ReportDescriptor
+from .report_metadata import ReportMetadata
 
 
 class ReportNode(ValueModel):

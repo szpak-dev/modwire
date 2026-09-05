@@ -1,6 +1,6 @@
 from typing import Literal
 
-from modwire.shared.code.models.identity import FileId
+from .identity import FileId
 
 
 class DuplicateIdentityError(ValueError):

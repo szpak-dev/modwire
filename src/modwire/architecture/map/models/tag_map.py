@@ -1,5 +1,5 @@
-from modwire.architecture.map.models.tag_match import TagMatch
-from modwire.shared.values.models.value_model import ValueModel
+from ....shared.values.models.value_model import ValueModel
+from .tag_match import TagMatch
 
 
 class TagMap(ValueModel):

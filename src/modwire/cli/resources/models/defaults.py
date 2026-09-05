@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from modwire.cli.resources.models.init_asset import InitAsset
+from .init_asset import InitAsset
 
 DEFAULT_INIT_ASSETS = (
     InitAsset(source="ARCHITECTURE.md", target_base="dot_dir", target=Path("docs/ARCHITECTURE.md")),

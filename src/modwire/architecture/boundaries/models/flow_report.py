@@ -1,5 +1,5 @@
-from modwire.architecture.boundaries.models.flow_violation import FlowViolation
-from modwire.architecture.report.models.report_item import ReportItem
+from ...report.models.report_item import ReportItem
+from .flow_violation import FlowViolation
 
 
 class FlowReport(ReportItem):

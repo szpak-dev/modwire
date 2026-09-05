@@ -4,17 +4,17 @@ from pathlib import Path
 
 from wireup import injectable
 
-from modwire.architecture.config.models.architecture_config import ArchitectureConfig
-from modwire.architecture.report.models.report_node import ReportNode
-from modwire.cli.pipeline.domain import ReportPipelineStep, SourceReader
-from modwire.cli.pipeline.models.command_request import CommandRequest
-from modwire.cli.pipeline.models.python_command_input import PythonCommandInput
-from modwire.cli.pipeline.models.report_pipeline_context import ReportPipelineContext
-from modwire.cli.pipeline.services.command_line import CommandLine
-from modwire.cli.pipeline.services.configuration_loader import ConfigurationLoader
-from modwire.cli.pipeline.services.python_parser_command import PythonParserCommand
-from modwire.extraction.extractors.models.extraction_request import ExtractionRequest
-from modwire.shared.code.models.source_extraction import SourceExtraction
+from ...architecture.config.models.architecture_config import ArchitectureConfig
+from ...architecture.report.models.report_node import ReportNode
+from ...extraction.extractors.models.extraction_request import ExtractionRequest
+from ...shared.code.models.source_extraction import SourceExtraction
+from .domain import ReportPipelineStep, SourceReader
+from .models.command_request import CommandRequest
+from .models.extractor_command_input import ExtractorCommandInput
+from .models.report_pipeline_context import ReportPipelineContext
+from .services.command_line import CommandLine
+from .services.configuration_loader import ConfigurationLoader
+from .services.extractor_command import ExtractorCommand
 
 
 @injectable()
@@ -26,7 +26,7 @@ class PipelineApplication:
     commands: CommandLine
     configuration: ConfigurationLoader
     reader: SourceReader
-    python: PythonParserCommand
+    extractor_command: ExtractorCommand
 
     def parse(self, argv: Sequence[str]) -> CommandRequest:
         return self.commands.parse(argv)
@@ -42,11 +42,11 @@ class PipelineApplication:
         self.reader.ensure_available(request.runtime)
         return self.reader.has_source_files(request)
 
-    def read_python(self) -> PythonCommandInput | None:
-        return self.python.read()
+    def read_sources(self, language: str) -> ExtractorCommandInput | None:
+        return self.extractor_command.read(language)
 
-    def write_python(self, result: dict[str, object]) -> int:
-        return self.python.write(result)
+    def write_sources(self, result: dict[str, object]) -> int:
+        return self.extractor_command.write(result)
 
     def run(self, reports: tuple[ReportNode, ...], *, summary: bool) -> int:
         context = ReportPipelineContext(reports=reports, summary=summary)

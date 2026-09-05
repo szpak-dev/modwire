@@ -2,11 +2,11 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.architecture.insights.domain import InsightReporterInterface
-from modwire.architecture.insights.models.hotspots_report import HotspotsReport
-from modwire.architecture.insights.models.hotspots_report_item import HotspotsReportItem
-from modwire.architecture.map.models.architecture_map import ArchitectureMap
-from modwire.shared.code.models.identity import FileId
+from ....shared.code.models.identity import FileId
+from ...map.models.architecture_map import ArchitectureMap
+from ..domain import InsightReporterInterface
+from ..models.hotspots_report import HotspotsReport
+from ..models.hotspots_report_item import HotspotsReportItem
 
 
 @injectable(as_type=InsightReporterInterface, qualifier="hotspots")

@@ -1,7 +1,7 @@
 from pydantic import Field, model_validator
 
-from modwire.architecture.config.models.configuration_value import ConfigurationValue
-from modwire.architecture.config.models.shape_realm import ShapeRealm
+from .configuration_value import ConfigurationValue
+from .shape_realm import ShapeRealm
 
 
 class ShapeConfig(ConfigurationValue):

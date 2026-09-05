@@ -2,10 +2,11 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.architecture.map.models.architecture_map import ArchitectureMap
-from modwire.architecture.report.domain import ReportCollector
-from modwire.architecture.report.models.architecture_group import ArchitectureGroup
-from modwire.architecture.report.models.map_report import MapReport
+from ...config.models.architecture_config import ArchitectureConfig
+from ...map.models.architecture_map import ArchitectureMap
+from ..domain import ReportCollector
+from ..models.architecture_group import ArchitectureGroup
+from ..models.map_report import MapReport
 
 
 @injectable(as_type=ReportCollector, qualifier="map")
@@ -15,7 +16,7 @@ class MapReportCollector(ReportCollector):
     def report_type(self) -> type[MapReport]:
         return MapReport
 
-    def collect(self, architecture_map: ArchitectureMap) -> MapReport:
+    def collect(self, architecture_map: ArchitectureMap, config: ArchitectureConfig) -> MapReport:
         return self.report_type(
             modules=tuple(
                 (

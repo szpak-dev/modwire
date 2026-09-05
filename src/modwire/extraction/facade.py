@@ -3,11 +3,11 @@ from pathlib import Path
 
 from wireup import injectable
 
-from modwire.extraction.extractors.application import ExtractorsApplication
-from modwire.extraction.extractors.models.extraction_request import ExtractionRequest
-from modwire.shared.code.models.code_map import CodeMap
-from modwire.shared.code.models.queryable_code_map import QueryableCodeMap
-from modwire.shared.code.models.source_extraction import SourceExtraction
+from ..shared.code.models.code_map import CodeMap
+from ..shared.code.models.queryable_code_map import QueryableCodeMap
+from ..shared.code.models.source_extraction import SourceExtraction
+from .extractors.application import ExtractorsApplication
+from .extractors.models.extraction_request import ExtractionRequest
 
 
 @injectable
@@ -29,5 +29,5 @@ class ExtractionFacade:
     def generate_queryable_map(self, language: str, extraction: SourceExtraction) -> QueryableCodeMap:
         return self.extractors.generate_queryable_map(language, extraction)
 
-    def parse_python(self, content: str, path: Path, root: Path, source_id: str) -> dict[str, object]:
-        return self.extractors.parse_python(content, path, root, source_id)
+    def parse_source(self, language: str, content: str, path: Path, root: Path, source_id: str) -> dict[str, object]:
+        return self.extractors.parse_source(language, content, path, root, source_id)

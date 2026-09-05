@@ -2,7 +2,7 @@ from typing import Self
 
 from pydantic import model_validator
 
-from modwire.shared.values.models.value_model import ValueModel
+from ...values.models.value_model import ValueModel
 
 
 class CodePackage(ValueModel):

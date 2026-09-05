@@ -3,12 +3,13 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.architecture.insights.domain import InsightReporterInterface
-from modwire.architecture.insights.models.insight_report import InsightReport
-from modwire.architecture.insights.services.insight_report_field_map import InsightReportFieldMap
-from modwire.architecture.map.models.architecture_map import ArchitectureMap
-from modwire.architecture.report.domain import ReportCollector
-from modwire.architecture.report.models.report_item import ReportItem
+from ..config.models.architecture_config import ArchitectureConfig
+from ..map.models.architecture_map import ArchitectureMap
+from ..report.domain import ReportCollector
+from ..report.models.report_item import ReportItem
+from .domain import InsightReporterInterface
+from .models.insight_report import InsightReport
+from .services.insight_report_field_map import InsightReportFieldMap
 
 
 @injectable(as_type=ReportCollector, qualifier="insights")
@@ -24,7 +25,7 @@ class InsightsApplication(ReportCollector):
     def _field_for(self, name: str):
         return self.field_map.field_for(name)
 
-    def collect(self, architecture_map: ArchitectureMap) -> InsightReport:
+    def collect(self, architecture_map: ArchitectureMap, config: ArchitectureConfig) -> InsightReport:
         payload: dict[str, ReportItem] = {}
         for reporter in self.reporters:
             name = reporter.name

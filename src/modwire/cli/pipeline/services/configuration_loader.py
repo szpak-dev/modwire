@@ -4,7 +4,7 @@ from pathlib import Path
 from pydantic_yaml import parse_yaml_file_as
 from wireup import injectable
 
-from modwire.architecture.config.models.architecture_config import ArchitectureConfig
+from ....architecture.config.models.architecture_config import ArchitectureConfig
 
 
 @injectable

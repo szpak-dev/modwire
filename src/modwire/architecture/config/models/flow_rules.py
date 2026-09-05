@@ -1,7 +1,7 @@
 from pydantic import model_validator
 
-from modwire.architecture.config.models.configuration_value import ConfigurationValue
-from modwire.architecture.config.models.flow_realm import FlowRealm
+from .configuration_value import ConfigurationValue
+from .flow_realm import FlowRealm
 
 
 class FlowRules(ConfigurationValue):

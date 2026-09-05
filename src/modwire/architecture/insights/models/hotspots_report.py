@@ -1,5 +1,5 @@
-from modwire.architecture.insights.models.hotspots_report_item import HotspotsReportItem
-from modwire.architecture.report.models.report_item import ReportItem
+from ...report.models.report_item import ReportItem
+from .hotspots_report_item import HotspotsReportItem
 
 
 class HotspotsReport(ReportItem):

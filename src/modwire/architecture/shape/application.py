@@ -3,21 +3,20 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.architecture.config.application import ConfigApplication
-from modwire.architecture.config.models.shape_realm import ShapeRealm
-from modwire.architecture.map.models.architecture_map import ArchitectureMap
-from modwire.architecture.report.domain import ReportCollector
-from modwire.architecture.shape.domain import ShapeResolverInterface
-from modwire.architecture.shape.models.shape_realm_architecture_map import ShapeRealmArchitectureMap
-from modwire.architecture.shape.models.shape_report import ShapeReport
-from modwire.architecture.shape.models.shape_violation import ShapeViolation
-from modwire.shared.code.domain import PathMatcher
+from ...shared.code.domain import PathMatcher
+from ..config.models.architecture_config import ArchitectureConfig
+from ..config.models.shape_realm import ShapeRealm
+from ..map.models.architecture_map import ArchitectureMap
+from ..report.domain import ReportCollector
+from .domain import ShapeResolverInterface
+from .models.shape_realm_architecture_map import ShapeRealmArchitectureMap
+from .models.shape_report import ShapeReport
+from .models.shape_violation import ShapeViolation
 
 
 @injectable(as_type=ReportCollector, qualifier="shape")
 @dataclass(frozen=True)
 class ShapeApplication(ReportCollector):
-    config: ConfigApplication
     paths: PathMatcher
     resolvers: Sequence[ShapeResolverInterface]
 
@@ -25,11 +24,11 @@ class ShapeApplication(ReportCollector):
     def report_type(self) -> type[ShapeReport]:
         return ShapeReport
 
-    def collect(self, architecture_map: ArchitectureMap) -> ShapeReport:
+    def collect(self, architecture_map: ArchitectureMap, config: ArchitectureConfig) -> ShapeReport:
         resolvers = sorted(self.resolvers, key=lambda resolver: resolver.name)
         resolver_names = tuple(resolver.name for resolver in resolvers)
         violations: list[ShapeViolation] = []
-        for realm in self.config.shape.realms:
+        for realm in config.shape.realms:
             realm_map = self.realm_map(architecture_map, realm)
             for resolver in resolvers:
                 violations.extend(

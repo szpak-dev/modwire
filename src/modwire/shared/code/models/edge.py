@@ -1,8 +1,8 @@
 from pydantic import ConfigDict
 
-from modwire.shared.code.models.edge_resolution import EdgeResolution
-from modwire.shared.code.models.identity import FileId, ImportSpecifier
-from modwire.shared.values.models.value_model import ValueModel
+from ...values.models.value_model import ValueModel
+from .edge_resolution import EdgeResolution
+from .identity import FileId, ImportSpecifier
 
 
 class Edge(ValueModel):

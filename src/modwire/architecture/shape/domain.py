@@ -2,10 +2,10 @@ import abc
 from abc import ABC
 from collections.abc import Iterable, Iterator
 
-from modwire.architecture.config.models.shape_rules import ShapeRules
-from modwire.architecture.shape.models.shape_realm_architecture_map import ShapeRealmArchitectureMap
-from modwire.architecture.shape.models.shape_violation import ShapeViolation
-from modwire.shared.code.models.source_file_result import SourceFileResult
+from ...shared.code.models.source_file_result import SourceFileResult
+from ..config.models.shape_rules import ShapeRules
+from .models.shape_realm_architecture_map import ShapeRealmArchitectureMap
+from .models.shape_violation import ShapeViolation
 
 
 class ShapeResolverInterface(abc.ABC):

@@ -1,7 +1,7 @@
 import abc
 
-from modwire.architecture.map.models.architecture_map import ArchitectureMap
-from modwire.architecture.report.models.report_item import ReportItem
+from ..map.models.architecture_map import ArchitectureMap
+from ..report.models.report_item import ReportItem
 
 
 class InsightReporterInterface(abc.ABC):

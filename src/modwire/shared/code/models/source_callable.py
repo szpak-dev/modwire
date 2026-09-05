@@ -1,10 +1,9 @@
 from pydantic import Field
 
-from modwire.shared.code.models.identity import FileId
-from modwire.shared.code.models.source_parameter import SourceParameter
-from modwire.shared.code.models.types import SourceCallableKind
-
+from .identity import FileId
 from .source_callable_symbol import SourceCallableSymbol
+from .source_parameter import SourceParameter
+from .types import SourceCallableKind
 
 
 class SourceCallable(SourceCallableSymbol):

@@ -5,13 +5,13 @@ from typing import cast
 
 from wireup import injectable
 
-from ..domain import PythonCallReader, PythonParser
+from ..domain import PythonCallReader, SourceParser
 from ..models.python_call_context import PythonCallContext
 
 
-@injectable(as_type=PythonParser)
+@injectable(as_type=SourceParser, qualifier="python")
 @dataclass(frozen=True)
-class PythonSyntaxParser(PythonParser):
+class PythonSyntaxParser(SourceParser):
     calls: PythonCallReader
 
     def line_span(self, node: ast.stmt | ast.expr) -> int:

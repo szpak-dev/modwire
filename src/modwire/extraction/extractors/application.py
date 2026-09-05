@@ -4,13 +4,12 @@ from pathlib import Path
 
 from wireup import injectable
 
-from modwire.extraction.dependency.application import DependencyApplication
-from modwire.shared.code.application import CodeApplication
-from modwire.shared.code.models.code_map import CodeMap
-from modwire.shared.code.models.queryable_code_map import QueryableCodeMap
-from modwire.shared.code.models.source_extraction import SourceExtraction
-
-from .domain import PythonParser, SourceExtractor
+from ...shared.code.application import CodeApplication
+from ...shared.code.models.code_map import CodeMap
+from ...shared.code.models.queryable_code_map import QueryableCodeMap
+from ...shared.code.models.source_extraction import SourceExtraction
+from ..dependency.application import DependencyApplication
+from .domain import SourceExtractor, SourceParser
 from .models.extraction_request import ExtractionRequest
 
 
@@ -20,7 +19,7 @@ class ExtractorsApplication:
     extractors: Mapping[Hashable, SourceExtractor]
     dependency: DependencyApplication
     code: CodeApplication
-    parser: PythonParser
+    parsers: Mapping[Hashable, SourceParser]
 
     def supported_languages(self) -> tuple[str, ...]:
         return tuple(
@@ -41,5 +40,7 @@ class ExtractorsApplication:
     def generate_queryable_map(self, language: str, extraction: SourceExtraction) -> QueryableCodeMap:
         return self.code.queryable(self.generate_map(language, extraction))
 
-    def parse_python(self, content: str, path: Path, root: Path, source_id: str) -> dict[str, object]:
-        return self.parser.extract(content, path, root, source_id)
+    def parse_source(self, language: str, content: str, path: Path, root: Path, source_id: str) -> dict[str, object]:
+        if language not in self.parsers:
+            raise ValueError(f"In-process parsing is not supported for language: {language}")
+        return self.parsers[language].extract(content, path, root, source_id)

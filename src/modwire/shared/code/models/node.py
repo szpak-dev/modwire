@@ -1,7 +1,7 @@
 from pydantic import ConfigDict
 
-from modwire.shared.code.models.identity import FileId
-from modwire.shared.values.models.value_model import ValueModel
+from ...values.models.value_model import ValueModel
+from .identity import FileId
 
 
 class Node(ValueModel):

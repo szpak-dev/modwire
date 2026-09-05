@@ -3,8 +3,8 @@ from importlib.resources import files
 
 from wireup import injectable
 
-from modwire.cli.resources.models.defaults import DEFAULT_INIT_ASSETS
-from modwire.cli.resources.models.init_asset import InitAsset
+from .models.defaults import DEFAULT_INIT_ASSETS
+from .models.init_asset import InitAsset
 
 
 @injectable

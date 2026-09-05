@@ -2,11 +2,11 @@ from typing import Any
 
 from pydantic import Field, PrivateAttr
 
-from modwire.shared.code.models.edge import Edge
-from modwire.shared.code.models.edge_resolution import EdgeResolution
-from modwire.shared.code.models.identity import FileId, ImportSpecifier
-from modwire.shared.code.models.node import Node
-from modwire.shared.values.models.value_model import ValueModel
+from ...values.models.value_model import ValueModel
+from .edge import Edge
+from .edge_resolution import EdgeResolution
+from .identity import FileId, ImportSpecifier
+from .node import Node
 
 
 class DependencyGraph(ValueModel):

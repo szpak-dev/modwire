@@ -1,8 +1,8 @@
 from pydantic import Field
 
-from modwire.architecture.config.models.boundaries_config import BoundariesConfig
-from modwire.architecture.config.models.configuration_value import ConfigurationValue
-from modwire.architecture.config.models.shape_config import ShapeConfig
+from .boundaries_config import BoundariesConfig
+from .configuration_value import ConfigurationValue
+from .shape_config import ShapeConfig
 
 
 class ArchitectureConfig(ConfigurationValue):

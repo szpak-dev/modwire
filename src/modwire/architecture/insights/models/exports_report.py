@@ -1,5 +1,5 @@
-from modwire.architecture.insights.models.exports_report_item import ExportsReportItem
-from modwire.architecture.report.models.report_item import ReportItem
+from ...report.models.report_item import ReportItem
+from .exports_report_item import ExportsReportItem
 
 
 class ExportsReport(ReportItem):

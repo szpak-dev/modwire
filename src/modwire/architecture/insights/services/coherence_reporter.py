@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.architecture.insights.domain import InsightReporterInterface
-from modwire.architecture.insights.models.coherence_report import CoherenceReport
-from modwire.architecture.map.models.architecture_map import ArchitectureMap
-from modwire.shared.code.models.identity import FileId
+from ....shared.code.models.identity import FileId
+from ...map.models.architecture_map import ArchitectureMap
+from ..domain import InsightReporterInterface
+from ..models.coherence_report import CoherenceReport
 
 
 @injectable(as_type=InsightReporterInterface, qualifier="coherence")

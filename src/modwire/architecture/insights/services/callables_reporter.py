@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.architecture.insights.domain import InsightReporterInterface
-from modwire.architecture.insights.models.callable_report_entry import CallableReportEntry
-from modwire.architecture.insights.models.callables_report import CallablesReport
-from modwire.architecture.map.models.architecture_map import ArchitectureMap
+from ...map.models.architecture_map import ArchitectureMap
+from ..domain import InsightReporterInterface
+from ..models.callable_report_entry import CallableReportEntry
+from ..models.callables_report import CallablesReport
 
 
 @injectable(as_type=InsightReporterInterface, qualifier="callables")

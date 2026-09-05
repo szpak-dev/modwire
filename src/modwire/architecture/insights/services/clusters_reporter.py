@@ -3,11 +3,11 @@ from typing import ClassVar
 
 from wireup import injectable
 
-from modwire.architecture.insights.domain import InsightReporterInterface
-from modwire.architecture.insights.models.clusters_report import ClustersReport
-from modwire.architecture.insights.models.clusters_report_item import ClustersReportItem
-from modwire.architecture.map.models.architecture_map import ArchitectureMap
-from modwire.shared.code.models.identity import FileId
+from ....shared.code.models.identity import FileId
+from ...map.models.architecture_map import ArchitectureMap
+from ..domain import InsightReporterInterface
+from ..models.clusters_report import ClustersReport
+from ..models.clusters_report_item import ClustersReportItem
 
 
 @injectable(as_type=InsightReporterInterface, qualifier="clusters")

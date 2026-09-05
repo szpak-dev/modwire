@@ -2,9 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.architecture.config.application import ConfigApplication
-from modwire.shared.code.models.queryable_code_map import QueryableCodeMap
-
+from ...shared.code.models.queryable_code_map import QueryableCodeMap
+from ..config.models.boundaries_config import BoundariesConfig
 from .domain import ArchitectureMapper
 from .models.architecture_map import ArchitectureMap
 
@@ -13,7 +12,6 @@ from .models.architecture_map import ArchitectureMap
 @dataclass(frozen=True)
 class MapApplication:
     mapper: ArchitectureMapper
-    config: ConfigApplication
 
-    def load(self, code_map: QueryableCodeMap) -> ArchitectureMap:
-        return self.mapper.load(code_map, self.config.boundaries)
+    def load(self, code_map: QueryableCodeMap, config: BoundariesConfig) -> ArchitectureMap:
+        return self.mapper.load(code_map, config)

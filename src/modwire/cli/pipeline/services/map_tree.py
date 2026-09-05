@@ -4,10 +4,10 @@ from rich.console import Console
 from rich.tree import Tree
 from wireup import injectable
 
-from modwire.architecture.report.models.architecture_group import ArchitectureGroup
-from modwire.architecture.report.models.map_report import MapReport
-from modwire.cli.pipeline.domain import ReportPipelineStep
-from modwire.cli.pipeline.models.report_pipeline_context import ReportPipelineContext
+from ....architecture.report.models.architecture_group import ArchitectureGroup
+from ....architecture.report.models.map_report import MapReport
+from ..domain import ReportPipelineStep
+from ..models.report_pipeline_context import ReportPipelineContext
 
 
 @injectable(as_type=ReportPipelineStep, qualifier="10-map")

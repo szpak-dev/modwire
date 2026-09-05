@@ -3,10 +3,10 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.architecture.config.models.tag_rule import TagRule
-from modwire.architecture.map.models.tag_map import TagMap
-from modwire.architecture.map.models.tag_match import TagMatch
-from modwire.shared.code.domain import PathMatcher
+from ....shared.code.domain import PathMatcher
+from ...config.models.tag_rule import TagRule
+from ..models.tag_map import TagMap
+from ..models.tag_match import TagMatch
 
 
 @injectable()

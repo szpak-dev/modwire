@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from modwire.architecture.map.models.architecture_map import ArchitectureMap
-
+from ..config.models.architecture_config import ArchitectureConfig
+from ..map.models.architecture_map import ArchitectureMap
 from .models.report_node import ReportNode
 
 
@@ -12,5 +12,5 @@ class ReportCollector(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def collect(self, architecture_map: ArchitectureMap) -> ReportNode:
+    def collect(self, architecture_map: ArchitectureMap, config: ArchitectureConfig) -> ReportNode:
         raise NotImplementedError

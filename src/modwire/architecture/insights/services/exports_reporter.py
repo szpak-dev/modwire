@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from modwire.architecture.insights.domain import InsightReporterInterface
-from modwire.architecture.insights.models.exports_report import ExportsReport
-from modwire.architecture.insights.models.exports_report_item import ExportsReportItem
-from modwire.architecture.map.models.architecture_map import ArchitectureMap
+from ...map.models.architecture_map import ArchitectureMap
+from ..domain import InsightReporterInterface
+from ..models.exports_report import ExportsReport
+from ..models.exports_report_item import ExportsReportItem
 
 
 @injectable(as_type=InsightReporterInterface, qualifier="exports")

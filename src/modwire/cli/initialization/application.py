@@ -4,9 +4,9 @@ from pathlib import Path
 from rich.console import Console
 from wireup import injectable
 
-from modwire.cli.initialization.models.initialization_result import InitializationResult
-from modwire.cli.initialization.services.initialization_service import InitializationService
-from modwire.cli.resources.application import ResourcesApplication
+from ..resources.application import ResourcesApplication
+from .models.initialization_result import InitializationResult
+from .services.initialization_service import InitializationService
 
 
 @injectable()

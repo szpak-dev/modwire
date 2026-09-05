@@ -1,9 +1,9 @@
 from pydantic import Field
 
-from modwire.shared.code.models.identity import FileId, ImportSpecifier
-from modwire.shared.code.models.source_imported_symbol import SourceImportedSymbol
-from modwire.shared.code.models.types import ImportCrossingType, SourceImportResolution
-from modwire.shared.values.models.value_model import ValueModel
+from ...values.models.value_model import ValueModel
+from .identity import FileId, ImportSpecifier
+from .source_imported_symbol import SourceImportedSymbol
+from .types import ImportCrossingType, SourceImportResolution
 
 
 class SourceImport(ValueModel):

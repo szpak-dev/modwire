@@ -11,15 +11,15 @@ from typing import Any, cast
 
 from wireup import injectable
 
-from modwire.cli.pipeline.domain import SourceReader
-from modwire.extraction.extractors.models.extraction_request import ExtractionRequest
-from modwire.extraction.extractors.models.extractor_runtime import ExtractorRuntime
-from modwire.shared.code.application import CodeApplication
-from modwire.shared.code.domain import PathMatcher
-from modwire.shared.code.models.duplicate_identity_error import DuplicateIdentityError
-from modwire.shared.code.models.identity import FileId, ModuleId
-from modwire.shared.code.models.source_extraction import SourceExtraction
-from modwire.shared.code.models.source_file import SourceFile
+from ....extraction.extractors.models.extraction_request import ExtractionRequest
+from ....extraction.extractors.models.extractor_runtime import ExtractorRuntime
+from ....shared.code.application import CodeApplication
+from ....shared.code.domain import PathMatcher
+from ....shared.code.models.duplicate_identity_error import DuplicateIdentityError
+from ....shared.code.models.identity import FileId, ModuleId
+from ....shared.code.models.source_extraction import SourceExtraction
+from ....shared.code.models.source_file import SourceFile
+from ..domain import SourceReader
 
 
 @injectable(as_type=SourceReader)

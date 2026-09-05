@@ -13,7 +13,7 @@ class PythonCallReader(ABC):
         raise NotImplementedError
 
 
-class PythonParser(ABC):
+class SourceParser(ABC):
     @abstractmethod
     def extract(self, content: str, path: Path, sources_root: Path, source_id: str | None) -> dict[str, object]:
         raise NotImplementedError
