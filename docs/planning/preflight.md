@@ -59,6 +59,6 @@ Imported guidance remains historical where it conflicts with the user's current 
 
 ## Verification and transition
 
-All three remote tags match `baselines.json`; annotated Extraction/CLI tags were compared using their peeled commit values. Pinned tree inspection verified 116 Python source modules, the resource inventory, current manifests, 15 test modules, and the legacy configuration/guidance paths. No package tests are claimed by this documentation preflight. Canonical Enclosure MCP retrieval remains incomplete as recorded in `HANDOFF.md`; this does not prevent the mechanical source work, but it remains an acceptance blocker.
+All three remote tags match `baselines.json`; annotated Extraction/CLI tags were compared using their peeled commit values. Pinned tree inspection verified 116 Python source modules, the resource inventory, current manifests, 15 test modules, and the legacy configuration/guidance paths. No package tests are claimed by this documentation preflight. Canonical Enclosure registration and MCP retrieval remain blocked by [Enclosure #173](https://github.com/szpak-dev/enclosure/issues/173).
 
 Once this mapping is recorded on #2 and that issue is complete, work proceeds to #3 alone. #4's dedicated pipx/CLI acceptance follows #3. The final local acceptance checkpoint requires both, plus usable Enclosure project guidance, canonical diagrams and health evidence.
