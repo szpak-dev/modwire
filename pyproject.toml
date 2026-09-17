@@ -19,9 +19,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/modwire/modwire"
-Repository = "https://github.com/modwire/modwire"
-Issues = "https://github.com/modwire/modwire/issues"
+Homepage = "https://github.com/szpak-dev/modwire"
+Repository = "https://github.com/szpak-dev/modwire"
+Issues = "https://github.com/szpak-dev/modwire/issues"
 
 [project.scripts]
 modwire = "modwire.autowiring:main"
