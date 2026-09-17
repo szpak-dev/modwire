@@ -14,8 +14,6 @@ from .report.models.report_node import ReportNode
 @injectable
 @dataclass(frozen=True)
 class ArchitectureFacade:
-    """Expose architecture reports and their catalog to other contexts."""
-
     reports: ReportApplication
     configuration: ConfigApplication
 

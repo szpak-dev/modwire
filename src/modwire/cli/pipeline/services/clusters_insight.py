@@ -11,8 +11,6 @@ from ..models.report_pipeline_context import ReportPipelineContext
 @injectable(as_type=ReportPipelineStep, qualifier="50-clusters")
 @dataclass(frozen=True)
 class ClustersInsight(ReportPipelineStep):
-    """Render dependency clusters when the report identifies them."""
-
     console: Console
 
     def should_process(self, context: ReportPipelineContext) -> bool:

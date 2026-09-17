@@ -11,8 +11,6 @@ from ..models.report_pipeline_context import ReportPipelineContext
 @injectable(as_type=ReportPipelineStep, qualifier="80-callables")
 @dataclass(frozen=True)
 class CallablesInsight(ReportPipelineStep):
-    """Render callable graph entries when the report has relationships."""
-
     console: Console
 
     def should_process(self, context: ReportPipelineContext) -> bool:

@@ -1,4 +1,4 @@
-from modwire.autowiring import parser_main
+from modwire.autowiring import run_extractor
 
 if __name__ == "__main__":
-    raise SystemExit(parser_main("python"))
+    raise SystemExit(run_extractor("python"))

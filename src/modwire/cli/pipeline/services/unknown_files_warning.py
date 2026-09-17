@@ -11,8 +11,6 @@ from ..models.report_pipeline_context import ReportPipelineContext
 @injectable(as_type=ReportPipelineStep, qualifier="20-unknown-files")
 @dataclass(frozen=True)
 class UnknownFilesWarning(ReportPipelineStep):
-    """Warn when source files are absent from the configured architecture map."""
-
     console: Console
 
     def should_process(self, context: ReportPipelineContext) -> bool:

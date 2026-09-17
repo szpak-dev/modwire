@@ -9,8 +9,6 @@ from ...resources.models.init_asset import InitAsset
 @injectable
 @dataclass(frozen=True)
 class InitializationService:
-    """Resolve safe initialization targets and write supplied resource content."""
-
     def target(self, project_root: Path, dot_dir: Path, asset: InitAsset) -> Path:
         root = project_root.resolve()
         bases = {"project": root, "dot_dir": self._resolve_within(root, root, dot_dir)}

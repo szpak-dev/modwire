@@ -5,8 +5,6 @@ from ....shared.values.models.value_model import ValueModel
 
 
 class ReportPipelineContext(ValueModel):
-    """Carry report data and rendering state through the report pipeline."""
-
     reports: tuple[ReportNode, ...]
     summary: bool = False
     failed: bool = False

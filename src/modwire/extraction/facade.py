@@ -12,8 +12,6 @@ from .extractors.models.extraction_request import ExtractionRequest
 @injectable
 @dataclass(frozen=True)
 class ExtractionFacade:
-    """Parse supplied source and assemble dependency maps without filesystem access."""
-
     extractors: ExtractorsApplication
 
     def supported_languages(self) -> tuple[str, ...]:

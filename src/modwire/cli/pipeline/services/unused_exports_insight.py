@@ -11,8 +11,6 @@ from ..models.report_pipeline_context import ReportPipelineContext
 @injectable(as_type=ReportPipelineStep, qualifier="90-unused-exports")
 @dataclass(frozen=True)
 class UnusedExportsInsight(ReportPipelineStep):
-    """Render exports that have no detected consumers."""
-
     console: Console
 
     def should_process(self, context: ReportPipelineContext) -> bool:

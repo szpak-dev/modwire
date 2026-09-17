@@ -7,8 +7,6 @@ from .models.report_pipeline_context import ReportPipelineContext
 
 
 class ReportPipelineStep(ABC):
-    """Define one conditional rendering step for architecture reports."""
-
     @abstractmethod
     def should_process(self, context: ReportPipelineContext) -> bool: ...
 
