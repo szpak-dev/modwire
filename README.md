@@ -4,8 +4,6 @@ Consolidation workspace for **modwire-extraction**, **modwire-architecture**, an
 
 Start with the [Modwire board](https://github.com/orgs/szpak-dev/projects/13) and the [consolidation epic](https://github.com/szpak-dev/modwire/issues/1).
 
-The active [local consolidation](https://github.com/szpak-dev/modwire/issues/3) is blocked by [Enclosure registration](https://github.com/szpak-dev/enclosure/issues/173), which waits for the [Sirenity module scaffold](https://github.com/szpak-dev/sirenity/issues/238) and its [target architecture](https://github.com/szpak-dev/sirenity/issues/226).
-
 The merge must preserve behavior, wire every service through Wireup, combine the legacy `.modwire` configurations, and produce the expected architecture map and passing health checks. The CLI remains part of the unified package, with clean `pipx` installation verified before transfer.
 
 Enclosure MCP is the single source of truth for project guidance, architecture and diagrams; the local docs are bootstrap context and synchronized exports. The consolidation also evaluates how agents use Enclosure for a new, demanding project.
