@@ -11,8 +11,8 @@ from .services.documentation_generator import DocumentationGenerator
 class DocumentationApplication:
     generator: DocumentationGenerator
 
-    def generate(self, readme: Path, check: bool, description: str) -> int:
-        if self.generator.update(readme, check, description):
+    def generate(self, readme: Path, check: bool) -> int:
+        if self.generator.update(readme, check):
             return 0
         if check:
             print("Generated documentation is stale. Run `make docs` and commit the result.")

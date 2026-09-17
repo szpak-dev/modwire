@@ -68,7 +68,7 @@ class ModwireApplication:
         return self.cli.initialize(str(root), str(dot_dir), force)
 
     def generate_documentation(self, readme: str, check: bool) -> int:
-        return self.cli.generate_documentation(str(readme), check, self.run.__doc__ or "")
+        return self.cli.generate_documentation(str(readme), check)
 
     def run_extractor(self, language: str) -> int:
         return self.cli.run_extractor(language)

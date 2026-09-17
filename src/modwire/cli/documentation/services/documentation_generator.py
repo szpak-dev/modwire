@@ -4,19 +4,19 @@ from pathlib import Path
 
 from wireup import injectable
 
-from ..models.defaults import END, START
+from ..models.defaults import DESCRIPTION, END, START
 
 
 @injectable()
 @dataclass(frozen=True)
 class DocumentationGenerator:
-    def render(self, description: str) -> str:
+    def render(self) -> str:
         return "\n".join(
             (
                 START,
                 "## Command reference",
                 "",
-                cleandoc(description),
+                cleandoc(DESCRIPTION),
                 "",
                 "| Command | Purpose |",
                 "| --- | --- |",
@@ -29,13 +29,13 @@ class DocumentationGenerator:
             )
         )
 
-    def update(self, readme: Path, check: bool, description: str) -> bool:
+    def update(self, readme: Path, check: bool) -> bool:
         current = readme.read_text(encoding="utf-8")
         if START not in current or END not in current:
             raise ValueError(f"Missing generated documentation markers in {readme}")
         prefix, remainder = current.split(START, 1)
         _, suffix = remainder.split(END, 1)
-        expected = f"{prefix}{self.render(description)}{suffix}"
+        expected = f"{prefix}{self.render()}{suffix}"
         if current == expected:
             return True
         if not check:

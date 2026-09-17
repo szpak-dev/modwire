@@ -4,11 +4,11 @@ from pathlib import Path
 
 from wireup import injectable
 
-from ..architecture.facade import ArchitectureFacade
 from ..architecture.config.models.architecture_config import ArchitectureConfig
+from ..architecture.facade import ArchitectureFacade
 from ..architecture.report.models.report_node import ReportNode
-from ..extraction.facade import ExtractionFacade
 from ..extraction.extractors.models.extraction_request import ExtractionRequest
+from ..extraction.facade import ExtractionFacade
 from ..shared.code.models.source_extraction import SourceExtraction
 from .documentation.application import DocumentationApplication
 from .initialization.application import InitializationApplication
@@ -53,8 +53,8 @@ class CliFacade:
     def write_sources(self, result: dict[str, object]) -> int:
         return self.pipeline.write_sources(result)
 
-    def generate_documentation(self, readme: str, check: bool, description: str) -> int:
-        return self.documentation.generate(Path(readme), check, description)
+    def generate_documentation(self, readme: str, check: bool) -> int:
+        return self.documentation.generate(Path(readme), check)
 
     def run_extractor(self, language: str) -> int:
         request = self.read_sources(language)
