@@ -1,0 +1,147 @@
+schema_version: 1
+contract: modwire-python-repository
+
+pipeline:
+  - order: 1
+    scaffold: uv-package
+    prerequisite: null
+  - order: 2
+    scaffold: modwire-repository
+    prerequisite: uv-package
+
+repository_kinds:
+  - library
+  - cli
+
+variables:
+  required:
+    - ecosystem
+    - repository
+    - distribution
+    - import_package
+    - source_root
+    - language
+    - repository_kind
+    - modules
+    - exclusions
+  defaults:
+    ecosystem: modwire
+    language: python
+    source_root: src
+    exclusions: []
+  rules:
+    ecosystem: slug
+    repository: slug
+    distribution: python-distribution-name
+    import_package: python-import-name
+    source_root: repository-relative-directory
+    language:
+      enum:
+        - python
+    repository_kind:
+      enum:
+        - library
+        - cli
+    modules:
+      type: list
+      unique_by: name
+      item:
+        required:
+          - name
+          - path
+          - dependencies
+        fields:
+          name: slug
+          path: repository-relative-directory
+          dependencies: list-of-module-names
+          layers: list-of-slugs
+    exclusions:
+      type: list
+      item: repository-relative-pattern
+
+module_policy:
+  reserved_module: shared
+  required_modules:
+    - shared
+  shared_dependencies: []
+  feature_dependencies: declared-only
+  reject_self_dependencies: true
+  reject_unknown_dependencies: true
+  reject_cycles: true
+  init_files: exports-only
+  internal_layers: repository-defined
+
+ownership:
+  precedence:
+    - modwire-repository
+    - uv-package
+    - existing-repository
+  uv-package:
+    exclusive:
+      - pyproject.toml
+      - uv.lock
+      - .python-version
+      - "${source_root}/${import_package}/__init__.py"
+  modwire-repository:
+    exclusive:
+      - .modwire/repository.yaml
+    create_if_absent:
+      - .modwire/shape.yaml
+      - .modwire/boundaries.yaml
+      - "${module.path}/"
+      - "${module.path}/__init__.py"
+  existing-repository:
+    preserve:
+      - "**/*"
+
+generated_files:
+  - path: .modwire/repository.yaml
+    owner: modwire-repository
+    mode: replace-from-preview
+  - path: .modwire/shape.yaml
+    owner: modwire-repository
+    mode: create-if-absent
+  - path: .modwire/boundaries.yaml
+    owner: modwire-repository
+    mode: create-if-absent
+  - path: "${module.path}/__init__.py"
+    owner: modwire-repository
+    mode: create-empty-if-absent
+
+collision_policy:
+  duplicate_rendered_path: conflict
+  occupied_foreign_path: conflict
+  existing_application_file: preserve
+  stale_preview: conflict
+  on_conflict: atomic-abort
+
+preview:
+  required: true
+  side_effect_free: true
+  stable_sort: path
+  actions:
+    - create
+    - replace
+    - unchanged
+    - preserve
+    - conflict
+  write_hashes: required
+
+apply:
+  requires_preview_identity: true
+  atomic: true
+  second_run_writes: 0
+  encoding: utf-8
+  newline: lf
+  final_newline: true
+  timestamps: forbidden
+  random_identifiers: forbidden
+
+adoption:
+  inventory_first: true
+  validate_uv_prerequisite: true
+  validate_identity: true
+  preserve_application_code: true
+  preserve_existing_policy: true
+  move_existing_paths: false
+  rename_existing_paths: false

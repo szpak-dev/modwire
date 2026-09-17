@@ -1,0 +1,86 @@
+name: Reusable Python release build
+
+on:
+  workflow_call:
+    inputs:
+      release-tag:
+        description: Existing stable SemVer tag in vMAJOR.MINOR.PATCH form.
+        required: true
+        type: string
+      python-version:
+        description: Python version used to build release distributions.
+        required: false
+        type: string
+        default: "3.12"
+      working-directory:
+        description: Package directory relative to the repository root.
+        required: false
+        type: string
+        default: "."
+      artifact-name:
+        description: Name used to transfer verified distributions.
+        required: false
+        type: string
+        default: python-package-distributions
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and verify distributions
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - name: Validate stable SemVer tag
+        env:
+          RELEASE_TAG: ${{ inputs.release-tag }}
+        run: |
+          if [[ ! "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "Release tag must use vMAJOR.MINOR.PATCH: $RELEASE_TAG" >&2
+            exit 1
+          fi
+
+      - name: Check out release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.release-tag }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+          cache: pip
+
+      - name: Install build tools
+        run: python -m pip install --upgrade build twine
+
+      - name: Build distributions from tag
+        run: python -m build --outdir dist
+
+      - name: Check distribution metadata
+        run: python -m twine check dist/*
+
+      - name: Verify artifact version
+        env:
+          RELEASE_TAG: ${{ inputs.release-tag }}
+        run: |
+          version="${RELEASE_TAG#v}"
+          shopt -s nullglob
+          wheels=(dist/*-"$version"-*.whl)
+          sdists=(dist/*-"$version".tar.gz)
+          if (( ${#wheels[@]} != 1 || ${#sdists[@]} != 1 )); then
+            echo "Expected one wheel and one sdist for $version." >&2
+            ls -la dist >&2
+            exit 1
+          fi
+
+      - name: Upload verified distributions
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.working-directory }}/dist/
+          if-no-files-found: error

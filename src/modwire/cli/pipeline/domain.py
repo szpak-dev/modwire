@@ -1,0 +1,30 @@
+from abc import ABC, abstractmethod
+
+from ...extraction.extractors.models.extraction_request import ExtractionRequest
+from ...extraction.extractors.models.extractor_runtime import ExtractorRuntime
+from ...shared.code.models.source_extraction import SourceExtraction
+from .models.report_pipeline_context import ReportPipelineContext
+
+
+class ReportPipelineStep(ABC):
+    """Define one conditional rendering step for architecture reports."""
+
+    @abstractmethod
+    def should_process(self, context: ReportPipelineContext) -> bool: ...
+
+    @abstractmethod
+    def process(self, context: ReportPipelineContext) -> ReportPipelineContext: ...
+
+
+class SourceReader(ABC):
+    @abstractmethod
+    def ensure_available(self, runtime: ExtractorRuntime) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def has_source_files(self, request: ExtractionRequest) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    def extract_source(self, request: ExtractionRequest) -> SourceExtraction:
+        raise NotImplementedError

@@ -1,0 +1,40 @@
+contract_version: 1
+variables:
+  ecosystem: modwire
+  repository: example-library
+  distribution: example-library
+  import_package: example_library
+  source_root: src
+  language: python
+  repository_kind: library
+  modules:
+    - name: shared
+      path: src/example_library/shared
+      dependencies: []
+      layers: []
+    - name: feature
+      path: src/example_library/feature
+      dependencies:
+        - shared
+      layers:
+        - application
+        - domain
+  exclusions:
+    - tests/fixtures/**
+expected_paths:
+  - path: pyproject.toml
+    owner: uv-package
+  - path: uv.lock
+    owner: uv-package
+  - path: src/example_library/__init__.py
+    owner: uv-package
+  - path: .modwire/repository.yaml
+    owner: modwire-repository
+  - path: .modwire/shape.yaml
+    owner: modwire-repository
+  - path: .modwire/boundaries.yaml
+    owner: modwire-repository
+  - path: src/example_library/shared/__init__.py
+    owner: modwire-repository
+  - path: src/example_library/feature/__init__.py
+    owner: modwire-repository

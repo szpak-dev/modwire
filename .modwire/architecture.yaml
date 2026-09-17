@@ -1,0 +1,122 @@
+excluded_patterns:
+  - .dev/**
+  - tests/fixtures/**
+  - scripts/**
+  - build/**
+  - dist/**
+  - "**/__pycache__/**"
+  - setup.py
+  - src/modwire/__init__.py
+  - src/modwire/_version.py
+
+boundaries:
+  tags:
+    - {name: context, match: "src/modwire/*", excluded_patterns: ["src/modwire/*.py"]}
+    - {name: module, match: "src/modwire/*/*", excluded_patterns: ["src/modwire/*/*.py"]}
+    - {name: facade, match: "src/modwire/*/facade.py"}
+    - {name: application, match: "src/modwire/*/*/application.py"}
+    - {name: domain, match: "src/modwire/*/*/domain.py"}
+    - {name: model, match: "src/modwire/*/*/models"}
+    - {name: service, match: "src/modwire/*/*/services"}
+    - {name: shared, match: "src/modwire/shared"}
+    - {name: package-entrypoint, match: "src/modwire/__main__.py"}
+    - {name: public-application, match: "src/modwire/application.py"}
+    - {name: autowiring, match: "src/modwire/autowiring.py"}
+    - {name: tests, match: "tests"}
+    - {name: python-helper, match: "src/modwire/cli/resources/extractors/python/script.py"}
+  rules:
+    - {realm: contexts, source: facade, allow: [facade, model]}
+    - {realm: contexts, source: context, allow: [model, shared]}
+    - {realm: modules, source: facade, allow: [application, model]}
+    - {realm: modules, source: application, allow: [application, domain, model]}
+    - {realm: modules, source: context, allow: [shared]}
+    - {realm: modules, source: module, allow: [model]}
+    - {realm: contexts, source: public-application, allow: [facade, model]}
+    - {realm: modules, source: public-application, allow: [facade, model]}
+    - {realm: contexts, source: autowiring, allow: [public-application, facade]}
+    - {realm: modules, source: autowiring, allow: [public-application, facade]}
+    - {realm: contexts, source: python-helper, allow: [autowiring]}
+    - {realm: modules, source: python-helper, allow: [autowiring]}
+    - {realm: test-api, source: tests, allow: [public-application]}
+  flow:
+    standalone_tags: [package-entrypoint, public-application, autowiring]
+    realms: [{name: contexts, module_tag: context}, {name: modules, module_tag: module}, {name: test-api, module_tag: tests}]
+    analyzers: [module-boundaries, backward-flow, no-cycles, no-reentry]
+shape:
+  realms:
+    - name: architecture
+      match: src/modwire/architecture
+      shape:
+        max_functions_per_file: 0
+    - name: cli
+      match: src/modwire/cli
+      shape:
+        max_classes_per_file: 1
+        max_interfaces_per_file: 0
+        max_types_per_file: 0
+        max_abstract_classes_per_file: -1
+        max_functions_per_file: 0
+        allow_optional_function_args: false
+        allow_optional_method_args: false
+        allow_optional_class_properties: false
+        allow_import_aliases: false
+        require_joined_imports: true
+        allowed_import_crossing_types: [module, symbol]
+    - name: autowiring
+      match: src/modwire/autowiring.py
+      shape:
+        max_classes_per_file: 0
+        max_functions_per_file: 2
+    - name: public-application
+      match: src/modwire/application.py
+      shape:
+        max_classes_per_file: 1
+        max_functions_per_file: 0
+    - name: tests
+      match: tests
+      shape:
+        max_classes_per_file: 1
+        max_functions_per_file: 0
+    - name: extraction
+      match: src/modwire/extraction
+      shape:
+        max_classes_per_file: 1
+        max_functions_per_file: 0
+        allow_optional_function_args: false
+        allow_optional_method_args: false
+        allow_optional_class_properties: false
+        allow_import_aliases: false
+        require_joined_imports: true
+    - name: shared
+      match: src/modwire/shared
+      excluded_patterns: ["src/modwire/shared/*/models/**"]
+      shape:
+        max_classes_per_file: 1
+        max_functions_per_file: 0
+        allow_optional_function_args: false
+        allow_optional_method_args: false
+        allow_optional_class_properties: false
+        allow_import_aliases: false
+        require_joined_imports: true
+    - name: shared-models
+      match: "src/modwire/shared/*/models"
+      shape:
+        max_classes_per_file: 1
+        max_functions_per_file: 0
+        allow_optional_method_args: true
+        allow_optional_class_properties: true
+    - name: bootstrap
+      match: src/modwire/__init__.py
+      shape:
+        max_functions_per_file: 0
+        allow_optional_function_args: false
+        allow_optional_method_args: false
+        allow_optional_class_properties: false
+        allow_import_aliases: false
+        require_joined_imports: true
+    - name: entrypoint
+      match: src/modwire/__main__.py
+      shape:
+        max_functions_per_file: 0
+        allow_import_aliases: false
+        require_joined_imports: true
