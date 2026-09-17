@@ -18,15 +18,28 @@ $phar = new Phar($pharPath);
 $phar->startBuffering();
 $phar->setSignatureAlgorithm(Phar::SHA256);
 $phar->addFile($root . '/script.src.php', 'script.src.php');
+$phar->addFromString('vendor/autoload.php', <<<'PHP'
+<?php
 
-$vendorRoot = $root . '/vendor';
-if (!is_dir($vendorRoot)) {
+spl_autoload_register(function (string $class): void {
+    $prefix = 'PhpParser\\';
+    if (!str_starts_with($class, $prefix)) {
+        return;
+    }
+    $relativePath = str_replace('\\', '/', substr($class, strlen($prefix)));
+    require __DIR__ . '/nikic/php-parser/lib/PhpParser/' . $relativePath . '.php';
+});
+PHP);
+
+$vendorRoot = $root . '/vendor/nikic/php-parser';
+$libraryRoot = $vendorRoot . '/lib/PhpParser';
+if (!is_dir($libraryRoot)) {
     fwrite(STDERR, "Composer vendor directory is missing. Run composer install first.\n");
     exit(1);
 }
 
 $iterator = new RecursiveIteratorIterator(
-    new RecursiveDirectoryIterator($vendorRoot, FilesystemIterator::SKIP_DOTS)
+    new RecursiveDirectoryIterator($libraryRoot, FilesystemIterator::SKIP_DOTS)
 );
 $paths = [];
 
@@ -38,6 +51,7 @@ foreach ($iterator as $file) {
 }
 
 sort($paths, SORT_STRING);
+$paths[] = $vendorRoot . '/LICENSE';
 
 foreach ($paths as $path) {
     $relativePath = str_replace($root . '/', '', $path);

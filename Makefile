@@ -26,6 +26,7 @@ type-check:
 	uv run pyright src/modwire
 
 test:
+	mkdir -p $(DEV_DIR)/testing
 	uv run pytest
 
 docs-check:
