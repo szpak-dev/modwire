@@ -1,7 +1,10 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from typing import Self
 
-from wireup import injectable
+from wireup import create_sync_container, injectable
+
+import modwire
 
 from .architecture.config.models.architecture_config import ArchitectureConfig
 from .architecture.facade import ArchitectureFacade
@@ -21,6 +24,15 @@ class ModwireApplication:
     architecture: ArchitectureFacade
     cli: CliFacade
     extraction: ExtractionFacade
+
+    @classmethod
+    def create(cls) -> Self:
+        """Create an isolated application without exposing package discovery to the caller."""
+        container = create_sync_container(injectables=[modwire])
+        try:
+            return container.get(cls)
+        finally:
+            container.close()
 
     def configure(self, values: Mapping[str, object]) -> ArchitectureConfig:
         """Validate a configuration document and return immutable typed configuration."""
