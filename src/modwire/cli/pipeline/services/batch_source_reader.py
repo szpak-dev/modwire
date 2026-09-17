@@ -52,7 +52,7 @@ class BatchSourceReader(SourceReader):
             raise RuntimeError(f"{runtime.language} extractor runtime is not available on PATH: {executable}")
 
     def has_source_files(self, request: ExtractionRequest) -> bool:
-        root = request.root
+        root = Path(request.root)
         resolved_root = root.resolve()
         if not resolved_root.is_dir():
             raise ValueError(f"Source root is not a directory: {root}")
@@ -60,7 +60,7 @@ class BatchSourceReader(SourceReader):
         return bool(source_paths)
 
     def extract_source(self, request: ExtractionRequest) -> SourceExtraction:
-        root = request.root
+        root = Path(request.root)
         resolved_root = root.resolve()
         if not resolved_root.is_dir():
             raise ValueError(f"Source root is not a directory: {root}")
@@ -152,7 +152,9 @@ class BatchSourceReader(SourceReader):
         script_path = Path(str(resources.files("modwire.cli.resources").joinpath("extractors", runtime.resource)))
         if not script_path.is_file():
             raise RuntimeError(f"{runtime.language} extractor script is missing: {script_path}")
-        paths_by_source_id = {self.code.file_id(root, source_path): str(source_path) for source_path in source_paths}
+        paths_by_source_id = {
+            self.code.file_id(str(root), str(source_path)): str(source_path) for source_path in source_paths
+        }
         command = [*runtime.command, str(script_path), "--batch", str(root)]
         if request.batch_config.output_format == "jsonl":
             command.append("--jsonl")
@@ -163,13 +165,19 @@ class BatchSourceReader(SourceReader):
             message = completed.stderr.strip() or completed.stdout.strip()
             raise RuntimeError(f"{runtime.language} extractor failed with exit code {completed.returncode}: {message}")
         extracted = self._parse_batch_output(request, completed.stdout)
-        source_paths_by_id = {self.code.file_id(root, source_path): source_path for source_path in source_paths}
+        source_paths_by_id = {
+            self.code.file_id(str(root), str(source_path)): source_path for source_path in source_paths
+        }
         extracted_files: dict[FileId, SourceFile] = {}
         for raw_file_id, source_file in extracted.items():
             file_id = FileId(raw_file_id)
             source_path = source_paths_by_id[file_id]
             extracted_files[file_id] = SourceFile.model_validate(
-                {**source_file, "file_id": file_id, "module_id": self.code.module_id(root, source_path)}
+                {
+                    **source_file,
+                    "file_id": file_id,
+                    "module_id": self.code.module_id(str(root), str(source_path)),
+                }
             )
         return extracted_files
 
@@ -202,4 +210,4 @@ class BatchSourceReader(SourceReader):
         return cast(dict[str, Any], parsed)
 
     def _source_id_for_path(self, request: ExtractionRequest, root: Path, path: Path) -> FileId:
-        return self.code.file_id(root, path)
+        return self.code.file_id(str(root), str(path))

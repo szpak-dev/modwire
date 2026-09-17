@@ -1,6 +1,5 @@
 from collections.abc import Hashable, Mapping
 from dataclasses import dataclass
-from pathlib import Path
 
 from wireup import injectable
 
@@ -26,7 +25,7 @@ class ExtractorsApplication:
             item.runtime.language for item in sorted(self.extractors.values(), key=lambda item: item.runtime.order)
         )
 
-    def request(self, language: str, root: Path) -> ExtractionRequest:
+    def request(self, language: str, root: str) -> ExtractionRequest:
         if language not in self.extractors:
             raise ValueError(f"Language is not supported: {language}")
         extractor = self.extractors[language]
@@ -40,7 +39,7 @@ class ExtractorsApplication:
     def generate_queryable_map(self, language: str, extraction: SourceExtraction) -> QueryableCodeMap:
         return self.code.queryable(self.generate_map(language, extraction))
 
-    def parse_source(self, language: str, content: str, path: Path, root: Path, source_id: str) -> dict[str, object]:
+    def parse_source(self, language: str, content: str, path: str, root: str, source_id: str) -> dict[str, object]:
         if language not in self.parsers:
             raise ValueError(f"In-process parsing is not supported for language: {language}")
         return self.parsers[language].extract(content, path, root, source_id)

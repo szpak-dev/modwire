@@ -49,7 +49,6 @@ exclude = ["*.__pycache__", "*.__pycache__.*"]
 tag_regex = '^v(?P<version>\d+\.\d+\.\d+)$'
 fallback_version = "8.0.0.dev0"
 local_scheme = "no-local-version"
-version_file = "src/modwire/_version.py"
 
 [tool.pytest.ini_options]
 cache_dir = ".dev/cache/pytest"
@@ -61,7 +60,7 @@ addopts = ["-ra", "--strict-config", "--strict-markers", "--import-mode=importli
 cache-dir = ".dev/cache/ruff"
 line-length = 120
 target-version = "py312"
-extend-exclude = ["**/_version.py"]
+extend-exclude = ["tests/fixtures"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]

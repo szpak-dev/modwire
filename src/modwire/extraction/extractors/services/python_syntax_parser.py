@@ -1,6 +1,5 @@
 import ast
 from dataclasses import dataclass
-from pathlib import Path
 from typing import cast
 
 from wireup import injectable
@@ -23,15 +22,26 @@ class PythonSyntaxParser(SourceParser):
     def import_path(self, node: ast.ImportFrom) -> str:
         return f"{'.' * node.level}{node.module or ''}"
 
-    def normalized_import_path(self, import_value: str, is_relative: bool, file_path: Path, sources_root: Path) -> str:
+    def path_parts(self, value: str) -> list[str]:
+        return [part for part in value.replace("\\", "/").split("/") if part and part != "."]
+
+    def relative_path_parts(self, path: str, sources_root: str) -> list[str]:
+        path_parts = self.path_parts(path)
+        root_parts = self.path_parts(sources_root)
+        if path_parts[: len(root_parts)] == root_parts:
+            return path_parts[len(root_parts) :]
+        return path_parts[-1:]
+
+    def normalized_import_path(self, import_value: str, is_relative: bool, file_path: str, sources_root: str) -> str:
         if not is_relative:
             return self.normalize_module_path(import_value)
         level = len(import_value) - len(import_value.lstrip("."))
         module = import_value[level:]
-        package_dir = file_path.parent
+        package_parts = self.relative_path_parts(file_path, sources_root)[:-1]
         for _ in range(max(level - 1, 0)):
-            package_dir = package_dir.parent
-        package_path = package_dir.relative_to(sources_root).as_posix()
+            if package_parts:
+                package_parts.pop()
+        package_path = "/".join(package_parts)
         module_path = self.normalize_module_path(module)
         return "/".join(part for part in (package_path, module_path) if part)
 
@@ -239,12 +249,8 @@ class PythonSyntaxParser(SourceParser):
             "optional_args": optional_args,
         }
 
-    def source_id_for_path(self, path: Path, sources_root: Path) -> str:
-        try:
-            relative_path = path.relative_to(sources_root)
-        except ValueError:
-            relative_path = path.name
-        return str(relative_path).replace("\\", "/").removesuffix(".py").strip("/")
+    def source_id_for_path(self, path: str, sources_root: str) -> str:
+        return "/".join(self.relative_path_parts(path, sources_root)).removesuffix(".py").strip("/")
 
     def callable_id(self, source_id: str, qualified_name: str) -> str:
         return f"{source_id}::{qualified_name}"
@@ -528,7 +534,7 @@ class PythonSyntaxParser(SourceParser):
             "is_star": alias.name == "*",
         }
 
-    def collect_imports(self, tree: ast.Module, path: Path, sources_root: Path) -> list[dict[str, object]]:
+    def collect_imports(self, tree: ast.Module, path: str, sources_root: str) -> list[dict[str, object]]:
         imports: list[dict[str, object]] = []
         for statement_id, node in enumerate(ast.walk(tree), start=1):
             if isinstance(node, ast.Import):
@@ -637,8 +643,8 @@ class PythonSyntaxParser(SourceParser):
     def collect_exports(
         self,
         tree: ast.Module,
-        path: Path,
-        sources_root: Path,
+        path: str,
+        sources_root: str,
         classes: list[dict[str, object]],
         abstract_classes: list[dict[str, object]],
         functions: list[dict[str, object]],
@@ -716,7 +722,7 @@ class PythonSyntaxParser(SourceParser):
             exports.append(declaration_exports.get(name, self.direct_export_entry(name, "unknown")))
         return exports
 
-    def extract(self, content: str, path: Path, sources_root: Path, source_id: str | None) -> dict[str, object]:
+    def extract(self, content: str, path: str, sources_root: str, source_id: str | None) -> dict[str, object]:
         tree = ast.parse(content, filename=str(path))
         resolved_source_id = source_id or self.source_id_for_path(path, sources_root)
         class_nodes = [node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]

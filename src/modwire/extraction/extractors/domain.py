@@ -1,6 +1,5 @@
 import ast
 from abc import ABC, abstractmethod
-from pathlib import Path
 
 from .models.batch_config import BatchConfig
 from .models.extractor_runtime import ExtractorRuntime
@@ -15,7 +14,7 @@ class PythonCallReader(ABC):
 
 class SourceParser(ABC):
     @abstractmethod
-    def extract(self, content: str, path: Path, sources_root: Path, source_id: str | None) -> dict[str, object]:
+    def extract(self, content: str, path: str, sources_root: str, source_id: str | None) -> dict[str, object]:
         raise NotImplementedError
 
 

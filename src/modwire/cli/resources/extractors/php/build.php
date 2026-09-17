@@ -28,12 +28,18 @@ if (!is_dir($vendorRoot)) {
 $iterator = new RecursiveIteratorIterator(
     new RecursiveDirectoryIterator($vendorRoot, FilesystemIterator::SKIP_DOTS)
 );
+$paths = [];
 
 foreach ($iterator as $file) {
     if (!$file->isFile()) {
         continue;
     }
-    $path = $file->getPathname();
+    $paths[] = $file->getPathname();
+}
+
+sort($paths, SORT_STRING);
+
+foreach ($paths as $path) {
     $relativePath = str_replace($root . '/', '', $path);
     $phar->addFile($path, $relativePath);
 }
@@ -47,4 +53,39 @@ __HALT_COMPILER();
 PHP);
 $phar->stopBuffering();
 rename($pharPath, $output);
+unset($phar);
+
+$archive = file_get_contents($output);
+if ($archive === false) {
+    fwrite(STDERR, "Built archive cannot be read.\n");
+    exit(1);
+}
+
+$stubEnd = strpos($archive, "__HALT_COMPILER(); ?>\r\n");
+if ($stubEnd === false) {
+    fwrite(STDERR, "Built archive has no Phar stub terminator.\n");
+    exit(1);
+}
+
+$cursor = $stubEnd + strlen("__HALT_COMPILER(); ?>\r\n");
+$cursor += 4;
+$fileCount = unpack('Vcount', substr($archive, $cursor, 4))['count'];
+$cursor += 10;
+$aliasLength = unpack('Vlength', substr($archive, $cursor, 4))['length'];
+$cursor += 4 + $aliasLength;
+$metadataLength = unpack('Vlength', substr($archive, $cursor, 4))['length'];
+$cursor += 4 + $metadataLength;
+
+for ($index = 0; $index < $fileCount; $index++) {
+    $nameLength = unpack('Vlength', substr($archive, $cursor, 4))['length'];
+    $cursor += 4 + $nameLength + 4;
+    $archive = substr_replace($archive, pack('V', 946684800), $cursor, 4);
+    $cursor += 16;
+    $fileMetadataLength = unpack('Vlength', substr($archive, $cursor, 4))['length'];
+    $cursor += 4 + $fileMetadataLength;
+}
+
+$unsignedArchive = substr($archive, 0, -40);
+$archive = $unsignedArchive . hash('sha256', $unsignedArchive, true) . pack('V', Phar::SHA256) . 'GBMB';
+file_put_contents($output, $archive);
 chmod($output, 0755);

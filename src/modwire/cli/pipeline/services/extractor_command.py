@@ -30,7 +30,7 @@ class ExtractorCommand:
                 return None
         else:
             path = Path(sys.argv[1]).resolve()
-            paths = {self.code.file_id(root, path): str(path)}
+            paths = {self.code.file_id(str(root), str(path)): str(path)}
         return ExtractorCommandInput(
             batch=batch,
             sources=tuple(

@@ -6,4 +6,5 @@ recursive-include docs *.md *.yaml *.json
 recursive-include .modwire *.yaml *.md
 recursive-include scripts *.py
 prune verification
+prune .dev
 global-exclude __pycache__ *.py[cod]

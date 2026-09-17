@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from pathlib import Path
 
 from wireup import injectable
 
@@ -20,7 +19,7 @@ class ExtractionFacade:
     def supported_languages(self) -> tuple[str, ...]:
         return self.extractors.supported_languages()
 
-    def request(self, language: str, root: Path) -> ExtractionRequest:
+    def request(self, language: str, root: str) -> ExtractionRequest:
         return self.extractors.request(language, root)
 
     def generate_map(self, language: str, extraction: SourceExtraction) -> CodeMap:
@@ -29,5 +28,5 @@ class ExtractionFacade:
     def generate_queryable_map(self, language: str, extraction: SourceExtraction) -> QueryableCodeMap:
         return self.extractors.generate_queryable_map(language, extraction)
 
-    def parse_source(self, language: str, content: str, path: Path, root: Path, source_id: str) -> dict[str, object]:
+    def parse_source(self, language: str, content: str, path: str, root: str, source_id: str) -> dict[str, object]:
         return self.extractors.parse_source(language, content, path, root, source_id)

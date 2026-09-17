@@ -1,8 +1,9 @@
 import json
-from typing import Any
+from collections.abc import Callable
+from typing import Any, cast
 
+import pydantic_yaml
 from pydantic import BaseModel, ConfigDict
-from pydantic_yaml import to_yaml_str
 
 
 class ValueModel(BaseModel):
@@ -14,7 +15,8 @@ class ValueModel(BaseModel):
         return self.model_dump_json(indent=indent)
 
     def to_yaml(self) -> str:
-        return to_yaml_str(self)
+        render = cast(Callable[[BaseModel], str], getattr(pydantic_yaml, "to_yaml_str"))
+        return render(self)
 
     def to_dict(self, **kwargs: Any) -> dict[str, Any]:
         return self.model_dump(**kwargs)

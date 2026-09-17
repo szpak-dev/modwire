@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from pathlib import Path
 
 from wireup import injectable
 
@@ -14,10 +13,10 @@ from .models.queryable_code_map import QueryableCodeMap
 class CodeApplication:
     identities: IdentityResolver
 
-    def file_id(self, root: Path, path: Path) -> FileId:
+    def file_id(self, root: str, path: str) -> FileId:
         return self.identities.file_id(root, path)
 
-    def module_id(self, root: Path, path: Path) -> ModuleId:
+    def module_id(self, root: str, path: str) -> ModuleId:
         return self.identities.module_id(root, path)
 
     def queryable(self, code_map: CodeMap) -> QueryableCodeMap:

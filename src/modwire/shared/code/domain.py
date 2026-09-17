@@ -1,16 +1,15 @@
 from abc import ABC, abstractmethod
-from pathlib import Path
 
 from .models.identity import FileId, ModuleId
 
 
 class IdentityResolver(ABC):
     @abstractmethod
-    def file_id(self, root: Path, path: Path) -> FileId:
+    def file_id(self, root: str, path: str) -> FileId:
         raise NotImplementedError
 
     @abstractmethod
-    def module_id(self, root: Path, path: Path) -> ModuleId:
+    def module_id(self, root: str, path: str) -> ModuleId:
         raise NotImplementedError
 
 

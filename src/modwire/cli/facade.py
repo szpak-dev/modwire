@@ -24,17 +24,17 @@ class CliFacade:
     pipeline: PipelineApplication
     documentation: DocumentationApplication
 
-    def working_directory(self) -> Path:
-        return Path.cwd()
+    def working_directory(self) -> str:
+        return str(Path.cwd())
 
     def parse(self, argv: Sequence[str]) -> CommandRequest:
         return self.pipeline.parse(argv)
 
-    def load_configuration(self, dot_dir: Path) -> ArchitectureConfig:
-        return self.pipeline.load_configuration(dot_dir)
+    def load_configuration(self, dot_dir: str) -> ArchitectureConfig:
+        return self.pipeline.load_configuration(Path(dot_dir))
 
-    def initialize(self, root: Path, dot_dir: Path, force: bool) -> int:
-        return self.initialization.initialize(root, dot_dir, force)
+    def initialize(self, root: str, dot_dir: str, force: bool) -> int:
+        return self.initialization.initialize(Path(root), Path(dot_dir), force)
 
     def extract(self, request: ExtractionRequest) -> SourceExtraction:
         return self.pipeline.extract(request)
@@ -51,5 +51,5 @@ class CliFacade:
     def write_sources(self, result: dict[str, object]) -> int:
         return self.pipeline.write_sources(result)
 
-    def generate_documentation(self, readme: Path, check: bool, description: str) -> int:
-        return self.documentation.generate(readme, check, description)
+    def generate_documentation(self, readme: str, check: bool, description: str) -> int:
+        return self.documentation.generate(Path(readme), check, description)
