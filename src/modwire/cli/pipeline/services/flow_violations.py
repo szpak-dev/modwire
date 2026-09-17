@@ -11,8 +11,6 @@ from ..models.report_pipeline_context import ReportPipelineContext
 @injectable(as_type=ReportPipelineStep, qualifier="30-flow-violations")
 @dataclass(frozen=True)
 class FlowViolations(ReportPipelineStep):
-    """Render dependency-flow violations and mark the run as failed."""
-
     console: Console
 
     def should_process(self, context: ReportPipelineContext) -> bool:

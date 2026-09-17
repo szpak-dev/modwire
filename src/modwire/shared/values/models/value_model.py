@@ -7,8 +7,6 @@ from pydantic import BaseModel, ConfigDict
 
 
 class ValueModel(BaseModel):
-    """Strict public value model used across the Modwire ecosystem."""
-
     model_config = ConfigDict(extra="forbid", frozen=True, arbitrary_types_allowed=True, validate_default=True)
 
     def to_json(self, *, indent: int | None = 2) -> str:

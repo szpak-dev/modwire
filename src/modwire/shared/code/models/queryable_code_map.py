@@ -28,7 +28,6 @@ class QueryableCodeMap(ValueModel):
 
     @property
     def cm(self) -> CodeMap:
-        """Return the code map through the original compatibility alias."""
         return self.code_map
 
     def query(self, items: Iterable[T]) -> QueryBuilder[T]:

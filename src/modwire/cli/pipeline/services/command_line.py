@@ -11,11 +11,6 @@ from ..models.command_request import CommandRequest
 @injectable()
 @dataclass(frozen=True)
 class CommandLine:
-    """Provide `modwire init` for setup and `modwire report` for architecture feedback.
-
-    Existing `modwire --language <language>` automation continues to run reports.
-    """
-
     def parse(self, argv: Sequence[str]) -> CommandRequest:
         arguments = self._parser().parse_args(self._legacy_report_arguments(argv))
         return CommandRequest.model_validate(vars(arguments))

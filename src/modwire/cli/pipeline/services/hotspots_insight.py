@@ -11,8 +11,6 @@ from ..models.report_pipeline_context import ReportPipelineContext
 @injectable(as_type=ReportPipelineStep, qualifier="60-hotspots")
 @dataclass(frozen=True)
 class HotspotsInsight(ReportPipelineStep):
-    """Render dependency hotspots when the report identifies them."""
-
     console: Console
 
     def should_process(self, context: ReportPipelineContext) -> bool:

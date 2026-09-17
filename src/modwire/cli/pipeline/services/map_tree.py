@@ -13,8 +13,6 @@ from ..models.report_pipeline_context import ReportPipelineContext
 @injectable(as_type=ReportPipelineStep, qualifier="10-map")
 @dataclass(frozen=True)
 class MapTree(ReportPipelineStep):
-    """Render the detailed or summary architecture map tree."""
-
     console: Console
 
     def should_process(self, context: ReportPipelineContext) -> bool:

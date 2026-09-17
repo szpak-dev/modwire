@@ -20,8 +20,6 @@ from .services.extractor_command import ExtractorCommand
 @injectable()
 @dataclass(frozen=True)
 class PipelineApplication:
-    """Run ordered report-rendering steps and return their exit status."""
-
     steps: Mapping[Hashable, ReportPipelineStep]
     commands: CommandLine
     configuration: ConfigurationLoader

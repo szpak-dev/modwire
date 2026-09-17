@@ -10,8 +10,6 @@ from ..models.defaults import END, START
 @injectable()
 @dataclass(frozen=True)
 class DocumentationGenerator:
-    """Render a concise README command reference from the public CLI docstring."""
-
     def render(self, description: str) -> str:
         return "\n".join(
             (
@@ -32,7 +30,6 @@ class DocumentationGenerator:
         )
 
     def update(self, readme: Path, check: bool, description: str) -> bool:
-        """Update the README section, or report whether it is current."""
         current = readme.read_text(encoding="utf-8")
         if START not in current or END not in current:
             raise ValueError(f"Missing generated documentation markers in {readme}")

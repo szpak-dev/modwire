@@ -12,14 +12,11 @@ from .services.initialization_service import InitializationService
 @injectable()
 @dataclass(frozen=True)
 class InitializationApplication:
-    """Run initialization and render a concise per-file outcome."""
-
     console: Console
     service: InitializationService
     resources: ResourcesApplication
 
     def initialize(self, project_root: Path, dot_dir: Path, force: bool) -> int:
-        """Initialize the project and return a shell-compatible status code."""
         try:
             outcomes: list[tuple[str, Path]] = []
             for asset in self.resources.assets():

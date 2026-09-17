@@ -4,23 +4,20 @@ import wireup
 
 import modwire
 
-from .application import ModwireApplication
+from .cli.facade import CliFacade
 
 
 def main() -> int:
-    """Run the installed Modwire command."""
+    container = wireup.create_sync_container(injectables=[modwire])
     try:
-        return container.get(ModwireApplication).run(sys.argv[1:])
+        return container.get(CliFacade).run(sys.argv[1:])
     finally:
         container.close()
 
 
-def parser_main(language: str) -> int:
-    """Run a bundled extractor command."""
+def run_extractor(language: str) -> int:
+    container = wireup.create_sync_container(injectables=[modwire])
     try:
-        return container.get(ModwireApplication).run_extractor(language)
+        return container.get(CliFacade).run_extractor(language)
     finally:
         container.close()
-
-
-container = wireup.create_sync_container(injectables=[modwire])

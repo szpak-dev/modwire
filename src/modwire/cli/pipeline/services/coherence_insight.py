@@ -11,8 +11,6 @@ from ..models.report_pipeline_context import ReportPipelineContext
 @injectable(as_type=ReportPipelineStep, qualifier="70-coherence")
 @dataclass(frozen=True)
 class CoherenceInsight(ReportPipelineStep):
-    """Render roots, leaves, isolated nodes, and external dependencies."""
-
     console: Console
 
     def should_process(self, context: ReportPipelineContext) -> bool:
