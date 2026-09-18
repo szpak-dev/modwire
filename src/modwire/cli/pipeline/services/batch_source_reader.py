@@ -20,6 +20,7 @@ from ....shared.code.models.identity import FileId, ModuleId
 from ....shared.code.models.source_extraction import SourceExtraction
 from ....shared.code.models.source_file import SourceFile
 from ..domain import SourceReader
+from ..models.scan_policy import ScanPolicy
 
 
 @injectable(as_type=SourceReader)
@@ -27,44 +28,28 @@ from ..domain import SourceReader
 class BatchSourceReader(SourceReader):
     code: CodeApplication
     paths: PathMatcher
-    excluded_dir_names = frozenset(
-        {
-            ".git",
-            ".hg",
-            ".mypy_cache",
-            ".pytest_cache",
-            ".ruff_cache",
-            ".svn",
-            ".venv",
-            "__pycache__",
-            "build",
-            "coverage",
-            "dist",
-            "ignored",
-            "node_modules",
-            "vendor",
-        }
-    )
 
     def ensure_available(self, runtime: ExtractorRuntime) -> None:
         executable = runtime.command[0]
         if shutil.which(executable) is None:
             raise RuntimeError(f"{runtime.language} extractor runtime is not available on PATH: {executable}")
 
-    def has_source_files(self, request: ExtractionRequest) -> bool:
+    def has_source_files(self, request: ExtractionRequest, policy: ScanPolicy) -> bool:
         root = Path(request.root)
         resolved_root = root.resolve()
         if not resolved_root.is_dir():
             raise ValueError(f"Source root is not a directory: {root}")
-        source_paths, _ = self._discover_source_files(request, resolved_root)
+        source_paths, _, _ = self._discover_source_files(request, resolved_root, policy, limit=1)
         return bool(source_paths)
 
-    def extract_source(self, request: ExtractionRequest) -> SourceExtraction:
+    def extract_source(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceExtraction:
         root = Path(request.root)
         resolved_root = root.resolve()
         if not resolved_root.is_dir():
             raise ValueError(f"Source root is not a directory: {root}")
-        source_paths, files_excluded = self._discover_source_files(request, resolved_root)
+        source_paths, files_excluded, directories_pruned = self._discover_source_files(
+            request, resolved_root, policy, limit=None
+        )
         files: dict[FileId, SourceFile] = {}
         batches = self._source_batches(request, source_paths)
         if self._uses_parallel_batches(request, len(source_paths)):
@@ -82,7 +67,11 @@ class BatchSourceReader(SourceReader):
                 raise DuplicateIdentityError("module", source_file.module_id, existing, file_id)
             modules[source_file.module_id] = file_id
         return SourceExtraction(
-            files=files, modules=modules, files_found=len(source_paths), files_excluded=files_excluded
+            files=files,
+            modules=modules,
+            files_found=len(source_paths),
+            files_excluded=files_excluded,
+            directories_pruned=directories_pruned,
         )
 
     def _source_batches(self, request: ExtractionRequest, source_paths: list[Path]) -> list[list[Path]]:
@@ -101,46 +90,47 @@ class BatchSourceReader(SourceReader):
             and (request.batch_config.max_workers > 1)
         )
 
-    def _discover_source_files(self, request: ExtractionRequest, root: Path) -> tuple[list[Path], int]:
+    def _discover_source_files(
+        self, request: ExtractionRequest, root: Path, policy: ScanPolicy, limit: int | None
+    ) -> tuple[list[Path], int, int]:
         source_paths: list[Path] = []
         files_excluded = 0
+        directories_pruned = 0
         extensions = request.runtime.file_extensions
-        for current_root, dir_names, file_names in os.walk(root):
+        visited_directories: set[tuple[int, int]] = set()
+        for current_root, dir_names, file_names in os.walk(root, followlinks=policy.follow_symlinks):
             current_path = Path(current_root)
-            excluded_dirs = [
-                dir_name
-                for dir_name in dir_names
-                if self._is_excluded_dir(request, dir_name)
-                or self._is_excluded_path(request, root, current_path / dir_name)
-            ]
-            files_excluded += sum(
-                self._count_source_files(request, current_path / dir_name) for dir_name in excluded_dirs
-            )
-            dir_names[:] = [dir_name for dir_name in dir_names if dir_name not in excluded_dirs]
+            if policy.follow_symlinks:
+                status = current_path.stat()
+                identity = (status.st_dev, status.st_ino)
+                if identity in visited_directories:
+                    directories_pruned += 1
+                    dir_names.clear()
+                    continue
+                visited_directories.add(identity)
+            included_directories: list[str] = []
+            for dir_name in dir_names:
+                directory = current_path / dir_name
+                if self._is_excluded_path(policy, root, directory):
+                    directories_pruned += 1
+                else:
+                    included_directories.append(dir_name)
+            dir_names[:] = included_directories
             for file_name in file_names:
                 file_path = current_path / file_name
                 if file_path.suffix.lower() in extensions:
-                    if self._is_excluded_path(request, root, file_path):
+                    if self._is_excluded_path(policy, root, file_path):
                         files_excluded += 1
                     else:
                         source_paths.append(file_path.resolve())
-        return (sorted(source_paths), files_excluded)
+                        if limit is not None and len(source_paths) >= limit:
+                            return (sorted(source_paths), files_excluded, directories_pruned)
+        return (sorted(source_paths), files_excluded, directories_pruned)
 
-    def _count_source_files(self, request: ExtractionRequest, root: Path) -> int:
-        count = 0
-        extensions = request.runtime.file_extensions
-        for current_root, dir_names, file_names in os.walk(root):
-            dir_names[:] = [dir_name for dir_name in dir_names if not self._is_excluded_dir(request, dir_name)]
-            count += sum(1 for file_name in file_names if (Path(current_root) / file_name).suffix.lower() in extensions)
-        return count
-
-    def _is_excluded_dir(self, request: ExtractionRequest, name: str) -> bool:
-        return name in self.excluded_dir_names or name.startswith(".")
-
-    def _is_excluded_path(self, request: ExtractionRequest, root: Path, path: Path) -> bool:
+    def _is_excluded_path(self, policy: ScanPolicy, root: Path, path: Path) -> bool:
         relative_path = path.relative_to(root).as_posix()
         return any(
-            self.paths.match(relative_path, pattern, scope=True) is not None for pattern in request.excluded_patterns
+            self.paths.match(relative_path, pattern, scope=True) is not None for pattern in policy.excluded_patterns
         )
 
     def _extract_batch(

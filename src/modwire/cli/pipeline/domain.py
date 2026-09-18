@@ -4,6 +4,7 @@ from ...extraction.extractors.models.extraction_request import ExtractionRequest
 from ...extraction.extractors.models.extractor_runtime import ExtractorRuntime
 from ...shared.code.models.source_extraction import SourceExtraction
 from .models.report_pipeline_context import ReportPipelineContext
+from .models.scan_policy import ScanPolicy
 
 
 class ReportPipelineStep(ABC):
@@ -20,9 +21,9 @@ class SourceReader(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def has_source_files(self, request: ExtractionRequest) -> bool:
+    def has_source_files(self, request: ExtractionRequest, policy: ScanPolicy) -> bool:
         raise NotImplementedError
 
     @abstractmethod
-    def extract_source(self, request: ExtractionRequest) -> SourceExtraction:
+    def extract_source(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceExtraction:
         raise NotImplementedError

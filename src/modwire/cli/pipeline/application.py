@@ -12,6 +12,7 @@ from .domain import ReportPipelineStep, SourceReader
 from .models.command_request import CommandRequest
 from .models.extractor_command_input import ExtractorCommandInput
 from .models.report_pipeline_context import ReportPipelineContext
+from .models.scan_policy import ScanPolicy
 from .services.command_line import CommandLine
 from .services.configuration_loader import ConfigurationLoader
 from .services.extractor_command import ExtractorCommand
@@ -32,13 +33,13 @@ class PipelineApplication:
     def load_configuration(self, dot_dir: Path) -> ArchitectureConfig:
         return self.configuration.load(dot_dir)
 
-    def extract(self, request: ExtractionRequest) -> SourceExtraction:
+    def extract(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceExtraction:
         self.reader.ensure_available(request.runtime)
-        return self.reader.extract_source(request)
+        return self.reader.extract_source(request, policy)
 
-    def has_source_files(self, request: ExtractionRequest) -> bool:
+    def has_source_files(self, request: ExtractionRequest, policy: ScanPolicy) -> bool:
         self.reader.ensure_available(request.runtime)
-        return self.reader.has_source_files(request)
+        return self.reader.has_source_files(request, policy)
 
     def read_sources(self, language: str) -> ExtractorCommandInput | None:
         return self.extractor_command.read(language)
