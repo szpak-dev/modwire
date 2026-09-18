@@ -54,8 +54,8 @@ class CliFacade:
     def write_sources(self, result: dict[str, object]) -> int:
         return self.pipeline.write_sources(result)
 
-    def generate_documentation(self, readme: str, check: bool) -> int:
-        return self.documentation.generate(Path(readme), check)
+    def generate_documentation(self, readme: str, public_interfaces: tuple[type[object], ...], check: bool) -> int:
+        return self.documentation.generate(Path(readme), public_interfaces, check)
 
     def run_extractor(self, language: str) -> int:
         request = self.read_sources(language)

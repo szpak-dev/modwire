@@ -11,7 +11,7 @@ export npm_config_cache := $(PROJECT_ROOT)/$(DEV_DIR)/cache/npm
 export PYTHONPYCACHEPREFIX := $(PROJECT_ROOT)/$(DEV_DIR)/cache/python
 export UV_CACHE_DIR := $(PROJECT_ROOT)/$(DEV_DIR)/cache/uv
 
-.PHONY: architecture build ci docs-check format format-check lint native-check package-check php-check python-ci test type-check typescript-check
+.PHONY: architecture big-projects build ci docs docs-check format format-check lint native-check package-check php-check python-ci test type-check typescript-check
 
 format:
 	uv run ruff format src tests scripts
@@ -29,8 +29,14 @@ test:
 	mkdir -p $(DEV_DIR)/testing
 	uv run pytest
 
+big-projects:
+	uv run python -m tests.extraction.big_projects.run
+
 docs-check:
 	uv run python scripts/generate_docs.py --check
+
+docs:
+	uv run python scripts/generate_docs.py
 
 architecture:
 	uv run modwire report --language python --summary

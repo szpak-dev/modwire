@@ -13,7 +13,7 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
         code_map = self.application.generate_queryable_map(
             "python",
             self.project({"src/example.py": "def example_function():\n    pass\n"}),
-            (),
+            self.scan_policy(),
         )
         strict = self.application.configure({"shape": {"realms": [{"name": "example-source", "match": "src"}]}})
         permissive = self.application.configure(

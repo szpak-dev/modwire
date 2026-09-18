@@ -3,7 +3,7 @@ import sys
 from wireup import create_sync_container, injectable
 from wireup.errors import UnknownServiceRequestedError
 
-from modwire.application import ModwireApplication
+from modwire.application import ModwireApplication, ScanPolicy
 
 
 @injectable
@@ -26,7 +26,7 @@ finally:
 
 application = ModwireApplication.create()
 config = application.configure({"shape": {"realms": [{"name": "example-source", "match": "src"}]}})
-code_map = application.generate_queryable_map("python", sys.argv[1], ())
+code_map = application.generate_queryable_map("python", sys.argv[1], ScanPolicy())
 reports = application.analyze(code_map, config)
 assert code_map.files().count() == 1
 assert len(reports) == 4

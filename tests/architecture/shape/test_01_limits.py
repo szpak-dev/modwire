@@ -29,7 +29,9 @@ class TestShapeLimits(ShapeTestCase):
     def test_limits_report_only_values_above_the_threshold(
         self, rule: str, source: str, actual: int, offset: int
     ) -> None:
-        code_map = self.application.generate_queryable_map("python", self.project({"example.py": source}), ())
+        code_map = self.application.generate_queryable_map(
+            "python", self.project({"example.py": source}), self.scan_policy()
+        )
         config = self.application.configure(
             {"shape": {"realms": [{"name": "example-source", "match": "*", "shape": {rule: actual + offset}}]}}
         )
@@ -60,7 +62,9 @@ class TestShapeLimits(ShapeTestCase):
     )
     @pytest.mark.parametrize("allowed", (False, True))
     def test_boolean_permissions_apply_to_the_public_report(self, rule: str, source: str, allowed: bool) -> None:
-        code_map = self.application.generate_queryable_map("python", self.project({"example.py": source}), ())
+        code_map = self.application.generate_queryable_map(
+            "python", self.project({"example.py": source}), self.scan_policy()
+        )
         config = self.application.configure(
             {"shape": {"realms": [{"name": "example-source", "match": "*", "shape": {rule: allowed}}]}}
         )

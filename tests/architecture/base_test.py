@@ -19,4 +19,4 @@ class ArchitectureTestCase(ServiceTestCase):
             else:
                 statement = "from .example_missing import ExampleSource\n"
             sources[source] = statement + sources[source]
-        return self.application.generate_queryable_map("python", self.project(sources), ())
+        return self.application.generate_queryable_map("python", self.project(sources), self.scan_policy())

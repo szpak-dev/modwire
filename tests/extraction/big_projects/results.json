@@ -1,0 +1,43 @@
+{
+  "recorded_on": "2026-09-18",
+  "baseline_revision": "a201fc0054d49e4206c6ef81b9c3c9d231f511d4",
+  "pruned_revision": "619f47c",
+  "operation": "ModwireApplication.discover",
+  "repetitions": 3,
+  "statistic": "median_seconds",
+  "native": {
+    "baseline_sum": 23.446,
+    "pruned_sum": 5.354,
+    "speedup": 4.38,
+    "reduction_percent": 77.2,
+    "projects": {
+      "python/ansible": {"baseline": 1.495, "pruned": 0.753, "speedup": 1.99},
+      "python/django": {"baseline": 1.735, "pruned": 0.430, "speedup": 4.04},
+      "python/transformers": {"baseline": 1.140, "pruned": 0.342, "speedup": 3.34},
+      "typescript/angular": {"baseline": 2.350, "pruned": 0.911, "speedup": 2.58},
+      "typescript/typescript": {"baseline": 8.472, "pruned": 1.800, "speedup": 4.71},
+      "typescript/vscode": {"baseline": 4.265, "pruned": 0.346, "speedup": 12.31},
+      "php/composer": {"baseline": 0.179, "pruned": 0.058, "speedup": 3.08},
+      "php/laravel": {"baseline": 0.676, "pruned": 0.107, "speedup": 6.33},
+      "php/symfony": {"baseline": 3.135, "pruned": 0.607, "speedup": 5.17}
+    }
+  },
+  "docker_bind_mount": {
+    "claim_scope": "Generic read-only Docker bind mount; not Enclosure runtime evidence.",
+    "baseline_sum": 33.420,
+    "pruned_sum": 11.307,
+    "speedup": 2.96,
+    "reduction_percent": 66.2,
+    "projects": {
+      "python/ansible": {"baseline": 2.753, "pruned": 1.574, "speedup": 1.75},
+      "python/django": {"baseline": 3.144, "pruned": 1.042, "speedup": 3.02},
+      "python/transformers": {"baseline": 1.694, "pruned": 0.844, "speedup": 2.01},
+      "typescript/angular": {"baseline": 3.644, "pruned": 1.614, "speedup": 2.26},
+      "typescript/typescript": {"baseline": 11.355, "pruned": 3.964, "speedup": 2.86},
+      "typescript/vscode": {"baseline": 5.847, "pruned": 0.699, "speedup": 8.36},
+      "php/composer": {"baseline": 0.297, "pruned": 0.112, "speedup": 2.65},
+      "php/laravel": {"baseline": 0.830, "pruned": 0.237, "speedup": 3.51},
+      "php/symfony": {"baseline": 3.854, "pruned": 1.220, "speedup": 3.16}
+    }
+  }
+}

@@ -122,7 +122,7 @@ class BatchSourceReader(SourceReader):
                     if self._is_excluded_path(policy, root, file_path):
                         files_excluded += 1
                     else:
-                        source_paths.append(file_path.resolve())
+                        source_paths.append(file_path.absolute())
                         if limit is not None and len(source_paths) >= limit:
                             return (sorted(source_paths), files_excluded, directories_pruned)
         return (sorted(source_paths), files_excluded, directories_pruned)
