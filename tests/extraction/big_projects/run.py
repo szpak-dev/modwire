@@ -91,12 +91,18 @@ class BigProjectBenchmark:
             return False
 
     def measure_extraction(self, project: Project, project_root: Path, sync_seconds: float, started: float) -> None:
-        durations: list[float] = []
+        generate_map_durations: list[float] = []
+        resolver_durations: list[float] = []
         measurements: list[tuple[int, int, int, int, int]] = []
         for _ in range(self.repetitions):
             extract_started = time.perf_counter()
             code_map = self.application.generate_map(project.language, project_root, self.scan_policy())
-            durations.append(time.perf_counter() - extract_started)
+            generate_map_durations.append(time.perf_counter() - extract_started)
+            resolver_started = time.perf_counter()
+            resolved_files = self.application.extraction.extractors.dependency.resolve(code_map.extraction.files)
+            resolver_durations.append(time.perf_counter() - resolver_started)
+            if resolved_files != code_map.extraction.files:
+                raise RuntimeError("Repeated import resolution changed the extracted structure")
             extraction = code_map.extraction
             measurements.append(
                 (
@@ -110,13 +116,16 @@ class BigProjectBenchmark:
         if len(set(measurements)) != 1:
             raise RuntimeError(f"Extraction metrics changed between runs: {measurements}")
         files_found, files_excluded, directories_pruned, files_built, modules_built = measurements[0]
-        formatted = ",".join(f"{duration:.3f}" for duration in durations)
+        generate_map_runs = ",".join(f"{duration:.3f}" for duration in generate_map_durations)
+        resolver_runs = ",".join(f"{duration:.3f}" for duration in resolver_durations)
         print(
             "  "
             f"sync={sync_seconds:.2f}s "
             f"source_root={project.source_root} "
-            f"extract_median={statistics.median(durations):.3f}s "
-            f"extract_runs=[{formatted}] "
+            f"generate_map_median={statistics.median(generate_map_durations):.3f}s "
+            f"generate_map_runs=[{generate_map_runs}] "
+            f"resolver_median={statistics.median(resolver_durations):.3f}s "
+            f"resolver_runs=[{resolver_runs}] "
             f"total={time.perf_counter() - started:.2f}s "
             f"files_found={files_found} "
             f"files_built={files_built} "
