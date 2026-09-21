@@ -16,6 +16,8 @@ from .extraction.facade import ExtractionFacade
 from .shared.code.models.code_map import CodeMap
 from .shared.code.models.queryable_code_map import QueryableCodeMap
 
+__all__ = ["CodeMap", "ModwireApplication", "QueryableCodeMap", "ScanPolicy"]
+
 
 @dataclass(frozen=True)
 class ModwireApplication:

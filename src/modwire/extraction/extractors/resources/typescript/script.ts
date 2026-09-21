@@ -230,7 +230,7 @@ function parameterDefinitions(parameters) {
         return {
             name,
             annotation: textOf(typeNode),
-            kind: parameter.isRestParameter() ? 'vararg' : 'positional',
+            kind: parameter.isRestParameter() ? 'variadic_positional' : 'positional',
             has_default: parameter.isRestParameter()
                 || parameter.isOptional()
                 || parameter.getInitializer() !== undefined,
@@ -929,7 +929,7 @@ function collectCallables(sourceFile, lineStarts, sourceId) {
                 qualifiedName: `${className}.${name}`,
                 ownerName: className,
                 visibility: visibilityFromModifiers(method),
-            }, isStatic ? 'staticmethod' : 'method');
+            }, isStatic ? 'static_method' : 'instance_method');
         }
     }
 

@@ -4,6 +4,7 @@ from wireup import injectable
 
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
+from ..models.extractor_resource import ExtractorResource
 from ..models.extractor_runtime import ExtractorRuntime
 
 
@@ -13,7 +14,11 @@ class PhpExtractor(SourceExtractor):
     @property
     def runtime(self) -> ExtractorRuntime:
         return ExtractorRuntime(
-            language="php", order=2, file_extensions=(".php",), command=("php",), resource="php/script.php"
+            language="php",
+            order=2,
+            file_extensions=(".php",),
+            command=("php",),
+            resource=ExtractorResource(package="modwire.extraction.extractors.resources", path="php/script.php"),
         )
 
     @property

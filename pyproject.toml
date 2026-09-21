@@ -43,7 +43,11 @@ exclude = ["*.__pycache__", "*.__pycache__.*"]
 
 [tool.setuptools.package-data]
 "modwire" = ["py.typed"]
-"modwire.cli.resources" = ["templates/*", "extractors/php/*", "extractors/typescript/*", "extractors/python/*.py"]
+"modwire.cli.resources" = ["templates/*"]
+"modwire.extraction.extractors.resources" = ["**/*"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["**/__pycache__/*", "**/*.pyc"]
 
 [tool.setuptools_scm]
 tag_regex = '^v(?P<version>\d+\.\d+\.\d+)$'

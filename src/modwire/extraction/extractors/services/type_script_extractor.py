@@ -4,6 +4,7 @@ from wireup import injectable
 
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
+from ..models.extractor_resource import ExtractorResource
 from ..models.extractor_runtime import ExtractorRuntime
 
 
@@ -17,7 +18,7 @@ class TypeScriptExtractor(SourceExtractor):
             order=1,
             file_extensions=(".ts", ".tsx", ".js", ".jsx"),
             command=("node",),
-            resource="typescript/script.js",
+            resource=ExtractorResource(package="modwire.extraction.extractors.resources", path="typescript/script.js"),
         )
 
     @property

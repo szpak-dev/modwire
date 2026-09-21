@@ -164,7 +164,7 @@ function parameter_definitions(array $params): array {
     return array_map(fn (Param $param): array => [
         'name' => var_name($param->var),
         'annotation' => $param->type instanceof Node ? node_name($param->type) : '',
-        'kind' => $param->variadic ? 'vararg' : 'positional',
+        'kind' => $param->variadic ? 'variadic_positional' : 'positional',
         'has_default' => $param->default !== null || $param->variadic,
     ], $params);
 }
@@ -585,7 +585,7 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
             $class = nearest_parent($parents, Stmt\Class_::class);
             $ownerName = $class instanceof Stmt\Class_ && $class->name !== null ? node_name($class->name) : '';
             $name = node_name($node->name);
-            $kind = $name === '__construct' ? 'constructor' : ($node->isStatic() ? 'staticmethod' : 'method');
+            $kind = $name === '__construct' ? 'constructor' : ($node->isStatic() ? 'static_method' : 'instance_method');
             $addCallable(source_callable_entry(
                 $sourceId,
                 $name,

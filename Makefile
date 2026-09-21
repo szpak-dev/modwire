@@ -1,17 +1,13 @@
 DEV_DIR := .dev
+BUILD_DIR := $(DEV_DIR)/build
 DIST_DIR := $(DEV_DIR)/dist
+EGG_INFO_DIR := src/modwire.egg-info
 PROJECT_ROOT := $(CURDIR)
-PHP_EXTRACTOR_DIR := src/modwire/cli/resources/extractors/php
-PHP_EXTRACTOR_WORK_DIR := $(DEV_DIR)/native/php
-TYPESCRIPT_EXTRACTOR_DIR := src/modwire/cli/resources/extractors/typescript
-TYPESCRIPT_EXTRACTOR_WORK_DIR := $(DEV_DIR)/native/typescript
 
-export COMPOSER_CACHE_DIR := $(PROJECT_ROOT)/$(DEV_DIR)/cache/composer
-export npm_config_cache := $(PROJECT_ROOT)/$(DEV_DIR)/cache/npm
 export PYTHONPYCACHEPREFIX := $(PROJECT_ROOT)/$(DEV_DIR)/cache/python
 export UV_CACHE_DIR := $(PROJECT_ROOT)/$(DEV_DIR)/cache/uv
 
-.PHONY: big-projects build ci docs docs-check format format-check lint native-check package-check php-check python-ci scan-benchmark scan-benchmark-fixture test type-check typescript-check
+.PHONY: big-projects build ci docs docs-check extractor-check format format-check host-check lint package-check scan-benchmark scan-benchmark-fixture test type-check
 
 format:
 	uv run ruff format src tests scripts
@@ -33,10 +29,10 @@ big-projects:
 	uv run python -m tests.extraction.big_projects.run
 
 scan-benchmark-fixture:
-	uv run python -m tests.extraction.scan_benchmark.prepare --root .dev/benchmarks/scan-project
+	uv run python -m tests.extraction.scan_benchmark.prepare --root .dev/benchmarks/scan-project --source-template "$(SCAN_BENCHMARK_SOURCE)"
 
 scan-benchmark:
-	uv run python -m tests.extraction.scan_benchmark.run --root .dev/benchmarks/scan-project --excluded-pattern 'example_excluded/**'
+	uv run python -m tests.extraction.scan_benchmark.run --root .dev/benchmarks/scan-project --language "$(SCAN_BENCHMARK_LANGUAGE)" --excluded-pattern 'example_excluded/**'
 
 docs-check:
 	uv run python scripts/generate_docs.py --check
@@ -45,30 +41,15 @@ docs:
 	uv run python scripts/generate_docs.py
 
 build:
-	rm -rf $(DIST_DIR)
+	rm -rf $(BUILD_DIR) $(DIST_DIR) $(EGG_INFO_DIR)
 	uv build --out-dir $(DIST_DIR)
 
 package-check: build
 	uv run twine check $(DIST_DIR)/*
 
-typescript-check:
-	rm -rf $(TYPESCRIPT_EXTRACTOR_WORK_DIR)
-	mkdir -p $(TYPESCRIPT_EXTRACTOR_WORK_DIR)
-	cp $(TYPESCRIPT_EXTRACTOR_DIR)/package.json $(TYPESCRIPT_EXTRACTOR_DIR)/package-lock.json $(TYPESCRIPT_EXTRACTOR_DIR)/build.mjs $(TYPESCRIPT_EXTRACTOR_DIR)/script.ts $(TYPESCRIPT_EXTRACTOR_DIR)/tsconfig.json $(TYPESCRIPT_EXTRACTOR_WORK_DIR)
-	cd $(TYPESCRIPT_EXTRACTOR_WORK_DIR) && npm ci && npm run check && npm run build
-	cmp $(TYPESCRIPT_EXTRACTOR_WORK_DIR)/script.js $(TYPESCRIPT_EXTRACTOR_DIR)/script.js
+extractor-check:
+	python3 scripts/check_extractors.py
 
-php-check:
-	rm -rf $(PHP_EXTRACTOR_WORK_DIR)
-	mkdir -p $(PHP_EXTRACTOR_WORK_DIR)
-	cp $(PHP_EXTRACTOR_DIR)/composer.json $(PHP_EXTRACTOR_DIR)/composer.lock $(PHP_EXTRACTOR_DIR)/build.php $(PHP_EXTRACTOR_DIR)/script.src.php $(PHP_EXTRACTOR_WORK_DIR)
-	composer --working-dir=$(PHP_EXTRACTOR_WORK_DIR) install --no-interaction --no-progress --prefer-dist
-	composer --working-dir=$(PHP_EXTRACTOR_WORK_DIR) check
-	composer --working-dir=$(PHP_EXTRACTOR_WORK_DIR) build
-	cmp $(PHP_EXTRACTOR_WORK_DIR)/script.php $(PHP_EXTRACTOR_DIR)/script.php
+host-check: format-check lint type-check test docs-check package-check
 
-native-check: typescript-check php-check
-
-python-ci: format-check lint type-check test docs-check package-check
-
-ci: python-ci native-check
+ci: host-check extractor-check

@@ -20,12 +20,14 @@ class TestReportInvariants(ArchitectureTestCase):
 
     def test_repeated_analysis_preserves_values_and_input(self) -> None:
         config = self.example_configuration()
-        source = self.queryable_map(("src/example.py",), ())
+        source = self.queryable_map(("src/example.source",), ())
         before = source.code_map.to_json()
         facade = self.application
         assert facade.analyze(source, config) == facade.analyze(source, config)
         assert source.code_map.to_json() == before
 
     def test_map_reports_unclassified_sources(self) -> None:
-        report = self.report("architecture.map", self.example_configuration(), self.queryable_map(("example.py",), ()))
-        assert report.unknown_files == ("example.py",)
+        report = self.report(
+            "architecture.map", self.example_configuration(), self.queryable_map(("example.source",), ())
+        )
+        assert report.unknown_files == ("example.source",)

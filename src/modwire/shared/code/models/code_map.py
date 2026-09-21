@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, ClassVar, Literal
 
 from pydantic import ConfigDict
 
@@ -9,6 +9,7 @@ from .source_extraction import SourceExtraction
 
 class CodeMap(ValueModel):
     model_config = ConfigDict(frozen=True)
+    schema_version: ClassVar[Literal[2]] = 2
     language: str
     extraction: SourceExtraction
     dependency_graph: DependencyGraph
