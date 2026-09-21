@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import shutil
@@ -19,6 +20,8 @@ from ....shared.code.models.duplicate_identity_error import DuplicateIdentityErr
 from ....shared.code.models.identity import FileId, ModuleId
 from ....shared.code.models.source_extraction import SourceExtraction
 from ....shared.code.models.source_file import SourceFile
+from ...cache.models.source_entry import SourceEntry
+from ...cache.models.source_inventory import SourceInventory
 from ..domain import SourceReader
 from ..models.scan_policy import ScanPolicy
 
@@ -43,23 +46,8 @@ class BatchSourceReader(SourceReader):
         return bool(source_paths)
 
     def extract_source(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceExtraction:
-        root = Path(request.root)
-        resolved_root = root.resolve()
-        if not resolved_root.is_dir():
-            raise ValueError(f"Source root is not a directory: {root}")
-        source_paths, files_excluded, directories_pruned = self._discover_source_files(
-            request, resolved_root, policy, limit=None
-        )
-        files: dict[FileId, SourceFile] = {}
-        batches = self._source_batches(request, source_paths)
-        if self._uses_parallel_batches(request, len(source_paths)):
-            max_workers = max(1, request.batch_config.max_workers)
-            with ThreadPoolExecutor(max_workers=max_workers) as executor:
-                for extracted in executor.map(self._extract_batch, repeat(request), repeat(resolved_root), batches):
-                    self._merge_files(files, extracted)
-        else:
-            for batch_paths in batches:
-                self._merge_files(files, self._extract_batch(request, resolved_root, batch_paths))
+        inventory = self.inventory(request, policy)
+        files = self.extract_entries(request, inventory, tuple(entry.source_id for entry in inventory.entries))
         modules: dict[ModuleId, FileId] = {}
         for file_id, source_file in files.items():
             existing = modules.get(source_file.module_id)
@@ -69,10 +57,61 @@ class BatchSourceReader(SourceReader):
         return SourceExtraction(
             files=files,
             modules=modules,
+            files_found=inventory.files_found,
+            files_excluded=inventory.files_excluded,
+            directories_pruned=inventory.directories_pruned,
+        )
+
+    def inventory(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceInventory:
+        root = Path(request.root)
+        resolved_root = root.resolve()
+        if not resolved_root.is_dir():
+            raise ValueError(f"Source root is not a directory: {root}")
+        source_paths, files_excluded, directories_pruned = self._discover_source_files(
+            request, resolved_root, policy, limit=None
+        )
+        entries = tuple(
+            SourceEntry(
+                source_id=self._source_id_for_path(request, resolved_root, source_path),
+                relative_path=source_path.relative_to(resolved_root).as_posix(),
+                content_digest=self._content_digest(source_path),
+                path=str(source_path),
+            )
+            for source_path in source_paths
+        )
+        return SourceInventory(
+            entries=entries,
             files_found=len(source_paths),
             files_excluded=files_excluded,
             directories_pruned=directories_pruned,
         )
+
+    def extract_entries(
+        self, request: ExtractionRequest, inventory: SourceInventory, source_ids: tuple[FileId, ...]
+    ) -> dict[FileId, SourceFile]:
+        requested = set(source_ids)
+        entries = tuple(entry for entry in inventory.entries if entry.source_id in requested)
+        if len(entries) != len(requested):
+            missing = sorted(str(source_id) for source_id in requested - {entry.source_id for entry in entries})
+            raise ValueError(f"Source inventory does not contain requested identities: {missing}")
+        root = Path(request.root).resolve()
+        source_paths = [Path(entry.path) for entry in entries]
+        files: dict[FileId, SourceFile] = {}
+        batches = self._source_batches(request, source_paths)
+        if self._uses_parallel_batches(request, len(source_paths)):
+            max_workers = max(1, request.batch_config.max_workers)
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                for extracted in executor.map(self._extract_batch, repeat(request), repeat(root), batches):
+                    self._merge_files(files, extracted)
+        else:
+            for batch_paths in batches:
+                self._merge_files(files, self._extract_batch(request, root, batch_paths))
+        expected_digests = {entry.source_id: entry.content_digest for entry in entries}
+        for source_path in source_paths:
+            source_id = self._source_id_for_path(request, root, source_path)
+            if self._content_digest(source_path) != expected_digests[source_id]:
+                raise RuntimeError(f"Source file changed during extraction: {source_id}")
+        return {entry.source_id: files[entry.source_id] for entry in entries}
 
     def _source_batches(self, request: ExtractionRequest, source_paths: list[Path]) -> list[list[Path]]:
         batch_size = self._batch_size(request, len(source_paths))
@@ -201,3 +240,6 @@ class BatchSourceReader(SourceReader):
 
     def _source_id_for_path(self, request: ExtractionRequest, root: Path, path: Path) -> FileId:
         return self.code.file_id(str(root), str(path))
+
+    def _content_digest(self, path: Path) -> str:
+        return hashlib.sha256(path.read_bytes()).hexdigest()

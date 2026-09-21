@@ -10,13 +10,14 @@ from .architecture.config.models.architecture_config import ArchitectureConfig
 from .architecture.facade import ArchitectureFacade
 from .architecture.report.models.report_catalog import ReportCatalog
 from .architecture.report.models.report_node import ReportNode
+from .cli.cache.models.cache_options import CacheOptions
 from .cli.facade import CliFacade
 from .cli.pipeline.models.scan_policy import ScanPolicy
 from .extraction.facade import ExtractionFacade
 from .shared.code.models.code_map import CodeMap
 from .shared.code.models.queryable_code_map import QueryableCodeMap
 
-__all__ = ["CodeMap", "ModwireApplication", "QueryableCodeMap", "ScanPolicy"]
+__all__ = ["CacheOptions", "CodeMap", "ModwireApplication", "QueryableCodeMap", "ScanPolicy"]
 
 
 @dataclass(frozen=True)
@@ -56,6 +57,18 @@ class ModwireApplication:
 
         return self.architecture.analyze(code_map, config)
 
+    def analyze_cached(
+        self, code_map: QueryableCodeMap, config: ArchitectureConfig, options: CacheOptions
+    ) -> tuple[ReportNode, ...]:
+        """Analyze a code map, reusing reports for an exact map and configuration identity."""
+
+        cached = self.cli.cached_reports(code_map.code_map, config, options)
+        if cached is not None:
+            return cached
+        reports = self.architecture.analyze(code_map, config)
+        self.cli.store_reports(code_map.code_map, config, reports, options)
+        return reports
+
     def discover(self, root: str, policy: ScanPolicy) -> tuple[str, ...]:
         """Discover supported source languages beneath a root using the caller's scan policy."""
 
@@ -81,6 +94,30 @@ class ModwireApplication:
 
         return QueryableCodeMap(code_map=self.generate_map(language, root, policy))
 
+    def generate_map_cached(self, language: str, root: str, policy: ScanPolicy, options: CacheOptions) -> CodeMap:
+        """Return a code map with content-addressed source and complete-manifest reuse."""
+
+        request = self.extraction.request(language, str(root))
+        snapshot = self.cli.extract_cached(request, policy, options)
+        cached = self.cli.cached_code_map(snapshot, options)
+        if cached is not None:
+            return cached
+        code_map = self.extraction.generate_map(language, snapshot.extraction)
+        self.cli.store_code_map(snapshot, code_map, options)
+        return code_map
+
+    def generate_queryable_map_cached(
+        self, language: str, root: str, policy: ScanPolicy, options: CacheOptions
+    ) -> QueryableCodeMap:
+        """Return a queryable code map with content-addressed persistent reuse."""
+
+        return QueryableCodeMap(code_map=self.generate_map_cached(language, root, policy, options))
+
+    def clear_cache(self, options: CacheOptions) -> None:
+        """Clear only the Modwire-owned directory for one cache namespace."""
+
+        self.cli.clear_cache(options)
+
     def load_configuration(self, dot_dir: str) -> ArchitectureConfig:
         """Load and validate an architecture configuration from a directory."""
 
@@ -94,7 +131,7 @@ class ModwireApplication:
     def generate_documentation(self, readme: str, check: bool) -> int:
         """Generate this README from the published interface docstrings, or check that it is current."""
 
-        return self.cli.generate_documentation(str(readme), (type(self), ScanPolicy), check)
+        return self.cli.generate_documentation(str(readme), (type(self), CacheOptions, ScanPolicy), check)
 
     def run_extractor(self, language: str) -> int:
         """Run the native extractor transport for one supported language."""
