@@ -139,7 +139,7 @@ class BatchSourceReader(SourceReader):
         if not source_paths:
             return {}
         runtime = request.runtime
-        script_path = Path(str(resources.files("modwire.cli.resources").joinpath("extractors", runtime.resource)))
+        script_path = Path(str(resources.files(runtime.resource.package).joinpath(runtime.resource.path)))
         if not script_path.is_file():
             raise RuntimeError(f"{runtime.language} extractor script is missing: {script_path}")
         paths_by_source_id = {

@@ -23,8 +23,8 @@ class TestBoundaryInvariants(BoundaryTestCase):
                 "shape": {"realms": [{"name": "example-source", "match": "src"}]},
             }
         )
-        assert not self.violations(config, "src/example_a/example.py", "src/example_shared/example.py")
-        assert self.violations(config, "src/example_a/example.py", "src/example_b/example.py")
+        assert not self.violations(config, "src/example_a/example.source", "src/example_shared/example.source")
+        assert self.violations(config, "src/example_a/example.source", "src/example_b/example.source")
 
     def test_cycle_analysis_evaluates_every_realm(self) -> None:
         config = self.application.configure(
@@ -46,10 +46,10 @@ class TestBoundaryInvariants(BoundaryTestCase):
             }
         )
         paths = (
-            "example_backend/example_a/example_backend_one.py",
-            "example_backend/example_b/example_backend_two.py",
-            "example_frontend/example_a/example_frontend_one.py",
-            "example_frontend/example_b/example_frontend_two.py",
+            "example_backend/example_a/example_backend_one.source",
+            "example_backend/example_b/example_backend_two.source",
+            "example_frontend/example_a/example_frontend_one.source",
+            "example_frontend/example_b/example_frontend_two.source",
         )
         edges = tuple((paths[a], paths[b], "resolved", "example.target") for a, b in ((0, 1), (1, 0), (2, 3), (3, 2)))
         report = self.report("architecture.violations.flow", config, self.queryable_map(paths, edges))

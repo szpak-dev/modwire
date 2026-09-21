@@ -1,3 +1,4 @@
+import argparse
 import sys
 
 from wireup import create_sync_container, injectable
@@ -24,9 +25,14 @@ try:
 finally:
     container.close()
 
+parser = argparse.ArgumentParser()
+parser.add_argument("root")
+parser.add_argument("--language", required=True)
+arguments = parser.parse_args()
+
 application = ModwireApplication.create()
 config = application.configure({"shape": {"realms": [{"name": "example-source", "match": "src"}]}})
-code_map = application.generate_queryable_map("python", sys.argv[1], ScanPolicy())
+code_map = application.generate_queryable_map(arguments.language, arguments.root, ScanPolicy())
 reports = application.analyze(code_map, config)
 assert code_map.files().count() == 1
 assert len(reports) == 4

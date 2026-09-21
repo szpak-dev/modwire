@@ -6,7 +6,7 @@ from ..support.service_test import ServiceTestCase
 
 
 class ApplicationTestCase(ServiceTestCase):
-    def installed_consumer(self, root: Path) -> subprocess.CompletedProcess[str]:
+    def installed_consumer(self, root: Path, language: str) -> subprocess.CompletedProcess[str]:
         distribution = self.workspace / "distribution"
         subprocess.run(
             ("uv", "build", "--wheel", "--out-dir", str(distribution)),
@@ -29,6 +29,8 @@ class ApplicationTestCase(ServiceTestCase):
                 "python",
                 str(self.repository / "scripts/verify_consumer.py"),
                 str(root),
+                "--language",
+                language,
             ),
             cwd=self.workspace,
             env=environment,

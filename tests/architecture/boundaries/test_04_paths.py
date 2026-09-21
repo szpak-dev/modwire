@@ -21,7 +21,7 @@ class TestFlowPaths(BoundaryTestCase):
                 "shape": {"realms": [{"name": "example-source", "match": "src"}]},
             }
         )
-        paths = ("src/example_entry/example_entry.py", "src/example_core/example_core.py")
+        paths = ("src/example_entry/example_entry.source", "src/example_core/example_core.source")
         source, target = tuple(reversed(paths)) if reverse else paths
         result = self.violations(config, source, target)
         assert result == ((source, target),) if reverse else result == ()
@@ -39,9 +39,9 @@ class TestFlowPaths(BoundaryTestCase):
         )
         target_module = "example_first" if reenters else "example_third"
         paths = (
-            "src/example_first/example_entry.py",
-            "src/example_second/example_middle.py",
-            f"src/{target_module}/example_target.py",
+            "src/example_first/example_entry.source",
+            "src/example_second/example_middle.source",
+            f"src/{target_module}/example_target.source",
         )
         edges = tuple((paths[a], paths[b], "resolved", "example.target") for a, b in ((0, 1), (1, 2)))
         report = self.report("architecture.violations.flow", config, self.queryable_map(paths, edges))
@@ -60,7 +60,7 @@ class TestFlowPaths(BoundaryTestCase):
                 "shape": {"realms": [{"name": "example-source", "match": "src"}]},
             }
         )
-        paths = ("src/example_first/example_first.py", "src/example_second/example_second.py")
+        paths = ("src/example_first/example_first.source", "src/example_second/example_second.source")
         edges = tuple((paths[a], paths[b], "resolved", "example.target") for a, b in ((0, 1), (1, 0)))
         report = self.report("architecture.violations.flow", config, self.queryable_map(paths, edges))
         assert tuple(item.path for item in report.violations) == (("example_first", "example_second", "example_first"),)

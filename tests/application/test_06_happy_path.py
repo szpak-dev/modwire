@@ -21,5 +21,5 @@ class TestModwireApplication(ApplicationTestCase):
 
     def test_installed_distribution_configures_maps_and_reports_source(self) -> None:
         project = self.project({"src/example.py": "def example_function():\n    return 1\n"})
-        result = self.installed_consumer(project)
+        result = self.installed_consumer(project, "python")
         assert result.returncode == 0, result.stderr

@@ -1,51 +1,66 @@
+from ...support.code_map import CodeMapFactory
 from .base_test import InsightTestCase
 
 
 class TestInsightInvariants(InsightTestCase):
     def test_coherence_distinguishes_roots_leaves_isolation_and_external_imports(self) -> None:
-        result = self.insight(
-            {
-                "example_entry.py": "import example_middle\n",
-                "example_middle.py": "import example_leaf\nimport json\n",
-                "example_leaf.py": "class ExampleLeaf: pass\n",
-                "example_isolated.py": "class ExampleIsolated: pass\n",
-            }
-        ).coherence
-        assert result.roots == ("example_entry.py", "example_isolated.py")
-        assert result.leaves == ("example_isolated.py", "example_leaf.py")
-        assert result.isolated == ("example_isolated.py",)
-        assert result.external_dependencies == ("json",)
+        paths = ("example_entry.source", "example_middle.source", "example_leaf.source", "example_isolated.source")
+        edges = (
+            (paths[0], paths[1], "resolved", "example_middle"),
+            (paths[1], paths[2], "resolved", "example_leaf"),
+            (paths[1], None, "external", "example_external"),
+        )
+        result = self.insight(dict.fromkeys(paths, {}), edges).coherence
+        assert result.roots == ("example_entry.source", "example_isolated.source")
+        assert result.leaves == ("example_isolated.source", "example_leaf.source")
+        assert result.isolated == ("example_isolated.source",)
+        assert result.external_dependencies == ("example_external",)
 
     def test_hotspots_rank_dependency_pressure_and_break_ties_by_path(self) -> None:
-        result = self.insight(
-            {
-                "example_first.py": "import example_target\n",
-                "example_second.py": "import example_target\n",
-                "example_target.py": "class ExampleTarget: pass\n",
-            }
-        ).hotspots
+        paths = ("example_first.source", "example_second.source", "example_target.source")
+        edges = (
+            (paths[0], paths[2], "resolved", "example_target"),
+            (paths[1], paths[2], "resolved", "example_target"),
+        )
+        result = self.insight(dict.fromkeys(paths, {}), edges).hotspots
         assert tuple((item.source_id, item.incoming_count, item.outgoing_count) for item in result.hotspots) == (
-            ("example_target.py", 2, 0),
-            ("example_first.py", 0, 1),
-            ("example_second.py", 0, 1),
+            ("example_target.source", 2, 0),
+            ("example_first.source", 0, 1),
+            ("example_second.source", 0, 1),
         )
 
     def test_unused_exports_do_not_include_imported_symbols(self) -> None:
         result = self.insight(
             {
-                "example_values.py": "class ExampleUsed: pass\nclass ExampleUnused: pass\n",
-                "example_consumer.py": "from example_values import ExampleUsed\n",
+                "example_values.source": {
+                    "exports": [
+                        CodeMapFactory.source_export("ExampleUsed"),
+                        CodeMapFactory.source_export("ExampleUnused"),
+                    ]
+                },
+                "example_consumer.source": {
+                    "imports": [CodeMapFactory.source_import("example_values", imported_name="ExampleUsed")]
+                },
             }
         ).exports
         assert tuple((item.source_id, item.name) for item in result.unused_exports) == (
-            ("example_values.py", "ExampleUnused"),
+            ("example_values.source", "ExampleUnused"),
         )
 
     def test_callable_report_links_local_calls_and_deduplicates_repeated_calls(self) -> None:
+        source_id = "example.source"
         result = self.insight(
             {
-                "example.py": "def example_target(): pass\ndef example_caller():\n"
-                "    example_target()\n    example_target()\n"
+                source_id: {
+                    "callables": [
+                        CodeMapFactory.source_callable(source_id, "example_target"),
+                        CodeMapFactory.source_callable(source_id, "example_caller"),
+                    ],
+                    "calls": [
+                        CodeMapFactory.source_call(source_id, "example_caller", "example_target"),
+                        CodeMapFactory.source_call(source_id, "example_caller", "example_target"),
+                    ],
+                }
             }
         ).callables
         entries = {item.source_callable: item for item in result.entries}

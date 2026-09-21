@@ -28,7 +28,7 @@ class ScanBenchmark:
     def main(cls) -> int:
         parser = argparse.ArgumentParser(description="Measure full extraction over a caller-selected scan root.")
         parser.add_argument("--root", type=Path, required=True)
-        parser.add_argument("--language", default="python")
+        parser.add_argument("--language", required=True)
         parser.add_argument("--excluded-pattern", action="append", default=[])
         parser.add_argument("--repeat", type=int, default=5)
         parser.add_argument("--api", choices=("current", "legacy"), default="current")

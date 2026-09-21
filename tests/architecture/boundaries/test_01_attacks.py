@@ -7,8 +7,8 @@ class TestBoundaryAttacks(BoundaryTestCase):
     @pytest.mark.parametrize(
         ("source", "target", "denied"),
         (
-            ("src/example_one/example_a/service.py", "src/example_one/example_b/service.py", True),
-            ("src/example_one/example_a/service.py", "src/example_one/example_a/other.py", False),
+            ("src/example_one/example_a/service.source", "src/example_one/example_b/service.source", True),
+            ("src/example_one/example_a/service.source", "src/example_one/example_a/other.source", False),
         ),
     )
     def test_a_shared_context_cannot_bypass_a_module_boundary(self, source: str, target: str, denied: bool) -> None:
@@ -42,6 +42,6 @@ class TestBoundaryAttacks(BoundaryTestCase):
                 "shape": {"realms": [{"name": "example-source", "match": "src"}]},
             }
         )
-        paths = self.violations(config, "example_tool.py", "src/example_module/example.py")
-        assert ("example_tool.py",) in paths
-        assert ("example_tool.py", "src/example_module/example.py") in paths
+        paths = self.violations(config, "example_tool.source", "src/example_module/example.source")
+        assert ("example_tool.source",) in paths
+        assert ("example_tool.source", "src/example_module/example.source") in paths

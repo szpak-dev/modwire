@@ -5,6 +5,7 @@ from wireup import injectable
 
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
+from ..models.extractor_resource import ExtractorResource
 from ..models.extractor_runtime import ExtractorRuntime
 
 
@@ -14,7 +15,11 @@ class PythonExtractor(SourceExtractor):
     @property
     def runtime(self) -> ExtractorRuntime:
         return ExtractorRuntime(
-            language="python", order=0, file_extensions=(".py",), command=(sys.executable,), resource="python/script.py"
+            language="python",
+            order=0,
+            file_extensions=(".py",),
+            command=(sys.executable,),
+            resource=ExtractorResource(package="modwire.extraction.extractors.resources", path="python/script.py"),
         )
 
     @property

@@ -280,7 +280,7 @@ class PythonSyntaxParser(SourceParser):
                 {
                     "name": args.vararg.arg,
                     "annotation": self.unparse(args.vararg.annotation),
-                    "kind": "vararg",
+                    "kind": "variadic_positional",
                     "has_default": True,
                 }
             )
@@ -289,7 +289,7 @@ class PythonSyntaxParser(SourceParser):
                 {
                     "name": arg.arg,
                     "annotation": self.unparse(arg.annotation),
-                    "kind": "keyword_only",
+                    "kind": "named_only",
                     "has_default": default is not None,
                 }
                 for arg, default in zip(args.kwonlyargs, args.kw_defaults, strict=True)
@@ -300,7 +300,7 @@ class PythonSyntaxParser(SourceParser):
                 {
                     "name": args.kwarg.arg,
                     "annotation": self.unparse(args.kwarg.annotation),
-                    "kind": "kwarg",
+                    "kind": "variadic_named",
                     "has_default": True,
                 }
             )
@@ -315,14 +315,14 @@ class PythonSyntaxParser(SourceParser):
         if node.name == "__init__" and is_method:
             kind = "constructor"
         elif is_method and self.has_decorator(node, "classmethod"):
-            kind = "classmethod"
+            kind = "type_method"
         elif is_method and self.has_decorator(node, "staticmethod"):
-            kind = "staticmethod"
+            kind = "static_method"
         elif is_method:
-            kind = "method"
+            kind = "instance_method"
         else:
             kind = "function"
-        exclude_receiver = is_method and kind != "staticmethod"
+        exclude_receiver = is_method and kind != "static_method"
         declared_args, optional_args = self.argument_counts(node, exclude_receiver=exclude_receiver)
         return {
             "id": self.callable_id(source_id, qualified_name),
