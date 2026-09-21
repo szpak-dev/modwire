@@ -1,0 +1,20 @@
+{
+  "recorded_on": "2026-09-21",
+  "implementation_revision": "619f47c3caa8a86cfa9b7e0c1583f85120bc9aea",
+  "operation": "ModwireApplication.generate_map",
+  "claim_scope": "Native full extraction validation of every matching source file beneath each pinned production source root; not a performance comparison.",
+  "repetitions": 1,
+  "excluded_patterns": [],
+  "total_seconds": 191.9,
+  "projects": {
+    "python/transformers": {"source_root": "src/transformers", "seconds": 130.629, "files_found": 2823, "files_built": 2823, "modules_built": 2823},
+    "python/django": {"source_root": "django", "seconds": 10.051, "files_found": 908, "files_built": 908, "modules_built": 908},
+    "python/ansible": {"source_root": "lib/ansible", "seconds": 6.492, "files_found": 583, "files_built": 583, "modules_built": 583},
+    "typescript/vscode": {"source_root": "src/vs/editor", "seconds": 16.059, "files_found": 858, "files_built": 858, "modules_built": 858},
+    "typescript/typescript": {"source_root": "src", "seconds": 11.238, "files_found": 709, "files_built": 709, "modules_built": 709},
+    "typescript/angular": {"source_root": "packages/core/src", "seconds": 2.987, "files_found": 409, "files_built": 409, "modules_built": 409},
+    "php/laravel": {"source_root": "src", "seconds": 10.267, "files_found": 1644, "files_built": 1644, "modules_built": 1644},
+    "php/symfony": {"source_root": "src/Symfony/Component/Console", "seconds": 1.92, "files_found": 359, "files_built": 359, "modules_built": 359},
+    "php/composer": {"source_root": "src", "seconds": 2.257, "files_found": 308, "files_built": 308, "modules_built": 308}
+  }
+}

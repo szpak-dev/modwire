@@ -11,6 +11,7 @@ class SourceExtraction(ValueModel):
     modules: dict[ModuleId, FileId]
     files_found: int
     files_excluded: int
+    directories_pruned: int
 
     def files_dict(self) -> dict[FileId, SourceFile]:
         return dict(self.files)

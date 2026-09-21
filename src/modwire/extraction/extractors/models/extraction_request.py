@@ -7,4 +7,3 @@ class ExtractionRequest(ValueModel):
     root: str
     runtime: ExtractorRuntime
     batch_config: BatchConfig
-    excluded_patterns: tuple[str, ...] = ()

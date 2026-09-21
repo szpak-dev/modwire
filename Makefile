@@ -11,7 +11,7 @@ export npm_config_cache := $(PROJECT_ROOT)/$(DEV_DIR)/cache/npm
 export PYTHONPYCACHEPREFIX := $(PROJECT_ROOT)/$(DEV_DIR)/cache/python
 export UV_CACHE_DIR := $(PROJECT_ROOT)/$(DEV_DIR)/cache/uv
 
-.PHONY: architecture build ci docs-check format format-check lint native-check package-check php-check python-ci test type-check typescript-check
+.PHONY: big-projects build ci docs docs-check format format-check lint native-check package-check php-check python-ci scan-benchmark scan-benchmark-fixture test type-check typescript-check
 
 format:
 	uv run ruff format src tests scripts
@@ -29,11 +29,20 @@ test:
 	mkdir -p $(DEV_DIR)/testing
 	uv run pytest
 
+big-projects:
+	uv run python -m tests.extraction.big_projects.run
+
+scan-benchmark-fixture:
+	uv run python -m tests.extraction.scan_benchmark.prepare --root .dev/benchmarks/scan-project
+
+scan-benchmark:
+	uv run python -m tests.extraction.scan_benchmark.run --root .dev/benchmarks/scan-project --excluded-pattern 'example_excluded/**'
+
 docs-check:
 	uv run python scripts/generate_docs.py --check
 
-architecture:
-	uv run modwire report --language python --summary
+docs:
+	uv run python scripts/generate_docs.py
 
 build:
 	rm -rf $(DIST_DIR)
@@ -60,6 +69,6 @@ php-check:
 
 native-check: typescript-check php-check
 
-python-ci: format-check lint type-check test docs-check architecture package-check
+python-ci: format-check lint type-check test docs-check package-check
 
 ci: python-ci native-check

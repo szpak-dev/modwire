@@ -17,11 +17,11 @@ class TestPublicApiBoundaries(BoundaryTestCase):
         ),
     )
     def test_only_the_public_application_is_importable_from_tests(self, target: str, denied: bool) -> None:
-        config = self.application.load_configuration(self.repository / ".modwire")
+        config = self.public_api_configuration()
         source = "tests/example_context/test_example.py"
         paths = self.violations(config, source, target)
         assert ((source, target) in paths) is denied
 
     def test_repository_rules_allow_inherited_test_helpers(self) -> None:
-        config = self.application.load_configuration(self.repository / ".modwire")
+        config = self.public_api_configuration()
         assert not self.violations(config, "tests/example_context/test_example.py", "tests/support/example_base.py")

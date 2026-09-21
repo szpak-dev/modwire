@@ -1,29 +1,61 @@
 # Modwire
 
-Consolidation workspace for **modwire-extraction**, **modwire-architecture**, and **modwire-cli**.
+## `ModwireApplication`
 
-Start with the [Modwire board](https://github.com/orgs/szpak-dev/projects/13) and the [consolidation epic](https://github.com/szpak-dev/modwire/issues/1).
+Public entry point for source discovery, extraction, architecture analysis, and the Modwire CLI.
 
-The merge must preserve behavior, wire every service through Wireup, combine the legacy `.modwire` configurations, and produce the expected architecture map and passing health checks. The CLI remains part of the unified package, with clean `pipx` installation verified before transfer.
+### `create`
 
-Enclosure MCP is the single source of truth for project guidance, architecture and diagrams; the local docs are bootstrap context and synchronized exports. The consolidation also evaluates how agents use Enclosure for a new, demanding project.
+Create an isolated application with all services resolved through Wireup.
 
-After the local merge, package/CLI verification and usable Enclosure project management with the canonical diagrams and real architecture/health evidence, **stop for the user's explicit acceptance of the local implementation**. Publication, performance improvements and Enclosure dependency upgrades are later work requiring a subsequent instruction. Current blockers live in the native issue graph and organization boards.
+### `configure`
 
-[Planning diagrams](docs/planning/diagrams/README.md) · [Pinned source baselines](docs/planning/baselines.json)
+Validate architecture configuration values.
 
-<!-- generated:public-api:start -->
-## Command reference
+### `catalog`
 
-Provide `modwire init` for setup and `modwire report` for architecture feedback.
+Return the available architecture reports.
 
-Existing `modwire --language <language>` automation continues to run reports.
+### `analyze`
 
-| Command | Purpose |
-| --- | --- |
-| `modwire init` | Create `.modwire/` guidance and a strict architecture template. |
-| `modwire report --language <language>` | Analyse the configured project and render violations. |
-| `modwire --language <language>` | Backwards-compatible form of `report`. |
+Analyze a code map with a validated architecture configuration.
 
-Use `--summary` with `report` to render module-to-layer membership without files.
-<!-- generated:public-api:end -->
+### `discover`
+
+Discover supported source languages beneath a root using the caller's scan policy.
+
+### `generate_map`
+
+Extract one language and return its code map with honest scan metrics.
+
+``files_excluded`` counts only source files encountered and excluded directly.
+``directories_pruned`` counts directories rejected before descent; their
+descendants are deliberately unobserved and are not included in file counts.
+
+### `generate_queryable_map`
+
+Extract source files and return a queryable code map.
+
+### `load_configuration`
+
+Load and validate an architecture configuration from a directory.
+
+### `initialize`
+
+Create project-local Modwire configuration and agent guidance.
+
+### `generate_documentation`
+
+Generate this README from the published interface docstrings, or check that it is current.
+
+### `run_extractor`
+
+Run the native extractor transport for one supported language.
+
+### `run`
+
+Run the Modwire command line interface and return its process status.
+
+## `ScanPolicy`
+
+Caller-owned filesystem traversal policy with explicit exclusions and opt-in symlink following.

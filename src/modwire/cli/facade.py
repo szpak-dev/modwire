@@ -15,6 +15,7 @@ from .initialization.application import InitializationApplication
 from .pipeline.application import PipelineApplication
 from .pipeline.models.command_request import CommandRequest
 from .pipeline.models.extractor_command_input import ExtractorCommandInput
+from .pipeline.models.scan_policy import ScanPolicy
 
 
 @injectable
@@ -38,11 +39,11 @@ class CliFacade:
     def initialize(self, root: str, dot_dir: str, force: bool) -> int:
         return self.initialization.initialize(Path(root), Path(dot_dir), force)
 
-    def extract(self, request: ExtractionRequest) -> SourceExtraction:
-        return self.pipeline.extract(request)
+    def extract(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceExtraction:
+        return self.pipeline.extract(request, policy)
 
-    def has_source_files(self, request: ExtractionRequest) -> bool:
-        return self.pipeline.has_source_files(request)
+    def has_source_files(self, request: ExtractionRequest, policy: ScanPolicy) -> bool:
+        return self.pipeline.has_source_files(request, policy)
 
     def render(self, reports: tuple[ReportNode, ...], summary: bool) -> int:
         return self.pipeline.run(reports, summary=summary)
@@ -53,8 +54,8 @@ class CliFacade:
     def write_sources(self, result: dict[str, object]) -> int:
         return self.pipeline.write_sources(result)
 
-    def generate_documentation(self, readme: str, check: bool) -> int:
-        return self.documentation.generate(Path(readme), check)
+    def generate_documentation(self, readme: str, public_interfaces: tuple[type[object], ...], check: bool) -> int:
+        return self.documentation.generate(Path(readme), public_interfaces, check)
 
     def run_extractor(self, language: str) -> int:
         request = self.read_sources(language)
@@ -79,9 +80,8 @@ class CliFacade:
             return self.initialize(self.working_directory(), str(request.dot_dir), request.force)
         config = self.load_configuration(str(request.dot_dir))
         extraction = self.extract(
-            self.extraction.request(request.language, str(request.architecture_root)).model_copy(
-                update={"excluded_patterns": config.excluded_patterns}
-            )
+            self.extraction.request(request.language, str(request.architecture_root)),
+            ScanPolicy(excluded_patterns=config.excluded_patterns),
         )
         code_map = self.extraction.generate_queryable_map(request.language, extraction)
         return self.render(self.architecture.analyze(code_map, config), request.summary)
