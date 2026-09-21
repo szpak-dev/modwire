@@ -8,6 +8,7 @@ class Project:
     owner: str
     repository: str
     revision: str
+    source_root: str
 
     @property
     def label(self) -> str:

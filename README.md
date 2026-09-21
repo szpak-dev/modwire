@@ -26,7 +26,11 @@ Discover supported source languages beneath a root using the caller's scan polic
 
 ### `generate_map`
 
-Extract source files for one language and return their code map.
+Extract one language and return its code map with honest scan metrics.
+
+``files_excluded`` counts only source files encountered and excluded directly.
+``directories_pruned`` counts directories rejected before descent; their
+descendants are deliberately unobserved and are not included in file counts.
 
 ### `generate_queryable_map`
 

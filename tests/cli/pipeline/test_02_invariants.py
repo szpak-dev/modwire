@@ -1,3 +1,7 @@
+import os
+from pathlib import Path
+from unittest.mock import patch
+
 import pytest
 
 from .base_test import NativeExtractionTestCase
@@ -35,6 +39,35 @@ class TestNativeExtractionInvariants(NativeExtractionTestCase):
         assert tuple(result.extraction.files) == ("src/example.py",)
         assert result.extraction.files_excluded == 1
         assert result.extraction.directories_pruned == 1
+
+    def test_pruned_directory_descendants_receive_no_filesystem_operations(self) -> None:
+        self.write_files(
+            {
+                "src/example.py": "class ExampleValue:\n    pass\n",
+                "src/example_generated/nested/example.py": "class ExampleGenerated:\n    pass\n",
+            }
+        )
+        excluded_root = (self.workspace / "src/example_generated").absolute()
+        scanned_directories: list[Path] = []
+        scan_directory = os.scandir
+
+        def record_scan(path: str | bytes | Path):
+            scanned_directories.append(Path(path).absolute())
+            return scan_directory(path)
+
+        with patch("os.scandir", side_effect=record_scan):
+            result = self.application.generate_map(
+                "python",
+                self.workspace,
+                self.configured_scan_policy(("src/example_generated/**",), False),
+            )
+
+        assert tuple(result.extraction.files) == ("src/example.py",)
+        assert result.extraction.files_excluded == 0
+        assert result.extraction.directories_pruned == 1
+        assert all(
+            directory != excluded_root and excluded_root not in directory.parents for directory in scanned_directories
+        )
 
     def test_hidden_directories_are_scanned_without_a_caller_exclusion(self) -> None:
         self.write_files({".example_hidden/example.py": "class ExampleValue:\n    pass\n"})

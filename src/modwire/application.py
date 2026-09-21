@@ -64,7 +64,12 @@ class ModwireApplication:
         )
 
     def generate_map(self, language: str, root: str, policy: ScanPolicy) -> CodeMap:
-        """Extract source files for one language and return their code map."""
+        """Extract one language and return its code map with honest scan metrics.
+
+        ``files_excluded`` counts only source files encountered and excluded directly.
+        ``directories_pruned`` counts directories rejected before descent; their
+        descendants are deliberately unobserved and are not included in file counts.
+        """
 
         request = self.extraction.request(language, str(root))
         return self.extraction.generate_map(language, self.cli.extract(request, policy))

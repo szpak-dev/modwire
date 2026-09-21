@@ -7,7 +7,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from modwire.application import ModwireApplication, ScanPolicy
 
@@ -18,13 +18,10 @@ class BigProjectBenchmark:
     repository_root = Path(__file__).resolve().parents[3]
     default_config = Path(__file__).with_name("projects.json")
 
-    def __init__(
-        self, config: dict[str, Any], clone_root: Path, refresh: bool, operation: str, repetitions: int
-    ) -> None:
+    def __init__(self, config: dict[str, Any], clone_root: Path, refresh: bool, repetitions: int) -> None:
         self.config = config
         self.clone_root = clone_root
         self.refresh = refresh
-        self.operation = operation
         self.repetitions = repetitions
         self.application = ModwireApplication.create()
 
@@ -34,7 +31,6 @@ class BigProjectBenchmark:
         parser.add_argument("--config", type=Path, default=cls.default_config)
         parser.add_argument("--clone-root", type=Path)
         parser.add_argument("--refresh", action="store_true")
-        parser.add_argument("--operation", choices=("discover", "extract"), default="discover")
         parser.add_argument("--repeat", type=int, default=3)
         parser.add_argument("--only", metavar="LANGUAGE/PROJECT", action="append", default=[])
         arguments = parser.parse_args()
@@ -42,22 +38,13 @@ class BigProjectBenchmark:
             parser.error("--repeat must be at least 1")
         config = cls.load_config(arguments.config)
         configured_root = cls.repository_root / config["github"]["clone_root"]
-        benchmark = cls(
-            config,
-            arguments.clone_root or configured_root,
-            arguments.refresh,
-            arguments.operation,
-            arguments.repeat,
-        )
+        benchmark = cls(config, arguments.clone_root or configured_root, arguments.refresh, arguments.repeat)
         return benchmark.run(set(arguments.only))
 
     @staticmethod
     def load_config(path: Path) -> dict[str, Any]:
         with path.open(encoding="utf-8") as config_file:
-            config = json.load(config_file)
-        if not isinstance(config, dict):
-            raise ValueError("Big-project config must be a JSON object.")
-        return config
+            return cast(dict[str, Any], json.load(config_file))
 
     def run(self, selected: set[str]) -> int:
         projects = [project for project in self.projects() if not selected or project.label in selected]
@@ -72,16 +59,10 @@ class BigProjectBenchmark:
         return 1 if failures else 0
 
     def projects(self) -> list[Project]:
-        configured = self.config.get("projects")
-        if not isinstance(configured, dict):
-            raise ValueError("Big-project config must contain a projects object.")
+        configured = cast(dict[str, list[dict[str, Any]]], self.config["projects"])
         projects: list[Project] = []
         for language, entries in configured.items():
-            if not isinstance(language, str) or not isinstance(entries, list):
-                raise ValueError("Project mapping must be language names to arrays.")
             for entry in entries:
-                if not isinstance(entry, dict):
-                    raise ValueError(f"Invalid project entry for {language}.")
                 projects.append(
                     Project(
                         language=language,
@@ -89,6 +70,7 @@ class BigProjectBenchmark:
                         owner=self.required_string(entry, "owner"),
                         repository=self.required_string(entry, "repo"),
                         revision=self.required_string(entry, "revision"),
+                        source_root=self.required_string(entry, "source_root"),
                     )
                 )
         return projects
@@ -99,55 +81,53 @@ class BigProjectBenchmark:
         print(f"\n{project.label} ({project.full_name})")
         try:
             sync_seconds = self.synchronize(project, project_root)
-            if self.operation == "discover":
-                self.measure_discovery(project_root, sync_seconds, started)
-            else:
-                self.measure_extraction(project, project_root, sync_seconds, started)
+            source_root = project_root / project.source_root
+            if not source_root.is_dir():
+                raise RuntimeError(f"Configured source root is not a directory: {source_root}")
+            self.measure_extraction(project, source_root, sync_seconds, started)
             return True
         except Exception as error:
             print(f"  failed after {time.perf_counter() - started:.2f}s: {error}", file=sys.stderr)
             return False
 
-    def measure_discovery(self, project_root: Path, sync_seconds: float, started: float) -> None:
+    def measure_extraction(self, project: Project, project_root: Path, sync_seconds: float, started: float) -> None:
         durations: list[float] = []
-        languages: tuple[str, ...] = ()
+        measurements: list[tuple[int, int, int, int, int]] = []
         for _ in range(self.repetitions):
-            scan_started = time.perf_counter()
-            languages = self.application.discover(project_root, self.scan_policy())
-            durations.append(time.perf_counter() - scan_started)
+            extract_started = time.perf_counter()
+            code_map = self.application.generate_map(project.language, project_root, self.scan_policy())
+            durations.append(time.perf_counter() - extract_started)
+            extraction = code_map.extraction
+            measurements.append(
+                (
+                    extraction.files_found,
+                    extraction.files_excluded,
+                    extraction.directories_pruned,
+                    len(extraction.files),
+                    len(extraction.modules),
+                )
+            )
+        if len(set(measurements)) != 1:
+            raise RuntimeError(f"Extraction metrics changed between runs: {measurements}")
+        files_found, files_excluded, directories_pruned, files_built, modules_built = measurements[0]
         formatted = ",".join(f"{duration:.3f}" for duration in durations)
         print(
             "  "
             f"sync={sync_seconds:.2f}s "
-            f"scan_median={statistics.median(durations):.3f}s "
-            f"scan_runs=[{formatted}] "
-            f"languages={','.join(languages)} "
-            f"total={time.perf_counter() - started:.2f}s"
-        )
-
-    def measure_extraction(self, project: Project, project_root: Path, sync_seconds: float, started: float) -> None:
-        extract_started = time.perf_counter()
-        code_map = self.application.generate_map(project.language, project_root, self.scan_policy())
-        extract_seconds = time.perf_counter() - extract_started
-        extraction = code_map.extraction
-        print(
-            "  "
-            f"sync={sync_seconds:.2f}s "
-            f"extract={extract_seconds:.2f}s "
+            f"source_root={project.source_root} "
+            f"extract_median={statistics.median(durations):.3f}s "
+            f"extract_runs=[{formatted}] "
             f"total={time.perf_counter() - started:.2f}s "
-            f"files={extraction.files_found} "
-            f"excluded_files={extraction.files_excluded} "
-            f"pruned_directories={extraction.directories_pruned}"
+            f"files_found={files_found} "
+            f"files_built={files_built} "
+            f"modules_built={modules_built} "
+            f"excluded_files={files_excluded} "
+            f"pruned_directories={directories_pruned}"
         )
 
     def scan_policy(self) -> ScanPolicy:
-        configured = self.config.get("scan")
-        if not isinstance(configured, dict):
-            raise ValueError("Big-project config must contain a scan object.")
-        patterns = configured.get("excluded_patterns")
-        if not isinstance(patterns, list) or not all(isinstance(pattern, str) for pattern in patterns):
-            raise ValueError("scan.excluded_patterns must be an array of strings.")
-        return ScanPolicy(excluded_patterns=tuple(patterns))
+        configured = cast(dict[str, list[str]], self.config["scan"])
+        return ScanPolicy(excluded_patterns=tuple(configured["excluded_patterns"]))
 
     def synchronize(self, project: Project, project_root: Path) -> float:
         started = time.perf_counter()
@@ -196,8 +176,8 @@ class BigProjectBenchmark:
 
     @staticmethod
     def required_string(entry: dict[str, Any], key: str) -> str:
-        value = entry.get(key)
-        if not isinstance(value, str) or not value:
+        value = cast(str, entry[key])
+        if not value:
             raise ValueError(f"Project entry requires a non-empty {key!r} string.")
         return value
 

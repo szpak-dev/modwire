@@ -1,0 +1,46 @@
+{
+  "recorded_on": "2026-09-21",
+  "operation": "ModwireApplication.generate_map",
+  "claim_scope": "Native controlled traversal benchmark; not Docker or Enclosure runtime evidence.",
+  "baseline_revision": "a201fc0054d49e4206c6ef81b9c3c9d231f511d4",
+  "pruned_implementation_revision": "619f47c3caa8a86cfa9b7e0c1583f85120bc9aea",
+  "environment": {
+    "platform": "Darwin 25.5.0 arm64",
+    "python": "3.12.11"
+  },
+  "fixture": {
+    "root": ".dev/benchmarks/scan-project",
+    "language": "python",
+    "included_source_files": 100,
+    "excluded_directories": 100,
+    "excluded_source_files": 100000,
+    "excluded_patterns": ["example_excluded/**"]
+  },
+  "method": {
+    "repetitions": 5,
+    "statistic": "median_seconds",
+    "fixture_creation_timed": false,
+    "included_extraction_workload_identical": true
+  },
+  "baseline": {
+    "runs_seconds": [1.135445, 1.069588, 0.995345, 0.950216, 0.915332],
+    "median_seconds": 0.995345,
+    "files_found": 100,
+    "files_built": 100,
+    "modules_built": 100,
+    "files_excluded": 100000,
+    "directories_pruned": null
+  },
+  "pruned": {
+    "runs_seconds": [0.397993, 0.394025, 0.338063, 0.374147, 0.368493],
+    "median_seconds": 0.374147,
+    "files_found": 100,
+    "files_built": 100,
+    "modules_built": 100,
+    "files_excluded": 0,
+    "directories_pruned": 1
+  },
+  "speedup": 2.66,
+  "reduction_percent": 62.4,
+  "interpretation": "Both revisions fully extracted the same 100 included files. The legacy revision recursively counted 100000 descendants below the excluded directory; the pruned revision recorded the directory and performed no descendant scan."
+}

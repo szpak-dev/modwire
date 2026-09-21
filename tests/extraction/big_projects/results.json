@@ -1,43 +1,20 @@
 {
-  "recorded_on": "2026-09-18",
-  "baseline_revision": "a201fc0054d49e4206c6ef81b9c3c9d231f511d4",
-  "pruned_revision": "619f47c",
-  "operation": "ModwireApplication.discover",
-  "repetitions": 3,
-  "statistic": "median_seconds",
-  "native": {
-    "baseline_sum": 23.446,
-    "pruned_sum": 5.354,
-    "speedup": 4.38,
-    "reduction_percent": 77.2,
-    "projects": {
-      "python/ansible": {"baseline": 1.495, "pruned": 0.753, "speedup": 1.99},
-      "python/django": {"baseline": 1.735, "pruned": 0.430, "speedup": 4.04},
-      "python/transformers": {"baseline": 1.140, "pruned": 0.342, "speedup": 3.34},
-      "typescript/angular": {"baseline": 2.350, "pruned": 0.911, "speedup": 2.58},
-      "typescript/typescript": {"baseline": 8.472, "pruned": 1.800, "speedup": 4.71},
-      "typescript/vscode": {"baseline": 4.265, "pruned": 0.346, "speedup": 12.31},
-      "php/composer": {"baseline": 0.179, "pruned": 0.058, "speedup": 3.08},
-      "php/laravel": {"baseline": 0.676, "pruned": 0.107, "speedup": 6.33},
-      "php/symfony": {"baseline": 3.135, "pruned": 0.607, "speedup": 5.17}
-    }
-  },
-  "docker_bind_mount": {
-    "claim_scope": "Generic read-only Docker bind mount; not Enclosure runtime evidence.",
-    "baseline_sum": 33.420,
-    "pruned_sum": 11.307,
-    "speedup": 2.96,
-    "reduction_percent": 66.2,
-    "projects": {
-      "python/ansible": {"baseline": 2.753, "pruned": 1.574, "speedup": 1.75},
-      "python/django": {"baseline": 3.144, "pruned": 1.042, "speedup": 3.02},
-      "python/transformers": {"baseline": 1.694, "pruned": 0.844, "speedup": 2.01},
-      "typescript/angular": {"baseline": 3.644, "pruned": 1.614, "speedup": 2.26},
-      "typescript/typescript": {"baseline": 11.355, "pruned": 3.964, "speedup": 2.86},
-      "typescript/vscode": {"baseline": 5.847, "pruned": 0.699, "speedup": 8.36},
-      "php/composer": {"baseline": 0.297, "pruned": 0.112, "speedup": 2.65},
-      "php/laravel": {"baseline": 0.830, "pruned": 0.237, "speedup": 3.51},
-      "php/symfony": {"baseline": 3.854, "pruned": 1.220, "speedup": 3.16}
-    }
+  "recorded_on": "2026-09-21",
+  "implementation_revision": "619f47c3caa8a86cfa9b7e0c1583f85120bc9aea",
+  "operation": "ModwireApplication.generate_map",
+  "claim_scope": "Native full extraction validation of every matching source file beneath each pinned production source root; not a performance comparison.",
+  "repetitions": 1,
+  "excluded_patterns": [],
+  "total_seconds": 191.9,
+  "projects": {
+    "python/transformers": {"source_root": "src/transformers", "seconds": 130.629, "files_found": 2823, "files_built": 2823, "modules_built": 2823},
+    "python/django": {"source_root": "django", "seconds": 10.051, "files_found": 908, "files_built": 908, "modules_built": 908},
+    "python/ansible": {"source_root": "lib/ansible", "seconds": 6.492, "files_found": 583, "files_built": 583, "modules_built": 583},
+    "typescript/vscode": {"source_root": "src/vs/editor", "seconds": 16.059, "files_found": 858, "files_built": 858, "modules_built": 858},
+    "typescript/typescript": {"source_root": "src", "seconds": 11.238, "files_found": 709, "files_built": 709, "modules_built": 709},
+    "typescript/angular": {"source_root": "packages/core/src", "seconds": 2.987, "files_found": 409, "files_built": 409, "modules_built": 409},
+    "php/laravel": {"source_root": "src", "seconds": 10.267, "files_found": 1644, "files_built": 1644, "modules_built": 1644},
+    "php/symfony": {"source_root": "src/Symfony/Component/Console", "seconds": 1.92, "files_found": 359, "files_built": 359, "modules_built": 359},
+    "php/composer": {"source_root": "src", "seconds": 2.257, "files_found": 308, "files_built": 308, "modules_built": 308}
   }
 }

@@ -10,31 +10,23 @@
     }
   },
   "scan": {
-    "excluded_patterns": [
-      ".git/**",
-      ".venv/**",
-      "**/__pycache__/**",
-      "**/node_modules/**",
-      "**/vendor/**",
-      "**/build/**",
-      "**/dist/**"
-    ]
+    "excluded_patterns": []
   },
   "projects": {
     "python": [
-      {"id": "transformers", "owner": "huggingface", "repo": "transformers", "revision": "181beb3ba4c47098ed8cbc97ee250d1d45ae0107"},
-      {"id": "django", "owner": "django", "repo": "django", "revision": "8defe54f03d1bd50c2051f8514dfa1e85efa38f7"},
-      {"id": "ansible", "owner": "ansible", "repo": "ansible", "revision": "78c337b82796bc2cedf6fba49d60b3d1a040c0c9"}
+      {"id": "transformers", "owner": "huggingface", "repo": "transformers", "revision": "181beb3ba4c47098ed8cbc97ee250d1d45ae0107", "source_root": "src/transformers"},
+      {"id": "django", "owner": "django", "repo": "django", "revision": "8defe54f03d1bd50c2051f8514dfa1e85efa38f7", "source_root": "django"},
+      {"id": "ansible", "owner": "ansible", "repo": "ansible", "revision": "78c337b82796bc2cedf6fba49d60b3d1a040c0c9", "source_root": "lib/ansible"}
     ],
     "typescript": [
-      {"id": "vscode", "owner": "microsoft", "repo": "vscode", "revision": "c4632cac4f0a71ef09ccc2b6847c7ad19e98fcb6"},
-      {"id": "typescript", "owner": "microsoft", "repo": "TypeScript", "revision": "637d5746b70257028fb95aad32ddec6b26ab0a14"},
-      {"id": "angular", "owner": "angular", "repo": "angular", "revision": "a720094deb21c77126ba536542651b1d6992bc47"}
+      {"id": "vscode", "owner": "microsoft", "repo": "vscode", "revision": "c4632cac4f0a71ef09ccc2b6847c7ad19e98fcb6", "source_root": "src/vs/editor"},
+      {"id": "typescript", "owner": "microsoft", "repo": "TypeScript", "revision": "637d5746b70257028fb95aad32ddec6b26ab0a14", "source_root": "src"},
+      {"id": "angular", "owner": "angular", "repo": "angular", "revision": "a720094deb21c77126ba536542651b1d6992bc47", "source_root": "packages/core/src"}
     ],
     "php": [
-      {"id": "laravel", "owner": "laravel", "repo": "framework", "revision": "66844c430d1e5b38c21e1a96e2b3b37e39683666"},
-      {"id": "symfony", "owner": "symfony", "repo": "symfony", "revision": "1f6b2d5d6ee434984d37b086a4b4f82acebaf397"},
-      {"id": "composer", "owner": "composer", "repo": "composer", "revision": "8c3eba87d24bbdcdaaf8f5c42391de20fd8ed6b1"}
+      {"id": "laravel", "owner": "laravel", "repo": "framework", "revision": "66844c430d1e5b38c21e1a96e2b3b37e39683666", "source_root": "src"},
+      {"id": "symfony", "owner": "symfony", "repo": "symfony", "revision": "1f6b2d5d6ee434984d37b086a4b4f82acebaf397", "source_root": "src/Symfony/Component/Console"},
+      {"id": "composer", "owner": "composer", "repo": "composer", "revision": "8c3eba87d24bbdcdaaf8f5c42391de20fd8ed6b1", "source_root": "src"}
     ]
   }
 }
