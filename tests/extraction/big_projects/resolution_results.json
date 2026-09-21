@@ -1,0 +1,50 @@
+{
+  "recorded_on": "2026-09-21",
+  "operation": "ModwireApplication.generate_map",
+  "claim_scope": "Native cold full-extraction and isolated shared import-resolution evidence on pinned production source roots; not Docker or Enclosure runtime evidence.",
+  "repetitions": 1,
+  "excluded_patterns": [],
+  "baseline": {
+    "implementation_revision": "619f47c3caa8a86cfa9b7e0c1583f85120bc9aea",
+    "generate_map_total_seconds": 191.9,
+    "projects": {
+      "python/transformers": {"generate_map_seconds": 130.629, "files_built": 2823},
+      "python/django": {"generate_map_seconds": 10.051, "files_built": 908},
+      "python/ansible": {"generate_map_seconds": 6.492, "files_built": 583},
+      "typescript/vscode": {"generate_map_seconds": 16.059, "files_built": 858},
+      "typescript/typescript": {"generate_map_seconds": 11.238, "files_built": 709},
+      "typescript/angular": {"generate_map_seconds": 2.987, "files_built": 409},
+      "php/laravel": {"generate_map_seconds": 10.267, "files_built": 1644},
+      "php/symfony": {"generate_map_seconds": 1.92, "files_built": 359},
+      "php/composer": {"generate_map_seconds": 2.257, "files_built": 308}
+    }
+  },
+  "indexed": {
+    "branch": "issue-16-indexed-import-resolution",
+    "generate_map_total_seconds": 78.356,
+    "resolver_total_seconds": 0.689,
+    "projects": {
+      "python/transformers": {"generate_map_seconds": 38.431, "resolver_seconds": 0.3, "files_built": 2823},
+      "python/django": {"generate_map_seconds": 5.605, "resolver_seconds": 0.057, "files_built": 908},
+      "python/ansible": {"generate_map_seconds": 4.849, "resolver_seconds": 0.041, "files_built": 583},
+      "typescript/vscode": {"generate_map_seconds": 9.913, "resolver_seconds": 0.099, "files_built": 858},
+      "typescript/typescript": {"generate_map_seconds": 10.325, "resolver_seconds": 0.036, "files_built": 709},
+      "typescript/angular": {"generate_map_seconds": 2.302, "resolver_seconds": 0.032, "files_built": 409},
+      "php/laravel": {"generate_map_seconds": 2.859, "resolver_seconds": 0.073, "files_built": 1644},
+      "php/symfony": {"generate_map_seconds": 1.991, "resolver_seconds": 0.031, "files_built": 359},
+      "php/composer": {"generate_map_seconds": 2.081, "resolver_seconds": 0.02, "files_built": 308}
+    }
+  },
+  "comparison": {
+    "generate_map_speedup": 2.449,
+    "generate_map_reduction_percent": 59.2,
+    "same_input_reference": {
+      "project": "python/transformers",
+      "files": 2823,
+      "complete_scan_resolver_seconds": 129.026,
+      "indexed_resolver_seconds": 1.267,
+      "resolver_speedup": 101.8,
+      "result_equivalent": true
+    }
+  }
+}
