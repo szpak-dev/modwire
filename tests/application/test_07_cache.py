@@ -1,11 +1,98 @@
 from concurrent.futures import ThreadPoolExecutor
 
-from modwire.application import CacheOptions
+from modwire.application import CacheOptions, CacheStage
 
 from .base_test import ApplicationTestCase
 
 
 class TestPersistentCache(ApplicationTestCase):
+    def test_public_map_diagnostics_distinguish_cold_and_warm_cache_stages(self) -> None:
+        root = self.project({"src/example.py": "def example_function():\n    return 1\n"})
+        options = self.cache_options("example-diagnostics")
+
+        cold = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+        warm = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+
+        assert cold.value == warm.value
+        assert cold.outcome(CacheStage.EXTRACTION).to_dict() == {
+            "stage": "extraction",
+            "namespace": "example-diagnostics",
+            "hits": 0,
+            "misses": 1,
+            "invalidated": 0,
+            "computed": 1,
+            "stored": 1,
+        }
+        assert cold.outcome(CacheStage.CODE_MAP).to_dict() == {
+            "stage": "code-map",
+            "namespace": "example-diagnostics",
+            "hits": 0,
+            "misses": 1,
+            "invalidated": 0,
+            "computed": 1,
+            "stored": 1,
+        }
+        assert warm.outcome(CacheStage.EXTRACTION).hits == 1
+        assert warm.outcome(CacheStage.EXTRACTION).misses == 0
+        assert warm.outcome(CacheStage.CODE_MAP).hits == 1
+        assert warm.outcome(CacheStage.CODE_MAP).misses == 0
+
+    def test_public_map_diagnostics_report_partial_source_reuse(self) -> None:
+        root = self.project(
+            {
+                "src/example_first.py": "def example_first():\n    return 1\n",
+                "src/example_second.py": "def example_second():\n    return 2\n",
+            }
+        )
+        options = self.cache_options("example-partial-diagnostics")
+        self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+        (root / "src/example_second.py").write_text("def example_changed():\n    return 2\n", encoding="utf-8")
+
+        changed = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+
+        extraction = changed.outcome(CacheStage.EXTRACTION)
+        code_map = changed.outcome(CacheStage.CODE_MAP)
+        assert (extraction.hits, extraction.misses, extraction.computed, extraction.stored) == (1, 1, 1, 1)
+        assert extraction.invalidated == 0
+        assert (code_map.hits, code_map.misses, code_map.computed, code_map.stored) == (0, 1, 1, 1)
+
+    def test_public_map_diagnostics_report_invalidated_entries(self) -> None:
+        root = self.project({"src/example.py": "class ExampleValue:\n    pass\n"})
+        options = self.cache_options("example-invalidated-diagnostics")
+        expected = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+        for path in (self.workspace / "cache").rglob("*.cache"):
+            path.write_bytes(b"not-a-cache-entry")
+
+        recovered = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+
+        assert recovered.value == expected.value
+        assert recovered.outcome(CacheStage.EXTRACTION).invalidated == 1
+        assert recovered.outcome(CacheStage.EXTRACTION).misses == 1
+        assert recovered.outcome(CacheStage.CODE_MAP).invalidated == 1
+        assert recovered.outcome(CacheStage.CODE_MAP).misses == 1
+
+    def test_public_report_diagnostics_distinguish_cold_and_warm_results(self) -> None:
+        root = self.project({"src/example.py": "def example_function():\n    return 1\n"})
+        options = self.cache_options("example-report-diagnostics")
+        code_map = self.application.generate_queryable_map_cached("python", root, self.scan_policy(), options)
+        config = self.example_configuration()
+
+        cold = self.application.analyze_cached_with_diagnostics(code_map, config, options)
+        warm = self.application.analyze_cached_with_diagnostics(code_map, config, options)
+
+        assert cold.value == warm.value
+        assert cold.outcome(CacheStage.REPORTS).to_dict() == {
+            "stage": "reports",
+            "namespace": "example-report-diagnostics",
+            "hits": 0,
+            "misses": 1,
+            "invalidated": 0,
+            "computed": 1,
+            "stored": 1,
+        }
+        assert warm.outcome(CacheStage.REPORTS).hits == 1
+        assert warm.outcome(CacheStage.REPORTS).misses == 0
+
     def test_warm_code_map_matches_the_uncached_public_result(self) -> None:
         root = self.project({"src/example.py": "def example_function():\n    return 1\n"})
         options = self.cache_options("example-warm")

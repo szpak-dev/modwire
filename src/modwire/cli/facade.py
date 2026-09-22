@@ -14,6 +14,7 @@ from ..shared.code.models.queryable_code_map import QueryableCodeMap
 from ..shared.code.models.source_extraction import SourceExtraction
 from .cache.application import CacheApplication
 from .cache.models.cache_options import CacheOptions
+from .cache.models.cached_result import CachedResult
 from .cache.models.extraction_snapshot import ExtractionSnapshot
 from .documentation.application import DocumentationApplication
 from .initialization.application import InitializationApplication
@@ -53,10 +54,10 @@ class CliFacade:
 
     def extract_cached(
         self, request: ExtractionRequest, policy: ScanPolicy, options: CacheOptions
-    ) -> ExtractionSnapshot:
+    ) -> CachedResult[ExtractionSnapshot]:
         return self.cache.extract_cached(request, policy, options)
 
-    def cached_code_map(self, snapshot: ExtractionSnapshot, options: CacheOptions) -> CodeMap | None:
+    def cached_code_map(self, snapshot: ExtractionSnapshot, options: CacheOptions) -> CachedResult[CodeMap | None]:
         return self.cache.code_map(snapshot, options)
 
     def store_code_map(self, snapshot: ExtractionSnapshot, code_map: CodeMap, options: CacheOptions) -> None:
@@ -64,7 +65,7 @@ class CliFacade:
 
     def cached_reports(
         self, code_map: CodeMap, config: ArchitectureConfig, options: CacheOptions
-    ) -> tuple[ReportNode, ...] | None:
+    ) -> CachedResult[tuple[ReportNode, ...] | None]:
         return self.cache.reports(code_map, config, options)
 
     def store_reports(
@@ -127,13 +128,13 @@ class CliFacade:
             extraction = self.extract(extraction_request, policy)
             code_map = self.extraction.generate_queryable_map(request.language, extraction)
             return self.render(self.architecture.analyze(code_map, config), request.summary)
-        snapshot = self.extract_cached(extraction_request, policy, cache_options)
-        cached_code_map = self.cached_code_map(snapshot, cache_options)
+        snapshot = self.extract_cached(extraction_request, policy, cache_options).value
+        cached_code_map = self.cached_code_map(snapshot, cache_options).value
         if cached_code_map is None:
             cached_code_map = self.extraction.generate_map(request.language, snapshot.extraction)
             self.store_code_map(snapshot, cached_code_map, cache_options)
         code_map = QueryableCodeMap(code_map=cached_code_map)
-        reports = self.cached_reports(cached_code_map, config, cache_options)
+        reports = self.cached_reports(cached_code_map, config, cache_options).value
         if reports is None:
             reports = self.architecture.analyze(code_map, config)
             self.store_reports(cached_code_map, config, reports, cache_options)
