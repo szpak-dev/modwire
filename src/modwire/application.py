@@ -11,13 +11,24 @@ from .architecture.facade import ArchitectureFacade
 from .architecture.report.models.report_catalog import ReportCatalog
 from .architecture.report.models.report_node import ReportNode
 from .cli.cache.models.cache_options import CacheOptions
+from .cli.cache.models.cache_outcome import CacheOutcome, CacheStage
+from .cli.cache.models.cached_result import CachedResult
 from .cli.facade import CliFacade
 from .cli.pipeline.models.scan_policy import ScanPolicy
 from .extraction.facade import ExtractionFacade
 from .shared.code.models.code_map import CodeMap
 from .shared.code.models.queryable_code_map import QueryableCodeMap
 
-__all__ = ["CacheOptions", "CodeMap", "ModwireApplication", "QueryableCodeMap", "ScanPolicy"]
+__all__ = [
+    "CacheOptions",
+    "CacheOutcome",
+    "CacheStage",
+    "CachedResult",
+    "CodeMap",
+    "ModwireApplication",
+    "QueryableCodeMap",
+    "ScanPolicy",
+]
 
 
 @dataclass(frozen=True)
@@ -62,12 +73,20 @@ class ModwireApplication:
     ) -> tuple[ReportNode, ...]:
         """Analyze a code map, reusing reports for an exact map and configuration identity."""
 
+        return self.analyze_cached_with_diagnostics(code_map, config, options).value
+
+    def analyze_cached_with_diagnostics(
+        self, code_map: QueryableCodeMap, config: ArchitectureConfig, options: CacheOptions
+    ) -> CachedResult[tuple[ReportNode, ...]]:
+        """Analyze a code map and report the public outcome of report-cache reuse."""
+
         cached = self.cli.cached_reports(code_map.code_map, config, options)
-        if cached is not None:
-            return cached
+        if cached.value is not None:
+            return CachedResult(value=cached.value, outcomes=cached.outcomes)
         reports = self.architecture.analyze(code_map, config)
         self.cli.store_reports(code_map.code_map, config, reports, options)
-        return reports
+        outcome = cached.outcome(CacheStage.REPORTS).model_copy(update={"computed": 1, "stored": 1})
+        return CachedResult(value=reports, outcomes=(outcome,))
 
     def discover(self, root: str, policy: ScanPolicy) -> tuple[str, ...]:
         """Discover supported source languages beneath a root using the caller's scan policy."""
@@ -97,21 +116,39 @@ class ModwireApplication:
     def generate_map_cached(self, language: str, root: str, policy: ScanPolicy, options: CacheOptions) -> CodeMap:
         """Return a code map with content-addressed source and complete-manifest reuse."""
 
+        return self.generate_map_cached_with_diagnostics(language, root, policy, options).value
+
+    def generate_map_cached_with_diagnostics(
+        self, language: str, root: str, policy: ScanPolicy, options: CacheOptions
+    ) -> CachedResult[CodeMap]:
+        """Return a code map and public outcomes for extraction and complete-map reuse."""
+
         request = self.extraction.request(language, str(root))
         snapshot = self.cli.extract_cached(request, policy, options)
-        cached = self.cli.cached_code_map(snapshot, options)
-        if cached is not None:
-            return cached
-        code_map = self.extraction.generate_map(language, snapshot.extraction)
-        self.cli.store_code_map(snapshot, code_map, options)
-        return code_map
+        cached = self.cli.cached_code_map(snapshot.value, options)
+        outcome = cached.outcome(CacheStage.CODE_MAP)
+        if cached.value is not None:
+            code_map = cached.value
+        else:
+            code_map = self.extraction.generate_map(language, snapshot.value.extraction)
+            self.cli.store_code_map(snapshot.value, code_map, options)
+            outcome = outcome.model_copy(update={"computed": 1, "stored": 1})
+        return CachedResult(value=code_map, outcomes=(*snapshot.outcomes, outcome))
 
     def generate_queryable_map_cached(
         self, language: str, root: str, policy: ScanPolicy, options: CacheOptions
     ) -> QueryableCodeMap:
         """Return a queryable code map with content-addressed persistent reuse."""
 
-        return QueryableCodeMap(code_map=self.generate_map_cached(language, root, policy, options))
+        return self.generate_queryable_map_cached_with_diagnostics(language, root, policy, options).value
+
+    def generate_queryable_map_cached_with_diagnostics(
+        self, language: str, root: str, policy: ScanPolicy, options: CacheOptions
+    ) -> CachedResult[QueryableCodeMap]:
+        """Return a queryable code map and public outcomes for every applicable cache stage."""
+
+        cached = self.generate_map_cached_with_diagnostics(language, root, policy, options)
+        return CachedResult(value=QueryableCodeMap(code_map=cached.value), outcomes=cached.outcomes)
 
     def clear_cache(self, options: CacheOptions) -> None:
         """Clear only the Modwire-owned directory for one cache namespace."""
@@ -131,7 +168,9 @@ class ModwireApplication:
     def generate_documentation(self, readme: str, check: bool) -> int:
         """Generate this README from the published interface docstrings, or check that it is current."""
 
-        return self.cli.generate_documentation(str(readme), (type(self), CacheOptions, ScanPolicy), check)
+        return self.cli.generate_documentation(
+            str(readme), (type(self), CacheStage, CacheOutcome, CachedResult, CacheOptions, ScanPolicy), check
+        )
 
     def run_extractor(self, language: str) -> int:
         """Run the native extractor transport for one supported language."""

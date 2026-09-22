@@ -24,6 +24,10 @@ Analyze a code map with a validated architecture configuration.
 
 Analyze a code map, reusing reports for an exact map and configuration identity.
 
+### `analyze_cached_with_diagnostics`
+
+Analyze a code map and report the public outcome of report-cache reuse.
+
 ### `discover`
 
 Discover supported source languages beneath a root using the caller's scan policy.
@@ -44,9 +48,17 @@ Extract source files and return a queryable code map.
 
 Return a code map with content-addressed source and complete-manifest reuse.
 
+### `generate_map_cached_with_diagnostics`
+
+Return a code map and public outcomes for extraction and complete-map reuse.
+
 ### `generate_queryable_map_cached`
 
 Return a queryable code map with content-addressed persistent reuse.
+
+### `generate_queryable_map_cached_with_diagnostics`
+
+Return a queryable code map and public outcomes for every applicable cache stage.
 
 ### `clear_cache`
 
@@ -71,6 +83,26 @@ Run the native extractor transport for one supported language.
 ### `run`
 
 Run the Modwire command line interface and return its process status.
+
+## `CacheStage`
+
+Public stages reported by cached Modwire operations.
+
+## `CacheOutcome`
+
+Content-safe lifecycle counts for one stage of a cached operation.
+
+Extraction counts describe current source records. Code-map and report counts
+describe one entry. Invalidated entries are also misses. Diagnostics include
+the configured namespace but never cache keys, source identities, or content.
+
+## `CachedResult`
+
+A cached operation value together with one outcome per applicable stage.
+
+### `outcome`
+
+Return the outcome for one applicable cache stage.
 
 ## `CacheOptions`
 
