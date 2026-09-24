@@ -19,9 +19,10 @@ from .domain import CacheStorage
 from .models.cache_key import CacheKey
 from .models.cache_options import CacheOptions
 from .models.cache_outcome import CacheOutcome
+from .models.cache_plan import CachePlan
 from .models.cache_stage import CacheStage
 from .models.cached_result import CachedResult
-from .models.extraction_snapshot import ExtractionSnapshot
+from .models.source_cache_entry import SourceCacheEntry
 from .services.cache_codec import CacheCodec
 from .services.cache_identity import CacheIdentity
 
@@ -41,41 +42,58 @@ class CacheApplication:
         self.reader.ensure_available(request.runtime)
         return self.reader.extract_source(request, policy)
 
-    def extract_cached(
-        self, request: ExtractionRequest, policy: ScanPolicy, options: CacheOptions
-    ) -> CachedResult[ExtractionSnapshot]:
+    def prepare(self, request: ExtractionRequest, policy: ScanPolicy) -> CachePlan:
         inventory = self.reader.inventory(request, policy)
-        keys = {entry.source_id: self.identity.source(request, policy, entry) for entry in inventory.entries}
+        sources = tuple(
+            SourceCacheEntry(entry=entry, key=self.identity.source(request, policy, entry))
+            for entry in inventory.entries
+        )
+        return CachePlan(
+            inventory=inventory,
+            sources=sources,
+            manifest=self.identity.manifest(request, policy, sources),
+        )
+
+    def sources(
+        self, request: ExtractionRequest, plan: CachePlan, options: CacheOptions
+    ) -> CachedResult[SourceExtraction]:
+        payloads = self.storage.read_many(options, tuple(source.key for source in plan.sources))
         files: dict[FileId, SourceFile] = {}
         misses: list[FileId] = []
+        invalid_keys: list[CacheKey] = []
         hits = 0
         invalidated = 0
-        for entry in inventory.entries:
-            key = keys[entry.source_id]
-            cached_value, cached_invalidated = self._read(options, key)
+        sources_by_id = {source.entry.source_id: source for source in plan.sources}
+        for source, payload in zip(plan.sources, payloads, strict=True):
+            cached_value = self.codec.decode(source.key, payload) if payload is not None else None
+            cached_invalidated = payload is not None and cached_value is None
             try:
                 source_file = SourceFile.model_validate(cached_value)
-                if source_file.file_id != entry.source_id:
+                if source_file.file_id != source.entry.source_id:
                     raise ValueError("Cached source identity does not match its key.")
-                files[entry.source_id] = source_file
+                files[source.entry.source_id] = source_file
                 hits += 1
             except (TypeError, ValueError, ValidationError):
-                if cached_value is not None and not cached_invalidated:
-                    self.storage.delete(options, key)
+                if payload is not None:
+                    invalid_keys.append(source.key)
                 invalidated += int(cached_invalidated or cached_value is not None)
-                misses.append(entry.source_id)
+                misses.append(source.entry.source_id)
+        self.storage.delete_many(options, tuple(invalid_keys))
 
-        if misses or not inventory.entries:
+        if misses or not plan.inventory.entries:
             self.reader.ensure_available(request.runtime)
-        extracted = self.reader.extract_entries(request, inventory, tuple(misses))
+        extracted = self.reader.extract_entries(request, plan.inventory, tuple(misses))
+        writes: list[tuple[CacheKey, bytes]] = []
         for source_id in misses:
             source_file = extracted.get(source_id)
             if source_file is None:
                 raise RuntimeError(f"Extractor omitted a requested source file: {source_id}")
             files[source_id] = source_file
-            self._write(options, keys[source_id], source_file.model_dump(mode="json"))
+            source = sources_by_id[source_id]
+            writes.append((source.key, self.codec.encode(source.key, source_file.model_dump(mode="json"))))
+        self.storage.write_many(options, tuple(writes))
 
-        ordered_files = {entry.source_id: files[entry.source_id] for entry in inventory.entries}
+        ordered_files = {source.entry.source_id: files[source.entry.source_id] for source in plan.sources}
         modules: dict[ModuleId, FileId] = {}
         for file_id, source_file in ordered_files.items():
             existing = modules.get(source_file.module_id)
@@ -86,28 +104,12 @@ class CacheApplication:
         extraction = SourceExtraction(
             files=ordered_files,
             modules=modules,
-            files_found=inventory.files_found,
-            files_excluded=inventory.files_excluded,
-            directories_pruned=inventory.directories_pruned,
+            files_found=plan.inventory.files_found,
+            files_excluded=plan.inventory.files_excluded,
+            directories_pruned=plan.inventory.directories_pruned,
         )
-        manifest = self.identity.manifest(request, policy, inventory.entries)
-        self._write(
-            options,
-            manifest,
-            {
-                "sources": [
-                    {
-                        "relative_path": entry.relative_path,
-                        "content_digest": entry.content_digest,
-                        "source_key": keys[entry.source_id].digest,
-                    }
-                    for entry in inventory.entries
-                ]
-            },
-        )
-        self.prune(options)
         return CachedResult(
-            value=ExtractionSnapshot(extraction=extraction, manifest=manifest),
+            value=extraction,
             outcomes=(
                 CacheOutcome(
                     stage=CacheStage.EXTRACTION,
@@ -121,8 +123,15 @@ class CacheApplication:
             ),
         )
 
-    def code_map(self, snapshot: ExtractionSnapshot, options: CacheOptions) -> CachedResult[CodeMap | None]:
-        key = self.identity.code_map("", snapshot.manifest)
+    def maintain_manifest(self, plan: CachePlan, options: CacheOptions) -> bool:
+        expected = plan.manifest_value()
+        payload = self.storage.read(options, plan.manifest)
+        if payload is not None and self.codec.decode(plan.manifest, payload) == expected:
+            return False
+        return self._write(options, plan.manifest, expected)
+
+    def code_map(self, plan: CachePlan, options: CacheOptions) -> CachedResult[CodeMap | None]:
+        key = self.identity.code_map("", plan.manifest)
         cached_value, cached_invalidated = self._read(options, key)
         try:
             value = CodeMap.model_validate(cached_value)
@@ -139,9 +148,8 @@ class CacheApplication:
             )
         return CachedResult[CodeMap | None](value=value, outcomes=(outcome,))
 
-    def store_code_map(self, snapshot: ExtractionSnapshot, code_map: CodeMap, options: CacheOptions) -> None:
-        self._write(options, self.identity.code_map("", snapshot.manifest), code_map.model_dump(mode="json"))
-        self.prune(options)
+    def store_code_map(self, plan: CachePlan, code_map: CodeMap, options: CacheOptions) -> None:
+        self._write(options, self.identity.code_map("", plan.manifest), code_map.model_dump(mode="json"))
 
     def reports(
         self, code_map: CodeMap, config: ArchitectureConfig, options: CacheOptions
@@ -182,19 +190,12 @@ class CacheApplication:
             for report in reports
         ]
         self._write(options, self.identity.reports(code_map, config), value)
-        self.prune(options)
+
+    def maintain(self, options: CacheOptions) -> bool:
+        return self.storage.enforce_capacity(options)
 
     def clear(self, options: CacheOptions) -> None:
         self.storage.clear(options)
-
-    def prune(self, options: CacheOptions) -> None:
-        entries = self.storage.entries(options)
-        total = sum(entry.size for entry in entries)
-        for entry in sorted(entries, key=lambda item: (item.last_access_ns, item.key.kind, item.key.digest)):
-            if total <= options.max_bytes:
-                break
-            self.storage.delete(options, entry.key)
-            total -= entry.size
 
     def _read(self, options: CacheOptions, key: CacheKey) -> tuple[object | None, bool]:
         payload = self.storage.read(options, key)
@@ -206,8 +207,8 @@ class CacheApplication:
             return None, True
         return value, False
 
-    def _write(self, options: CacheOptions, key: CacheKey, value: object) -> None:
-        self.storage.write(options, key, self.codec.encode(key, value))
+    def _write(self, options: CacheOptions, key: CacheKey, value: object) -> bool:
+        return self.storage.write(options, key, self.codec.encode(key, value))
 
     def _report(self, value: object) -> ReportNode:
         if not isinstance(value, dict):
