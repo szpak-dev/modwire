@@ -7,7 +7,7 @@ PROJECT_ROOT := $(CURDIR)
 export PYTHONPYCACHEPREFIX := $(PROJECT_ROOT)/$(DEV_DIR)/cache/python
 export UV_CACHE_DIR := $(PROJECT_ROOT)/$(DEV_DIR)/cache/uv
 
-.PHONY: big-projects build cache-benchmark ci docs docs-check extractor-check format format-check host-check lint package-check scan-benchmark scan-benchmark-fixture test type-check
+.PHONY: big-projects build cache-benchmark ci docs docs-check extractor-check format format-check host-check lint package-check report-benchmark scan-benchmark scan-benchmark-fixture test type-check
 
 format:
 	uv run ruff format src tests scripts
@@ -36,6 +36,9 @@ scan-benchmark:
 
 cache-benchmark:
 	uv run python -m tests.extraction.cache_benchmark.run --root "$(CACHE_BENCHMARK_ROOT)" --language "$(CACHE_BENCHMARK_LANGUAGE)" --cache-directory .dev/benchmarks/cache --incremental-source "$(CACHE_BENCHMARK_SOURCE)" --replacement-source "$(CACHE_BENCHMARK_REPLACEMENT)"
+
+report-benchmark:
+	uv run python -m tests.architecture.report_benchmark.run --root "$(REPORT_BENCHMARK_ROOT)" --language "$(REPORT_BENCHMARK_LANGUAGE)" --cache-directory "$(REPORT_BENCHMARK_CACHE)" --cache-namespace "$(REPORT_BENCHMARK_NAMESPACE)"
 
 docs-check:
 	uv run python scripts/generate_docs.py --check

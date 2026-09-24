@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from ....shared.code.models.identity import FileId
 from ....shared.code.models.source_value_scope import SourceValueScope
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, ShapeResolverInterface
@@ -24,12 +25,16 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
         violations: list[ShapeViolation | None] = []
         code_map = architecture_map.code_map
         for source_id in self.realm_source_ids(architecture_map):
+            source_result = code_map.source_file(FileId(source_id))
+            if source_result is None:
+                raise RuntimeError(f"Shape realm references missing source: {source_id}")
+            source_file = source_result.file
             violations.extend(
                 [
                     self.limit_violation(
                         source_id=source_id,
                         rule_name="max_classes_per_file",
-                        actual=code_map.classes().where_equal(lambda result: result.source_id, source_id).count(),
+                        actual=len(source_file.classes),
                         limit=config.max_classes_per_file,
                         symbol_kind="file",
                         symbol_name="",
@@ -37,7 +42,7 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
                     self.limit_violation(
                         source_id=source_id,
                         rule_name="max_interfaces_per_file",
-                        actual=code_map.interfaces().where_equal(lambda result: result.source_id, source_id).count(),
+                        actual=len(source_file.interfaces),
                         limit=config.max_interfaces_per_file,
                         symbol_kind="file",
                         symbol_name="",
@@ -45,7 +50,7 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
                     self.limit_violation(
                         source_id=source_id,
                         rule_name="max_types_per_file",
-                        actual=code_map.types().where_equal(lambda result: result.source_id, source_id).count(),
+                        actual=len(source_file.types),
                         limit=config.max_types_per_file,
                         symbol_kind="file",
                         symbol_name="",
@@ -53,9 +58,7 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
                     self.limit_violation(
                         source_id=source_id,
                         rule_name="max_abstract_classes_per_file",
-                        actual=code_map.abstract_classes()
-                        .where_equal(lambda result: result.source_id, source_id)
-                        .count(),
+                        actual=len(source_file.abstract_classes),
                         limit=config.max_abstract_classes_per_file,
                         symbol_kind="file",
                         symbol_name="",
@@ -63,7 +66,7 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
                     self.limit_violation(
                         source_id=source_id,
                         rule_name="max_functions_per_file",
-                        actual=code_map.functions().where_equal(lambda result: result.source_id, source_id).count(),
+                        actual=len(source_file.functions),
                         limit=config.max_functions_per_file,
                         symbol_kind="file",
                         symbol_name="",
@@ -71,12 +74,9 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
                     self.limit_violation(
                         source_id=source_id,
                         rule_name="max_variables_per_file",
-                        actual=(
-                            code_map.values()
-                            .where_equal(lambda result: result.source_id, source_id)
-                            .where_equal(lambda result: result.item.scope, SourceValueScope.MODULE)
-                            .where_equal(lambda result: result.item.declaration_kind, "assignment")
-                            .count()
+                        actual=sum(
+                            value.scope == SourceValueScope.MODULE and value.declaration_kind == "assignment"
+                            for value in source_file.values
                         ),
                         limit=config.max_variables_per_file,
                         symbol_kind="file",
