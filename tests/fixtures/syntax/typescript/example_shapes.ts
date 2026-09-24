@@ -1,3 +1,6 @@
+export const EXAMPLE_CONSTANT = 'example_constant';
+export let example_variable = 'example_variable';
+
 export interface ExampleContract {
     example_optional?: string;
     example_required(example_value: string): string;

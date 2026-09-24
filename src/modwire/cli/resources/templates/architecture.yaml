@@ -47,6 +47,7 @@ shape:
         max_types_per_file: 1
         max_abstract_classes_per_file: 1
         max_functions_per_file: 1
+        max_variables_per_file: 0
         max_methods_per_class: 10
         max_declared_args: 4
         max_function_lines: 30

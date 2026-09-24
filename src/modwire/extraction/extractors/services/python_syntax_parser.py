@@ -386,6 +386,32 @@ class PythonSyntaxParser(SourceParser):
             return "object"
         return "unknown"
 
+    def type_reference_name(self, node: ast.AST) -> str:
+        if isinstance(node, ast.Name):
+            return node.id
+        if isinstance(node, ast.Attribute):
+            return node.attr
+        return ""
+
+    def value_is_type_alias(self, value: ast.AST | None) -> bool:
+        if isinstance(value, ast.Subscript):
+            return self.type_reference_name(value.value) in {
+                "Annotated",
+                "Callable",
+                "Literal",
+                "Optional",
+                "Union",
+            }
+        if isinstance(value, ast.Call):
+            return self.type_reference_name(value.func) in {
+                "NewType",
+                "ParamSpec",
+                "TypeAliasType",
+                "TypeVar",
+                "TypeVarTuple",
+            }
+        return False
+
     def source_value(self, name: str, node: ast.stmt, value: ast.AST | None) -> dict[str, object]:
         declared_args = 0
         optional_args = 0
@@ -393,13 +419,16 @@ class PythonSyntaxParser(SourceParser):
             parameters = self.parameter_details(value, exclude_receiver=False)
             declared_args = len(parameters)
             optional_args = sum(1 for parameter in parameters if parameter["has_default"])
+        annotation = node.annotation if isinstance(node, ast.AnnAssign) else None
+        is_constant = name.isupper() or (annotation is not None and self.type_reference_name(annotation) == "Final")
         return {
             "name": name,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(name),
             "line_count": self.line_span(node),
-            "declaration_kind": "assignment",
+            "declaration_kind": "constant" if is_constant else "assignment",
             "value_kind": self.value_kind(value),
+            "scope": "module",
             "declared_args": declared_args,
             "optional_args": optional_args,
         }
@@ -433,7 +462,11 @@ class PythonSyntaxParser(SourceParser):
         for node in tree.body:
             if isinstance(node, ast.Assign):
                 for target in node.targets:
-                    if isinstance(target, ast.Name):
+                    if (
+                        isinstance(target, ast.Name)
+                        and target.id != "__all__"
+                        and not self.value_is_type_alias(node.value)
+                    ):
                         values.append(self.source_value(target.id, node, node.value))
                         if isinstance(node.value, ast.Lambda):
                             qualified_name = target.id
@@ -449,7 +482,9 @@ class PythonSyntaxParser(SourceParser):
                             callable_nodes.append((cast(str, source_callable["id"]), node.value, ""))
                 continue
             if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
-                values.append(self.source_value(node.target.id, node, node.value))
+                is_type_alias = self.type_reference_name(node.annotation) == "TypeAlias"
+                if node.target.id != "__all__" and not is_type_alias and not self.value_is_type_alias(node.value):
+                    values.append(self.source_value(node.target.id, node, node.value))
                 if isinstance(node.value, ast.Lambda):
                     qualified_name = node.target.id
                     source_callable = self.callable_from_lambda(

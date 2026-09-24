@@ -9,7 +9,7 @@ from .source_extraction import SourceExtraction
 
 class CodeMap(ValueModel):
     model_config = ConfigDict(frozen=True)
-    schema_version: ClassVar[Literal[2]] = 2
+    schema_version: ClassVar[Literal[3]] = 3
     language: str
     extraction: SourceExtraction
     dependency_graph: DependencyGraph

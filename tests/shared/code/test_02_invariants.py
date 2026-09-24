@@ -46,7 +46,7 @@ class TestPublicCodeValues(ServiceTestCase):
         original = CodeMapFactory().queryable({"src/example.source": {}}, ()).code_map
         restored = type(original).model_validate_json(original.to_json())
         assert restored.to_dict() == original.to_dict()
-        assert original.schema_version == 2
+        assert original.schema_version == 3
         assert set(json.loads(original.to_json())) == {"language", "extraction", "dependency_graph"}
 
     def test_query_surfaces_keep_external_and_tracked_edges_distinct(self) -> None:

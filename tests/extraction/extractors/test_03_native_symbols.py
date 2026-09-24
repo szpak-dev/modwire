@@ -48,3 +48,24 @@ class TestNativeSymbols(ExtractionTestCase):
         callback = result.types().where_equal(lambda item: item.item.name, "ExampleCallback").first().item
         assert callback.visibility == "public"
         assert callback.signatures == []
+
+    @pytest.mark.parametrize("language", ("python", "typescript", "php"))
+    def test_module_variable_shape_is_language_neutral(self, language: str) -> None:
+        root = self.repository / "tests/fixtures/syntax" / language
+        result = self.application.generate_queryable_map(language, root, self.scan_policy())
+        variable = result.values().where_equal(lambda item: item.item.name, "example_variable").first().item
+        constant = result.values().where_equal(lambda item: item.item.name, "EXAMPLE_CONSTANT").first().item
+        assert variable.scope == constant.scope == "module"
+        assert variable.declaration_kind == "assignment"
+        assert constant.declaration_kind == "constant"
+
+        config = self.application.configure({"shape": {"realms": [{"name": "syntax", "match": "*"}]}})
+        shape = next(
+            item
+            for item in self.application.analyze(result, config)
+            if item.metadata.id == "architecture.violations.shape"
+        )
+        violations = tuple(item for item in shape.violations if item.rule_name == "max_variables_per_file")
+        assert len(violations) == 1
+        assert violations[0].actual == 1
+        assert violations[0].limit == 0

@@ -1,6 +1,9 @@
 <?php
 namespace ExampleShapes;
 
+const EXAMPLE_CONSTANT = 'example_constant';
+$example_variable = 'example_variable';
+
 interface ExampleContract
 {
     public function example_required(string $example_value): string;

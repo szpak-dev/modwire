@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 
+EXAMPLE_CONSTANT = "example_constant"
+example_variable = "example_variable"
+
 
 class ExampleContract(ABC):
     @abstractmethod

@@ -9,6 +9,7 @@ class ShapeRules(ConfigurationValue):
     max_types_per_file: int = Field(default=-1, ge=-1)
     max_abstract_classes_per_file: int = Field(default=-1, ge=-1)
     max_functions_per_file: int = Field(default=0, ge=-1)
+    max_variables_per_file: int = Field(default=0, ge=-1)
     max_methods_per_class: int = Field(default=-1, ge=-1)
     max_declared_args: int = Field(default=-1, ge=-1)
     max_function_lines: int = Field(default=-1, ge=-1)

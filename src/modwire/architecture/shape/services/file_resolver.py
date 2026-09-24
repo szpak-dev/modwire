@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from ....shared.code.models.source_value_scope import SourceValueScope
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, ShapeResolverInterface
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
@@ -64,6 +65,20 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
                         rule_name="max_functions_per_file",
                         actual=code_map.functions().where_equal(lambda result: result.source_id, source_id).count(),
                         limit=config.max_functions_per_file,
+                        symbol_kind="file",
+                        symbol_name="",
+                    ),
+                    self.limit_violation(
+                        source_id=source_id,
+                        rule_name="max_variables_per_file",
+                        actual=(
+                            code_map.values()
+                            .where_equal(lambda result: result.source_id, source_id)
+                            .where_equal(lambda result: result.item.scope, SourceValueScope.MODULE)
+                            .where_equal(lambda result: result.item.declaration_kind, "assignment")
+                            .count()
+                        ),
+                        limit=config.max_variables_per_file,
                         symbol_kind="file",
                         symbol_name="",
                     ),
