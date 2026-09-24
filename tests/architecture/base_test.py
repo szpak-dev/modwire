@@ -10,4 +10,4 @@ class ArchitectureTestCase(ServiceTestCase):
         return {}
 
     def queryable_map(self, paths: tuple[str, ...], edges: tuple[tuple[str, str | None, str, str], ...]):
-        return CodeMapFactory.queryable({path: self.source_file(path) for path in paths}, edges)
+        return CodeMapFactory().queryable({path: self.source_file(path) for path in paths}, edges)

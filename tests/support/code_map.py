@@ -6,13 +6,12 @@ from modwire.application import CodeMap, QueryableCodeMap
 
 
 class CodeMapFactory:
-    @classmethod
     def queryable(
-        cls,
+        self,
         files: Mapping[str, Mapping[str, object]],
-        edges: tuple[tuple[str, str | None, str, str], ...] = (),
+        edges: tuple[tuple[str, str | None, str, str], ...],
     ) -> QueryableCodeMap:
-        source_files = {source_id: cls.source_file(source_id, values) for source_id, values in files.items()}
+        source_files = {source_id: self.source_file(source_id, values) for source_id, values in files.items()}
         modules = {str(source_file["module_id"]): source_id for source_id, source_file in source_files.items()}
         nodes = {source_id: {"id": source_id, "kind": "file"} for source_id in source_files}
         dependency_edges = []
@@ -43,8 +42,7 @@ class CodeMapFactory:
         )
         return QueryableCodeMap(code_map=code_map)
 
-    @staticmethod
-    def source_file(source_id: str, values: Mapping[str, object]) -> dict[str, object]:
+    def source_file(self, source_id: str, values: Mapping[str, object]) -> dict[str, object]:
         defaults: dict[str, object] = {
             "file_id": source_id,
             "module_id": str(PurePosixPath(source_id).with_suffix("")).replace("/", "."),
@@ -64,8 +62,7 @@ class CodeMapFactory:
         }
         return {**defaults, **values}
 
-    @staticmethod
-    def symbol(name: str, *, line_count: int = 1, declared_args: int = 0, optional_args: int = 0) -> dict[str, Any]:
+    def symbol(self, name: str, *, line_count: int, declared_args: int, optional_args: int) -> dict[str, Any]:
         return {
             "name": name,
             "visibility": "public",
@@ -75,14 +72,13 @@ class CodeMapFactory:
             "optional_args": optional_args,
         }
 
-    @classmethod
     def source_class(
-        cls,
+        self,
         name: str,
         *,
-        line_count: int = 1,
-        methods: tuple[Mapping[str, object], ...] = (),
-        properties: tuple[Mapping[str, object], ...] = (),
+        line_count: int,
+        methods: tuple[Mapping[str, object], ...],
+        properties: tuple[Mapping[str, object], ...],
     ) -> dict[str, object]:
         return {
             "name": name,
@@ -93,13 +89,13 @@ class CodeMapFactory:
             "properties": list(properties),
         }
 
-    @staticmethod
     def source_import(
+        self,
         specifier: str,
         *,
-        imported_name: str = "",
-        is_aliased: bool = False,
-        imported_symbols: tuple[Mapping[str, object], ...] = (),
+        imported_name: str,
+        is_aliased: bool,
+        imported_symbols: tuple[Mapping[str, object], ...],
     ) -> dict[str, object]:
         return {
             "path": specifier,
@@ -117,8 +113,7 @@ class CodeMapFactory:
             "imported_symbols": list(imported_symbols),
         }
 
-    @staticmethod
-    def source_export(name: str) -> dict[str, object]:
+    def source_export(self, name: str) -> dict[str, object]:
         return {
             "name": name,
             "local_name": name,
@@ -133,10 +128,9 @@ class CodeMapFactory:
             "statement_id": 0,
         }
 
-    @classmethod
-    def source_callable(cls, source_id: str, name: str) -> dict[str, object]:
+    def source_callable(self, source_id: str, name: str) -> dict[str, object]:
         return {
-            **cls.symbol(name),
+            **self.symbol(name, line_count=1, declared_args=0, optional_args=0),
             "id": f"{source_id}::{name}",
             "source_id": source_id,
             "qualified_name": name,
@@ -150,8 +144,7 @@ class CodeMapFactory:
             "docstring": "",
         }
 
-    @staticmethod
-    def source_call(source_id: str, source_name: str, target_name: str) -> dict[str, object]:
+    def source_call(self, source_id: str, source_name: str, target_name: str) -> dict[str, object]:
         return {
             "source_callable_id": f"{source_id}::{source_name}",
             "target_callable_id": f"{source_id}::{target_name}",

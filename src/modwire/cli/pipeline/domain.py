@@ -5,9 +5,9 @@ from ...extraction.extractors.models.extractor_runtime import ExtractorRuntime
 from ...shared.code.models.identity import FileId
 from ...shared.code.models.source_extraction import SourceExtraction
 from ...shared.code.models.source_file import SourceFile
-from ..cache.models.source_inventory import SourceInventory
 from .models.report_pipeline_context import ReportPipelineContext
 from .models.scan_policy import ScanPolicy
+from .models.source_inventory import SourceInventory
 
 
 class ReportPipelineStep(ABC):

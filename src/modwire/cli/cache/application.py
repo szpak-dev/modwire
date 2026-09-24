@@ -18,17 +18,12 @@ from ..pipeline.models.scan_policy import ScanPolicy
 from .domain import CacheStorage
 from .models.cache_key import CacheKey
 from .models.cache_options import CacheOptions
-from .models.cache_outcome import CacheOutcome, CacheStage
+from .models.cache_outcome import CacheOutcome
+from .models.cache_stage import CacheStage
 from .models.cached_result import CachedResult
 from .models.extraction_snapshot import ExtractionSnapshot
 from .services.cache_codec import CacheCodec
 from .services.cache_identity import CacheIdentity
-
-
-@dataclass(frozen=True)
-class _CacheRead:
-    value: object | None
-    invalidated: bool
 
 
 @injectable
@@ -57,17 +52,17 @@ class CacheApplication:
         invalidated = 0
         for entry in inventory.entries:
             key = keys[entry.source_id]
-            cached = self._read(options, key)
+            cached_value, cached_invalidated = self._read(options, key)
             try:
-                source_file = SourceFile.model_validate(cached.value)
+                source_file = SourceFile.model_validate(cached_value)
                 if source_file.file_id != entry.source_id:
                     raise ValueError("Cached source identity does not match its key.")
                 files[entry.source_id] = source_file
                 hits += 1
             except (TypeError, ValueError, ValidationError):
-                if cached.value is not None and not cached.invalidated:
+                if cached_value is not None and not cached_invalidated:
                     self.storage.delete(options, key)
-                invalidated += int(cached.invalidated or cached.value is not None)
+                invalidated += int(cached_invalidated or cached_value is not None)
                 misses.append(entry.source_id)
 
         if misses or not inventory.entries:
@@ -128,19 +123,19 @@ class CacheApplication:
 
     def code_map(self, snapshot: ExtractionSnapshot, options: CacheOptions) -> CachedResult[CodeMap | None]:
         key = self.identity.code_map("", snapshot.manifest)
-        cached = self._read(options, key)
+        cached_value, cached_invalidated = self._read(options, key)
         try:
-            value = CodeMap.model_validate(cached.value)
+            value = CodeMap.model_validate(cached_value)
             outcome = CacheOutcome(stage=CacheStage.CODE_MAP, namespace=options.namespace, hits=1)
         except (TypeError, ValueError, ValidationError):
-            if cached.value is not None and not cached.invalidated:
+            if cached_value is not None and not cached_invalidated:
                 self.storage.delete(options, key)
             value = None
             outcome = CacheOutcome(
                 stage=CacheStage.CODE_MAP,
                 namespace=options.namespace,
                 misses=1,
-                invalidated=int(cached.invalidated or cached.value is not None),
+                invalidated=int(cached_invalidated or cached_value is not None),
             )
         return CachedResult[CodeMap | None](value=value, outcomes=(outcome,))
 
@@ -152,9 +147,8 @@ class CacheApplication:
         self, code_map: CodeMap, config: ArchitectureConfig, options: CacheOptions
     ) -> CachedResult[tuple[ReportNode, ...] | None]:
         key = self.identity.reports(code_map, config)
-        cached = self._read(options, key)
-        cached_value: object | None = cached.value
-        invalidated = cached.invalidated or cached_value is not None
+        cached_value, cached_invalidated = self._read(options, key)
+        invalidated = cached_invalidated or cached_value is not None
         try:
             if not isinstance(cached_value, list):
                 raise ValueError("Cached reports must be a list.")
@@ -162,7 +156,7 @@ class CacheApplication:
             value = tuple(sorted(reports, key=lambda item: (item.metadata.order, item.metadata.id)))
             outcome = CacheOutcome(stage=CacheStage.REPORTS, namespace=options.namespace, hits=1)
         except (AttributeError, ImportError, KeyError, TypeError, ValueError, ValidationError):
-            if cached_value is not None and not cached.invalidated:
+            if cached_value is not None and not cached_invalidated:
                 self.storage.delete(options, key)
             value = None
             outcome = CacheOutcome(
@@ -202,15 +196,15 @@ class CacheApplication:
             self.storage.delete(options, entry.key)
             total -= entry.size
 
-    def _read(self, options: CacheOptions, key: CacheKey) -> _CacheRead:
+    def _read(self, options: CacheOptions, key: CacheKey) -> tuple[object | None, bool]:
         payload = self.storage.read(options, key)
         if payload is None:
-            return _CacheRead(value=None, invalidated=False)
+            return None, False
         value = self.codec.decode(key, payload)
         if value is None:
             self.storage.delete(options, key)
-            return _CacheRead(value=None, invalidated=True)
-        return _CacheRead(value=value, invalidated=False)
+            return None, True
+        return value, False
 
     def _write(self, options: CacheOptions, key: CacheKey, value: object) -> None:
         self.storage.write(options, key, self.codec.encode(key, value))

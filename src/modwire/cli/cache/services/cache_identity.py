@@ -11,8 +11,8 @@ from ....architecture.config.models.architecture_config import ArchitectureConfi
 from ....extraction.extractors.models.extraction_request import ExtractionRequest
 from ....shared.code.models.code_map import CodeMap
 from ...cache.models.cache_key import CacheKey, CacheKind
-from ...cache.models.source_entry import SourceEntry
 from ...pipeline.models.scan_policy import ScanPolicy
+from ...pipeline.models.source_entry import SourceEntry
 
 
 @injectable
