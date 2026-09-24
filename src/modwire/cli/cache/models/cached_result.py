@@ -1,7 +1,8 @@
 from pydantic import field_validator
 
 from ....shared.values.models.value_model import ValueModel
-from .cache_outcome import CacheOutcome, CacheStage
+from .cache_outcome import CacheOutcome
+from .cache_stage import CacheStage
 
 
 class CachedResult[Result](ValueModel):

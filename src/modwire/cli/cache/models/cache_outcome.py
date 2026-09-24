@@ -1,16 +1,7 @@
-from enum import StrEnum
-
 from pydantic import field_validator
 
 from ....shared.values.models.value_model import ValueModel
-
-
-class CacheStage(StrEnum):
-    """Public stages reported by cached Modwire operations."""
-
-    EXTRACTION = "extraction"
-    CODE_MAP = "code-map"
-    REPORTS = "reports"
+from .cache_stage import CacheStage
 
 
 class CacheOutcome(ValueModel):

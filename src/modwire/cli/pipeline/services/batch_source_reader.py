@@ -20,10 +20,10 @@ from ....shared.code.models.duplicate_identity_error import DuplicateIdentityErr
 from ....shared.code.models.identity import FileId, ModuleId
 from ....shared.code.models.source_extraction import SourceExtraction
 from ....shared.code.models.source_file import SourceFile
-from ...cache.models.source_entry import SourceEntry
-from ...cache.models.source_inventory import SourceInventory
 from ..domain import SourceReader
 from ..models.scan_policy import ScanPolicy
+from ..models.source_entry import SourceEntry
+from ..models.source_inventory import SourceInventory
 
 
 @injectable(as_type=SourceReader)

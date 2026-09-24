@@ -34,14 +34,22 @@ class TestInsightInvariants(InsightTestCase):
             {
                 "example_values.source": {
                     "exports": [
-                        CodeMapFactory.source_export("ExampleUsed"),
-                        CodeMapFactory.source_export("ExampleUnused"),
+                        CodeMapFactory().source_export("ExampleUsed"),
+                        CodeMapFactory().source_export("ExampleUnused"),
                     ]
                 },
                 "example_consumer.source": {
-                    "imports": [CodeMapFactory.source_import("example_values", imported_name="ExampleUsed")]
+                    "imports": [
+                        CodeMapFactory().source_import(
+                            "example_values",
+                            imported_name="ExampleUsed",
+                            is_aliased=False,
+                            imported_symbols=(),
+                        )
+                    ]
                 },
-            }
+            },
+            (),
         ).exports
         assert tuple((item.source_id, item.name) for item in result.unused_exports) == (
             ("example_values.source", "ExampleUnused"),
@@ -53,15 +61,16 @@ class TestInsightInvariants(InsightTestCase):
             {
                 source_id: {
                     "callables": [
-                        CodeMapFactory.source_callable(source_id, "example_target"),
-                        CodeMapFactory.source_callable(source_id, "example_caller"),
+                        CodeMapFactory().source_callable(source_id, "example_target"),
+                        CodeMapFactory().source_callable(source_id, "example_caller"),
                     ],
                     "calls": [
-                        CodeMapFactory.source_call(source_id, "example_caller", "example_target"),
-                        CodeMapFactory.source_call(source_id, "example_caller", "example_target"),
+                        CodeMapFactory().source_call(source_id, "example_caller", "example_target"),
+                        CodeMapFactory().source_call(source_id, "example_caller", "example_target"),
                     ],
                 }
-            }
+            },
+            (),
         ).callables
         entries = {item.source_callable: item for item in result.entries}
         caller = next(item for key, item in entries.items() if key.endswith("example_caller"))
@@ -71,7 +80,7 @@ class TestInsightInvariants(InsightTestCase):
         assert target.calls == ()
 
     def test_empty_project_has_empty_insights(self) -> None:
-        result = self.insight({})
+        result = self.insight({}, ())
         assert result.clusters.clusters == ()
         assert result.hotspots.hotspots == ()
         assert result.callables.entries == ()

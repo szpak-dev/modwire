@@ -11,7 +11,8 @@ from .architecture.facade import ArchitectureFacade
 from .architecture.report.models.report_catalog import ReportCatalog
 from .architecture.report.models.report_node import ReportNode
 from .cli.cache.models.cache_options import CacheOptions
-from .cli.cache.models.cache_outcome import CacheOutcome, CacheStage
+from .cli.cache.models.cache_outcome import CacheOutcome
+from .cli.cache.models.cache_stage import CacheStage
 from .cli.cache.models.cached_result import CachedResult
 from .cli.facade import CliFacade
 from .cli.pipeline.models.scan_policy import ScanPolicy
