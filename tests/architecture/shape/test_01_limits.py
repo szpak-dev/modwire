@@ -29,6 +29,16 @@ class TestShapeLimits(ShapeTestCase):
                 2,
             ),
             (
+                "max_variables_per_file",
+                {
+                    "values": [
+                        CodeMapFactory().source_value("example_first", declaration_kind="assignment", scope="module"),
+                        CodeMapFactory().source_value("example_second", declaration_kind="assignment", scope="module"),
+                    ]
+                },
+                2,
+            ),
+            (
                 "max_methods_per_class",
                 {
                     "classes": [
@@ -112,6 +122,59 @@ class TestShapeLimits(ShapeTestCase):
             assert violations[0].source_id == "example.source"
         else:
             assert violations == ()
+
+    def test_variable_limit_defaults_to_zero_and_counts_only_module_assignments(self) -> None:
+        code_map = CodeMapFactory().queryable(
+            {
+                "example.source": {
+                    "values": [
+                        CodeMapFactory().source_value("example_module", declaration_kind="assignment", scope="module"),
+                        CodeMapFactory().source_value("EXAMPLE_CONSTANT", declaration_kind="constant", scope="module"),
+                        CodeMapFactory().source_value("example_local", declaration_kind="assignment", scope="local"),
+                        CodeMapFactory().source_value("example_member", declaration_kind="assignment", scope="member"),
+                    ]
+                }
+            },
+            (),
+        )
+        config = self.application.configure({"shape": {"realms": [{"name": "example-source", "match": "*"}]}})
+        violations = tuple(
+            item
+            for item in self.report("architecture.violations.shape", config, code_map).violations
+            if item.rule_name == "max_variables_per_file"
+        )
+        assert len(violations) == 1
+        assert violations[0].actual == 1
+        assert violations[0].limit == 0
+
+    def test_negative_one_disables_the_variable_limit(self) -> None:
+        code_map = CodeMapFactory().queryable(
+            {
+                "example.source": {
+                    "values": [
+                        CodeMapFactory().source_value("example_module", declaration_kind="assignment", scope="module")
+                    ]
+                }
+            },
+            (),
+        )
+        config = self.application.configure(
+            {
+                "shape": {
+                    "realms": [
+                        {
+                            "name": "example-source",
+                            "match": "*",
+                            "shape": {"max_variables_per_file": -1},
+                        }
+                    ]
+                }
+            }
+        )
+        assert all(
+            item.rule_name != "max_variables_per_file"
+            for item in self.report("architecture.violations.shape", config, code_map).violations
+        )
 
     @pytest.mark.parametrize(
         ("rule", "source_file"),

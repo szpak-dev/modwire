@@ -16,16 +16,17 @@ Shared code, dependency resolution, architecture analysis, traversal, consumer v
 orchestration must not contain supported-language tables, runtime commands, extension tables, or language-selection
 branches. Callers select a registered extractor explicitly.
 
-## Shared contract version 2
+## Shared contract version 3
 
-The class-level `CodeMap.schema_version` is `2` while the existing serialized envelope remains stable. Callable kinds
-are `function`, `instance_method`, `type_method`, `static_method`,
+The class-level `CodeMap.schema_version` is `3`. Every runtime `SourceValue` declares a language-neutral `module`,
+`local`, or `member` scope. Extractors distinguish variable assignments from constants and keep type aliases and export
+metadata out of runtime values. Callable kinds are `function`, `instance_method`, `type_method`, `static_method`,
 `constructor`, `callable_value`, and `anonymous`. Parameter kinds are `positional`, `variadic_positional`,
 `named_only`, and `variadic_named`.
 
-Version 1 serialized maps used extractor-specific callable and parameter vocabulary. They are not accepted as version
-2 values. Regenerate them from their source with the same registered extractor; persistent reuse does not yet exist,
-so there is no cache migration or silent compatibility alias.
+Version 1 serialized maps used extractor-specific callable and parameter vocabulary, while version 2 values have no
+explicit value scope. Neither is accepted as version 3. Regenerate them from source with the same registered extractor;
+the cache identity includes the code-map schema and invalidates older maps instead of migrating them silently.
 
 ## Adding an extractor
 

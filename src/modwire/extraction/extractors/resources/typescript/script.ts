@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { Node, Project, ScriptKind, SyntaxKind, ts } from 'ts-morph';
+import { Node, Project, ScriptKind, SyntaxKind, VariableDeclarationKind, ts } from 'ts-morph';
 
 function scriptKindForPath(filePath) {
     switch (path.extname(filePath).toLowerCase()) {
@@ -251,8 +251,9 @@ function sourceValue(options) {
         visibility: options.visibility,
         visibility_intent: visibilityIntent(options.name, options.visibility),
         line_count: lineSpan(options.lineStarts, options.startIndex, options.endIndex),
-        declaration_kind: 'assignment',
+        declaration_kind: options.declarationKind,
         value_kind: options.valueKind,
+        scope: options.scope,
         declared_args: counts.declared_args,
         optional_args: counts.optional_args,
     };
@@ -719,6 +720,15 @@ function moduleVariableDeclarations(sourceFile) {
     });
 }
 
+function variableScope(declaration) {
+    const statement = declaration.getVariableStatement();
+    const parent = statement === undefined ? undefined : statement.getParent();
+    if (parent !== undefined && (Node.isSourceFile(parent) || Node.isModuleBlock(parent))) {
+        return 'module';
+    }
+    return 'local';
+}
+
 function collectValues(sourceFile, lineStarts) {
     const values = [];
     for (const declaration of sourceFile.getVariableDeclarations()) {
@@ -733,6 +743,10 @@ function collectValues(sourceFile, lineStarts) {
             optional_args: parameters.filter(parameter => parameter.has_default).length,
         };
         const variableStatement = declaration.getVariableStatement();
+        const declarationKind = variableStatement !== undefined
+            && variableStatement.getDeclarationKind() === VariableDeclarationKind.Const
+            ? 'constant'
+            : 'assignment';
         const visibility = variableStatement !== undefined && variableStatement.getParent() === sourceFile
             ? moduleVisibility(variableStatement)
             : 'private';
@@ -744,29 +758,11 @@ function collectValues(sourceFile, lineStarts) {
                 endIndex: endIndexForNode(declaration),
                 lineStarts,
                 valueKind,
+                declarationKind,
+                scope: variableScope(declaration),
                 counts,
             }));
         }
-    }
-
-    for (const exportAssignment of sourceFile.getExportAssignments()) {
-        const expression = unwrapExpression(exportAssignment.getExpression());
-        if (!Node.isArrowFunction(expression) && !Node.isFunctionExpression(expression)) {
-            continue;
-        }
-        const parameters = functionParameters(expression);
-        values.push(sourceValue({
-            name: 'default',
-            visibility: 'public',
-            startIndex: exportAssignment.getStart(),
-            endIndex: endIndexForNode(exportAssignment),
-            lineStarts,
-            valueKind: 'callable',
-            counts: {
-                declared_args: parameters.length,
-                optional_args: parameters.filter(parameter => parameter.has_default).length,
-            },
-        }));
     }
     return values;
 }

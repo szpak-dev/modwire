@@ -44,6 +44,10 @@ shape:
       match: src
       shape:
         max_functions_per_file: 1
+        max_variables_per_file: 0
 ```
+
+`max_variables_per_file` counts module-scope variable assignments. Constants, types, exports, locals, parameters,
+properties, and member constants are excluded. Its default is `0`; use `-1` to disable the limit.
 
 The supplied `architecture.yaml` is a complete, adaptable example; keep its shape limits only when they suit the project.

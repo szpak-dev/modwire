@@ -89,6 +89,19 @@ class CodeMapFactory:
             "properties": list(properties),
         }
 
+    def source_value(self, name: str, *, declaration_kind: str, scope: str) -> dict[str, object]:
+        return {
+            "name": name,
+            "visibility": "public",
+            "visibility_intent": "public",
+            "line_count": 1,
+            "declaration_kind": declaration_kind,
+            "value_kind": "literal",
+            "scope": scope,
+            "declared_args": 0,
+            "optional_args": 0,
+        }
+
     def source_import(
         self,
         specifier: str,

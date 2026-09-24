@@ -223,6 +223,7 @@ function source_value_entry(
     Node $node,
     string $declarationKind,
     string $valueKind,
+    string $scope,
     array $parameters = []
 ): array {
     return [
@@ -232,6 +233,7 @@ function source_value_entry(
         'line_count' => line_span($node),
         'declaration_kind' => $declarationKind,
         'value_kind' => $valueKind,
+        'scope' => $scope,
         'declared_args' => count($parameters),
         'optional_args' => count(array_filter($parameters, fn (array $parameter): bool => $parameter['has_default'])),
     ];
@@ -537,6 +539,7 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
                 $node,
                 'assignment',
                 value_kind($node->expr),
+                function_parent($parents) === null ? 'module' : 'local',
                 $parameters
             );
         }
@@ -548,7 +551,8 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
                     'public',
                     $const,
                     'constant',
-                    value_kind($const->value)
+                    value_kind($const->value),
+                    'module'
                 );
             }
         }
@@ -560,7 +564,8 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
                     member_visibility($node),
                     $const,
                     'constant',
-                    value_kind($const->value)
+                    value_kind($const->value),
+                    'member'
                 );
             }
         }
