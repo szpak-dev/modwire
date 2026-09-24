@@ -1,3 +1,5 @@
+import json
+import os
 from concurrent.futures import ThreadPoolExecutor
 
 from modwire.application import CacheOptions, CacheStage
@@ -104,6 +106,52 @@ class TestPersistentCache(ApplicationTestCase):
         assert cold == expected
         assert warm == expected
         assert tuple((self.workspace / "cache").rglob("*.cache"))
+
+    def test_exact_map_hit_does_not_load_sources_or_maintain_the_manifest(self) -> None:
+        root = self.project({"src/example.py": "def example_function():\n    return 1\n"})
+        options = self.cache_options("example-map-first")
+        expected = self.application.generate_map_cached("python", root, self.scan_policy(), options)
+        untouched = tuple(
+            path for path in (self.workspace / "cache").rglob("*.cache") if path.parent.name in {"source", "manifest"}
+        )
+        old_access_ns = 1_000_000_000
+        for path in untouched:
+            os.utime(path, ns=(old_access_ns, path.stat().st_mtime_ns))
+
+        actual = self.application.generate_map_cached("python", root, self.scan_policy(), options)
+
+        assert actual == expected
+        assert {path.parent.name for path in untouched} == {"source", "manifest"}
+        assert all(path.stat().st_atime_ns == old_access_ns for path in untouched)
+
+    def test_unchanged_manifest_is_not_rewritten_after_a_code_map_miss(self) -> None:
+        root = self.project({"src/example.py": "def example_function():\n    return 1\n"})
+        options = self.cache_options("example-manifest-no-op")
+        expected = self.application.generate_map_cached("python", root, self.scan_policy(), options)
+        manifest = next((self.workspace / "cache").rglob("manifest/*.cache"))
+        code_map = next((self.workspace / "cache").rglob("code-map/*.cache"))
+        manifest_modified_ns = manifest.stat().st_mtime_ns
+        code_map.unlink()
+
+        actual = self.application.generate_map_cached("python", root, self.scan_policy(), options)
+
+        assert actual == expected
+        assert manifest.stat().st_mtime_ns == manifest_modified_ns
+
+    def test_invalid_capacity_ledger_is_recovered_by_a_public_cache_operation(self) -> None:
+        root = self.project({"src/example.py": "class ExampleValue:\n    pass\n"})
+        options = self.cache_options("example-ledger-recovery")
+        expected = self.application.generate_map_cached("python", root, self.scan_policy(), options)
+        state = next((self.workspace / "cache").rglob(".modwire-cache-state.json"))
+        state.write_text("not-a-ledger", encoding="utf-8")
+
+        actual = self.application.generate_map_cached("python", root, self.scan_policy(), options)
+
+        recovered = json.loads(state.read_text(encoding="utf-8"))
+        entries = tuple((self.workspace / "cache").rglob("*.cache"))
+        assert actual == expected
+        assert recovered["total_bytes"] == sum(path.stat().st_size for path in entries)
+        assert recovered["entry_count"] == len(entries)
 
     def test_same_size_edit_invalidates_cached_source_content(self) -> None:
         root = self.project({"src/example.py": "def example_one():\n    return 1\n"})

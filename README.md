@@ -92,9 +92,11 @@ Public stages reported by cached Modwire operations.
 
 Content-safe lifecycle counts for one stage of a cached operation.
 
-Extraction counts describe current source records. Code-map and report counts
-describe one entry. Invalidated entries are also misses. Diagnostics include
-the configured namespace but never cache keys, source identities, or content.
+Extraction counts describe current source records. An exact code-map hit
+reports its digest-backed manifest sources as extraction hits without loading
+individual source payloads. Code-map and report counts describe one entry.
+Invalidated entries are also misses. Diagnostics include the configured
+namespace but never cache keys, source identities, or content.
 
 ## `CachedResult`
 

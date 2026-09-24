@@ -83,9 +83,11 @@ class ModwireApplication:
 
         cached = self.cli.cached_reports(code_map.code_map, config, options)
         if cached.value is not None:
+            self.cli.maintain_cache(options)
             return CachedResult(value=cached.value, outcomes=cached.outcomes)
         reports = self.architecture.analyze(code_map, config)
         self.cli.store_reports(code_map.code_map, config, reports, options)
+        self.cli.maintain_cache(options)
         outcome = cached.outcome(CacheStage.REPORTS).model_copy(update={"computed": 1, "stored": 1})
         return CachedResult(value=reports, outcomes=(outcome,))
 
@@ -125,16 +127,27 @@ class ModwireApplication:
         """Return a code map and public outcomes for extraction and complete-map reuse."""
 
         request = self.extraction.request(language, str(root))
-        snapshot = self.cli.extract_cached(request, policy, options)
-        cached = self.cli.cached_code_map(snapshot.value, options)
+        plan = self.cli.prepare_cache(request, policy)
+        cached = self.cli.cached_code_map(plan, options)
         outcome = cached.outcome(CacheStage.CODE_MAP)
         if cached.value is not None:
             code_map = cached.value
+            extraction_outcomes = (
+                CacheOutcome(
+                    stage=CacheStage.EXTRACTION,
+                    namespace=options.namespace,
+                    hits=len(plan.sources),
+                ),
+            )
         else:
-            code_map = self.extraction.generate_map(language, snapshot.value.extraction)
-            self.cli.store_code_map(snapshot.value, code_map, options)
+            sources = self.cli.cached_sources(request, plan, options)
+            self.cli.maintain_manifest(plan, options)
+            code_map = self.extraction.generate_map(language, sources.value)
+            self.cli.store_code_map(plan, code_map, options)
             outcome = outcome.model_copy(update={"computed": 1, "stored": 1})
-        return CachedResult(value=code_map, outcomes=(*snapshot.outcomes, outcome))
+            extraction_outcomes = sources.outcomes
+        self.cli.maintain_cache(options)
+        return CachedResult(value=code_map, outcomes=(*extraction_outcomes, outcome))
 
     def generate_queryable_map_cached(
         self, language: str, root: str, policy: ScanPolicy, options: CacheOptions

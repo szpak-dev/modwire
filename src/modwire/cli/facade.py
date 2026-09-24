@@ -14,8 +14,8 @@ from ..shared.code.models.queryable_code_map import QueryableCodeMap
 from ..shared.code.models.source_extraction import SourceExtraction
 from .cache.application import CacheApplication
 from .cache.models.cache_options import CacheOptions
+from .cache.models.cache_plan import CachePlan
 from .cache.models.cached_result import CachedResult
-from .cache.models.extraction_snapshot import ExtractionSnapshot
 from .documentation.application import DocumentationApplication
 from .initialization.application import InitializationApplication
 from .pipeline.application import PipelineApplication
@@ -52,16 +52,22 @@ class CliFacade:
     def has_source_files(self, request: ExtractionRequest, policy: ScanPolicy) -> bool:
         return self.pipeline.has_source_files(request, policy)
 
-    def extract_cached(
-        self, request: ExtractionRequest, policy: ScanPolicy, options: CacheOptions
-    ) -> CachedResult[ExtractionSnapshot]:
-        return self.cache.extract_cached(request, policy, options)
+    def prepare_cache(self, request: ExtractionRequest, policy: ScanPolicy) -> CachePlan:
+        return self.cache.prepare(request, policy)
 
-    def cached_code_map(self, snapshot: ExtractionSnapshot, options: CacheOptions) -> CachedResult[CodeMap | None]:
-        return self.cache.code_map(snapshot, options)
+    def cached_sources(
+        self, request: ExtractionRequest, plan: CachePlan, options: CacheOptions
+    ) -> CachedResult[SourceExtraction]:
+        return self.cache.sources(request, plan, options)
 
-    def store_code_map(self, snapshot: ExtractionSnapshot, code_map: CodeMap, options: CacheOptions) -> None:
-        self.cache.store_code_map(snapshot, code_map, options)
+    def maintain_manifest(self, plan: CachePlan, options: CacheOptions) -> bool:
+        return self.cache.maintain_manifest(plan, options)
+
+    def cached_code_map(self, plan: CachePlan, options: CacheOptions) -> CachedResult[CodeMap | None]:
+        return self.cache.code_map(plan, options)
+
+    def store_code_map(self, plan: CachePlan, code_map: CodeMap, options: CacheOptions) -> None:
+        self.cache.store_code_map(plan, code_map, options)
 
     def cached_reports(
         self, code_map: CodeMap, config: ArchitectureConfig, options: CacheOptions
@@ -79,6 +85,9 @@ class CliFacade:
 
     def clear_cache(self, options: CacheOptions) -> None:
         self.cache.clear(options)
+
+    def maintain_cache(self, options: CacheOptions) -> bool:
+        return self.cache.maintain(options)
 
     def render(self, reports: tuple[ReportNode, ...], summary: bool) -> int:
         return self.pipeline.run(reports, summary=summary)
@@ -128,14 +137,17 @@ class CliFacade:
             extraction = self.extract(extraction_request, policy)
             code_map = self.extraction.generate_queryable_map(request.language, extraction)
             return self.render(self.architecture.analyze(code_map, config), request.summary)
-        snapshot = self.extract_cached(extraction_request, policy, cache_options).value
-        cached_code_map = self.cached_code_map(snapshot, cache_options).value
+        plan = self.prepare_cache(extraction_request, policy)
+        cached_code_map = self.cached_code_map(plan, cache_options).value
         if cached_code_map is None:
-            cached_code_map = self.extraction.generate_map(request.language, snapshot.extraction)
-            self.store_code_map(snapshot, cached_code_map, cache_options)
+            extraction = self.cached_sources(extraction_request, plan, cache_options).value
+            self.maintain_manifest(plan, cache_options)
+            cached_code_map = self.extraction.generate_map(request.language, extraction)
+            self.store_code_map(plan, cached_code_map, cache_options)
         code_map = QueryableCodeMap(code_map=cached_code_map)
         reports = self.cached_reports(cached_code_map, config, cache_options).value
         if reports is None:
             reports = self.architecture.analyze(code_map, config)
             self.store_reports(cached_code_map, config, reports, cache_options)
+        self.maintain_cache(cache_options)
         return self.render(reports, request.summary)

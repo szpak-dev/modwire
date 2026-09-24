@@ -11,6 +11,7 @@ from ....architecture.config.models.architecture_config import ArchitectureConfi
 from ....extraction.extractors.models.extraction_request import ExtractionRequest
 from ....shared.code.models.code_map import CodeMap
 from ...cache.models.cache_key import CacheKey, CacheKind
+from ...cache.models.source_cache_entry import SourceCacheEntry
 from ...pipeline.models.scan_policy import ScanPolicy
 from ...pipeline.models.source_entry import SourceEntry
 
@@ -37,14 +38,16 @@ class CacheIdentity:
             },
         )
 
-    def manifest(self, request: ExtractionRequest, policy: ScanPolicy, entries: tuple[SourceEntry, ...]) -> CacheKey:
-        sources = tuple(
+    def manifest(
+        self, request: ExtractionRequest, policy: ScanPolicy, sources: tuple[SourceCacheEntry, ...]
+    ) -> CacheKey:
+        manifest_sources = tuple(
             {
-                "relative_path": entry.relative_path,
-                "content_digest": entry.content_digest,
-                "source_key": self.source(request, policy, entry).digest,
+                "relative_path": source.entry.relative_path,
+                "content_digest": source.entry.content_digest,
+                "source_key": source.key.digest,
             }
-            for entry in sorted(entries, key=lambda item: item.relative_path)
+            for source in sorted(sources, key=lambda item: item.entry.relative_path)
         )
         return self._key(
             "manifest",
@@ -53,7 +56,7 @@ class CacheIdentity:
                 "package": self._package_version(),
                 "runtime": self._runtime_identity(request),
                 "scan_policy": policy.model_dump(mode="json"),
-                "sources": sources,
+                "sources": manifest_sources,
             },
         )
 
