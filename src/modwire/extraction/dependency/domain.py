@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from ...shared.code.models.dependency_graph import DependencyGraph
-from ...shared.code.models.identity import FileId
+from ...shared.code.models.identity import FileId, ModuleId
 from ...shared.code.models.source_file import SourceFile
 
 
@@ -13,5 +13,7 @@ class GraphBuilder(ABC):
 
 class ImportResolver(ABC):
     @abstractmethod
-    def resolve(self, files: dict[FileId, SourceFile]) -> dict[FileId, SourceFile]:
+    def resolve(
+        self, files: dict[FileId, SourceFile], identities: dict[FileId, tuple[ModuleId, ...]]
+    ) -> dict[FileId, SourceFile]:
         raise NotImplementedError
