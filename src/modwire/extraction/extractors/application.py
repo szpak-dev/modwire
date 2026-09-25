@@ -32,7 +32,13 @@ class ExtractorsApplication:
         return ExtractionRequest(root=root, runtime=extractor.runtime, batch_config=extractor.batch_config)
 
     def generate_map(self, language: str, extraction: SourceExtraction) -> CodeMap:
-        files = self.dependency.resolve(extraction.files)
+        if language not in self.extractors:
+            raise ValueError(f"Language is not supported: {language}")
+        extractor = self.extractors[language]
+        identities = {
+            file_id: extractor.module_identities(source_file) for file_id, source_file in extraction.files.items()
+        }
+        files = self.dependency.resolve(extraction.files, identities)
         resolved = extraction.model_copy(update={"files": files})
         return CodeMap(language=language, extraction=resolved, dependency_graph=self.dependency.build(files))
 

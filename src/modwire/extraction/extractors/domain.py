@@ -1,6 +1,8 @@
 import ast
 from abc import ABC, abstractmethod
 
+from ...shared.code.models.identity import ModuleId
+from ...shared.code.models.source_file import SourceFile
 from .models.batch_config import BatchConfig
 from .models.extractor_runtime import ExtractorRuntime
 from .models.python_call_context import PythonCallContext
@@ -27,4 +29,8 @@ class SourceExtractor(ABC):
     @property
     @abstractmethod
     def batch_config(self) -> BatchConfig:
+        raise NotImplementedError
+
+    @abstractmethod
+    def module_identities(self, source_file: SourceFile) -> tuple[ModuleId, ...]:
         raise NotImplementedError

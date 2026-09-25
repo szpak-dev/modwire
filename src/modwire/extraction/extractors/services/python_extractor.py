@@ -3,6 +3,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from ....shared.code.models.identity import ModuleId
+from ....shared.code.models.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
 from ..models.extractor_resource import ExtractorResource
@@ -25,3 +27,10 @@ class PythonExtractor(SourceExtractor):
     @property
     def batch_config(self) -> BatchConfig:
         return BatchConfig(size=500, output_format="json")
+
+    def module_identities(self, source_file: SourceFile) -> tuple[ModuleId, ...]:
+        module_id = source_file.module_id
+        value = str(module_id)
+        if value == "__init__" or not value.endswith("/__init__"):
+            return (module_id,)
+        return (module_id, ModuleId(value.rsplit("/", 1)[0]))
