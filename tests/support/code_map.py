@@ -26,7 +26,7 @@ class CodeMapFactory:
                     "to_id": target_id,
                     "specifier": specifier,
                     "resolution": resolution,
-                    "kind": "import",
+                    "kind": "imports",
                 }
             )
         source_artifacts = [
@@ -135,6 +135,7 @@ class CodeMapFactory:
             "name": name,
             "visibility": "public",
             "visibility_intent": "public",
+            "declaration_annotations": [],
             "line_count": line_count,
             "declared_args": declared_args,
             "optional_args": optional_args,
@@ -152,9 +153,18 @@ class CodeMapFactory:
             "name": name,
             "visibility": "public",
             "visibility_intent": "public",
+            "declaration_annotations": [],
             "line_count": line_count,
             "methods": list(methods),
-            "properties": list(properties),
+            "properties": [
+                {
+                    "annotation": "",
+                    "visibility": "public",
+                    "member_kind": "instance",
+                    **property_definition,
+                }
+                for property_definition in properties
+            ],
         }
 
     def source_value(self, name: str, *, declaration_kind: str, scope: str) -> dict[str, object]:

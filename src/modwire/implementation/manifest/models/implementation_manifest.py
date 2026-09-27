@@ -19,7 +19,7 @@ from .manifest_symbol import ManifestSymbol
 class ImplementationManifest(ValueModel):
     """A versioned, language-neutral statement of observed implementation facts and provenance."""
 
-    schema_version: Literal[1] = 1
+    schema_version: Literal[2] = 2
     producer: CodeMapProducer
     source_manifest: SourceManifest
     symbols: tuple[ManifestSymbol, ...]
@@ -74,12 +74,12 @@ class ImplementationManifest(ValueModel):
             raise ValueError("Implementation manifest parameter positions must be unique per callable.")
         if any(item.callable_id.canonical() not in callable_ids for item in self.parameters):
             raise ValueError("Implementation manifest parameters must reference declared callables.")
-        attribute_ids = {(item.owner_symbol_id.canonical(), item.name) for item in self.attributes}
+        attribute_ids = {item.id for item in self.attributes}
         if len(attribute_ids) != len(self.attributes):
             raise ValueError("Implementation manifest attribute identities must be unique per symbol.")
         if any(item.owner_symbol_id.canonical() not in symbol_ids for item in self.attributes):
             raise ValueError("Implementation manifest attributes must reference declared symbols.")
-        targets = symbol_ids | parameter_ids
+        targets = symbol_ids | parameter_ids | attribute_ids
         if any(item.target_id not in targets for item in self.annotations):
             raise ValueError("Implementation manifest annotations must reference declared facts.")
         if any(item.source_symbol_id.canonical() not in symbol_ids for item in self.inheritance):

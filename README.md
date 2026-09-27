@@ -126,6 +126,14 @@ Generic persistent-cache settings supplied by a caller.
 
 Caller-owned filesystem traversal policy with explicit exclusions and opt-in symlink following.
 
+## `SourceMemberKind`
+
+Ownership kind for a declared class or type member.
+
+## `SourceRelationKind`
+
+Canonical relation kinds published by code maps and implementation manifests.
+
 ## `ImplementationManifest`
 
 A versioned, language-neutral statement of observed implementation facts and provenance.

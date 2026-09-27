@@ -54,19 +54,22 @@ class PythonExtractor(SourceExtractor):
                     capability=FactCapability.ANNOTATIONS,
                     status=CapabilityStatus.PARTIAL,
                     explanation=(
-                        "Callable decorators and type annotations are extracted; "
+                        "Class and callable decorators and declared type annotations are extracted; "
                         "arbitrary annotations are not evaluated."
                     ),
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.MODIFIERS,
                     status=CapabilityStatus.PARTIAL,
-                    explanation="Visibility intent and callable kind are normalized.",
+                    explanation="Visibility intent, callable kind, and class property member kind are normalized.",
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.ATTRIBUTES,
                     status=CapabilityStatus.SUPPORTED,
-                    explanation="Class properties and optionality are extracted.",
+                    explanation=(
+                        "Class property identity, exact declared type, visibility, optionality, and member kind "
+                        "are extracted."
+                    ),
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.INHERITANCE,

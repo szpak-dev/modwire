@@ -102,17 +102,17 @@ from ..services.facade import WidgetsService
             for item in result.outgoing_dependencies("example/widgets/api/controllers.py").all()
         }
         assert edges == {
-            "example/security/adapters/http": ("resolved", "example/security/adapters/http/__init__.py"),
-            "example/widgets/services": ("resolved", "example/widgets/services/__init__.py"),
-            "example/widgets/services/approvals": (
+            "...security.adapters.http": ("resolved", "example/security/adapters/http/__init__.py"),
+            "..services": ("resolved", "example/widgets/services/__init__.py"),
+            "..services.approvals": (
                 "resolved",
                 "example/widgets/services/approvals/__init__.py",
             ),
-            "example/widgets/services/audit/model": (
+            "..services.audit.model": (
                 "resolved",
                 "example/widgets/services/audit/model.py",
             ),
-            "example/widgets/services/facade": ("resolved", "example/widgets/services/facade.py"),
+            "..services.facade": ("resolved", "example/widgets/services/facade.py"),
         }
 
     def test_exact_module_identity_wins_over_duplicate_suffix(self) -> None:

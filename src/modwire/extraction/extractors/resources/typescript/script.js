@@ -229767,6 +229767,14 @@ function visibilityFromModifiers(node, fallback = 'public') {
     const name = typeof node.getName === 'function' ? node.getName() : '';
     return name.startsWith('#') ? 'private' : fallback;
 }
+function memberKindFromModifiers(node) {
+    return node.getModifiers().some(modifier => modifier.getKind() === ts_morph_1.SyntaxKind.StaticKeyword)
+        ? 'static'
+        : 'instance';
+}
+function declarationAnnotations(node) {
+    return node.getDecorators().map(decorator => decorator.getExpression().getText());
+}
 function isExported(node) {
     return Boolean((typeof node.hasExportKeyword === 'function' && node.hasExportKeyword())
         || (typeof node.isDefaultExport === 'function' && node.isDefaultExport()));
@@ -229902,6 +229910,7 @@ function sourceCallable(options) {
         kind: options.kind,
         visibility: options.visibility,
         visibility_intent: visibilityIntent(options.name, options.visibility),
+        declaration_annotations: [],
         line_start: lineNumberAt(options.lineStarts, options.startIndex),
         line_end: lineNumberAt(options.lineStarts, options.endIndex),
         line_count: lineSpan(options.lineStarts, options.startIndex, options.endIndex),
@@ -230162,10 +230171,27 @@ function collectExports(sourceFile, filePath, sourcesRoot) {
 function classDeclarationIsAbstract(classDeclaration) {
     return classDeclaration.getModifiers().some(modifier => modifier.getKind() === ts_morph_1.SyntaxKind.AbstractKeyword);
 }
-function classPropertyIsOptional(property) {
+function typeIncludesUndefined(typeNode) {
+    if (typeNode === undefined) {
+        return false;
+    }
+    if (typeNode.kind === ts_morph_1.SyntaxKind.UndefinedKeyword) {
+        return true;
+    }
+    if (ts_morph_1.ts.isUnionTypeNode(typeNode)) {
+        return typeNode.types.some(typeIncludesUndefined);
+    }
+    if (ts_morph_1.ts.isParenthesizedTypeNode(typeNode)) {
+        return typeIncludesUndefined(typeNode.type);
+    }
+    return false;
+}
+function propertyIsOptional(property) {
+    const typeNode = typeof property.getTypeNode === 'function' ? property.getTypeNode() : undefined;
+    const initializer = typeof property.getInitializer === 'function' ? property.getInitializer() : undefined;
     return Boolean((typeof property.hasQuestionToken === 'function' && property.hasQuestionToken())
-        || textOf(typeof property.getTypeNode === 'function' ? property.getTypeNode() : undefined).includes('undefined')
-        || textOf(property.getInitializer()).match(/^(undefined|null)$/));
+        || typeIncludesUndefined(typeNode?.compilerNode)
+        || textOf(initializer).match(/^(undefined|null)$/));
 }
 function sourceClassMethod(method, lineStarts, name = propertyNameText(method)) {
     const parameters = functionParameters(method);
@@ -230174,6 +230200,7 @@ function sourceClassMethod(method, lineStarts, name = propertyNameText(method)) 
         name,
         visibility,
         visibility_intent: visibilityIntent(name, visibility),
+        declaration_annotations: [],
         line_count: lineSpan(lineStarts, method.getStart(), endIndexForNode(method)),
         declared_args: parameters.length,
         optional_args: parameters.filter(parameter => parameter.has_default).length,
@@ -230192,13 +230219,26 @@ function collectClasses(sourceFile, lineStarts, sourceId) {
         });
         const properties = new Map();
         for (const property of classDeclaration.getProperties()) {
-            properties.set(propertyNameText(property), classPropertyIsOptional(property));
+            const propertyName = propertyNameText(property);
+            properties.set(propertyName, {
+                name: propertyName,
+                is_optional: propertyIsOptional(property),
+                annotation: textOf(property.getTypeNode()),
+                visibility: visibilityFromModifiers(property),
+                member_kind: memberKindFromModifiers(property),
+            });
         }
         for (const constructorDeclaration of classDeclaration.getConstructors()) {
             for (const parameter of constructorDeclaration.getParameters()) {
                 if (parameter.isParameterProperty()) {
                     const parameterName = singleBindingName(parameter.getNameNode()) || parameter.getNameNode().getText();
-                    properties.set(parameterName, parameter.isOptional() || parameter.getInitializer() !== undefined);
+                    properties.set(parameterName, {
+                        name: parameterName,
+                        is_optional: parameter.isOptional() || parameter.getInitializer() !== undefined,
+                        annotation: textOf(parameter.getTypeNode()),
+                        visibility: visibilityFromModifiers(parameter),
+                        member_kind: 'instance',
+                    });
                 }
             }
         }
@@ -230226,10 +230266,8 @@ function collectClasses(sourceFile, lineStarts, sourceId) {
             name,
             visibility,
             visibility_intent: visibilityIntent(name, visibility),
-            properties: Array.from(properties, ([propertyName, isOptional]) => ({
-                name: propertyName,
-                is_optional: Boolean(isOptional),
-            })),
+            declaration_annotations: declarationAnnotations(classDeclaration),
+            properties: Array.from(properties.values()),
             line_count: lineSpan(lineStarts, classDeclaration.getStart(), endIndexForNode(classDeclaration)),
         };
         if (classDeclarationIsAbstract(classDeclaration)) {
@@ -230279,7 +230317,10 @@ function collectInterfaces(sourceFile, lineStarts, sourceId) {
         const visibility = moduleVisibility(interfaceDeclaration);
         const properties = interfaceDeclaration.getProperties().map(property => ({
             name: propertyNameText(property),
-            is_optional: Boolean(typeof property.hasQuestionToken === 'function' && property.hasQuestionToken()),
+            is_optional: propertyIsOptional(property),
+            annotation: textOf(property.getTypeNode()),
+            visibility: 'public',
+            member_kind: 'instance',
         }));
         const methods = interfaceDeclaration.getMethods().map(method => sourceClassMethod(method, lineStarts));
         return {
@@ -230292,6 +230333,7 @@ function collectInterfaces(sourceFile, lineStarts, sourceId) {
             name: interfaceDeclaration.getName(),
             visibility,
             visibility_intent: visibilityIntent(interfaceDeclaration.getName(), visibility),
+            declaration_annotations: [],
             methods,
             properties,
             signatures: collectSignaturesFromMembers(interfaceDeclaration.getMembers(), lineStarts),
@@ -230306,7 +230348,10 @@ function collectTypes(sourceFile, lineStarts, sourceId) {
         const members = ts_morph_1.Node.isTypeLiteral(typeNode) ? typeNode.getMembers() : [];
         const properties = members.filter(member => ts_morph_1.Node.isPropertySignature(member)).map(property => ({
             name: propertyNameText(property),
-            is_optional: Boolean(typeof property.hasQuestionToken === 'function' && property.hasQuestionToken()),
+            is_optional: propertyIsOptional(property),
+            annotation: textOf(property.getTypeNode()),
+            visibility: 'public',
+            member_kind: 'instance',
         }));
         return {
             declaration_id: {
@@ -230318,6 +230363,7 @@ function collectTypes(sourceFile, lineStarts, sourceId) {
             name: typeAlias.getName(),
             visibility,
             visibility_intent: visibilityIntent(typeAlias.getName(), visibility),
+            declaration_annotations: [],
             properties,
             signatures: collectSignaturesFromMembers(members, lineStarts),
             line_count: lineSpan(lineStarts, typeAlias.getStart(), endIndexForNode(typeAlias)),
@@ -230394,6 +230440,7 @@ function collectFunctions(sourceFile, lineStarts, sourceId) {
             name,
             visibility,
             visibility_intent: visibilityIntent(name, visibility),
+            declaration_annotations: [],
             line_count: lineSpan(lineStarts, node.getStart(), endIndexForNode(node)),
             declared_args: parameters.length,
             optional_args: parameters.filter(parameter => parameter.has_default).length,

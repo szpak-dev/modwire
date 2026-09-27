@@ -4,6 +4,10 @@ from typing import cast
 
 from wireup import injectable
 
+from ....shared.code.models.source_class_property import SourceClassProperty
+from ....shared.code.models.source_member_kind import SourceMemberKind
+from ....shared.code.models.source_relation_kind import SourceRelationKind
+from ....shared.code.models.types import SourceVisibility
 from ..domain import PythonCallReader, SourceParser
 from ..models.python_call_context import PythonCallContext
 
@@ -93,7 +97,7 @@ class PythonSyntaxParser(SourceParser):
             for child in node.body
         )
 
-    def visibility_intent(self, name: str) -> str:
+    def visibility_intent(self, name: str) -> SourceVisibility:
         if name.startswith("__") and (not (name.startswith("__") and name.endswith("__"))):
             return "private"
         if name.startswith("_") and (not (name.startswith("__") and name.endswith("__"))):
@@ -141,11 +145,43 @@ class PythonSyntaxParser(SourceParser):
         )
         return optional_names
 
-    def add_property(self, properties: dict[str, bool], name: str, is_optional: bool) -> None:
-        properties[name] = properties.get(name, False) or is_optional
+    def property_definition(
+        self,
+        name: str,
+        is_optional: bool,
+        annotation: str,
+        visibility: SourceVisibility,
+        member_kind: SourceMemberKind,
+    ) -> SourceClassProperty:
+        return SourceClassProperty(
+            name=name,
+            is_optional=is_optional,
+            annotation=annotation,
+            visibility=visibility,
+            member_kind=member_kind,
+        )
+
+    def add_property(
+        self, properties: dict[str, SourceClassProperty], property_definition: SourceClassProperty
+    ) -> None:
+        if property_definition.name not in properties:
+            properties[property_definition.name] = property_definition
+            return
+        current = properties[property_definition.name]
+        properties[property_definition.name] = SourceClassProperty(
+            name=current.name,
+            is_optional=current.is_optional or property_definition.is_optional,
+            annotation=current.annotation or property_definition.annotation,
+            visibility=current.visibility,
+            member_kind=(
+                SourceMemberKind.INSTANCE
+                if SourceMemberKind.INSTANCE in {current.member_kind, property_definition.member_kind}
+                else SourceMemberKind.STATIC
+            ),
+        )
 
     def class_properties(self, node: ast.ClassDef) -> list[dict[str, object]]:
-        properties: dict[str, bool] = {}
+        properties: dict[str, SourceClassProperty] = {}
 
         for child in node.body:
             if isinstance(child, ast.AnnAssign):
@@ -153,14 +189,29 @@ class PythonSyntaxParser(SourceParser):
                 if isinstance(target, ast.Name):
                     self.add_property(
                         properties,
-                        target.id,
-                        self.annotation_is_optional(child.annotation) or self.value_is_none(child.value),
+                        self.property_definition(
+                            name=target.id,
+                            is_optional=self.annotation_is_optional(child.annotation)
+                            or self.value_is_none(child.value),
+                            annotation=self.unparse(child.annotation),
+                            visibility=self.visibility_intent(target.id),
+                            member_kind=SourceMemberKind.STATIC,
+                        ),
                     )
                 continue
             if isinstance(child, ast.Assign):
                 for target in child.targets:
                     if isinstance(target, ast.Name):
-                        self.add_property(properties, target.id, self.value_is_none(child.value))
+                        self.add_property(
+                            properties,
+                            self.property_definition(
+                                name=target.id,
+                                is_optional=self.value_is_none(child.value),
+                                annotation="",
+                                visibility=self.visibility_intent(target.id),
+                                member_kind=SourceMemberKind.STATIC,
+                            ),
+                        )
                 continue
             if not isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
@@ -175,8 +226,18 @@ class PythonSyntaxParser(SourceParser):
                     ):
                         self.add_property(
                             properties,
-                            target.attr,
-                            self.annotation_is_optional(descendant.annotation) or self.value_is_none(descendant.value),
+                            self.property_definition(
+                                name=target.attr,
+                                is_optional=(
+                                    self.annotation_is_optional(descendant.annotation)
+                                    or self.value_is_none(descendant.value)
+                                ),
+                                annotation=self.unparse(descendant.annotation),
+                                visibility=self.visibility_intent(target.attr),
+                                member_kind=(
+                                    SourceMemberKind.INSTANCE if target.value.id == "self" else SourceMemberKind.STATIC
+                                ),
+                            ),
                         )
                     continue
                 if not isinstance(descendant, ast.Assign):
@@ -190,8 +251,22 @@ class PythonSyntaxParser(SourceParser):
                         and isinstance(target.value, ast.Name)
                         and (target.value.id in {"self", "cls"})
                     ):
-                        self.add_property(properties, target.attr, is_optional)
-        return [{"name": name, "is_optional": is_optional} for name, is_optional in properties.items()]
+                        self.add_property(
+                            properties,
+                            self.property_definition(
+                                name=target.attr,
+                                is_optional=is_optional,
+                                annotation="",
+                                visibility=self.visibility_intent(target.attr),
+                                member_kind=(
+                                    SourceMemberKind.INSTANCE if target.value.id == "self" else SourceMemberKind.STATIC
+                                ),
+                            ),
+                        )
+        return [property_definition.model_dump(mode="json") for property_definition in properties.values()]
+
+    def class_annotations(self, node: ast.ClassDef) -> list[str]:
+        return [self.unparse(decorator) for decorator in node.decorator_list]
 
     def method_definition(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> dict[str, object]:
         declared_args, optional_args = self.argument_counts(
@@ -201,6 +276,7 @@ class PythonSyntaxParser(SourceParser):
             "name": node.name,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(node.name),
+            "declaration_annotations": [],
             "line_count": self.line_span(node),
             "declared_args": declared_args,
             "optional_args": optional_args,
@@ -217,6 +293,7 @@ class PythonSyntaxParser(SourceParser):
             "name": node.name,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(node.name),
+            "declaration_annotations": self.class_annotations(node),
             "methods": [
                 self.method_definition(child)
                 for child in node.body
@@ -247,6 +324,7 @@ class PythonSyntaxParser(SourceParser):
             "name": node.name,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(node.name),
+            "declaration_annotations": self.class_annotations(node),
             "abstract_methods": [method for method in methods if method["name"] in abstract_method_names],
             "concrete_methods": [method for method in methods if method["name"] not in abstract_method_names],
             "properties": self.class_properties(node),
@@ -265,6 +343,7 @@ class PythonSyntaxParser(SourceParser):
             "name": node.name,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(node.name),
+            "declaration_annotations": [],
             "line_count": self.line_span(node),
             "declared_args": declared_args,
             "optional_args": optional_args,
@@ -360,6 +439,7 @@ class PythonSyntaxParser(SourceParser):
             "kind": kind,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(node.name),
+            "declaration_annotations": [],
             "line_start": node.lineno,
             "line_end": node.end_lineno,
             "line_count": self.line_span(node),
@@ -398,6 +478,7 @@ class PythonSyntaxParser(SourceParser):
             "kind": kind,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(name),
+            "declaration_annotations": [],
             "line_start": node.lineno,
             "line_end": node.end_lineno,
             "line_count": self.line_span(node),
@@ -849,7 +930,7 @@ class PythonSyntaxParser(SourceParser):
                         "qualified_name": node.name,
                         "ordinal": self.declaration_ordinal(node),
                     },
-                    "kind": "inherits",
+                    "kind": SourceRelationKind.EXTENDS.value,
                     "target_reference": self.unparse(base),
                 }
                 for node in class_nodes

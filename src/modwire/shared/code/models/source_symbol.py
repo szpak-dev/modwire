@@ -7,3 +7,4 @@ class SourceSymbol(ValueModel):
     visibility: SourceVisibility
     visibility_intent: SourceVisibility
     line_count: int
+    declaration_annotations: list[str]

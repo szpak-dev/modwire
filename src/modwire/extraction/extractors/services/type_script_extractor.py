@@ -52,17 +52,23 @@ class TypeScriptExtractor(SourceExtractor):
                 CapabilityCoverage(
                     capability=FactCapability.ANNOTATIONS,
                     status=CapabilityStatus.PARTIAL,
-                    explanation="Type annotations are extracted; decorator expressions are not yet emitted.",
+                    explanation=(
+                        "Class decorator expressions and declared type annotations are extracted; "
+                        "decorators on other declarations are not yet emitted."
+                    ),
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.MODIFIERS,
                     status=CapabilityStatus.PARTIAL,
-                    explanation="Visibility intent and callable kind are normalized.",
+                    explanation="Visibility intent, callable kind, and property member kind are normalized.",
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.ATTRIBUTES,
                     status=CapabilityStatus.SUPPORTED,
-                    explanation="Class and type properties with optionality are extracted.",
+                    explanation=(
+                        "Class and type property identity, exact declared type, visibility, optionality, and "
+                        "member kind are extracted."
+                    ),
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.INHERITANCE,

@@ -10,7 +10,7 @@ from .source_extraction import SourceExtraction
 
 class CodeMap(ValueModel):
     model_config = ConfigDict(frozen=True)
-    schema_version: ClassVar[int] = 4
+    schema_version: ClassVar[int] = 5
     language: str
     producer: CodeMapProducer
     extraction: SourceExtraction
