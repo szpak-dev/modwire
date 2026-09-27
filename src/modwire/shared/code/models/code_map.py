@@ -1,21 +1,23 @@
-from typing import Any, ClassVar, Literal
+from typing import ClassVar, Self
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, model_validator
 
 from ...values.models.value_model import ValueModel
+from .code_map_producer import CodeMapProducer
 from .dependency_graph import DependencyGraph
 from .source_extraction import SourceExtraction
 
 
 class CodeMap(ValueModel):
     model_config = ConfigDict(frozen=True)
-    schema_version: ClassVar[Literal[3]] = 3
+    schema_version: ClassVar[int] = 4
     language: str
+    producer: CodeMapProducer
     extraction: SourceExtraction
     dependency_graph: DependencyGraph
 
-    def to_dict(self, **kwargs: Any) -> dict[str, Any]:
-        return self.model_dump(**kwargs)
-
-    def to_json(self, *, indent: int | None = None) -> str:
-        return self.model_dump_json(indent=indent)
+    @model_validator(mode="after")
+    def validate_producer_language(self) -> Self:
+        if self.language != self.producer.extractor.language:
+            raise ValueError("Code map language must match its extractor descriptor.")
+        return self

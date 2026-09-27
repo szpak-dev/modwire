@@ -242,11 +242,11 @@ class ReportBenchmark:
                         "extraction_loading",
                         lambda: application.cli.cached_sources(request, plan, options),
                     )
-                    _, measurement["manifest_maintenance"] = self._phase(
+                    _, measurement["source_set_maintenance"] = self._phase(
                         repetition,
                         "map",
-                        "manifest_maintenance",
-                        lambda: application.cli.maintain_manifest(plan, options),
+                        "source_set_maintenance",
+                        lambda: application.cli.maintain_source_set(plan, options),
                     )
                     generated_map, measurement["code_map_construction"] = self._phase(
                         repetition,
@@ -264,7 +264,7 @@ class ReportBenchmark:
                 else:
                     for phase in (
                         "extraction_loading",
-                        "manifest_maintenance",
+                        "source_set_maintenance",
                         "code_map_construction",
                         "code_map_storage",
                     ):
@@ -280,7 +280,7 @@ class ReportBenchmark:
                 code_map_hit = True
                 for phase in (
                     "extraction_loading",
-                    "manifest_maintenance",
+                    "source_set_maintenance",
                     "code_map_construction",
                     "code_map_storage",
                 ):

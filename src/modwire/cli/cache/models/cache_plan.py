@@ -5,12 +5,14 @@ from .source_cache_entry import SourceCacheEntry
 
 
 class CachePlan(ValueModel):
+    language: str
     inventory: SourceInventory
     sources: tuple[SourceCacheEntry, ...]
-    manifest: CacheKey
+    source_set: CacheKey
 
-    def manifest_value(self) -> dict[str, object]:
+    def source_set_value(self) -> dict[str, object]:
         return {
+            "source_manifest": self.inventory.manifest.digest,
             "sources": [
                 {
                     "relative_path": source.entry.relative_path,
@@ -18,5 +20,5 @@ class CachePlan(ValueModel):
                     "source_key": source.key.digest,
                 }
                 for source in sorted(self.sources, key=lambda item: item.entry.relative_path)
-            ]
+            ],
         }

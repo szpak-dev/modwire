@@ -18,12 +18,13 @@ from ....shared.code.application import CodeApplication
 from ....shared.code.domain import PathMatcher
 from ....shared.code.models.duplicate_identity_error import DuplicateIdentityError
 from ....shared.code.models.identity import FileId, ModuleId
+from ....shared.code.models.scan_policy import ScanPolicy
 from ....shared.code.models.source_extraction import SourceExtraction
 from ....shared.code.models.source_file import SourceFile
 from ..domain import SourceReader
-from ..models.scan_policy import ScanPolicy
 from ..models.source_entry import SourceEntry
 from ..models.source_inventory import SourceInventory
+from .source_manifest_builder import SourceManifestBuilder
 
 
 @injectable(as_type=SourceReader)
@@ -31,11 +32,14 @@ from ..models.source_inventory import SourceInventory
 class BatchSourceReader(SourceReader):
     code: CodeApplication
     paths: PathMatcher
+    manifests: SourceManifestBuilder
 
     def ensure_available(self, runtime: ExtractorRuntime) -> None:
         executable = runtime.command[0]
         if shutil.which(executable) is None:
-            raise RuntimeError(f"{runtime.language} extractor runtime is not available on PATH: {executable}")
+            raise RuntimeError(
+                f"{runtime.descriptor.language} extractor runtime is not available on PATH: {executable}"
+            )
 
     def has_source_files(self, request: ExtractionRequest, policy: ScanPolicy) -> bool:
         root = Path(request.root)
@@ -57,6 +61,7 @@ class BatchSourceReader(SourceReader):
         return SourceExtraction(
             files=files,
             modules=modules,
+            manifest=inventory.manifest,
             files_found=inventory.files_found,
             files_excluded=inventory.files_excluded,
             directories_pruned=inventory.directories_pruned,
@@ -79,11 +84,13 @@ class BatchSourceReader(SourceReader):
             )
             for source_path in source_paths
         )
+        runtime = self.manifests.observe(request)
         return SourceInventory(
             entries=entries,
             files_found=len(source_paths),
             files_excluded=files_excluded,
             directories_pruned=directories_pruned,
+            manifest=self.manifests.build(policy, runtime, entries),
         )
 
     def extract_entries(
@@ -178,9 +185,10 @@ class BatchSourceReader(SourceReader):
         if not source_paths:
             return {}
         runtime = request.runtime
-        script_path = Path(str(resources.files(runtime.resource.package).joinpath(runtime.resource.path)))
+        entrypoint = runtime.resources.entrypoint
+        script_path = Path(str(resources.files(entrypoint.package).joinpath(entrypoint.path)))
         if not script_path.is_file():
-            raise RuntimeError(f"{runtime.language} extractor script is missing: {script_path}")
+            raise RuntimeError(f"{runtime.descriptor.language} extractor script is missing: {script_path}")
         paths_by_source_id = {
             self.code.file_id(str(root), str(source_path)): str(source_path) for source_path in source_paths
         }
@@ -192,7 +200,9 @@ class BatchSourceReader(SourceReader):
         )
         if completed.returncode != 0:
             message = completed.stderr.strip() or completed.stdout.strip()
-            raise RuntimeError(f"{runtime.language} extractor failed with exit code {completed.returncode}: {message}")
+            raise RuntimeError(
+                f"{runtime.descriptor.language} extractor failed with exit code {completed.returncode}: {message}"
+            )
         extracted = self._parse_batch_output(request, completed.stdout)
         source_paths_by_id = {
             self.code.file_id(str(root), str(source_path)): source_path for source_path in source_paths

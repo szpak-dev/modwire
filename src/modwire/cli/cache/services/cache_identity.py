@@ -1,36 +1,46 @@
 import hashlib
 import json
 from dataclasses import dataclass
-from functools import lru_cache
-from importlib import metadata, resources
-from typing import Any, ClassVar
+from typing import ClassVar
 
 from wireup import injectable
 
 from ....architecture.config.models.architecture_config import ArchitectureConfig
 from ....extraction.extractors.models.extraction_request import ExtractionRequest
+from ....shared.code.domain import PackageVersion
 from ....shared.code.models.code_map import CodeMap
-from ...cache.models.cache_key import CacheKey, CacheKind
+from ....shared.code.models.runtime_observation import RuntimeObservation
+from ....shared.code.models.scan_policy import ScanPolicy
+from ....shared.code.models.source_manifest import SourceManifest
+from ...cache.models.cache_key import CacheKey
+from ...cache.models.cache_kind import CacheKind
 from ...cache.models.source_cache_entry import SourceCacheEntry
-from ...pipeline.models.scan_policy import ScanPolicy
 from ...pipeline.models.source_entry import SourceEntry
 
 
 @injectable
 @dataclass(frozen=True)
 class CacheIdentity:
-    SOURCE_VERSION: ClassVar[int] = 1
-    MANIFEST_VERSION: ClassVar[int] = 1
-    CODE_MAP_VERSION: ClassVar[int] = 1
+    version: PackageVersion
+
+    SOURCE_VERSION: ClassVar[int] = 2
+    SOURCE_SET_VERSION: ClassVar[int] = 3
+    CODE_MAP_VERSION: ClassVar[int] = 2
     REPORT_VERSION: ClassVar[int] = 1
 
-    def source(self, request: ExtractionRequest, policy: ScanPolicy, entry: SourceEntry) -> CacheKey:
-        return self._key(
-            "source",
+    def source(
+        self,
+        request: ExtractionRequest,
+        policy: ScanPolicy,
+        runtime: RuntimeObservation,
+        entry: SourceEntry,
+    ) -> CacheKey:
+        return self.key(
+            CacheKind.SOURCE,
             {
                 "version": self.SOURCE_VERSION,
-                "package": self._package_version(),
-                "runtime": self._runtime_identity(request),
+                "package": self.version.version(),
+                "runtime": self.runtime_identity(request, runtime),
                 "scan_policy": policy.model_dump(mode="json"),
                 "relative_path": entry.relative_path,
                 "source_id": entry.source_id,
@@ -38,10 +48,13 @@ class CacheIdentity:
             },
         )
 
-    def manifest(
-        self, request: ExtractionRequest, policy: ScanPolicy, sources: tuple[SourceCacheEntry, ...]
+    def source_set(
+        self,
+        request: ExtractionRequest,
+        manifest: SourceManifest,
+        sources: tuple[SourceCacheEntry, ...],
     ) -> CacheKey:
-        manifest_sources = tuple(
+        source_set_entries = tuple(
             {
                 "relative_path": source.entry.relative_path,
                 "content_digest": source.entry.content_digest,
@@ -49,61 +62,47 @@ class CacheIdentity:
             }
             for source in sorted(sources, key=lambda item: item.entry.relative_path)
         )
-        return self._key(
-            "manifest",
+        return self.key(
+            CacheKind.SOURCE_SET,
             {
-                "version": self.MANIFEST_VERSION,
-                "package": self._package_version(),
-                "runtime": self._runtime_identity(request),
-                "scan_policy": policy.model_dump(mode="json"),
-                "sources": manifest_sources,
+                "version": self.SOURCE_SET_VERSION,
+                "package": self.version.version(),
+                "runtime": self.runtime_identity(request, manifest.runtime),
+                "source_manifest": manifest.digest,
+                "sources": source_set_entries,
             },
         )
 
-    def code_map(self, language: str, manifest: CacheKey) -> CacheKey:
-        return self._key(
-            "code-map",
+    def code_map(self, language: str, source_set: CacheKey) -> CacheKey:
+        return self.key(
+            CacheKind.CODE_MAP,
             {
                 "version": self.CODE_MAP_VERSION,
-                "package": self._package_version(),
+                "package": self.version.version(),
                 "code_map_schema": CodeMap.schema_version,
                 "language": language,
-                "manifest": manifest.model_dump(mode="json"),
+                "source_set": source_set.model_dump(mode="json"),
             },
         )
 
     def reports(self, code_map: CodeMap, config: ArchitectureConfig) -> CacheKey:
-        return self._key(
-            "reports",
+        return self.key(
+            CacheKind.REPORTS,
             {
                 "version": self.REPORT_VERSION,
-                "package": self._package_version(),
+                "package": self.version.version(),
                 "code_map": code_map.model_dump(mode="json"),
                 "configuration": config.model_dump(mode="json"),
             },
         )
 
-    def _runtime_identity(self, request: ExtractionRequest) -> dict[str, object]:
-        runtime = request.runtime
+    def runtime_identity(self, request: ExtractionRequest, observation: RuntimeObservation) -> dict[str, object]:
         return {
-            "runtime": runtime.model_dump(mode="json"),
+            "runtime": request.runtime.model_dump(mode="json"),
             "batch": request.batch_config.model_dump(mode="json"),
-            "resource_digest": self._resource_digest(runtime.resource.package, runtime.resource.path),
+            "observation": observation.model_dump(mode="json"),
         }
 
-    @lru_cache(maxsize=32)
-    def _resource_digest(self, package: str, path: str) -> str:
-        resource = resources.files(package).joinpath(path)
-        return hashlib.sha256(resource.read_bytes()).hexdigest()
-
-    @lru_cache(maxsize=1)
-    def _package_version(self) -> str:
-        try:
-            return metadata.version("modwire")
-        except metadata.PackageNotFoundError:
-            return "0+unknown"
-
-    def _key(self, kind: CacheKind, value: object) -> CacheKey:
-        payload: Any = value
-        serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode()
+    def key(self, kind: CacheKind, value: object) -> CacheKey:
+        serialized = json.dumps(value, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode()
         return CacheKey(kind=kind, digest=hashlib.sha256(serialized).hexdigest())

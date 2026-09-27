@@ -4,7 +4,9 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ...shared.code.application import CodeApplication
+from ...shared.code.domain import PackageVersion
 from ...shared.code.models.code_map import CodeMap
+from ...shared.code.models.code_map_producer import CodeMapProducer
 from ...shared.code.models.queryable_code_map import QueryableCodeMap
 from ...shared.code.models.source_extraction import SourceExtraction
 from ..dependency.application import DependencyApplication
@@ -19,10 +21,12 @@ class ExtractorsApplication:
     dependency: DependencyApplication
     code: CodeApplication
     parsers: Mapping[Hashable, SourceParser]
+    version: PackageVersion
 
     def supported_languages(self) -> tuple[str, ...]:
         return tuple(
-            item.runtime.language for item in sorted(self.extractors.values(), key=lambda item: item.runtime.order)
+            item.runtime.descriptor.language
+            for item in sorted(self.extractors.values(), key=lambda item: item.runtime.order)
         )
 
     def request(self, language: str, root: str) -> ExtractionRequest:
@@ -31,7 +35,8 @@ class ExtractorsApplication:
         extractor = self.extractors[language]
         return ExtractionRequest(root=root, runtime=extractor.runtime, batch_config=extractor.batch_config)
 
-    def generate_map(self, language: str, extraction: SourceExtraction) -> CodeMap:
+    def generate_map(self, request: ExtractionRequest, extraction: SourceExtraction) -> CodeMap:
+        language = request.runtime.descriptor.language
         if language not in self.extractors:
             raise ValueError(f"Language is not supported: {language}")
         extractor = self.extractors[language]
@@ -40,10 +45,20 @@ class ExtractorsApplication:
         }
         files = self.dependency.resolve(extraction.files, identities)
         resolved = extraction.model_copy(update={"files": files})
-        return CodeMap(language=language, extraction=resolved, dependency_graph=self.dependency.build(files))
+        producer = CodeMapProducer(
+            modwire_version=self.version.version(),
+            extractor=request.runtime.descriptor,
+            capabilities=request.runtime.capabilities,
+        )
+        return CodeMap(
+            language=language,
+            producer=producer,
+            extraction=resolved,
+            dependency_graph=self.dependency.build(files),
+        )
 
-    def generate_queryable_map(self, language: str, extraction: SourceExtraction) -> QueryableCodeMap:
-        return self.code.queryable(self.generate_map(language, extraction))
+    def generate_queryable_map(self, request: ExtractionRequest, extraction: SourceExtraction) -> QueryableCodeMap:
+        return self.code.queryable(self.generate_map(request, extraction))
 
     def parse_source(self, language: str, content: str, path: str, root: str, source_id: str) -> dict[str, object]:
         if language not in self.parsers:

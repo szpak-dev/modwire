@@ -229863,6 +229863,12 @@ function functionParameters(functionLike) {
 function sourceValue(options) {
     const counts = options.counts || { declared_args: 0, optional_args: 0 };
     return {
+        declaration_id: {
+            source_id: options.sourceId,
+            family: 'value',
+            qualified_name: options.name,
+            ordinal: options.startIndex + 1,
+        },
         name: options.name,
         visibility: options.visibility,
         visibility_intent: visibilityIntent(options.name, options.visibility),
@@ -229876,7 +229882,18 @@ function sourceValue(options) {
 }
 function sourceCallable(options) {
     const parameters = options.parameters || [];
+    const family = options.kind === 'function'
+        ? 'function'
+        : (['instance_method', 'type_method', 'static_method', 'constructor'].includes(options.kind)
+            ? 'method'
+            : (options.kind === 'callable_value' ? 'value' : 'callable'));
     return {
+        declaration_id: {
+            source_id: options.sourceId,
+            family,
+            qualified_name: options.qualifiedName,
+            ordinal: options.startIndex + 1,
+        },
         id: callableId(options.sourceId, options.qualifiedName),
         source_id: options.sourceId,
         name: options.name,
@@ -229923,16 +229940,15 @@ function callableBodyInfo(functionLike) {
 }
 function addUniqueCallable(callables, callableRanges, seenIds, callable, bodyInfo, functionNode) {
     const baseQualifiedName = callable.qualified_name;
-    let qualifiedName = baseQualifiedName;
+    let transportName = baseQualifiedName;
     let suffix = 2;
-    while (seenIds.has(callableId(callable.source_id, qualifiedName))) {
-        qualifiedName = `${baseQualifiedName}#${suffix}`;
+    while (seenIds.has(callableId(callable.source_id, transportName))) {
+        transportName = `${baseQualifiedName}#${suffix}`;
         suffix += 1;
     }
     const normalized = {
         ...callable,
-        id: callableId(callable.source_id, qualifiedName),
-        qualified_name: qualifiedName,
+        id: callableId(callable.source_id, transportName),
     };
     seenIds.add(normalized.id);
     callables.push(normalized);
@@ -230163,7 +230179,7 @@ function sourceClassMethod(method, lineStarts, name = propertyNameText(method)) 
         optional_args: parameters.filter(parameter => parameter.has_default).length,
     };
 }
-function collectClasses(sourceFile, lineStarts) {
+function collectClasses(sourceFile, lineStarts, sourceId) {
     const classes = [];
     const abstractClasses = [];
     const classRanges = [];
@@ -230201,6 +230217,12 @@ function collectClasses(sourceFile, lineStarts) {
             }
         }
         const base = {
+            declaration_id: {
+                source_id: sourceId,
+                family: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
+                qualified_name: name,
+                ordinal: classDeclaration.getStart() + 1,
+            },
             name,
             visibility,
             visibility_intent: visibilityIntent(name, visibility),
@@ -230252,7 +230274,7 @@ function collectSignaturesFromMembers(members, lineStarts) {
     }
     return signatures;
 }
-function collectInterfaces(sourceFile, lineStarts) {
+function collectInterfaces(sourceFile, lineStarts, sourceId) {
     return sourceFile.getInterfaces().map(interfaceDeclaration => {
         const visibility = moduleVisibility(interfaceDeclaration);
         const properties = interfaceDeclaration.getProperties().map(property => ({
@@ -230261,6 +230283,12 @@ function collectInterfaces(sourceFile, lineStarts) {
         }));
         const methods = interfaceDeclaration.getMethods().map(method => sourceClassMethod(method, lineStarts));
         return {
+            declaration_id: {
+                source_id: sourceId,
+                family: 'interface',
+                qualified_name: interfaceDeclaration.getName(),
+                ordinal: interfaceDeclaration.getStart() + 1,
+            },
             name: interfaceDeclaration.getName(),
             visibility,
             visibility_intent: visibilityIntent(interfaceDeclaration.getName(), visibility),
@@ -230271,7 +230299,7 @@ function collectInterfaces(sourceFile, lineStarts) {
         };
     });
 }
-function collectTypes(sourceFile, lineStarts) {
+function collectTypes(sourceFile, lineStarts, sourceId) {
     return sourceFile.getTypeAliases().map(typeAlias => {
         const visibility = moduleVisibility(typeAlias);
         const typeNode = typeAlias.getTypeNode();
@@ -230281,6 +230309,12 @@ function collectTypes(sourceFile, lineStarts) {
             is_optional: Boolean(typeof property.hasQuestionToken === 'function' && property.hasQuestionToken()),
         }));
         return {
+            declaration_id: {
+                source_id: sourceId,
+                family: 'type',
+                qualified_name: typeAlias.getName(),
+                ordinal: typeAlias.getStart() + 1,
+            },
             name: typeAlias.getName(),
             visibility,
             visibility_intent: visibilityIntent(typeAlias.getName(), visibility),
@@ -230304,7 +230338,7 @@ function variableScope(declaration) {
     }
     return 'local';
 }
-function collectValues(sourceFile, lineStarts) {
+function collectValues(sourceFile, lineStarts, sourceId) {
     const values = [];
     for (const declaration of sourceFile.getVariableDeclarations()) {
         const initializer = declaration.getInitializer();
@@ -230327,6 +230361,7 @@ function collectValues(sourceFile, lineStarts) {
             : 'private';
         for (const name of bindingNames(declaration.getNameNode())) {
             values.push(sourceValue({
+                sourceId,
                 name,
                 visibility,
                 startIndex: declaration.getStart(),
@@ -230341,7 +230376,7 @@ function collectValues(sourceFile, lineStarts) {
     }
     return values;
 }
-function collectFunctions(sourceFile, lineStarts) {
+function collectFunctions(sourceFile, lineStarts, sourceId) {
     const functions = [];
     const seen = new Set();
     function addFunction(name, node, parameters, visibility) {
@@ -230350,6 +230385,12 @@ function collectFunctions(sourceFile, lineStarts) {
         }
         seen.add(name);
         functions.push({
+            declaration_id: {
+                source_id: sourceId,
+                family: 'function',
+                qualified_name: name,
+                ordinal: node.getStart() + 1,
+            },
             name,
             visibility,
             visibility_intent: visibilityIntent(name, visibility),
@@ -230594,7 +230635,7 @@ function collectCalls(sourceFile, lineStarts, sourceId, callableRanges, callable
 function collectCallableGraph(sourceFile, lineStarts, sourceId) {
     const { callables, callableRanges } = collectCallables(sourceFile, lineStarts, sourceId);
     return {
-        values: collectValues(sourceFile, lineStarts),
+        values: collectValues(sourceFile, lineStarts, sourceId),
         callables,
         calls: collectCalls(sourceFile, lineStarts, sourceId, callableRanges, callables),
     };
@@ -230607,7 +230648,7 @@ function extractFile(filePath, sourcesRoot, sourceId = null) {
     const sourceFile = parseSourceFile(node_path_1.default.resolve(filePath), content);
     const lineStarts = buildLineStarts(content);
     const resolvedSourceId = sourceId || sourceIdForPath(filePath, sourcesRoot);
-    const { classes, abstractClasses } = collectClasses(sourceFile, lineStarts);
+    const { classes, abstractClasses } = collectClasses(sourceFile, lineStarts, resolvedSourceId);
     const imports = collectImports(sourceFile, filePath, sourcesRoot);
     const exports = collectExports(sourceFile, filePath, sourcesRoot);
     const callableGraph = collectCallableGraph(sourceFile, lineStarts, resolvedSourceId);
@@ -230615,13 +230656,50 @@ function extractFile(filePath, sourcesRoot, sourceId = null) {
         imports,
         exports,
         classes,
-        interfaces: collectInterfaces(sourceFile, lineStarts),
-        types: collectTypes(sourceFile, lineStarts),
+        interfaces: collectInterfaces(sourceFile, lineStarts, resolvedSourceId),
+        types: collectTypes(sourceFile, lineStarts, resolvedSourceId),
         abstract_classes: abstractClasses,
-        functions: collectFunctions(sourceFile, lineStarts),
+        functions: collectFunctions(sourceFile, lineStarts, resolvedSourceId),
         values: callableGraph.values,
         callables: callableGraph.callables,
         calls: callableGraph.calls,
+        inheritance: [
+            ...sourceFile.getClasses().flatMap(classDeclaration => {
+                const extension = classDeclaration.getExtends();
+                return [
+                    ...(extension === undefined ? [] : [{
+                            source_declaration_id: {
+                                source_id: resolvedSourceId,
+                                family: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
+                                qualified_name: classDeclaration.getName() || 'default',
+                                ordinal: classDeclaration.getStart() + 1,
+                            },
+                            kind: 'extends',
+                            target_reference: extension.getExpression().getText(),
+                        }]),
+                    ...classDeclaration.getImplements().map(target => ({
+                        source_declaration_id: {
+                            source_id: resolvedSourceId,
+                            family: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
+                            qualified_name: classDeclaration.getName() || 'default',
+                            ordinal: classDeclaration.getStart() + 1,
+                        },
+                        kind: 'implements',
+                        target_reference: target.getExpression().getText(),
+                    })),
+                ];
+            }),
+            ...sourceFile.getInterfaces().flatMap(interfaceDeclaration => interfaceDeclaration.getExtends().map(target => ({
+                source_declaration_id: {
+                    source_id: resolvedSourceId,
+                    family: 'interface',
+                    qualified_name: interfaceDeclaration.getName(),
+                    ordinal: interfaceDeclaration.getStart() + 1,
+                },
+                kind: 'extends',
+                target_reference: target.getExpression().getText(),
+            }))),
+        ],
         line_count: content.split('\n').length,
         code_line_count: codeLineCount(content),
         public_symbol_count: publicSymbolCount(exports),

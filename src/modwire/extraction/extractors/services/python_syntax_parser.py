@@ -13,6 +13,9 @@ from ..models.python_call_context import PythonCallContext
 class PythonSyntaxParser(SourceParser):
     calls: PythonCallReader
 
+    def declaration_ordinal(self, node: ast.stmt | ast.expr) -> int:
+        return (node.lineno << 32) + node.col_offset + 1
+
     def line_span(self, node: ast.stmt | ast.expr) -> int:
         return cast(int, node.end_lineno) - node.lineno + 1
 
@@ -203,8 +206,14 @@ class PythonSyntaxParser(SourceParser):
             "optional_args": optional_args,
         }
 
-    def class_definition(self, node: ast.ClassDef) -> dict[str, object]:
+    def class_definition(self, node: ast.ClassDef, source_id: str) -> dict[str, object]:
         return {
+            "declaration_id": {
+                "source_id": source_id,
+                "family": "class",
+                "qualified_name": node.name,
+                "ordinal": self.declaration_ordinal(node),
+            },
             "name": node.name,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(node.name),
@@ -217,7 +226,7 @@ class PythonSyntaxParser(SourceParser):
             "line_count": self.line_span(node),
         }
 
-    def abstract_class_definition(self, node: ast.ClassDef) -> dict[str, object]:
+    def abstract_class_definition(self, node: ast.ClassDef, source_id: str) -> dict[str, object]:
         methods = [
             self.method_definition(child)
             for child in node.body
@@ -229,6 +238,12 @@ class PythonSyntaxParser(SourceParser):
             if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)) and self.method_is_abstract(child)
         }
         return {
+            "declaration_id": {
+                "source_id": source_id,
+                "family": "abstract_class",
+                "qualified_name": node.name,
+                "ordinal": self.declaration_ordinal(node),
+            },
             "name": node.name,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(node.name),
@@ -238,9 +253,15 @@ class PythonSyntaxParser(SourceParser):
             "line_count": self.line_span(node),
         }
 
-    def function_definition(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> dict[str, object]:
+    def function_definition(self, node: ast.FunctionDef | ast.AsyncFunctionDef, source_id: str) -> dict[str, object]:
         declared_args, optional_args = self.argument_counts(node, exclude_receiver=False)
         return {
+            "declaration_id": {
+                "source_id": source_id,
+                "family": "function",
+                "qualified_name": node.name,
+                "ordinal": self.declaration_ordinal(node),
+            },
             "name": node.name,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(node.name),
@@ -325,6 +346,12 @@ class PythonSyntaxParser(SourceParser):
         exclude_receiver = is_method and kind != "static_method"
         declared_args, optional_args = self.argument_counts(node, exclude_receiver=exclude_receiver)
         return {
+            "declaration_id": {
+                "source_id": source_id,
+                "family": "method" if is_method else "function",
+                "qualified_name": qualified_name,
+                "ordinal": self.declaration_ordinal(node),
+            },
             "id": self.callable_id(source_id, qualified_name),
             "source_id": source_id,
             "name": node.name,
@@ -347,6 +374,7 @@ class PythonSyntaxParser(SourceParser):
     def callable_from_lambda(
         self,
         node: ast.Lambda,
+        identity_node: ast.stmt | ast.expr,
         source_id: str,
         *,
         qualified_name: str,
@@ -356,6 +384,12 @@ class PythonSyntaxParser(SourceParser):
     ) -> dict[str, object]:
         parameters = self.parameter_details(node, exclude_receiver=False)
         return {
+            "declaration_id": {
+                "source_id": source_id,
+                "family": "value" if kind == "callable_value" else "callable",
+                "qualified_name": qualified_name,
+                "ordinal": self.declaration_ordinal(identity_node),
+            },
             "id": self.callable_id(source_id, qualified_name),
             "source_id": source_id,
             "name": name,
@@ -412,7 +446,14 @@ class PythonSyntaxParser(SourceParser):
             }
         return False
 
-    def source_value(self, name: str, node: ast.stmt, value: ast.AST | None) -> dict[str, object]:
+    def source_value(
+        self,
+        name: str,
+        node: ast.stmt,
+        identity_node: ast.expr,
+        value: ast.AST | None,
+        source_id: str,
+    ) -> dict[str, object]:
         declared_args = 0
         optional_args = 0
         if isinstance(value, ast.Lambda):
@@ -422,6 +463,12 @@ class PythonSyntaxParser(SourceParser):
         annotation = node.annotation if isinstance(node, ast.AnnAssign) else None
         is_constant = name.isupper() or (annotation is not None and self.type_reference_name(annotation) == "Final")
         return {
+            "declaration_id": {
+                "source_id": source_id,
+                "family": "value",
+                "qualified_name": name,
+                "ordinal": self.declaration_ordinal(identity_node),
+            },
             "name": name,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(name),
@@ -448,7 +495,13 @@ class PythonSyntaxParser(SourceParser):
             name = f"<anonymous>@{node.lineno}:{node.col_offset}"
             qualified_name = f"{parent_qualified_name}.{name}"
             source_callable = self.callable_from_lambda(
-                node, source_id, qualified_name=qualified_name, name=name, owner_name=owner_name, kind="anonymous"
+                node,
+                node,
+                source_id,
+                qualified_name=qualified_name,
+                name=name,
+                owner_name=owner_name,
+                kind="anonymous",
             )
             callables.append((cast(str, source_callable["id"]), node, source_callable))
         return callables
@@ -467,11 +520,12 @@ class PythonSyntaxParser(SourceParser):
                         and target.id != "__all__"
                         and not self.value_is_type_alias(node.value)
                     ):
-                        values.append(self.source_value(target.id, node, node.value))
+                        values.append(self.source_value(target.id, node, target, node.value, source_id))
                         if isinstance(node.value, ast.Lambda):
                             qualified_name = target.id
                             source_callable = self.callable_from_lambda(
                                 node.value,
+                                target,
                                 source_id,
                                 qualified_name=qualified_name,
                                 name=target.id,
@@ -484,11 +538,12 @@ class PythonSyntaxParser(SourceParser):
             if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
                 is_type_alias = self.type_reference_name(node.annotation) == "TypeAlias"
                 if node.target.id != "__all__" and not is_type_alias and not self.value_is_type_alias(node.value):
-                    values.append(self.source_value(node.target.id, node, node.value))
+                    values.append(self.source_value(node.target.id, node, node.target, node.value, source_id))
                 if isinstance(node.value, ast.Lambda):
                     qualified_name = node.target.id
                     source_callable = self.callable_from_lambda(
                         node.value,
+                        node.target,
                         source_id,
                         qualified_name=qualified_name,
                         name=node.target.id,
@@ -761,12 +816,16 @@ class PythonSyntaxParser(SourceParser):
         tree = ast.parse(content, filename=str(path))
         resolved_source_id = source_id or self.source_id_for_path(path, sources_root)
         class_nodes = [node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
-        classes = [self.class_definition(node) for node in class_nodes if not self.class_is_abstract(node)]
+        classes = [
+            self.class_definition(node, resolved_source_id) for node in class_nodes if not self.class_is_abstract(node)
+        ]
         abstract_classes = [
-            self.abstract_class_definition(node) for node in class_nodes if self.class_is_abstract(node)
+            self.abstract_class_definition(node, resolved_source_id)
+            for node in class_nodes
+            if self.class_is_abstract(node)
         ]
         functions = [
-            self.function_definition(node)
+            self.function_definition(node, resolved_source_id)
             for node in tree.body
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
         ]
@@ -782,6 +841,20 @@ class PythonSyntaxParser(SourceParser):
             "values": values,
             "callables": callables,
             "calls": calls,
+            "inheritance": [
+                {
+                    "source_declaration_id": {
+                        "source_id": resolved_source_id,
+                        "family": "abstract_class" if self.class_is_abstract(node) else "class",
+                        "qualified_name": node.name,
+                        "ordinal": self.declaration_ordinal(node),
+                    },
+                    "kind": "inherits",
+                    "target_reference": self.unparse(base),
+                }
+                for node in class_nodes
+                for base in node.bases
+            ],
             "line_count": len(content.splitlines()),
             "code_line_count": self.code_line_count(content),
             "public_symbol_count": sum(
