@@ -247,16 +247,16 @@ class CodeMapManifestCompiler(ManifestCompiler):
             else:
                 target_kind = "unresolved"
                 target = str(edge.specifier)
-            dependencies.append(
-                ManifestDependency(
-                    source_id=str(edge.from_id),
-                    target_kind=target_kind,
-                    target=target,
-                    specifier=str(edge.specifier),
-                    resolution=edge.resolution,
-                    kind=edge.kind,
-                )
+            dependency = ManifestDependency(
+                source_id=str(edge.from_id),
+                target_kind=target_kind,
+                target=target,
+                specifier=str(edge.specifier),
+                resolution=edge.resolution,
+                kind=edge.kind,
             )
+            if dependency not in dependencies:
+                dependencies.append(dependency)
 
         return ImplementationManifest(
             producer=code_map.producer,

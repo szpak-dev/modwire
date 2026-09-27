@@ -191,7 +191,8 @@ class PythonSyntaxParser(SourceParser):
                         properties,
                         self.property_definition(
                             name=target.id,
-                            is_optional=self.annotation_is_optional(child.annotation) or self.value_is_none(child.value),
+                            is_optional=self.annotation_is_optional(child.annotation)
+                            or self.value_is_none(child.value),
                             annotation=self.unparse(child.annotation),
                             visibility=self.visibility_intent(target.id),
                             member_kind=SourceMemberKind.STATIC,
@@ -234,9 +235,7 @@ class PythonSyntaxParser(SourceParser):
                                 annotation=self.unparse(descendant.annotation),
                                 visibility=self.visibility_intent(target.attr),
                                 member_kind=(
-                                    SourceMemberKind.INSTANCE
-                                    if target.value.id == "self"
-                                    else SourceMemberKind.STATIC
+                                    SourceMemberKind.INSTANCE if target.value.id == "self" else SourceMemberKind.STATIC
                                 ),
                             ),
                         )
@@ -260,9 +259,7 @@ class PythonSyntaxParser(SourceParser):
                                 annotation="",
                                 visibility=self.visibility_intent(target.attr),
                                 member_kind=(
-                                    SourceMemberKind.INSTANCE
-                                    if target.value.id == "self"
-                                    else SourceMemberKind.STATIC
+                                    SourceMemberKind.INSTANCE if target.value.id == "self" else SourceMemberKind.STATIC
                                 ),
                             ),
                         )
@@ -279,7 +276,7 @@ class PythonSyntaxParser(SourceParser):
             "name": node.name,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(node.name),
-            "declaration_annotations": self.class_annotations(node),
+            "declaration_annotations": [],
             "line_count": self.line_span(node),
             "declared_args": declared_args,
             "optional_args": optional_args,
@@ -327,6 +324,7 @@ class PythonSyntaxParser(SourceParser):
             "name": node.name,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(node.name),
+            "declaration_annotations": self.class_annotations(node),
             "abstract_methods": [method for method in methods if method["name"] in abstract_method_names],
             "concrete_methods": [method for method in methods if method["name"] not in abstract_method_names],
             "properties": self.class_properties(node),
@@ -345,6 +343,7 @@ class PythonSyntaxParser(SourceParser):
             "name": node.name,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(node.name),
+            "declaration_annotations": [],
             "line_count": self.line_span(node),
             "declared_args": declared_args,
             "optional_args": optional_args,
@@ -440,6 +439,7 @@ class PythonSyntaxParser(SourceParser):
             "kind": kind,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(node.name),
+            "declaration_annotations": [],
             "line_start": node.lineno,
             "line_end": node.end_lineno,
             "line_count": self.line_span(node),
@@ -478,6 +478,7 @@ class PythonSyntaxParser(SourceParser):
             "kind": kind,
             "visibility": "public",
             "visibility_intent": self.visibility_intent(name),
+            "declaration_annotations": [],
             "line_start": node.lineno,
             "line_end": node.end_lineno,
             "line_count": self.line_span(node),

@@ -19,7 +19,7 @@ class DependencyGraphBuilder(GraphBuilder):
                 graph.add_edge(
                     file_path,
                     imported_reference.target_file_id,
-                    specifier=imported_reference.normalized_path,
+                    specifier=imported_reference.path,
                     resolution=imported_reference.resolution,
                 )
         return graph

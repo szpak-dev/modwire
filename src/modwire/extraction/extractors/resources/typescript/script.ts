@@ -297,6 +297,7 @@ function sourceCallable(options) {
         kind: options.kind,
         visibility: options.visibility,
         visibility_intent: visibilityIntent(options.name, options.visibility),
+        declaration_annotations: [],
         line_start: lineNumberAt(options.lineStarts, options.startIndex),
         line_end: lineNumberAt(options.lineStarts, options.endIndex),
         line_count: lineSpan(options.lineStarts, options.startIndex, options.endIndex),
@@ -585,11 +586,29 @@ function classDeclarationIsAbstract(classDeclaration) {
     return classDeclaration.getModifiers().some(modifier => modifier.getKind() === SyntaxKind.AbstractKeyword);
 }
 
-function classPropertyIsOptional(property) {
+function typeIncludesUndefined(typeNode) {
+    if (typeNode === undefined) {
+        return false;
+    }
+    if (typeNode.kind === SyntaxKind.UndefinedKeyword) {
+        return true;
+    }
+    if (ts.isUnionTypeNode(typeNode)) {
+        return typeNode.types.some(typeIncludesUndefined);
+    }
+    if (ts.isParenthesizedTypeNode(typeNode)) {
+        return typeIncludesUndefined(typeNode.type);
+    }
+    return false;
+}
+
+function propertyIsOptional(property) {
+    const typeNode = typeof property.getTypeNode === 'function' ? property.getTypeNode() : undefined;
+    const initializer = typeof property.getInitializer === 'function' ? property.getInitializer() : undefined;
     return Boolean(
         (typeof property.hasQuestionToken === 'function' && property.hasQuestionToken())
-        || textOf(typeof property.getTypeNode === 'function' ? property.getTypeNode() : undefined).includes('undefined')
-        || textOf(property.getInitializer()).match(/^(undefined|null)$/),
+        || typeIncludesUndefined(typeNode?.compilerNode)
+        || textOf(initializer).match(/^(undefined|null)$/),
     );
 }
 
@@ -600,6 +619,7 @@ function sourceClassMethod(method, lineStarts, name = propertyNameText(method)) 
         name,
         visibility,
         visibility_intent: visibilityIntent(name, visibility),
+        declaration_annotations: [],
         line_count: lineSpan(lineStarts, method.getStart(), endIndexForNode(method)),
         declared_args: parameters.length,
         optional_args: parameters.filter(parameter => parameter.has_default).length,
@@ -624,7 +644,7 @@ function collectClasses(sourceFile, lineStarts, sourceId) {
             const propertyName = propertyNameText(property);
             properties.set(propertyName, {
                 name: propertyName,
-                is_optional: classPropertyIsOptional(property),
+                is_optional: propertyIsOptional(property),
                 annotation: textOf(property.getTypeNode()),
                 visibility: visibilityFromModifiers(property),
                 member_kind: memberKindFromModifiers(property),
@@ -721,7 +741,7 @@ function collectInterfaces(sourceFile, lineStarts, sourceId) {
         const visibility = moduleVisibility(interfaceDeclaration);
         const properties = interfaceDeclaration.getProperties().map(property => ({
             name: propertyNameText(property),
-            is_optional: Boolean(typeof property.hasQuestionToken === 'function' && property.hasQuestionToken()),
+            is_optional: propertyIsOptional(property),
             annotation: textOf(property.getTypeNode()),
             visibility: 'public',
             member_kind: 'instance',
@@ -753,7 +773,7 @@ function collectTypes(sourceFile, lineStarts, sourceId) {
         const members = Node.isTypeLiteral(typeNode) ? typeNode.getMembers() : [];
         const properties = members.filter(member => Node.isPropertySignature(member)).map(property => ({
             name: propertyNameText(property),
-            is_optional: Boolean(typeof property.hasQuestionToken === 'function' && property.hasQuestionToken()),
+            is_optional: propertyIsOptional(property),
             annotation: textOf(property.getTypeNode()),
             visibility: 'public',
             member_kind: 'instance',
@@ -850,6 +870,7 @@ function collectFunctions(sourceFile, lineStarts, sourceId) {
             name,
             visibility,
             visibility_intent: visibilityIntent(name, visibility),
+            declaration_annotations: [],
             line_count: lineSpan(lineStarts, node.getStart(), endIndexForNode(node)),
             declared_args: parameters.length,
             optional_args: parameters.filter(parameter => parameter.has_default).length,

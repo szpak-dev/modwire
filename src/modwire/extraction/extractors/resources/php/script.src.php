@@ -180,10 +180,18 @@ function type_annotation(Node|Name|string|null $type): string {
         return '?' . type_annotation($type->type);
     }
     if ($type instanceof Node\UnionType) {
-        return implode('|', array_map(type_annotation(...), $type->types));
+        return implode('|', array_map(
+            fn (Node $item): string => $item instanceof Node\IntersectionType
+                ? '(' . type_annotation($item) . ')'
+                : type_annotation($item),
+            $type->types
+        ));
     }
     if ($type instanceof Node\IntersectionType) {
         return implode('&', array_map(type_annotation(...), $type->types));
+    }
+    if ($type instanceof Name) {
+        return $type->toCodeString();
     }
     return node_name($type);
 }
@@ -212,7 +220,7 @@ function declaration_annotations(Stmt\ClassLike $node): array {
     foreach ($node->attrGroups as $group) {
         foreach ($group->attrs as $attribute) {
             $arguments = array_map(attribute_argument(...), $attribute->args);
-            $annotations[] = node_name($attribute->name)
+            $annotations[] = type_annotation($attribute->name)
                 . ($arguments === [] ? '' : '(' . implode(', ', $arguments) . ')');
         }
     }
@@ -275,6 +283,7 @@ function source_callable_entry(
         'kind' => $kind,
         'visibility' => $visibility,
         'visibility_intent' => visibility_intent($name, $visibility),
+        'declaration_annotations' => [],
         'line_start' => $node->getStartLine(),
         'line_end' => $node->getEndLine(),
         'line_count' => line_span($node),
@@ -375,11 +384,15 @@ function expression_target_name(string $expression): string {
     return trim($expression, '$\\');
 }
 
-function collect_imports(array $nodes): array {
+function source_text(Node $node, string $content): string {
+    return substr($content, $node->getStartFilePos(), $node->getEndFilePos() - $node->getStartFilePos() + 1);
+}
+
+function collect_imports(array $nodes, string $content): array {
     $imports = [];
     $statementId = 0;
 
-    walk_nodes($nodes, function (Node $node, array $parents) use (&$imports, &$statementId): void {
+    walk_nodes($nodes, function (Node $node, array $parents) use ($content, &$imports, &$statementId): void {
         if (!$node instanceof Stmt\Use_ && !$node instanceof Stmt\GroupUse) {
             return;
         }
@@ -388,9 +401,9 @@ function collect_imports(array $nodes): array {
         }
 
         $statementId++;
-        $prefix = $node instanceof Stmt\GroupUse ? node_name($node->prefix) . '\\' : '';
+        $prefix = $node instanceof Stmt\GroupUse ? source_text($node->prefix, $content) . '\\' : '';
         foreach ($node->uses as $use) {
-            $path = trim($prefix . node_name($use->name), '\\');
+            $path = $prefix . source_text($use->name, $content);
             $alias = $use->alias !== null ? node_name($use->alias) : '';
             $symbolName = imported_symbol_name($path);
             $imports[] = [
@@ -503,6 +516,7 @@ function collect_definitions(array $nodes, string $sourceId): array {
                     'name' => $methodName,
                     'visibility' => member_visibility($method),
                     'visibility_intent' => visibility_intent($methodName, member_visibility($method)),
+                    'declaration_annotations' => [],
                     'line_count' => line_span($method),
                     'declared_args' => count($parameters),
                     'optional_args' => count(array_filter($parameters, fn (array $parameter): bool => $parameter['has_default'])),
@@ -565,6 +579,7 @@ function collect_definitions(array $nodes, string $sourceId): array {
                     'name' => $method->name->toString(),
                     'visibility' => 'public',
                     'visibility_intent' => visibility_intent($method->name->toString(), 'public'),
+                    'declaration_annotations' => [],
                     'line_count' => line_span($method),
                     'declared_args' => count($parameters),
                     'optional_args' => count(array_filter($parameters, fn (array $parameter): bool => $parameter['has_default'])),
@@ -598,6 +613,7 @@ function collect_definitions(array $nodes, string $sourceId): array {
                 'name' => $name,
                 'visibility' => 'public',
                 'visibility_intent' => visibility_intent($name, 'public'),
+                'declaration_annotations' => [],
                 'line_count' => line_span($node),
                 'declared_args' => count($parameters),
                 'optional_args' => count(array_filter($parameters, fn (array $parameter): bool => $parameter['has_default'])),
@@ -858,7 +874,7 @@ function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRo
     $graph = collect_values_and_callables($nodes, $resolvedSourceId);
 
     return [
-        'imports' => collect_imports($nodes),
+        'imports' => collect_imports($nodes, $content),
         'exports' => $definitions['exports'],
         'classes' => $definitions['classes'],
         'interfaces' => $definitions['interfaces'],
