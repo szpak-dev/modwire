@@ -229767,6 +229767,14 @@ function visibilityFromModifiers(node, fallback = 'public') {
     const name = typeof node.getName === 'function' ? node.getName() : '';
     return name.startsWith('#') ? 'private' : fallback;
 }
+function memberKindFromModifiers(node) {
+    return node.getModifiers().some(modifier => modifier.getKind() === ts_morph_1.SyntaxKind.StaticKeyword)
+        ? 'static'
+        : 'instance';
+}
+function declarationAnnotations(node) {
+    return node.getDecorators().map(decorator => decorator.getExpression().getText());
+}
 function isExported(node) {
     return Boolean((typeof node.hasExportKeyword === 'function' && node.hasExportKeyword())
         || (typeof node.isDefaultExport === 'function' && node.isDefaultExport()));
@@ -230192,13 +230200,26 @@ function collectClasses(sourceFile, lineStarts, sourceId) {
         });
         const properties = new Map();
         for (const property of classDeclaration.getProperties()) {
-            properties.set(propertyNameText(property), classPropertyIsOptional(property));
+            const propertyName = propertyNameText(property);
+            properties.set(propertyName, {
+                name: propertyName,
+                is_optional: classPropertyIsOptional(property),
+                annotation: textOf(property.getTypeNode()),
+                visibility: visibilityFromModifiers(property),
+                member_kind: memberKindFromModifiers(property),
+            });
         }
         for (const constructorDeclaration of classDeclaration.getConstructors()) {
             for (const parameter of constructorDeclaration.getParameters()) {
                 if (parameter.isParameterProperty()) {
                     const parameterName = singleBindingName(parameter.getNameNode()) || parameter.getNameNode().getText();
-                    properties.set(parameterName, parameter.isOptional() || parameter.getInitializer() !== undefined);
+                    properties.set(parameterName, {
+                        name: parameterName,
+                        is_optional: parameter.isOptional() || parameter.getInitializer() !== undefined,
+                        annotation: textOf(parameter.getTypeNode()),
+                        visibility: visibilityFromModifiers(parameter),
+                        member_kind: 'instance',
+                    });
                 }
             }
         }
@@ -230226,10 +230247,8 @@ function collectClasses(sourceFile, lineStarts, sourceId) {
             name,
             visibility,
             visibility_intent: visibilityIntent(name, visibility),
-            properties: Array.from(properties, ([propertyName, isOptional]) => ({
-                name: propertyName,
-                is_optional: Boolean(isOptional),
-            })),
+            declaration_annotations: declarationAnnotations(classDeclaration),
+            properties: Array.from(properties.values()),
             line_count: lineSpan(lineStarts, classDeclaration.getStart(), endIndexForNode(classDeclaration)),
         };
         if (classDeclarationIsAbstract(classDeclaration)) {
@@ -230280,6 +230299,9 @@ function collectInterfaces(sourceFile, lineStarts, sourceId) {
         const properties = interfaceDeclaration.getProperties().map(property => ({
             name: propertyNameText(property),
             is_optional: Boolean(typeof property.hasQuestionToken === 'function' && property.hasQuestionToken()),
+            annotation: textOf(property.getTypeNode()),
+            visibility: 'public',
+            member_kind: 'instance',
         }));
         const methods = interfaceDeclaration.getMethods().map(method => sourceClassMethod(method, lineStarts));
         return {
@@ -230292,6 +230314,7 @@ function collectInterfaces(sourceFile, lineStarts, sourceId) {
             name: interfaceDeclaration.getName(),
             visibility,
             visibility_intent: visibilityIntent(interfaceDeclaration.getName(), visibility),
+            declaration_annotations: [],
             methods,
             properties,
             signatures: collectSignaturesFromMembers(interfaceDeclaration.getMembers(), lineStarts),
@@ -230307,6 +230330,9 @@ function collectTypes(sourceFile, lineStarts, sourceId) {
         const properties = members.filter(member => ts_morph_1.Node.isPropertySignature(member)).map(property => ({
             name: propertyNameText(property),
             is_optional: Boolean(typeof property.hasQuestionToken === 'function' && property.hasQuestionToken()),
+            annotation: textOf(property.getTypeNode()),
+            visibility: 'public',
+            member_kind: 'instance',
         }));
         return {
             declaration_id: {
@@ -230318,6 +230344,7 @@ function collectTypes(sourceFile, lineStarts, sourceId) {
             name: typeAlias.getName(),
             visibility,
             visibility_intent: visibilityIntent(typeAlias.getName(), visibility),
+            declaration_annotations: [],
             properties,
             signatures: collectSignaturesFromMembers(members, lineStarts),
             line_count: lineSpan(lineStarts, typeAlias.getStart(), endIndexForNode(typeAlias)),

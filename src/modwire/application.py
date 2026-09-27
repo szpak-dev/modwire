@@ -29,6 +29,8 @@ from .shared.code.models.declaration_identity import DeclarationIdentity
 from .shared.code.models.fact_capability import FactCapability
 from .shared.code.models.queryable_code_map import QueryableCodeMap
 from .shared.code.models.scan_policy import ScanPolicy
+from .shared.code.models.source_member_kind import SourceMemberKind
+from .shared.code.models.source_relation_kind import SourceRelationKind
 
 __all__ = [
     "CacheOptions",
@@ -48,6 +50,8 @@ __all__ = [
     "ModwireApplication",
     "QueryableCodeMap",
     "ScanPolicy",
+    "SourceMemberKind",
+    "SourceRelationKind",
 ]
 
 
@@ -227,6 +231,8 @@ class ModwireApplication:
                 CachedResult,
                 CacheOptions,
                 ScanPolicy,
+                SourceMemberKind,
+                SourceRelationKind,
                 ImplementationManifest,
                 ImplementationManifestDocument,
                 ManifestFormat,

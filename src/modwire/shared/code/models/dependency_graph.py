@@ -1,5 +1,3 @@
-from typing import Any
-
 from pydantic import Field, PrivateAttr
 
 from ...values.models.value_model import ValueModel
@@ -7,6 +5,7 @@ from .edge import Edge
 from .edge_resolution import EdgeResolution
 from .identity import FileId, ImportSpecifier
 from .node import Node
+from .source_relation_kind import SourceRelationKind
 
 
 class DependencyGraph(ValueModel):
@@ -15,10 +14,10 @@ class DependencyGraph(ValueModel):
     _outgoing_by_node: dict[FileId, list[Edge]] = PrivateAttr(default_factory=dict[FileId, list[Edge]])
     _incoming_by_node: dict[FileId, list[Edge]] = PrivateAttr(default_factory=dict[FileId, list[Edge]])
 
-    def model_post_init(self, __context: Any) -> None:
-        self._rebuild_indexes()
+    def model_post_init(self, __context: object) -> None:
+        self.rebuild_indexes()
 
-    def _rebuild_indexes(self) -> None:
+    def rebuild_indexes(self) -> None:
         self._outgoing_by_node = {node_id: [] for node_id in self.nodes}
         self._incoming_by_node = {node_id: [] for node_id in self.nodes}
         for edge in self.edges:
@@ -38,7 +37,7 @@ class DependencyGraph(ValueModel):
         *,
         specifier: ImportSpecifier,
         resolution: EdgeResolution,
-        kind: str = "import",
+        kind: SourceRelationKind = SourceRelationKind.IMPORTS,
     ) -> None:
         self.add_node(from_id)
         if to_id is not None:

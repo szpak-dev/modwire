@@ -13,6 +13,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt;
 use PhpParser\ParserFactory;
+use PhpParser\PrettyPrinter\Standard;
 
 function line_count_for_content(string $content): int {
     return max(1, substr_count($content, "\n") + 1);
@@ -164,10 +165,64 @@ function member_visibility(Stmt\ClassMethod|Stmt\Property|Stmt\ClassConst $node)
     return 'public';
 }
 
+function parameter_visibility(Param $param): string {
+    if (($param->flags & Stmt\Class_::MODIFIER_PRIVATE) !== 0) {
+        return 'private';
+    }
+    if (($param->flags & Stmt\Class_::MODIFIER_PROTECTED) !== 0) {
+        return 'protected';
+    }
+    return 'public';
+}
+
+function type_annotation(Node|Name|string|null $type): string {
+    if ($type instanceof Node\NullableType) {
+        return '?' . type_annotation($type->type);
+    }
+    if ($type instanceof Node\UnionType) {
+        return implode('|', array_map(type_annotation(...), $type->types));
+    }
+    if ($type instanceof Node\IntersectionType) {
+        return implode('&', array_map(type_annotation(...), $type->types));
+    }
+    return node_name($type);
+}
+
+function type_is_optional(Node|Name|string|null $type): bool {
+    if ($type instanceof Node\NullableType) {
+        return true;
+    }
+    if ($type instanceof Node\UnionType) {
+        return in_array('null', array_map(fn (Node $item): string => strtolower(type_annotation($item)), $type->types), true);
+    }
+    return false;
+}
+
+function attribute_argument(Arg $argument): string {
+    $printer = new Standard();
+    $value = $printer->prettyPrintExpr($argument->value);
+    if ($argument->name !== null) {
+        return node_name($argument->name) . ': ' . $value;
+    }
+    return $argument->unpack ? '...' . $value : $value;
+}
+
+function declaration_annotations(Stmt\ClassLike $node): array {
+    $annotations = [];
+    foreach ($node->attrGroups as $group) {
+        foreach ($group->attrs as $attribute) {
+            $arguments = array_map(attribute_argument(...), $attribute->args);
+            $annotations[] = node_name($attribute->name)
+                . ($arguments === [] ? '' : '(' . implode(', ', $arguments) . ')');
+        }
+    }
+    return $annotations;
+}
+
 function parameter_definitions(array $params): array {
     return array_map(fn (Param $param): array => [
         'name' => var_name($param->var),
-        'annotation' => $param->type instanceof Node ? node_name($param->type) : '',
+        'annotation' => type_annotation($param->type),
         'kind' => $param->variadic ? 'variadic_positional' : 'positional',
         'has_default' => $param->default !== null || $param->variadic,
     ], $params);
@@ -413,7 +468,11 @@ function collect_definitions(array $nodes, string $sourceId): array {
                     $properties[$propertyProperty->name->toString()] = [
                         'name' => $propertyProperty->name->toString(),
                         'is_optional' => $propertyProperty->default instanceof Expr\ConstFetch
-                            && strtolower(node_name($propertyProperty->default->name)) === 'null',
+                            && strtolower(node_name($propertyProperty->default->name)) === 'null'
+                            || type_is_optional($property->type),
+                        'annotation' => type_annotation($property->type),
+                        'visibility' => member_visibility($property),
+                        'member_kind' => $property->isStatic() ? 'static' : 'instance',
                     ];
                 }
             }
@@ -426,7 +485,10 @@ function collect_definitions(array $nodes, string $sourceId): array {
                         $propertyName = var_name($param->var);
                         $properties[$propertyName] = [
                             'name' => $propertyName,
-                            'is_optional' => $param->default !== null,
+                            'is_optional' => $param->default !== null || type_is_optional($param->type),
+                            'annotation' => type_annotation($param->type),
+                            'visibility' => parameter_visibility($param),
+                            'member_kind' => 'instance',
                         ];
                     }
                 }
@@ -460,6 +522,7 @@ function collect_definitions(array $nodes, string $sourceId): array {
                 'name' => $name,
                 'visibility' => class_visibility($node),
                 'visibility_intent' => visibility_intent($name, class_visibility($node)),
+                'declaration_annotations' => declaration_annotations($node),
                 'properties' => array_values($properties),
                 'line_count' => line_span($node),
             ];
@@ -512,6 +575,7 @@ function collect_definitions(array $nodes, string $sourceId): array {
                 'name' => $name,
                 'visibility' => 'public',
                 'visibility_intent' => visibility_intent($name, 'public'),
+                'declaration_annotations' => declaration_annotations($node),
                 'methods' => $methods,
                 'properties' => [],
                 'signatures' => [],

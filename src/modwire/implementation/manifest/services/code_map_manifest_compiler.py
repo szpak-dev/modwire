@@ -38,6 +38,9 @@ class CodeMapManifestCompiler(ManifestCompiler):
             visibility=visibility,
         )
 
+    def attribute_id(self, owner_symbol_id: DeclarationIdentity, name: str) -> str:
+        return f"{owner_symbol_id.canonical()}::attribute:{name}"
+
     def compile(self, code_map: CodeMap) -> ImplementationManifest:
         symbols: list[ManifestSymbol] = []
         symbol_ids: set[str] = set()
@@ -56,44 +59,120 @@ class CodeMapManifestCompiler(ManifestCompiler):
                 symbol_ids.add(symbol.declaration_id.canonical())
                 attributes.extend(
                     ManifestAttribute(
+                        id=self.attribute_id(symbol.declaration_id, attribute.name),
                         owner_symbol_id=symbol.declaration_id,
                         name=attribute.name,
                         is_optional=attribute.is_optional,
+                        annotation=attribute.annotation,
+                        visibility=attribute.visibility,
+                        member_kind=attribute.member_kind,
                     )
                     for attribute in symbol.properties
+                )
+                annotations.extend(
+                    ManifestAnnotation(
+                        target_id=symbol.declaration_id.canonical(), role="declaration", expression=annotation
+                    )
+                    for annotation in symbol.declaration_annotations
+                )
+                annotations.extend(
+                    ManifestAnnotation(
+                        target_id=self.attribute_id(symbol.declaration_id, attribute.name),
+                        role="attribute_type",
+                        expression=attribute.annotation,
+                    )
+                    for attribute in symbol.properties
+                    if attribute.annotation
                 )
             for symbol in source_file.abstract_classes:
                 symbols.append(self.symbol(symbol.declaration_id, module, "abstract_class", symbol.visibility))
                 symbol_ids.add(symbol.declaration_id.canonical())
                 attributes.extend(
                     ManifestAttribute(
+                        id=self.attribute_id(symbol.declaration_id, attribute.name),
                         owner_symbol_id=symbol.declaration_id,
                         name=attribute.name,
                         is_optional=attribute.is_optional,
+                        annotation=attribute.annotation,
+                        visibility=attribute.visibility,
+                        member_kind=attribute.member_kind,
                     )
                     for attribute in symbol.properties
+                )
+                annotations.extend(
+                    ManifestAnnotation(
+                        target_id=symbol.declaration_id.canonical(), role="declaration", expression=annotation
+                    )
+                    for annotation in symbol.declaration_annotations
+                )
+                annotations.extend(
+                    ManifestAnnotation(
+                        target_id=self.attribute_id(symbol.declaration_id, attribute.name),
+                        role="attribute_type",
+                        expression=attribute.annotation,
+                    )
+                    for attribute in symbol.properties
+                    if attribute.annotation
                 )
             for symbol in source_file.interfaces:
                 symbols.append(self.symbol(symbol.declaration_id, module, "interface", symbol.visibility))
                 symbol_ids.add(symbol.declaration_id.canonical())
                 attributes.extend(
                     ManifestAttribute(
+                        id=self.attribute_id(symbol.declaration_id, attribute.name),
                         owner_symbol_id=symbol.declaration_id,
                         name=attribute.name,
                         is_optional=attribute.is_optional,
+                        annotation=attribute.annotation,
+                        visibility=attribute.visibility,
+                        member_kind=attribute.member_kind,
                     )
                     for attribute in symbol.properties
+                )
+                annotations.extend(
+                    ManifestAnnotation(
+                        target_id=symbol.declaration_id.canonical(), role="declaration", expression=annotation
+                    )
+                    for annotation in symbol.declaration_annotations
+                )
+                annotations.extend(
+                    ManifestAnnotation(
+                        target_id=self.attribute_id(symbol.declaration_id, attribute.name),
+                        role="attribute_type",
+                        expression=attribute.annotation,
+                    )
+                    for attribute in symbol.properties
+                    if attribute.annotation
                 )
             for symbol in source_file.types:
                 symbols.append(self.symbol(symbol.declaration_id, module, "type", symbol.visibility))
                 symbol_ids.add(symbol.declaration_id.canonical())
                 attributes.extend(
                     ManifestAttribute(
+                        id=self.attribute_id(symbol.declaration_id, attribute.name),
                         owner_symbol_id=symbol.declaration_id,
                         name=attribute.name,
                         is_optional=attribute.is_optional,
+                        annotation=attribute.annotation,
+                        visibility=attribute.visibility,
+                        member_kind=attribute.member_kind,
                     )
                     for attribute in symbol.properties
+                )
+                annotations.extend(
+                    ManifestAnnotation(
+                        target_id=symbol.declaration_id.canonical(), role="declaration", expression=annotation
+                    )
+                    for annotation in symbol.declaration_annotations
+                )
+                annotations.extend(
+                    ManifestAnnotation(
+                        target_id=self.attribute_id(symbol.declaration_id, attribute.name),
+                        role="attribute_type",
+                        expression=attribute.annotation,
+                    )
+                    for attribute in symbol.properties
+                    if attribute.annotation
                 )
             for function in source_file.functions:
                 symbols.append(self.symbol(function.declaration_id, module, "function", function.visibility))
