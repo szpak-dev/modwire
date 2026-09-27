@@ -1,8 +1,10 @@
+import hashlib
+import json
 from collections.abc import Mapping
 from pathlib import PurePosixPath
 from typing import Any
 
-from modwire.application import CodeMap, QueryableCodeMap
+from modwire.application import CodeMap, FactCapability, QueryableCodeMap
 
 
 class CodeMapFactory:
@@ -27,12 +29,55 @@ class CodeMapFactory:
                     "kind": "import",
                 }
             )
+        source_artifacts = [
+            {
+                "source_id": source_id,
+                "relative_path": source_id,
+                "content_digest": hashlib.sha256(source_id.encode("utf-8")).hexdigest(),
+            }
+            for source_id in sorted(source_files)
+        ]
+        source_manifest_payload = {
+            "policy": {"excluded_patterns": [], "follow_symlinks": False},
+            "runtime": {"version": "example 1", "resource_digest": "0" * 64},
+            "sources": source_artifacts,
+        }
+        source_manifest_digest = hashlib.sha256(
+            json.dumps(
+                source_manifest_payload,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            ).encode("utf-8")
+        ).hexdigest()
         code_map = CodeMap.model_validate(
             {
                 "language": "example",
+                "producer": {
+                    "modwire_version": "1.0.0",
+                    "extractor": {
+                        "id": "example.extractor",
+                        "version": "1",
+                        "language": "example",
+                        "runtime": "example",
+                    },
+                    "capabilities": [
+                        {
+                            "capability": capability.value,
+                            "status": "unsupported",
+                            "explanation": "Synthetic test maps do not claim extractor coverage.",
+                        }
+                        for capability in FactCapability
+                    ],
+                },
                 "extraction": {
                     "files": source_files,
                     "modules": modules,
+                    "manifest": {
+                        **source_manifest_payload,
+                        "digest_algorithm": "sha256",
+                        "digest": source_manifest_digest,
+                    },
                     "files_found": len(source_files),
                     "files_excluded": 0,
                     "directories_pruned": 0,
@@ -56,11 +101,34 @@ class CodeMapFactory:
             "values": [],
             "callables": [],
             "calls": [],
+            "inheritance": [],
             "line_count": 1,
             "code_line_count": 1,
             "public_symbol_count": 0,
         }
-        return {**defaults, **values}
+        source_file = {**defaults, **values}
+        declaration_families = (
+            ("classes", "class"),
+            ("interfaces", "interface"),
+            ("types", "type"),
+            ("abstract_classes", "abstract_class"),
+            ("functions", "function"),
+            ("values", "value"),
+        )
+        for collection, family in declaration_families:
+            source_file[collection] = [
+                {
+                    **declaration,
+                    "declaration_id": {
+                        "source_id": source_id,
+                        "family": family,
+                        "qualified_name": declaration["name"],
+                        "ordinal": ordinal,
+                    },
+                }
+                for ordinal, declaration in enumerate(source_file[collection], start=1)
+            ]
+        return source_file
 
     def symbol(self, name: str, *, line_count: int, declared_args: int, optional_args: int) -> dict[str, Any]:
         return {
@@ -144,6 +212,12 @@ class CodeMapFactory:
     def source_callable(self, source_id: str, name: str) -> dict[str, object]:
         return {
             **self.symbol(name, line_count=1, declared_args=0, optional_args=0),
+            "declaration_id": {
+                "source_id": source_id,
+                "family": "function",
+                "qualified_name": name,
+                "ordinal": 1,
+            },
             "id": f"{source_id}::{name}",
             "source_id": source_id,
             "qualified_name": name,

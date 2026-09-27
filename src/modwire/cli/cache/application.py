@@ -11,10 +11,10 @@ from ...extraction.extractors.models.extraction_request import ExtractionRequest
 from ...shared.code.models.code_map import CodeMap
 from ...shared.code.models.duplicate_identity_error import DuplicateIdentityError
 from ...shared.code.models.identity import FileId, ModuleId
+from ...shared.code.models.scan_policy import ScanPolicy
 from ...shared.code.models.source_extraction import SourceExtraction
 from ...shared.code.models.source_file import SourceFile
 from ..pipeline.domain import SourceReader
-from ..pipeline.models.scan_policy import ScanPolicy
 from .domain import CacheStorage
 from .models.cache_key import CacheKey
 from .models.cache_options import CacheOptions
@@ -43,15 +43,20 @@ class CacheApplication:
         return self.reader.extract_source(request, policy)
 
     def prepare(self, request: ExtractionRequest, policy: ScanPolicy) -> CachePlan:
+        self.reader.ensure_available(request.runtime)
         inventory = self.reader.inventory(request, policy)
         sources = tuple(
-            SourceCacheEntry(entry=entry, key=self.identity.source(request, policy, entry))
+            SourceCacheEntry(
+                entry=entry,
+                key=self.identity.source(request, policy, inventory.manifest.runtime, entry),
+            )
             for entry in inventory.entries
         )
         return CachePlan(
+            language=request.runtime.descriptor.language,
             inventory=inventory,
             sources=sources,
-            manifest=self.identity.manifest(request, policy, sources),
+            source_set=self.identity.source_set(request, inventory.manifest, sources),
         )
 
     def sources(
@@ -104,6 +109,7 @@ class CacheApplication:
         extraction = SourceExtraction(
             files=ordered_files,
             modules=modules,
+            manifest=plan.inventory.manifest,
             files_found=plan.inventory.files_found,
             files_excluded=plan.inventory.files_excluded,
             directories_pruned=plan.inventory.directories_pruned,
@@ -123,18 +129,20 @@ class CacheApplication:
             ),
         )
 
-    def maintain_manifest(self, plan: CachePlan, options: CacheOptions) -> bool:
-        expected = plan.manifest_value()
-        payload = self.storage.read(options, plan.manifest)
-        if payload is not None and self.codec.decode(plan.manifest, payload) == expected:
+    def maintain_source_set(self, plan: CachePlan, options: CacheOptions) -> bool:
+        expected = plan.source_set_value()
+        payload = self.storage.read(options, plan.source_set)
+        if payload is not None and self.codec.decode(plan.source_set, payload) == expected:
             return False
-        return self._write(options, plan.manifest, expected)
+        return self._write(options, plan.source_set, expected)
 
     def code_map(self, plan: CachePlan, options: CacheOptions) -> CachedResult[CodeMap | None]:
-        key = self.identity.code_map("", plan.manifest)
+        key = self.identity.code_map(plan.language, plan.source_set)
         cached_value, cached_invalidated = self._read(options, key)
         try:
             value = CodeMap.model_validate(cached_value)
+            if value.extraction.manifest != plan.inventory.manifest:
+                raise ValueError("Cached code map provenance does not match the current source manifest.")
             outcome = CacheOutcome(stage=CacheStage.CODE_MAP, namespace=options.namespace, hits=1)
         except (TypeError, ValueError, ValidationError):
             if cached_value is not None and not cached_invalidated:
@@ -149,7 +157,11 @@ class CacheApplication:
         return CachedResult[CodeMap | None](value=value, outcomes=(outcome,))
 
     def store_code_map(self, plan: CachePlan, code_map: CodeMap, options: CacheOptions) -> None:
-        self._write(options, self.identity.code_map("", plan.manifest), code_map.model_dump(mode="json"))
+        self._write(
+            options,
+            self.identity.code_map(plan.language, plan.source_set),
+            code_map.model_dump(mode="json"),
+        )
 
     def reports(
         self, code_map: CodeMap, config: ArchitectureConfig, options: CacheOptions

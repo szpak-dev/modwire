@@ -148,11 +148,11 @@ class CacheBenchmark:
                     "source_loading",
                     lambda: application.cli.cached_sources(request, cold_plan, options),
                 )
-                _, measurement["cold_manifest_maintenance"] = self._phase(
+                _, measurement["cold_source_set_maintenance"] = self._phase(
                     repetition,
                     "cold",
-                    "manifest_maintenance",
-                    lambda: application.cli.maintain_manifest(cold_plan, options),
+                    "source_set_maintenance",
+                    lambda: application.cli.maintain_source_set(cold_plan, options),
                 )
                 cold_map, measurement["cold_dependency_resolution"] = self._phase(
                     repetition,
@@ -194,7 +194,7 @@ class CacheBenchmark:
                     lambda: application.cli.maintain_cache(options),
                 )
                 measurement["warm_source_loading"] = 0.0
-                measurement["warm_manifest_maintenance"] = 0.0
+                measurement["warm_source_set_maintenance"] = 0.0
                 measurement["warm_total"] = time.perf_counter() - total_started
                 self._emit_total(repetition, "warm", measurement["warm_total"])
 
@@ -222,11 +222,11 @@ class CacheBenchmark:
                     "source_loading",
                     lambda: application.cli.cached_sources(request, incremental_plan, options),
                 )
-                _, measurement["incremental_manifest_maintenance"] = self._phase(
+                _, measurement["incremental_source_set_maintenance"] = self._phase(
                     repetition,
                     "incremental",
-                    "manifest_maintenance",
-                    lambda: application.cli.maintain_manifest(incremental_plan, options),
+                    "source_set_maintenance",
+                    lambda: application.cli.maintain_source_set(incremental_plan, options),
                 )
                 incremental_map, measurement["incremental_dependency_resolution"] = self._phase(
                     repetition,
@@ -259,7 +259,7 @@ class CacheBenchmark:
             "repetitions": self.repetitions,
             "max_process_seconds": self.max_process_seconds,
             "median_seconds": medians,
-            "warm_skipped_stages": ["source_loading", "manifest_maintenance"],
+            "warm_skipped_stages": ["source_loading", "source_set_maintenance"],
             "remaining_warm_filesystem_cost": (
                 "Every included source is opened and SHA-256 hashed during inventory. The exact CodeMap is then "
                 "loaded directly, and the capacity ledger is checked without enumerating cache entries."

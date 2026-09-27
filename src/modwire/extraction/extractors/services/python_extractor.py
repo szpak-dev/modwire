@@ -3,11 +3,16 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from ....shared.code.models.capability_coverage import CapabilityCoverage
+from ....shared.code.models.capability_status import CapabilityStatus
+from ....shared.code.models.extractor_descriptor import ExtractorDescriptor
+from ....shared.code.models.fact_capability import FactCapability
 from ....shared.code.models.identity import ModuleId
 from ....shared.code.models.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
 from ..models.extractor_resource import ExtractorResource
+from ..models.extractor_resource_set import ExtractorResourceSet
 from ..models.extractor_runtime import ExtractorRuntime
 
 
@@ -17,11 +22,91 @@ class PythonExtractor(SourceExtractor):
     @property
     def runtime(self) -> ExtractorRuntime:
         return ExtractorRuntime(
-            language="python",
             order=0,
+            descriptor=ExtractorDescriptor(
+                id="modwire.python.ast",
+                version="1",
+                language="python",
+                runtime="python",
+            ),
+            capabilities=(
+                CapabilityCoverage(
+                    capability=FactCapability.SOURCES,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation="Every included Python source is identified and hashed.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.SYMBOLS,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation="Classes, abstract classes, functions, and values are extracted.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.CALLABLES,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation="Functions, methods, constructors, and lambdas are extracted.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.PARAMETERS,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation="Callable parameter order, kind, annotation, and default presence are extracted.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.ANNOTATIONS,
+                    status=CapabilityStatus.PARTIAL,
+                    explanation=(
+                        "Callable decorators and type annotations are extracted; "
+                        "arbitrary annotations are not evaluated."
+                    ),
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.MODIFIERS,
+                    status=CapabilityStatus.PARTIAL,
+                    explanation="Visibility intent and callable kind are normalized.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.ATTRIBUTES,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation="Class properties and optionality are extracted.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.INHERITANCE,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation="Every declared Python base expression is recorded.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.DEPENDENCIES,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation="Imports are normalized and resolved when targets are present.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.SPANS,
+                    status=CapabilityStatus.PARTIAL,
+                    explanation="Callable spans are exact; other symbol facts expose line counts.",
+                ),
+            ),
             file_extensions=(".py",),
             command=(sys.executable,),
-            resource=ExtractorResource(package="modwire.extraction.extractors.resources", path="python/script.py"),
+            version_arguments=("--version",),
+            resources=ExtractorResourceSet(
+                entrypoint=ExtractorResource(
+                    package="modwire.extraction.extractors.resources",
+                    path="python/script.py",
+                ),
+                identity_resources=(
+                    ExtractorResource(
+                        package="modwire.extraction.extractors.resources",
+                        path="python/script.py",
+                    ),
+                    ExtractorResource(
+                        package="modwire.extraction.extractors.services",
+                        path="python_call_reader.py",
+                    ),
+                    ExtractorResource(
+                        package="modwire.extraction.extractors.services",
+                        path="python_syntax_parser.py",
+                    ),
+                ),
+            ),
         )
 
     @property

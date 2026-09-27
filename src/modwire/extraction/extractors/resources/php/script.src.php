@@ -48,6 +48,10 @@ function line_span(Node $node): int {
     return max(1, $node->getEndLine() - $node->getStartLine() + 1);
 }
 
+function declaration_ordinal(Node $node): int {
+    return $node->getStartFilePos() + 1;
+}
+
 function visibility_intent(string $name, string $visibility): string {
     $magicMethods = [
         '__call', '__callStatic', '__clone', '__construct', '__debugInfo', '__destruct',
@@ -196,7 +200,18 @@ function source_callable_entry(
     array $parameters,
     string $returnAnnotation = ''
 ): array {
+    $family = $kind === 'function'
+        ? 'function'
+        : (in_array($kind, ['instance_method', 'type_method', 'static_method', 'constructor'], true)
+            ? 'method'
+            : ($kind === 'callable_value' ? 'value' : 'callable'));
     return [
+        'declaration_id' => [
+            'source_id' => $sourceId,
+            'family' => $family,
+            'qualified_name' => $qualifiedName,
+            'ordinal' => declaration_ordinal($node),
+        ],
         'id' => $sourceId . '::' . $qualifiedName,
         'source_id' => $sourceId,
         'name' => $name,
@@ -218,6 +233,7 @@ function source_callable_entry(
 }
 
 function source_value_entry(
+    string $sourceId,
     string $name,
     string $visibility,
     Node $node,
@@ -227,6 +243,12 @@ function source_value_entry(
     array $parameters = []
 ): array {
     return [
+        'declaration_id' => [
+            'source_id' => $sourceId,
+            'family' => 'value',
+            'qualified_name' => $name,
+            'ordinal' => declaration_ordinal($node),
+        ],
         'name' => $name,
         'visibility' => $visibility,
         'visibility_intent' => visibility_intent($name, $visibility),
@@ -349,18 +371,42 @@ function collect_definitions(array $nodes, string $sourceId): array {
     $functions = [];
     $exports = [];
     $classNames = [];
+    $inheritance = [];
 
     walk_nodes($nodes, function (Node $node, array $parents) use (
+        $sourceId,
         &$classes,
         &$interfaces,
         &$abstractClasses,
         &$functions,
         &$exports,
-        &$classNames
+        &$classNames,
+        &$inheritance
     ): void {
         if ($node instanceof Stmt\Class_ && $node->name !== null && function_parent($parents) === null) {
             $name = node_name($node->name);
+            $family = $node->isAbstract() ? 'abstract_class' : 'class';
+            $declarationId = [
+                'source_id' => $sourceId,
+                'family' => $family,
+                'qualified_name' => $name,
+                'ordinal' => declaration_ordinal($node),
+            ];
             $classNames[spl_object_id($node)] = $name;
+            if ($node->extends !== null) {
+                $inheritance[] = [
+                    'source_declaration_id' => $declarationId,
+                    'kind' => 'extends',
+                    'target_reference' => node_name($node->extends),
+                ];
+            }
+            foreach ($node->implements as $target) {
+                $inheritance[] = [
+                    'source_declaration_id' => $declarationId,
+                    'kind' => 'implements',
+                    'target_reference' => node_name($target),
+                ];
+            }
             $properties = [];
             foreach ($node->getProperties() as $property) {
                 foreach ($property->props as $propertyProperty) {
@@ -410,6 +456,7 @@ function collect_definitions(array $nodes, string $sourceId): array {
                 }
             }
             $base = [
+                'declaration_id' => $declarationId,
                 'name' => $name,
                 'visibility' => class_visibility($node),
                 'visibility_intent' => visibility_intent($name, class_visibility($node)),
@@ -435,6 +482,19 @@ function collect_definitions(array $nodes, string $sourceId): array {
 
         if ($node instanceof Stmt\Interface_ && function_parent($parents) === null) {
             $name = node_name($node->name);
+            $declarationId = [
+                'source_id' => $sourceId,
+                'family' => 'interface',
+                'qualified_name' => $name,
+                'ordinal' => declaration_ordinal($node),
+            ];
+            foreach ($node->extends as $target) {
+                $inheritance[] = [
+                    'source_declaration_id' => $declarationId,
+                    'kind' => 'extends',
+                    'target_reference' => node_name($target),
+                ];
+            }
             $methods = [];
             foreach ($node->getMethods() as $method) {
                 $parameters = parameter_definitions($method->params);
@@ -448,6 +508,7 @@ function collect_definitions(array $nodes, string $sourceId): array {
                 ];
             }
             $interfaces[] = [
+                'declaration_id' => $declarationId,
                 'name' => $name,
                 'visibility' => 'public',
                 'visibility_intent' => visibility_intent($name, 'public'),
@@ -464,6 +525,12 @@ function collect_definitions(array $nodes, string $sourceId): array {
             $name = node_name($node->name);
             $parameters = parameter_definitions($node->params);
             $functions[] = [
+                'declaration_id' => [
+                    'source_id' => $sourceId,
+                    'family' => 'function',
+                    'qualified_name' => $name,
+                    'ordinal' => declaration_ordinal($node),
+                ],
                 'name' => $name,
                 'visibility' => 'public',
                 'visibility_intent' => visibility_intent($name, 'public'),
@@ -483,6 +550,7 @@ function collect_definitions(array $nodes, string $sourceId): array {
         'functions' => $functions,
         'exports' => $exports,
         'class_names' => $classNames,
+        'inheritance' => $inheritance,
     ];
 }
 
@@ -513,7 +581,6 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
             $qualifiedName = $baseQualifiedName . '#' . $suffix;
             $suffix++;
         }
-        $entry['qualified_name'] = $qualifiedName;
         $entry['id'] = $entry['source_id'] . '::' . $qualifiedName;
         $seenCallables[$entry['id']] = true;
         $callables[] = $entry;
@@ -534,6 +601,7 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
                 ? parameter_definitions($node->expr->params)
                 : [];
             $values[] = source_value_entry(
+                $sourceId,
                 $node->var->name,
                 'private',
                 $node,
@@ -547,6 +615,7 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
         if ($node instanceof Stmt\Const_) {
             foreach ($node->consts as $const) {
                 $values[] = source_value_entry(
+                    $sourceId,
                     $const->name->toString(),
                     'public',
                     $const,
@@ -560,6 +629,7 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
         if ($node instanceof Stmt\ClassConst) {
             foreach ($node->consts as $const) {
                 $values[] = source_value_entry(
+                    $sourceId,
                     $const->name->toString(),
                     member_visibility($node),
                     $const,
@@ -734,6 +804,7 @@ function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRo
         'values' => $graph['values'],
         'callables' => $graph['callables'],
         'calls' => collect_calls($nodes, $resolvedSourceId, $graph['callables'], $graph['callable_ranges']),
+        'inheritance' => $definitions['inheritance'],
         'line_count' => line_count_for_content($content),
         'code_line_count' => code_line_count_for_content($content),
         'public_symbol_count' => count($definitions['exports']),

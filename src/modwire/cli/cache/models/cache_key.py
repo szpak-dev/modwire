@@ -1,8 +1,7 @@
 from typing import Literal
 
 from ....shared.values.models.value_model import ValueModel
-
-type CacheKind = Literal["source", "manifest", "code-map", "reports"]
+from .cache_kind import CacheKind
 
 
 class CacheKey(ValueModel):

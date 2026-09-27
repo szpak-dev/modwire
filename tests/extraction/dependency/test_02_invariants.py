@@ -27,7 +27,7 @@ class TestDependencyInvariants(ExtractionTestCase):
         root = self.repository / "tests/fixtures/syntax" / language
         request = self.application.extraction.request(language, str(root))
         extraction = self.application.cli.extract(request, self.scan_policy())
-        result = self.application.extraction.generate_map(language, extraction)
+        result = self.application.extraction.generate_map(request, extraction)
         modules = [
             (identity, file_id)
             for file_id, source in extraction.files.items()

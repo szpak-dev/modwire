@@ -17,3 +17,9 @@ class PathMatcher(ABC):
     @abstractmethod
     def match(self, path: str, pattern: str, *, scope: bool) -> tuple[str, ...] | None:
         raise NotImplementedError
+
+
+class PackageVersion(ABC):
+    @abstractmethod
+    def version(self) -> str:
+        raise NotImplementedError

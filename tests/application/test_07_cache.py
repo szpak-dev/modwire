@@ -107,12 +107,29 @@ class TestPersistentCache(ApplicationTestCase):
         assert warm == expected
         assert tuple((self.workspace / "cache").rglob("*.cache"))
 
-    def test_exact_map_hit_does_not_load_sources_or_maintain_the_manifest(self) -> None:
+    def test_empty_source_map_is_not_reused_after_batch_semantics_change(self) -> None:
+        root = self.project({})
+        options = self.cache_options("example-empty-runtime-change")
+        policy = self.scan_policy()
+        self.application.generate_map_cached("python", root, policy, options)
+        request = self.application.extraction.request("python", str(root))
+        changed_request = request.model_copy(
+            update={"batch_config": request.batch_config.model_copy(update={"size": request.batch_config.size + 1})}
+        )
+
+        changed_plan = self.application.cli.prepare_cache(changed_request, policy)
+        changed = self.application.cli.cached_code_map(changed_plan, options)
+
+        assert changed.value is None
+        assert changed.outcome(CacheStage.CODE_MAP).hits == 0
+        assert changed.outcome(CacheStage.CODE_MAP).misses == 1
+
+    def test_exact_map_hit_does_not_load_sources_or_maintain_the_source_set(self) -> None:
         root = self.project({"src/example.py": "def example_function():\n    return 1\n"})
         options = self.cache_options("example-map-first")
         expected = self.application.generate_map_cached("python", root, self.scan_policy(), options)
         untouched = tuple(
-            path for path in (self.workspace / "cache").rglob("*.cache") if path.parent.name in {"source", "manifest"}
+            path for path in (self.workspace / "cache").rglob("*.cache") if path.parent.name in {"source", "source-set"}
         )
         old_access_ns = 1_000_000_000
         for path in untouched:
@@ -121,22 +138,22 @@ class TestPersistentCache(ApplicationTestCase):
         actual = self.application.generate_map_cached("python", root, self.scan_policy(), options)
 
         assert actual == expected
-        assert {path.parent.name for path in untouched} == {"source", "manifest"}
+        assert {path.parent.name for path in untouched} == {"source", "source-set"}
         assert all(path.stat().st_atime_ns == old_access_ns for path in untouched)
 
-    def test_unchanged_manifest_is_not_rewritten_after_a_code_map_miss(self) -> None:
+    def test_unchanged_source_set_is_not_rewritten_after_a_code_map_miss(self) -> None:
         root = self.project({"src/example.py": "def example_function():\n    return 1\n"})
-        options = self.cache_options("example-manifest-no-op")
+        options = self.cache_options("example-source-set-no-op")
         expected = self.application.generate_map_cached("python", root, self.scan_policy(), options)
-        manifest = next((self.workspace / "cache").rglob("manifest/*.cache"))
+        source_set = next((self.workspace / "cache").rglob("source-set/*.cache"))
         code_map = next((self.workspace / "cache").rglob("code-map/*.cache"))
-        manifest_modified_ns = manifest.stat().st_mtime_ns
+        source_set_modified_ns = source_set.stat().st_mtime_ns
         code_map.unlink()
 
         actual = self.application.generate_map_cached("python", root, self.scan_policy(), options)
 
         assert actual == expected
-        assert manifest.stat().st_mtime_ns == manifest_modified_ns
+        assert source_set.stat().st_mtime_ns == source_set_modified_ns
 
     def test_invalid_capacity_ledger_is_recovered_by_a_public_cache_operation(self) -> None:
         root = self.project({"src/example.py": "class ExampleValue:\n    pass\n"})
@@ -164,9 +181,9 @@ class TestPersistentCache(ApplicationTestCase):
         assert before.functions().first().item.name == "example_one"
         assert after.functions().first().item.name == "example_two"
 
-    def test_manifest_changes_track_additions_deletions_and_renames(self) -> None:
+    def test_source_set_changes_track_additions_deletions_and_renames(self) -> None:
         root = self.project({"src/example_first.py": "class ExampleFirst:\n    pass\n"})
-        options = self.cache_options("example-manifest")
+        options = self.cache_options("example-source-set")
         first = self.application.generate_queryable_map_cached("python", root, self.scan_policy(), options)
 
         (root / "src/example_first.py").rename(root / "src/example_renamed.py")
@@ -179,7 +196,7 @@ class TestPersistentCache(ApplicationTestCase):
         assert changed.source_ids() == ("src/example_renamed.py", "src/example_second.py")
         assert final.source_ids() == ("src/example_second.py",)
 
-    def test_manifest_change_rebuilds_import_resolution_for_unchanged_sources(self) -> None:
+    def test_source_set_change_rebuilds_import_resolution_for_unchanged_sources(self) -> None:
         root = self.project(
             {
                 "example_package/example_value.py": "class ExampleValue:\n    pass\n",

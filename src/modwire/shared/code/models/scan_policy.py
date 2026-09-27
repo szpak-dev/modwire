@@ -1,4 +1,4 @@
-from ....shared.values.models.value_model import ValueModel
+from ...values.models.value_model import ValueModel
 
 
 class ScanPolicy(ValueModel):

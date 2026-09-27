@@ -11,6 +11,7 @@ from ..extraction.extractors.models.extraction_request import ExtractionRequest
 from ..extraction.facade import ExtractionFacade
 from ..shared.code.models.code_map import CodeMap
 from ..shared.code.models.queryable_code_map import QueryableCodeMap
+from ..shared.code.models.scan_policy import ScanPolicy
 from ..shared.code.models.source_extraction import SourceExtraction
 from .cache.application import CacheApplication
 from .cache.models.cache_options import CacheOptions
@@ -21,7 +22,6 @@ from .initialization.application import InitializationApplication
 from .pipeline.application import PipelineApplication
 from .pipeline.models.command_request import CommandRequest
 from .pipeline.models.extractor_command_input import ExtractorCommandInput
-from .pipeline.models.scan_policy import ScanPolicy
 
 
 @injectable
@@ -60,8 +60,8 @@ class CliFacade:
     ) -> CachedResult[SourceExtraction]:
         return self.cache.sources(request, plan, options)
 
-    def maintain_manifest(self, plan: CachePlan, options: CacheOptions) -> bool:
-        return self.cache.maintain_manifest(plan, options)
+    def maintain_source_set(self, plan: CachePlan, options: CacheOptions) -> bool:
+        return self.cache.maintain_source_set(plan, options)
 
     def cached_code_map(self, plan: CachePlan, options: CacheOptions) -> CachedResult[CodeMap | None]:
         return self.cache.code_map(plan, options)
@@ -135,14 +135,14 @@ class CliFacade:
         policy = ScanPolicy(excluded_patterns=config.excluded_patterns)
         if request.no_cache:
             extraction = self.extract(extraction_request, policy)
-            code_map = self.extraction.generate_queryable_map(request.language, extraction)
+            code_map = self.extraction.generate_queryable_map(extraction_request, extraction)
             return self.render(self.architecture.analyze(code_map, config), request.summary)
         plan = self.prepare_cache(extraction_request, policy)
         cached_code_map = self.cached_code_map(plan, cache_options).value
         if cached_code_map is None:
             extraction = self.cached_sources(extraction_request, plan, cache_options).value
-            self.maintain_manifest(plan, cache_options)
-            cached_code_map = self.extraction.generate_map(request.language, extraction)
+            self.maintain_source_set(plan, cache_options)
+            cached_code_map = self.extraction.generate_map(extraction_request, extraction)
             self.store_code_map(plan, cached_code_map, cache_options)
         code_map = QueryableCodeMap(code_map=cached_code_map)
         reports = self.cached_reports(cached_code_map, config, cache_options).value

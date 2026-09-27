@@ -7,12 +7,12 @@ from wireup import injectable
 from ...architecture.config.models.architecture_config import ArchitectureConfig
 from ...architecture.report.models.report_node import ReportNode
 from ...extraction.extractors.models.extraction_request import ExtractionRequest
+from ...shared.code.models.scan_policy import ScanPolicy
 from ...shared.code.models.source_extraction import SourceExtraction
 from .domain import ReportPipelineStep, SourceReader
 from .models.command_request import CommandRequest
 from .models.extractor_command_input import ExtractorCommandInput
 from .models.report_pipeline_context import ReportPipelineContext
-from .models.scan_policy import ScanPolicy
 from .services.command_line import CommandLine
 from .services.configuration_loader import ConfigurationLoader
 from .services.extractor_command import ExtractorCommand

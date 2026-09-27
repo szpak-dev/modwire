@@ -15,10 +15,20 @@ from .cli.cache.models.cache_outcome import CacheOutcome
 from .cli.cache.models.cache_stage import CacheStage
 from .cli.cache.models.cached_result import CachedResult
 from .cli.facade import CliFacade
-from .cli.pipeline.models.scan_policy import ScanPolicy
 from .extraction.facade import ExtractionFacade
+from .implementation.facade import ImplementationFacade
+from .implementation.manifest.models.digest_algorithm import DigestAlgorithm
+from .implementation.manifest.models.implementation_manifest import ImplementationManifest
+from .implementation.manifest.models.implementation_manifest_document import ImplementationManifestDocument
+from .implementation.manifest.models.manifest_format import ManifestFormat
+from .shared.code.models.capability_coverage import CapabilityCoverage
+from .shared.code.models.capability_status import CapabilityStatus
 from .shared.code.models.code_map import CodeMap
+from .shared.code.models.declaration_family import DeclarationFamily
+from .shared.code.models.declaration_identity import DeclarationIdentity
+from .shared.code.models.fact_capability import FactCapability
 from .shared.code.models.queryable_code_map import QueryableCodeMap
+from .shared.code.models.scan_policy import ScanPolicy
 
 __all__ = [
     "CacheOptions",
@@ -26,6 +36,15 @@ __all__ = [
     "CacheStage",
     "CachedResult",
     "CodeMap",
+    "CapabilityCoverage",
+    "CapabilityStatus",
+    "DeclarationFamily",
+    "DeclarationIdentity",
+    "DigestAlgorithm",
+    "FactCapability",
+    "ImplementationManifest",
+    "ImplementationManifestDocument",
+    "ManifestFormat",
     "ModwireApplication",
     "QueryableCodeMap",
     "ScanPolicy",
@@ -34,11 +53,12 @@ __all__ = [
 
 @dataclass(frozen=True)
 class ModwireApplication:
-    """Public entry point for source discovery, extraction, architecture analysis, and the Modwire CLI."""
+    """Public entry point for extraction, implementation manifests, architecture analysis, and the Modwire CLI."""
 
     architecture: ArchitectureFacade
     cli: CliFacade
     extraction: ExtractionFacade
+    implementation: ImplementationFacade
 
     @classmethod
     def create(cls) -> Self:
@@ -50,6 +70,7 @@ class ModwireApplication:
                 architecture=container.get(ArchitectureFacade),
                 cli=container.get(CliFacade),
                 extraction=container.get(ExtractionFacade),
+                implementation=container.get(ImplementationFacade),
             )
         finally:
             container.close()
@@ -109,7 +130,7 @@ class ModwireApplication:
         """
 
         request = self.extraction.request(language, str(root))
-        return self.extraction.generate_map(language, self.cli.extract(request, policy))
+        return self.extraction.generate_map(request, self.cli.extract(request, policy))
 
     def generate_queryable_map(self, language: str, root: str, policy: ScanPolicy) -> QueryableCodeMap:
         """Extract source files and return a queryable code map."""
@@ -117,7 +138,7 @@ class ModwireApplication:
         return QueryableCodeMap(code_map=self.generate_map(language, root, policy))
 
     def generate_map_cached(self, language: str, root: str, policy: ScanPolicy, options: CacheOptions) -> CodeMap:
-        """Return a code map with content-addressed source and complete-manifest reuse."""
+        """Return a code map with content-addressed source and complete-source-set reuse."""
 
         return self.generate_map_cached_with_diagnostics(language, root, policy, options).value
 
@@ -141,8 +162,8 @@ class ModwireApplication:
             )
         else:
             sources = self.cli.cached_sources(request, plan, options)
-            self.cli.maintain_manifest(plan, options)
-            code_map = self.extraction.generate_map(language, sources.value)
+            self.cli.maintain_source_set(plan, options)
+            code_map = self.extraction.generate_map(request, sources.value)
             self.cli.store_code_map(plan, code_map, options)
             outcome = outcome.model_copy(update={"computed": 1, "stored": 1})
             extraction_outcomes = sources.outcomes
@@ -164,6 +185,21 @@ class ModwireApplication:
         cached = self.generate_map_cached_with_diagnostics(language, root, policy, options)
         return CachedResult(value=QueryableCodeMap(code_map=cached.value), outcomes=cached.outcomes)
 
+    def implementation_manifest(self, code_map: CodeMap, format: ManifestFormat) -> ImplementationManifestDocument:
+        """Publish a deterministic, provenance-bearing implementation manifest."""
+
+        return self.implementation.manifest(code_map, format)
+
+    def implementation_manifest_formats(self) -> tuple[ManifestFormat, ...]:
+        """Return the implementation-manifest formats registered in this application."""
+
+        return self.implementation.formats()
+
+    def read_implementation_manifest(self, document: ImplementationManifestDocument) -> ImplementationManifest:
+        """Read and canonically validate a serialized implementation manifest."""
+
+        return self.implementation.read(document)
+
     def clear_cache(self, options: CacheOptions) -> None:
         """Clear only the Modwire-owned directory for one cache namespace."""
 
@@ -183,7 +219,25 @@ class ModwireApplication:
         """Generate this README from the published interface docstrings, or check that it is current."""
 
         return self.cli.generate_documentation(
-            str(readme), (type(self), CacheStage, CacheOutcome, CachedResult, CacheOptions, ScanPolicy), check
+            str(readme),
+            (
+                type(self),
+                CacheStage,
+                CacheOutcome,
+                CachedResult,
+                CacheOptions,
+                ScanPolicy,
+                ImplementationManifest,
+                ImplementationManifestDocument,
+                ManifestFormat,
+                DeclarationFamily,
+                DeclarationIdentity,
+                DigestAlgorithm,
+                FactCapability,
+                CapabilityStatus,
+                CapabilityCoverage,
+            ),
+            check,
         )
 
     def run_extractor(self, language: str) -> int:

@@ -20,11 +20,11 @@ class ExtractionFacade:
     def request(self, language: str, root: str) -> ExtractionRequest:
         return self.extractors.request(language, root)
 
-    def generate_map(self, language: str, extraction: SourceExtraction) -> CodeMap:
-        return self.extractors.generate_map(language, extraction)
+    def generate_map(self, request: ExtractionRequest, extraction: SourceExtraction) -> CodeMap:
+        return self.extractors.generate_map(request, extraction)
 
-    def generate_queryable_map(self, language: str, extraction: SourceExtraction) -> QueryableCodeMap:
-        return self.extractors.generate_queryable_map(language, extraction)
+    def generate_queryable_map(self, request: ExtractionRequest, extraction: SourceExtraction) -> QueryableCodeMap:
+        return self.extractors.generate_queryable_map(request, extraction)
 
     def parse_source(self, language: str, content: str, path: str, root: str, source_id: str) -> dict[str, object]:
         return self.extractors.parse_source(language, content, path, root, source_id)
