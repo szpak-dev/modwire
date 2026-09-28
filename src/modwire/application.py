@@ -29,6 +29,7 @@ from .shared.code.models.declaration_identity import DeclarationIdentity
 from .shared.code.models.fact_capability import FactCapability
 from .shared.code.models.queryable_code_map import QueryableCodeMap
 from .shared.code.models.scan_policy import ScanPolicy
+from .shared.code.models.source_manifest_identity import SourceManifestIdentity
 from .shared.code.models.source_member_kind import SourceMemberKind
 from .shared.code.models.source_relation_kind import SourceRelationKind
 
@@ -51,6 +52,7 @@ __all__ = [
     "QueryableCodeMap",
     "ScanPolicy",
     "SourceMemberKind",
+    "SourceManifestIdentity",
     "SourceRelationKind",
 ]
 
@@ -189,6 +191,12 @@ class ModwireApplication:
         cached = self.generate_map_cached_with_diagnostics(language, root, policy, options)
         return CachedResult(value=QueryableCodeMap(code_map=cached.value), outcomes=cached.outcomes)
 
+    def source_manifest_identity(self, language: str, root: str, policy: ScanPolicy) -> SourceManifestIdentity:
+        """Observe the current canonical source-manifest identity without parsing source."""
+
+        request = self.extraction.request(language, str(root))
+        return self.cli.source_manifest_identity(request, policy)
+
     def implementation_manifest(self, code_map: CodeMap, format: ManifestFormat) -> ImplementationManifestDocument:
         """Publish a deterministic, provenance-bearing implementation manifest."""
 
@@ -231,6 +239,7 @@ class ModwireApplication:
                 CachedResult,
                 CacheOptions,
                 ScanPolicy,
+                SourceManifestIdentity,
                 SourceMemberKind,
                 SourceRelationKind,
                 ImplementationManifest,
