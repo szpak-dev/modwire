@@ -1,6 +1,9 @@
 {
   "private": true,
   "type": "commonjs",
+  "engines": {
+    "node": "20 || >=22"
+  },
   "scripts": {
     "build": "node build.mjs",
     "check": "tsc --noEmit"
