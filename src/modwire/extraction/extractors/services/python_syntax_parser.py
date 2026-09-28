@@ -187,6 +187,9 @@ class PythonSyntaxParser(SourceParser):
             if isinstance(child, ast.AnnAssign):
                 target = child.target
                 if isinstance(target, ast.Name):
+                    annotation_origin = (
+                        child.annotation.value if isinstance(child.annotation, ast.Subscript) else child.annotation
+                    )
                     self.add_property(
                         properties,
                         self.property_definition(
@@ -195,7 +198,11 @@ class PythonSyntaxParser(SourceParser):
                             or self.value_is_none(child.value),
                             annotation=self.unparse(child.annotation),
                             visibility=self.visibility_intent(target.id),
-                            member_kind=SourceMemberKind.STATIC,
+                            member_kind=(
+                                SourceMemberKind.STATIC
+                                if self.node_name(annotation_origin) in {"ClassVar", "typing.ClassVar"}
+                                else SourceMemberKind.INSTANCE
+                            ),
                         ),
                     )
                 continue

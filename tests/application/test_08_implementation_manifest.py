@@ -59,6 +59,8 @@ class TestImplementationManifest(ApplicationTestCase):
             {
                 "src/example.py": (
                     "from abc import ABC, abstractmethod\n\n"
+                    "from dataclasses import dataclass\n"
+                    "from typing import ClassVar\n\n"
                     "@example_contract\n"
                     "class ExampleAbstract(ABC):\n"
                     "    example_shared: str = 'example'\n\n"
@@ -67,11 +69,17 @@ class TestImplementationManifest(ApplicationTestCase):
                     "        raise NotImplementedError\n\n"
                     "@example_value('example')\n"
                     "class ExampleValue(ExampleAbstract):\n"
-                    "    __example_static: str = 'example'\n\n"
+                    "    __example_static: ClassVar[str] = 'example'\n"
+                    "    EXAMPLE_LIMIT = 1\n"
+                    "    example_name: str\n\n"
                     "    def __init__(self, example_optional: str | None = None):\n"
                     "        self.example_optional: str | None = example_optional\n\n"
                     "    def example_required(self) -> str:\n"
                     "        return 'example'\n"
+                    "\n"
+                    "@dataclass\n"
+                    "class ExampleData:\n"
+                    "    example_field: str\n"
                 )
             }
         )
@@ -84,14 +92,29 @@ class TestImplementationManifest(ApplicationTestCase):
         symbol_ids = {item.id.qualified_name: item.id for item in manifest.symbols}
         value_id = symbol_ids["ExampleValue"]
         attributes = {item.name: item for item in manifest.attributes if item.owner_symbol_id == value_id}
+        abstract_attributes = {
+            item.name: item for item in manifest.attributes if item.owner_symbol_id == symbol_ids["ExampleAbstract"]
+        }
+        data_attributes = {
+            item.name: item for item in manifest.attributes if item.owner_symbol_id == symbol_ids["ExampleData"]
+        }
 
         assert attributes["__example_static"].id == (f"{value_id.canonical()}::attribute:__example_static")
-        assert attributes["__example_static"].annotation == "str"
+        assert attributes["__example_static"].annotation == "ClassVar[str]"
         assert attributes["__example_static"].visibility == "private"
         assert attributes["__example_static"].member_kind is SourceMemberKind.STATIC
+        assert attributes["EXAMPLE_LIMIT"].annotation == ""
+        assert attributes["EXAMPLE_LIMIT"].member_kind is SourceMemberKind.STATIC
+        assert attributes["example_name"].annotation == "str"
+        assert not attributes["example_name"].is_optional
+        assert attributes["example_name"].member_kind is SourceMemberKind.INSTANCE
         assert attributes["example_optional"].annotation == "str | None"
         assert attributes["example_optional"].is_optional
         assert attributes["example_optional"].member_kind is SourceMemberKind.INSTANCE
+        assert abstract_attributes["example_shared"].annotation == "str"
+        assert abstract_attributes["example_shared"].member_kind is SourceMemberKind.INSTANCE
+        assert data_attributes["example_field"].annotation == "str"
+        assert data_attributes["example_field"].member_kind is SourceMemberKind.INSTANCE
         assert {(item.target_id, item.role, item.expression) for item in manifest.annotations} >= {
             (symbol_ids["ExampleAbstract"].canonical(), "declaration", "example_contract"),
             (value_id.canonical(), "declaration", "example_value('example')"),
@@ -103,7 +126,7 @@ class TestImplementationManifest(ApplicationTestCase):
             and item.target_reference == "ExampleAbstract"
             for item in manifest.inheritance
         )
-        assert tuple(item.specifier for item in manifest.dependencies) == ("abc",)
+        assert tuple(item.specifier for item in manifest.dependencies) == ("abc", "dataclasses", "typing")
 
     def test_typescript_manifest_distinguishes_undefined_value_types_from_optional_properties(self) -> None:
         root = self.project(
