@@ -12,7 +12,7 @@ class BuildAdapter:
         shutil.copytree(source, work, ignore=shutil.ignore_patterns("build.py", "__pycache__"))
         environment = dict(os.environ)
         environment["npm_config_cache"] = str(work.parent.parent / "cache/npm")
-        BuildAdapter.run(("npm", "ci"), cwd=work, environment=environment)
+        BuildAdapter.run(("npm", "ci", "--engine-strict"), cwd=work, environment=environment)
         BuildAdapter.run(("npm", "run", "check"), cwd=work, environment=environment)
         BuildAdapter.run(("npm", "run", "build"), cwd=work, environment=environment)
         if (work / "script.js").read_bytes() != (source / "script.js").read_bytes():

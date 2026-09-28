@@ -13,6 +13,7 @@ from ..shared.code.models.code_map import CodeMap
 from ..shared.code.models.queryable_code_map import QueryableCodeMap
 from ..shared.code.models.scan_policy import ScanPolicy
 from ..shared.code.models.source_extraction import SourceExtraction
+from ..shared.code.models.source_manifest_identity import SourceManifestIdentity
 from .cache.application import CacheApplication
 from .cache.models.cache_options import CacheOptions
 from .cache.models.cache_plan import CachePlan
@@ -48,6 +49,9 @@ class CliFacade:
 
     def extract(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceExtraction:
         return self.pipeline.extract(request, policy)
+
+    def source_manifest_identity(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceManifestIdentity:
+        return self.pipeline.source_manifest_identity(request, policy)
 
     def has_source_files(self, request: ExtractionRequest, policy: ScanPolicy) -> bool:
         return self.pipeline.has_source_files(request, policy)

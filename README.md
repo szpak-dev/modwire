@@ -60,6 +60,10 @@ Return a queryable code map with content-addressed persistent reuse.
 
 Return a queryable code map and public outcomes for every applicable cache stage.
 
+### `source_manifest_identity`
+
+Observe the current canonical source-manifest identity without parsing source.
+
 ### `implementation_manifest`
 
 Publish a deterministic, provenance-bearing implementation manifest.
@@ -125,6 +129,10 @@ Generic persistent-cache settings supplied by a caller.
 ## `ScanPolicy`
 
 Caller-owned filesystem traversal policy with explicit exclusions and opt-in symlink following.
+
+## `SourceManifestIdentity`
+
+Canonical identity of one observed source manifest.
 
 ## `SourceMemberKind`
 

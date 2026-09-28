@@ -9,6 +9,7 @@ from ...architecture.report.models.report_node import ReportNode
 from ...extraction.extractors.models.extraction_request import ExtractionRequest
 from ...shared.code.models.scan_policy import ScanPolicy
 from ...shared.code.models.source_extraction import SourceExtraction
+from ...shared.code.models.source_manifest_identity import SourceManifestIdentity
 from .domain import ReportPipelineStep, SourceReader
 from .models.command_request import CommandRequest
 from .models.extractor_command_input import ExtractorCommandInput
@@ -36,6 +37,14 @@ class PipelineApplication:
     def extract(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceExtraction:
         self.reader.ensure_available(request.runtime)
         return self.reader.extract_source(request, policy)
+
+    def source_manifest_identity(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceManifestIdentity:
+        self.reader.ensure_available(request.runtime)
+        manifest = self.reader.inventory(request, policy).manifest
+        return SourceManifestIdentity(
+            digest_algorithm=manifest.digest_algorithm,
+            digest=manifest.digest,
+        )
 
     def has_source_files(self, request: ExtractionRequest, policy: ScanPolicy) -> bool:
         self.reader.ensure_available(request.runtime)
