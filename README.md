@@ -130,6 +130,18 @@ Generic persistent-cache settings supplied by a caller.
 
 Caller-owned filesystem traversal policy with explicit exclusions and opt-in symlink following.
 
+## `SourceAssignedValue`
+
+Language-neutral evidence observed at one class-property assignment site.
+
+### `validate_state`
+
+Require the expression and reference fields appropriate to the evidence kind.
+
+## `SourceAssignedValueKind`
+
+Kinds of class-property assignment evidence published by extractors.
+
 ## `SourceManifestIdentity`
 
 Canonical identity of one observed source manifest.

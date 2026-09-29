@@ -4,18 +4,21 @@ from typing import cast
 
 from wireup import injectable
 
+from ....shared.code.models.source_assigned_value import SourceAssignedValue
 from ....shared.code.models.source_class_property import SourceClassProperty
 from ....shared.code.models.source_member_kind import SourceMemberKind
 from ....shared.code.models.source_relation_kind import SourceRelationKind
 from ....shared.code.models.types import SourceVisibility
-from ..domain import PythonCallReader, SourceParser
-from ..models.python_call_context import PythonCallContext
+from ..domain import SourceParser
+from .call_context import PythonCallContext
+from .domain import PythonAssignedValueReader, PythonCallReader
 
 
 @injectable(as_type=SourceParser, qualifier="python")
 @dataclass(frozen=True)
 class PythonSyntaxParser(SourceParser):
     calls: PythonCallReader
+    assigned_values: PythonAssignedValueReader
 
     def declaration_ordinal(self, node: ast.stmt | ast.expr) -> int:
         return (node.lineno << 32) + node.col_offset + 1
@@ -152,6 +155,7 @@ class PythonSyntaxParser(SourceParser):
         annotation: str,
         visibility: SourceVisibility,
         member_kind: SourceMemberKind,
+        assigned_values: tuple[SourceAssignedValue, ...],
     ) -> SourceClassProperty:
         return SourceClassProperty(
             name=name,
@@ -159,6 +163,7 @@ class PythonSyntaxParser(SourceParser):
             annotation=annotation,
             visibility=visibility,
             member_kind=member_kind,
+            assigned_values=assigned_values,
         )
 
     def add_property(
@@ -178,7 +183,15 @@ class PythonSyntaxParser(SourceParser):
                 if SourceMemberKind.INSTANCE in {current.member_kind, property_definition.member_kind}
                 else SourceMemberKind.STATIC
             ),
+            assigned_values=(*current.assigned_values, *property_definition.assigned_values),
         )
+
+    def descendants_in_source_order(self, node: ast.AST) -> tuple[ast.AST, ...]:
+        descendants: list[ast.AST] = []
+        for child in ast.iter_child_nodes(node):
+            descendants.append(child)
+            descendants.extend(self.descendants_in_source_order(child))
+        return tuple(descendants)
 
     def class_properties(self, node: ast.ClassDef) -> list[dict[str, object]]:
         properties: dict[str, SourceClassProperty] = {}
@@ -203,6 +216,13 @@ class PythonSyntaxParser(SourceParser):
                                 if self.node_name(annotation_origin) in {"ClassVar", "typing.ClassVar"}
                                 else SourceMemberKind.INSTANCE
                             ),
+                            assigned_values=(
+                                (
+                                    self.assigned_values.unassigned()
+                                    if child.value is None
+                                    else self.assigned_values.read(child.value)
+                                ),
+                            ),
                         ),
                     )
                 continue
@@ -217,13 +237,14 @@ class PythonSyntaxParser(SourceParser):
                                 annotation="",
                                 visibility=self.visibility_intent(target.id),
                                 member_kind=SourceMemberKind.STATIC,
+                                assigned_values=(self.assigned_values.read(child.value),),
                             ),
                         )
                 continue
             if not isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
             optional_parameter_names = self.optional_constructor_parameters(child)
-            for descendant in ast.walk(child):
+            for descendant in self.descendants_in_source_order(child):
                 if isinstance(descendant, ast.AnnAssign):
                     target = descendant.target
                     if (
@@ -243,6 +264,13 @@ class PythonSyntaxParser(SourceParser):
                                 visibility=self.visibility_intent(target.attr),
                                 member_kind=(
                                     SourceMemberKind.INSTANCE if target.value.id == "self" else SourceMemberKind.STATIC
+                                ),
+                                assigned_values=(
+                                    (
+                                        self.assigned_values.unassigned()
+                                        if descendant.value is None
+                                        else self.assigned_values.read(descendant.value)
+                                    ),
                                 ),
                             ),
                         )
@@ -268,6 +296,7 @@ class PythonSyntaxParser(SourceParser):
                                 member_kind=(
                                     SourceMemberKind.INSTANCE if target.value.id == "self" else SourceMemberKind.STATIC
                                 ),
+                                assigned_values=(self.assigned_values.read(descendant.value),),
                             ),
                         )
         return [property_definition.model_dump(mode="json") for property_definition in properties.values()]

@@ -161,6 +161,7 @@ class CodeMapFactory:
                     "annotation": "",
                     "visibility": "public",
                     "member_kind": "instance",
+                    "assigned_values": [{"kind": "unassigned", "expression": "", "reference": ""}],
                     **property_definition,
                 }
                 for property_definition in properties

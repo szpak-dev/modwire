@@ -5,8 +5,9 @@ and Python-based development commands are host concerns rather than analyzed-lan
 
 All analyzed-language facts belong to extractor-owned locations:
 
-- `src/modwire/extraction/extractors/services/` owns extractor registration, target identity, file extensions, runtime
-  commands, parser selection, and batch policy.
+- `src/modwire/extraction/extractors/{python,typescript,php}/` gives every extractor an owned package for its
+  contracts, context, adapters, registration, target identity, file extensions, runtime commands, parser selection,
+  and batch policy. Filenames rely on that package context; class names retain their explicit language intent.
 - `src/modwire/extraction/extractors/resources/` owns parser programs, dependency manifests, generated executables,
   and build adapters.
 - `tests/fixtures/languages/` and extractor integration tests own language-specific validation inputs.
@@ -16,17 +17,18 @@ Shared code, dependency resolution, architecture analysis, traversal, consumer v
 orchestration must not contain supported-language tables, runtime commands, extension tables, or language-selection
 branches. Callers select a registered extractor explicitly.
 
-## Shared contract version 3
+## Shared contract version 6
 
-The class-level `CodeMap.schema_version` is `3`. Every runtime `SourceValue` declares a language-neutral `module`,
-`local`, or `member` scope. Extractors distinguish variable assignments from constants and keep type aliases and export
-metadata out of runtime values. Callable kinds are `function`, `instance_method`, `type_method`, `static_method`,
-`constructor`, `callable_value`, and `anonymous`. Parameter kinds are `positional`, `variadic_positional`,
-`named_only`, and `variadic_named`.
+The class-level `CodeMap.schema_version` is `6`. Every class property carries ordered, language-neutral assigned-value
+evidence. Evidence distinguishes unassigned declarations, calls, references, literals, unresolved expressions, and
+extractors that do not support the fact yet. Every runtime `SourceValue` declares a language-neutral `module`, `local`,
+or `member` scope. Extractors distinguish variable assignments from constants and keep type aliases and export metadata
+out of runtime values. Callable kinds are `function`, `instance_method`, `type_method`, `static_method`, `constructor`,
+`callable_value`, and `anonymous`. Parameter kinds are `positional`, `variadic_positional`, `named_only`, and
+`variadic_named`.
 
-Version 1 serialized maps used extractor-specific callable and parameter vocabulary, while version 2 values have no
-explicit value scope. Neither is accepted as version 3. Regenerate them from source with the same registered extractor;
-the cache identity includes the code-map schema and invalidates older maps instead of migrating them silently.
+Earlier serialized maps do not satisfy the current contract. Regenerate them from source with the same registered
+extractor; the cache identity includes the code-map schema and invalidates older maps instead of migrating them silently.
 
 ## Adding an extractor
 

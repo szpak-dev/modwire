@@ -15,34 +15,34 @@ from ..models.extractor_resource_set import ExtractorResourceSet
 from ..models.extractor_runtime import ExtractorRuntime
 
 
-@injectable(as_type=SourceExtractor, qualifier="typescript")
+@injectable(as_type=SourceExtractor, qualifier="php")
 @dataclass(frozen=True)
-class TypeScriptExtractor(SourceExtractor):
+class PhpExtractor(SourceExtractor):
     @property
     def runtime(self) -> ExtractorRuntime:
         return ExtractorRuntime(
-            order=1,
+            order=2,
             descriptor=ExtractorDescriptor(
-                id="modwire.typescript.ts-morph",
+                id="modwire.php.php-parser",
                 version="1",
-                language="typescript",
-                runtime="node",
+                language="php",
+                runtime="php",
             ),
             capabilities=(
                 CapabilityCoverage(
                     capability=FactCapability.SOURCES,
                     status=CapabilityStatus.SUPPORTED,
-                    explanation="Every included TypeScript or JavaScript source is identified and hashed.",
+                    explanation="Every included PHP source is identified and hashed.",
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.SYMBOLS,
                     status=CapabilityStatus.SUPPORTED,
-                    explanation="Classes, interfaces, types, functions, and values are extracted.",
+                    explanation="Classes, interfaces, functions, and values are extracted.",
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.CALLABLES,
                     status=CapabilityStatus.SUPPORTED,
-                    explanation="Functions, methods, constructors, and callable values are extracted.",
+                    explanation="Functions, methods, constructors, closures, and arrow functions are extracted.",
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.PARAMETERS,
@@ -53,8 +53,8 @@ class TypeScriptExtractor(SourceExtractor):
                     capability=FactCapability.ANNOTATIONS,
                     status=CapabilityStatus.PARTIAL,
                     explanation=(
-                        "Class decorator expressions and declared type annotations are extracted; "
-                        "decorators on other declarations are not yet emitted."
+                        "Class and interface attributes and declared type annotations are extracted; "
+                        "attributes on other declarations are not yet emitted."
                     ),
                 ),
                 CapabilityCoverage(
@@ -66,19 +66,24 @@ class TypeScriptExtractor(SourceExtractor):
                     capability=FactCapability.ATTRIBUTES,
                     status=CapabilityStatus.SUPPORTED,
                     explanation=(
-                        "Class and type property identity, exact declared type, visibility, optionality, and "
-                        "member kind are extracted."
+                        "Declared and promoted property identity, exact declared type, visibility, optionality, "
+                        "and member kind are extracted."
                     ),
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.ASSIGNED_VALUES,
+                    status=CapabilityStatus.UNSUPPORTED,
+                    explanation="PHP property assigned-value evidence is not extracted yet.",
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.INHERITANCE,
                     status=CapabilityStatus.SUPPORTED,
-                    explanation="Class and interface heritage clauses are recorded.",
+                    explanation="Class and interface inheritance declarations are recorded.",
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.DEPENDENCIES,
                     status=CapabilityStatus.SUPPORTED,
-                    explanation="Imports are normalized and resolved when targets are present.",
+                    explanation="Namespace imports are normalized and resolved when targets are present.",
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.SPANS,
@@ -86,18 +91,18 @@ class TypeScriptExtractor(SourceExtractor):
                     explanation="Callable spans are exact; other symbol facts expose line counts.",
                 ),
             ),
-            file_extensions=(".ts", ".tsx", ".js", ".jsx"),
-            command=("node",),
+            file_extensions=(".php",),
+            command=("php",),
             version_arguments=("--version",),
             resources=ExtractorResourceSet(
                 entrypoint=ExtractorResource(
                     package="modwire.extraction.extractors.resources",
-                    path="typescript/script.js",
+                    path="php/script.php",
                 ),
                 identity_resources=(
                     ExtractorResource(
                         package="modwire.extraction.extractors.resources",
-                        path="typescript/script.js",
+                        path="php/script.php",
                     ),
                 ),
             ),
@@ -105,7 +110,7 @@ class TypeScriptExtractor(SourceExtractor):
 
     @property
     def batch_config(self) -> BatchConfig:
-        return BatchConfig(size=500, parallel_threshold=1000, parallel_size=500, max_workers=16, output_format="jsonl")
+        return BatchConfig(size=500, parallel_threshold=500, parallel_size=500, max_workers=16, output_format="jsonl")
 
     def module_identities(self, source_file: SourceFile) -> tuple[ModuleId, ...]:
         return (source_file.module_id,)

@@ -72,6 +72,14 @@ class PythonExtractor(SourceExtractor):
                     ),
                 ),
                 CapabilityCoverage(
+                    capability=FactCapability.ASSIGNED_VALUES,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation=(
+                        "Ordered assignment evidence distinguishes calls, references, literals, unresolved "
+                        "expressions, and declarations without an assigned value."
+                    ),
+                ),
+                CapabilityCoverage(
                     capability=FactCapability.INHERITANCE,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Every declared Python base expression is recorded.",
@@ -97,16 +105,32 @@ class PythonExtractor(SourceExtractor):
                 ),
                 identity_resources=(
                     ExtractorResource(
+                        package="modwire.extraction.extractors.python",
+                        path="assigned_value_reader.py",
+                    ),
+                    ExtractorResource(
+                        package="modwire.extraction.extractors.python",
+                        path="call_context.py",
+                    ),
+                    ExtractorResource(
+                        package="modwire.extraction.extractors.python",
+                        path="call_reader.py",
+                    ),
+                    ExtractorResource(
+                        package="modwire.extraction.extractors.python",
+                        path="domain.py",
+                    ),
+                    ExtractorResource(
+                        package="modwire.extraction.extractors.python",
+                        path="expression_reference_reader.py",
+                    ),
+                    ExtractorResource(
+                        package="modwire.extraction.extractors.python",
+                        path="syntax_parser.py",
+                    ),
+                    ExtractorResource(
                         package="modwire.extraction.extractors.resources",
                         path="python/script.py",
-                    ),
-                    ExtractorResource(
-                        package="modwire.extraction.extractors.services",
-                        path="python_call_reader.py",
-                    ),
-                    ExtractorResource(
-                        package="modwire.extraction.extractors.services",
-                        path="python_syntax_parser.py",
                     ),
                 ),
             ),

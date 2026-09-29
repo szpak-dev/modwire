@@ -46,7 +46,7 @@ class TestPublicCodeValues(ServiceTestCase):
         original = CodeMapFactory().queryable({"src/example.source": {}}, ()).code_map
         restored = type(original).model_validate_json(original.to_json())
         assert restored.to_dict() == original.to_dict()
-        assert original.schema_version == 5
+        assert original.schema_version == 6
         assert set(json.loads(original.to_json())) == {
             "language",
             "producer",

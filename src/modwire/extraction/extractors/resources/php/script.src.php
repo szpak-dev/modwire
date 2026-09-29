@@ -486,6 +486,11 @@ function collect_definitions(array $nodes, string $sourceId): array {
                         'annotation' => type_annotation($property->type),
                         'visibility' => member_visibility($property),
                         'member_kind' => $property->isStatic() ? 'static' : 'instance',
+                        'assigned_values' => [[
+                            'kind' => 'unsupported',
+                            'expression' => '',
+                            'reference' => '',
+                        ]],
                     ];
                 }
             }
@@ -502,6 +507,11 @@ function collect_definitions(array $nodes, string $sourceId): array {
                             'annotation' => type_annotation($param->type),
                             'visibility' => parameter_visibility($param),
                             'member_kind' => 'instance',
+                            'assigned_values' => [[
+                                'kind' => 'unsupported',
+                                'expression' => '',
+                                'reference' => '',
+                            ]],
                         ];
                     }
                 }

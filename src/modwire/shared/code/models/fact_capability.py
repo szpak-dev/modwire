@@ -11,6 +11,7 @@ class FactCapability(StrEnum):
     ANNOTATIONS = "annotations"
     MODIFIERS = "modifiers"
     ATTRIBUTES = "attributes"
+    ASSIGNED_VALUES = "assigned_values"
     INHERITANCE = "inheritance"
     DEPENDENCIES = "dependencies"
     SPANS = "spans"

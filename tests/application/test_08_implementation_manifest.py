@@ -35,7 +35,7 @@ class TestImplementationManifest(ApplicationTestCase):
             sort_keys=True,
         )
 
-        assert manifest.schema_version == 2
+        assert manifest.schema_version == 3
         assert manifest.producer.extractor.language == "python"
         assert manifest.producer.extractor.id == "modwire.python.ast"
         assert manifest.producer.modwire_version
