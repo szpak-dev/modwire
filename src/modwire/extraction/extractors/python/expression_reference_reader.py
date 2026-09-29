@@ -4,7 +4,7 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ..domain import PythonExpressionReferenceReader
+from .domain import PythonExpressionReferenceReader
 
 
 @injectable(as_type=PythonExpressionReferenceReader)

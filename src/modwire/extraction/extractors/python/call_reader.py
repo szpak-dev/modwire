@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ..domain import PythonCallReader
-from ..models.python_call_context import PythonCallContext
+from .call_context import PythonCallContext
+from .domain import PythonCallReader
 
 
 @injectable(as_type=PythonCallReader)

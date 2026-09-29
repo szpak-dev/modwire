@@ -6,7 +6,7 @@ from wireup import injectable
 
 from ....shared.code.models.source_assigned_value import SourceAssignedValue
 from ....shared.code.models.source_assigned_value_kind import SourceAssignedValueKind
-from ..domain import PythonAssignedValueReader, PythonExpressionReferenceReader
+from .domain import PythonAssignedValueReader, PythonExpressionReferenceReader
 
 
 @injectable(as_type=PythonAssignedValueReader)

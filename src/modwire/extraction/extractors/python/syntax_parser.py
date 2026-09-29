@@ -9,8 +9,9 @@ from ....shared.code.models.source_class_property import SourceClassProperty
 from ....shared.code.models.source_member_kind import SourceMemberKind
 from ....shared.code.models.source_relation_kind import SourceRelationKind
 from ....shared.code.models.types import SourceVisibility
-from ..domain import PythonAssignedValueReader, PythonCallReader, SourceParser
-from ..models.python_call_context import PythonCallContext
+from ..domain import SourceParser
+from .call_context import PythonCallContext
+from .domain import PythonAssignedValueReader, PythonCallReader
 
 
 @injectable(as_type=SourceParser, qualifier="python")
@@ -185,6 +186,13 @@ class PythonSyntaxParser(SourceParser):
             assigned_values=(*current.assigned_values, *property_definition.assigned_values),
         )
 
+    def descendants_in_source_order(self, node: ast.AST) -> tuple[ast.AST, ...]:
+        descendants: list[ast.AST] = []
+        for child in ast.iter_child_nodes(node):
+            descendants.append(child)
+            descendants.extend(self.descendants_in_source_order(child))
+        return tuple(descendants)
+
     def class_properties(self, node: ast.ClassDef) -> list[dict[str, object]]:
         properties: dict[str, SourceClassProperty] = {}
 
@@ -236,7 +244,7 @@ class PythonSyntaxParser(SourceParser):
             if not isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
             optional_parameter_names = self.optional_constructor_parameters(child)
-            for descendant in ast.walk(child):
+            for descendant in self.descendants_in_source_order(child):
                 if isinstance(descendant, ast.AnnAssign):
                     target = descendant.target
                     if (

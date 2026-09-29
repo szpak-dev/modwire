@@ -7,12 +7,16 @@ from .source_assigned_value_kind import SourceAssignedValueKind
 
 
 class SourceAssignedValue(ValueModel):
+    """Language-neutral evidence observed at one class-property assignment site."""
+
     kind: SourceAssignedValueKind
     expression: str
     reference: str
 
     @model_validator(mode="after")
     def validate_state(self) -> Self:
+        """Require the expression and reference fields appropriate to the evidence kind."""
+
         if self.kind in (SourceAssignedValueKind.UNASSIGNED, SourceAssignedValueKind.UNSUPPORTED):
             if self.expression or self.reference:
                 raise ValueError("Unassigned and unsupported values cannot contain expression evidence.")
