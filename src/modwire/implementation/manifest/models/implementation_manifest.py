@@ -19,7 +19,7 @@ from .manifest_symbol import ManifestSymbol
 class ImplementationManifest(ValueModel):
     """A versioned, language-neutral statement of observed implementation facts and provenance."""
 
-    schema_version: Literal[2] = 2
+    schema_version: Literal[3] = 3
     producer: CodeMapProducer
     source_manifest: SourceManifest
     symbols: tuple[ManifestSymbol, ...]

@@ -71,6 +71,11 @@ class PhpExtractor(SourceExtractor):
                     ),
                 ),
                 CapabilityCoverage(
+                    capability=FactCapability.ASSIGNED_VALUES,
+                    status=CapabilityStatus.UNSUPPORTED,
+                    explanation="PHP property assigned-value evidence is not extracted yet.",
+                ),
+                CapabilityCoverage(
                     capability=FactCapability.INHERITANCE,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Class and interface inheritance declarations are recorded.",

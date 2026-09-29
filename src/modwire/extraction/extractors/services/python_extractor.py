@@ -72,6 +72,14 @@ class PythonExtractor(SourceExtractor):
                     ),
                 ),
                 CapabilityCoverage(
+                    capability=FactCapability.ASSIGNED_VALUES,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation=(
+                        "Ordered assignment evidence distinguishes calls, references, literals, unresolved "
+                        "expressions, and declarations without an assigned value."
+                    ),
+                ),
+                CapabilityCoverage(
                     capability=FactCapability.INHERITANCE,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Every declared Python base expression is recorded.",
@@ -103,6 +111,14 @@ class PythonExtractor(SourceExtractor):
                     ExtractorResource(
                         package="modwire.extraction.extractors.services",
                         path="python_call_reader.py",
+                    ),
+                    ExtractorResource(
+                        package="modwire.extraction.extractors.services",
+                        path="python_assigned_value_reader.py",
+                    ),
+                    ExtractorResource(
+                        package="modwire.extraction.extractors.services",
+                        path="python_expression_reference_reader.py",
                     ),
                     ExtractorResource(
                         package="modwire.extraction.extractors.services",

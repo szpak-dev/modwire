@@ -71,6 +71,11 @@ class TypeScriptExtractor(SourceExtractor):
                     ),
                 ),
                 CapabilityCoverage(
+                    capability=FactCapability.ASSIGNED_VALUES,
+                    status=CapabilityStatus.UNSUPPORTED,
+                    explanation="TypeScript property assigned-value evidence is not extracted yet.",
+                ),
+                CapabilityCoverage(
                     capability=FactCapability.INHERITANCE,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Class and interface heritage clauses are recorded.",

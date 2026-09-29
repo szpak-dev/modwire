@@ -648,6 +648,7 @@ function collectClasses(sourceFile, lineStarts, sourceId) {
                 annotation: textOf(property.getTypeNode()),
                 visibility: visibilityFromModifiers(property),
                 member_kind: memberKindFromModifiers(property),
+                assigned_values: [{ kind: 'unsupported', expression: '', reference: '' }],
             });
         }
         for (const constructorDeclaration of classDeclaration.getConstructors()) {
@@ -660,6 +661,7 @@ function collectClasses(sourceFile, lineStarts, sourceId) {
                         annotation: textOf(parameter.getTypeNode()),
                         visibility: visibilityFromModifiers(parameter),
                         member_kind: 'instance',
+                        assigned_values: [{ kind: 'unsupported', expression: '', reference: '' }],
                     });
                 }
             }
@@ -745,6 +747,7 @@ function collectInterfaces(sourceFile, lineStarts, sourceId) {
             annotation: textOf(property.getTypeNode()),
             visibility: 'public',
             member_kind: 'instance',
+            assigned_values: [{ kind: 'unsupported', expression: '', reference: '' }],
         }));
         const methods = interfaceDeclaration.getMethods().map(method => sourceClassMethod(method, lineStarts));
         return {
@@ -777,6 +780,7 @@ function collectTypes(sourceFile, lineStarts, sourceId) {
             annotation: textOf(property.getTypeNode()),
             visibility: 'public',
             member_kind: 'instance',
+            assigned_values: [{ kind: 'unsupported', expression: '', reference: '' }],
         }));
         return {
             declaration_id: {

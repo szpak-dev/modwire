@@ -66,6 +66,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
                         annotation=attribute.annotation,
                         visibility=attribute.visibility,
                         member_kind=attribute.member_kind,
+                        assigned_values=attribute.assigned_values,
                     )
                     for attribute in symbol.properties
                 )
@@ -96,6 +97,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
                         annotation=attribute.annotation,
                         visibility=attribute.visibility,
                         member_kind=attribute.member_kind,
+                        assigned_values=attribute.assigned_values,
                     )
                     for attribute in symbol.properties
                 )
@@ -126,6 +128,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
                         annotation=attribute.annotation,
                         visibility=attribute.visibility,
                         member_kind=attribute.member_kind,
+                        assigned_values=attribute.assigned_values,
                     )
                     for attribute in symbol.properties
                 )
@@ -156,6 +159,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
                         annotation=attribute.annotation,
                         visibility=attribute.visibility,
                         member_kind=attribute.member_kind,
+                        assigned_values=attribute.assigned_values,
                     )
                     for attribute in symbol.properties
                 )
