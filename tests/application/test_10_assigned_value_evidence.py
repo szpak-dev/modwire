@@ -21,6 +21,9 @@ class TestAssignedValueEvidence(ApplicationTestCase):
                     "    example_unresolved = 1 + 2\n\n"
                     "    def __init__(self, example_input: str):\n"
                     "        self.example_reference = example_input\n"
+                    "        if example_input:\n"
+                    "            self.example_nested = 1\n"
+                    "        self.example_nested = 2\n"
                 )
             }
         )
@@ -46,6 +49,10 @@ class TestAssignedValueEvidence(ApplicationTestCase):
             ),
             "example_call": ((SourceAssignedValueKind.CALL, "example_factory()", "example_factory"),),
             "example_unresolved": ((SourceAssignedValueKind.UNRESOLVED, "1 + 2", ""),),
+            "example_nested": (
+                (SourceAssignedValueKind.LITERAL, "1", ""),
+                (SourceAssignedValueKind.LITERAL, "2", ""),
+            ),
         }
 
     @pytest.mark.parametrize(
