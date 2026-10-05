@@ -128,6 +128,38 @@ from ..services.facade import WidgetsService
         assert edge.to_id == "example_first/example_package/example_value.py"
         assert result.tracked_dependency_edges().count() == 1
 
+    def test_repository_root_package_aliases_win_over_duplicate_module_suffixes(self) -> None:
+        result = self.extract(
+            {
+                "src/example/__init__.py": "",
+                "src/example/diagrams/__init__.py": "",
+                "src/example/diagrams/services/__init__.py": "",
+                "src/example/diagrams/services/facade.py": "class DiagramFacade:\n    pass\n",
+                "src/example/shared/__init__.py": "",
+                "src/example/shared/services/__init__.py": "",
+                "src/example/shared/services/facade.py": "class SharedFacade:\n    pass\n",
+                "src/example/projects/__init__.py": "",
+                "src/example/projects/consumer.py": (
+                    "from example.diagrams.services.facade import DiagramFacade\n"
+                    "from example.shared.services.facade import SharedFacade\n"
+                ),
+            }
+        )
+        edges = {
+            str(item.edge.specifier): (item.edge.resolution, item.edge.to_id)
+            for item in result.outgoing_dependencies("src/example/projects/consumer.py").all()
+        }
+        assert edges == {
+            "example.diagrams.services.facade": (
+                "resolved",
+                "src/example/diagrams/services/facade.py",
+            ),
+            "example.shared.services.facade": (
+                "resolved",
+                "src/example/shared/services/facade.py",
+            ),
+        }
+
     def test_genuinely_ambiguous_module_suffix_does_not_choose_an_arbitrary_target(self) -> None:
         result = self.extract(
             {

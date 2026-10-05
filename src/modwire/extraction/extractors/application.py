@@ -40,9 +40,7 @@ class ExtractorsApplication:
         if language not in self.extractors:
             raise ValueError(f"Language is not supported: {language}")
         extractor = self.extractors[language]
-        identities = {
-            file_id: extractor.module_identities(source_file) for file_id, source_file in extraction.files.items()
-        }
+        identities = extractor.module_identities(extraction.files)
         files = self.dependency.resolve(extraction.files, identities)
         resolved = extraction.model_copy(update={"files": files})
         producer = CodeMapProducer(
