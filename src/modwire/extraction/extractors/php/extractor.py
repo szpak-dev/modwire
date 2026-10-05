@@ -6,7 +6,7 @@ from ....shared.code.models.capability_coverage import CapabilityCoverage
 from ....shared.code.models.capability_status import CapabilityStatus
 from ....shared.code.models.extractor_descriptor import ExtractorDescriptor
 from ....shared.code.models.fact_capability import FactCapability
-from ....shared.code.models.identity import ModuleId
+from ....shared.code.models.identity import FileId, ModuleId
 from ....shared.code.models.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
@@ -112,5 +112,5 @@ class PhpExtractor(SourceExtractor):
     def batch_config(self) -> BatchConfig:
         return BatchConfig(size=500, parallel_threshold=500, parallel_size=500, max_workers=16, output_format="jsonl")
 
-    def module_identities(self, source_file: SourceFile) -> tuple[ModuleId, ...]:
-        return (source_file.module_id,)
+    def module_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ModuleId, ...]]:
+        return {file_id: (source_file.module_id,) for file_id, source_file in files.items()}

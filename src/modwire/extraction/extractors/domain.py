@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from ...shared.code.models.identity import ModuleId
+from ...shared.code.models.identity import FileId, ModuleId
 from ...shared.code.models.source_file import SourceFile
 from .models.batch_config import BatchConfig
 from .models.extractor_runtime import ExtractorRuntime
@@ -24,5 +24,5 @@ class SourceExtractor(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def module_identities(self, source_file: SourceFile) -> tuple[ModuleId, ...]:
+    def module_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ModuleId, ...]]:
         raise NotImplementedError
