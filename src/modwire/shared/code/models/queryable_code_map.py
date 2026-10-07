@@ -31,7 +31,7 @@ class QueryableCodeMap(ValueModel):
         return self.code_map
 
     def query(self, items: Iterable[T]) -> QueryBuilder[T]:
-        return QueryBuilder(items=tuple(items))
+        return QueryBuilder[T].model_construct(items=tuple(items), predicates=())
 
     def source_ids(self) -> tuple[FileId, ...]:
         return tuple(self.code_map.extraction.files)
@@ -43,19 +43,20 @@ class QueryableCodeMap(ValueModel):
         source_file = self.code_map.extraction.files.get(source_id)
         if source_file is None:
             return None
-        return SourceFileResult(source_id=source_id, file=source_file)
+        return SourceFileResult.model_construct(source_id=source_id, file=source_file)
 
     def files(self) -> QueryBuilder[SourceFileResult]:
         return self.source_files()
 
     def source_files(self) -> QueryBuilder[SourceFileResult]:
-        return QueryBuilder(
+        return QueryBuilder[SourceFileResult].model_construct(
             items=tuple(
                 (
-                    SourceFileResult(source_id=source_id, file=source_file)
+                    SourceFileResult.model_construct(source_id=source_id, file=source_file)
                     for source_id, source_file in self.code_map.extraction.files.items()
                 )
-            )
+            ),
+            predicates=(),
         )
 
     def imports(self) -> QueryBuilder[SourceItemResult[SourceImport]]:
@@ -90,13 +91,14 @@ class QueryableCodeMap(ValueModel):
 
     def dependency_nodes(self) -> QueryBuilder[DependencyNodeResult]:
         files = self.code_map.extraction.files
-        return QueryBuilder(
+        return QueryBuilder[DependencyNodeResult].model_construct(
             items=tuple(
                 (
-                    DependencyNodeResult(node_id=node_id, node=node, file=files.get(FileId(node_id)))
+                    DependencyNodeResult.model_construct(node_id=node_id, node=node, file=files.get(FileId(node_id)))
                     for node_id, node in self.code_map.dependency_graph.nodes.items()
                 )
-            )
+            ),
+            predicates=(),
         )
 
     def dependency_edges(self) -> QueryBuilder[DependencyEdgeResult]:
@@ -120,25 +122,27 @@ class QueryableCodeMap(ValueModel):
     def _source_items(
         self, selector: Callable[[SourceFile], Iterable[SourceItem]]
     ) -> QueryBuilder[SourceItemResult[SourceItem]]:
-        return QueryBuilder(
+        return QueryBuilder[SourceItemResult[SourceItem]].model_construct(
             items=tuple(
                 (
-                    SourceItemResult(source_id=source_id, file=source_file, item=item)
+                    SourceItemResult[SourceItem].model_construct(source_id=source_id, file=source_file, item=item)
                     for source_id, source_file in self.code_map.extraction.files.items()
                     for item in selector(source_file)
                 )
-            )
+            ),
+            predicates=(),
         )
 
     def _dependency_edges(self, edges: Iterable[Edge]) -> QueryBuilder[DependencyEdgeResult]:
         files = self.code_map.extraction.files
-        return QueryBuilder(
+        return QueryBuilder[DependencyEdgeResult].model_construct(
             items=tuple(
-                DependencyEdgeResult(
+                DependencyEdgeResult.model_construct(
                     edge=edge,
                     source_file=files.get(edge.from_id),
                     target_file=files.get(edge.to_id) if edge.to_id is not None else None,
                 )
                 for edge in edges
-            )
+            ),
+            predicates=(),
         )

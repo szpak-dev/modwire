@@ -43,10 +43,11 @@ class NoReentryFlowAnalyzer(FlowAnalyzerInterface, BaseFlowAnalyzer):
         return self.dedupe(violations)
 
     def roots(self, architecture_map: ArchitectureMap) -> tuple[str, ...]:
+        graph = architecture_map.code_map.cm.dependency_graph
         roots = tuple(
             source_id
             for source_id in architecture_map.code_map.source_ids()
-            if architecture_map.code_map.incoming_dependencies(FileId(source_id)).count() == 0
+            if not graph.incoming(FileId(source_id))
         )
         if roots:
             return tuple(sorted(roots))
@@ -66,16 +67,17 @@ class NoReentryFlowAnalyzer(FlowAnalyzerInterface, BaseFlowAnalyzer):
             return
         visited.add(state)
         source_module = self.module_for(architecture_map, source_id)
+        graph = architecture_map.code_map.cm.dependency_graph
         dependencies = sorted(
-            architecture_map.code_map.outgoing_dependencies(FileId(source_id)).all(),
-            key=lambda dependency: (
-                dependency.edge.to_id or "",
-                dependency.edge.specifier,
-                dependency.edge.kind,
+            graph.outgoing(FileId(source_id)),
+            key=lambda edge: (
+                edge.to_id or "",
+                edge.specifier,
+                edge.kind,
             ),
         )
-        for dependency in dependencies:
-            target_id = dependency.edge.to_id
+        for edge in dependencies:
+            target_id = edge.to_id
             if target_id is None:
                 continue
             target_module = self.module_for(architecture_map, target_id)

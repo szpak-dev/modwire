@@ -8,7 +8,7 @@ class QueryBuilder[T](ValueModel):
     predicates: tuple[Callable[[T], bool], ...] = ()
 
     def where(self, predicate: Callable[[T], bool]) -> "QueryBuilder[T]":
-        return QueryBuilder(items=self.items, predicates=(*self.predicates, predicate))
+        return QueryBuilder[T].model_construct(items=self.items, predicates=(*self.predicates, predicate))
 
     def where_equal(self, selector: Callable[[T], object], expected: object) -> "QueryBuilder[T]":
         return self.where(lambda item: selector(item) == expected)

@@ -50,6 +50,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
         annotations: list[ManifestAnnotation] = []
         inheritance: list[ManifestInheritance] = []
         dependencies: list[ManifestDependency] = []
+        dependency_set: set[ManifestDependency] = set()
         spans: list[ManifestSpan] = []
 
         for _, source_file in sorted(code_map.extraction.files.items(), key=lambda item: str(item[0])):
@@ -259,8 +260,9 @@ class CodeMapManifestCompiler(ManifestCompiler):
                 resolution=edge.resolution,
                 kind=edge.kind,
             )
-            if dependency not in dependencies:
+            if dependency not in dependency_set:
                 dependencies.append(dependency)
+                dependency_set.add(dependency)
 
         return ImplementationManifest(
             producer=code_map.producer,
