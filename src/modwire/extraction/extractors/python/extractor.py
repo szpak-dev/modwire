@@ -129,6 +129,14 @@ class PythonExtractor(SourceExtractor):
                         path="syntax_parser.py",
                     ),
                     ExtractorResource(
+                        package="modwire.extraction.extractors.python",
+                        path="syntax_observation.py",
+                    ),
+                    ExtractorResource(
+                        package="modwire.extraction.extractors.python",
+                        path="syntax_observer.py",
+                    ),
+                    ExtractorResource(
                         package="modwire.extraction.extractors.resources",
                         path="python/script.py",
                     ),

@@ -11,14 +11,16 @@ from ....shared.code.models.source_relation_kind import SourceRelationKind
 from ....shared.code.models.types import SourceVisibility
 from ..domain import SourceParser
 from .call_context import PythonCallContext
-from .domain import PythonAssignedValueReader, PythonCallReader
+from .domain import PythonAssignedValueReader, PythonCallReader, PythonSyntaxObserver
+from .syntax_observation import PythonSyntaxObservation
 
 
 @injectable(as_type=SourceParser, qualifier="python")
 @dataclass(frozen=True)
 class PythonSyntaxParser(SourceParser):
-    calls: PythonCallReader
     assigned_values: PythonAssignedValueReader
+    calls: PythonCallReader
+    syntax: PythonSyntaxObserver
 
     def declaration_ordinal(self, node: ast.stmt | ast.expr) -> int:
         return (node.lineno << 32) + node.col_offset + 1
@@ -186,14 +188,9 @@ class PythonSyntaxParser(SourceParser):
             assigned_values=(*current.assigned_values, *property_definition.assigned_values),
         )
 
-    def descendants_in_source_order(self, node: ast.AST) -> tuple[ast.AST, ...]:
-        descendants: list[ast.AST] = []
-        for child in ast.iter_child_nodes(node):
-            descendants.append(child)
-            descendants.extend(self.descendants_in_source_order(child))
-        return tuple(descendants)
-
-    def class_properties(self, node: ast.ClassDef) -> list[dict[str, object]]:
+    def class_properties(
+        self, node: ast.ClassDef, observation: PythonSyntaxObservation
+    ) -> list[dict[str, object]]:
         properties: dict[str, SourceClassProperty] = {}
 
         for child in node.body:
@@ -244,7 +241,7 @@ class PythonSyntaxParser(SourceParser):
             if not isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
             optional_parameter_names = self.optional_constructor_parameters(child)
-            for descendant in self.descendants_in_source_order(child):
+            for descendant in observation.descendants(child):
                 if isinstance(descendant, ast.AnnAssign):
                     target = descendant.target
                     if (
@@ -318,7 +315,9 @@ class PythonSyntaxParser(SourceParser):
             "optional_args": optional_args,
         }
 
-    def class_definition(self, node: ast.ClassDef, source_id: str) -> dict[str, object]:
+    def class_definition(
+        self, node: ast.ClassDef, source_id: str, observation: PythonSyntaxObservation
+    ) -> dict[str, object]:
         return {
             "declaration_id": {
                 "source_id": source_id,
@@ -335,11 +334,13 @@ class PythonSyntaxParser(SourceParser):
                 for child in node.body
                 if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef))
             ],
-            "properties": self.class_properties(node),
+            "properties": self.class_properties(node, observation),
             "line_count": self.line_span(node),
         }
 
-    def abstract_class_definition(self, node: ast.ClassDef, source_id: str) -> dict[str, object]:
+    def abstract_class_definition(
+        self, node: ast.ClassDef, source_id: str, observation: PythonSyntaxObservation
+    ) -> dict[str, object]:
         methods = [
             self.method_definition(child)
             for child in node.body
@@ -363,7 +364,7 @@ class PythonSyntaxParser(SourceParser):
             "declaration_annotations": self.class_annotations(node),
             "abstract_methods": [method for method in methods if method["name"] in abstract_method_names],
             "concrete_methods": [method for method in methods if method["name"] not in abstract_method_names],
-            "properties": self.class_properties(node),
+            "properties": self.class_properties(node, observation),
             "line_count": self.line_span(node),
         }
 
@@ -597,17 +598,18 @@ class PythonSyntaxParser(SourceParser):
             "optional_args": optional_args,
         }
 
-    def lambda_has_call(self, node: ast.Lambda) -> bool:
-        return any(isinstance(descendant, ast.Call) for descendant in ast.walk(node))
-
     def collect_lambda_callables(
-        self, root: ast.AST, source_id: str, *, parent_qualified_name: str, owner_name: str
+        self,
+        root: ast.AST,
+        observation: PythonSyntaxObservation,
+        source_id: str,
+        *,
+        parent_qualified_name: str,
+        owner_name: str,
     ) -> list[tuple[str, ast.Lambda, dict[str, object]]]:
         callables: list[tuple[str, ast.Lambda, dict[str, object]]] = []
-        for node in ast.walk(root):
-            if not isinstance(node, ast.Lambda) or node is root:
-                continue
-            if not self.lambda_has_call(node):
+        for node in observation.lambdas(root):
+            if not observation.has_calls(node):
                 continue
             name = f"<anonymous>@{node.lineno}:{node.col_offset}"
             qualified_name = f"{parent_qualified_name}.{name}"
@@ -624,7 +626,7 @@ class PythonSyntaxParser(SourceParser):
         return callables
 
     def collect_callable_graph(
-        self, tree: ast.Module, source_id: str
+        self, tree: ast.Module, observation: PythonSyntaxObservation, source_id: str
     ) -> tuple[list[dict[str, object]], list[dict[str, object]], list[dict[str, object]]]:
         values: list[dict[str, object]] = []
         callables: list[dict[str, object]] = []
@@ -675,7 +677,7 @@ class PythonSyntaxParser(SourceParser):
                 callables.append(source_callable)
                 callable_nodes.append((cast(str, source_callable["id"]), node, ""))
                 for anonymous_id, anonymous_node, anonymous_callable in self.collect_lambda_callables(
-                    node, source_id, parent_qualified_name=node.name, owner_name=""
+                    node, observation, source_id, parent_qualified_name=node.name, owner_name=""
                 ):
                     callables.append(anonymous_callable)
                     callable_nodes.append((anonymous_id, anonymous_node, ""))
@@ -691,7 +693,11 @@ class PythonSyntaxParser(SourceParser):
                     callables.append(source_callable)
                     callable_nodes.append((cast(str, source_callable["id"]), child, node.name))
                     for anonymous_id, anonymous_node, anonymous_callable in self.collect_lambda_callables(
-                        child, source_id, parent_qualified_name=qualified_name, owner_name=node.name
+                        child,
+                        observation,
+                        source_id,
+                        parent_qualified_name=qualified_name,
+                        owner_name=node.name,
                     ):
                         callables.append(anonymous_callable)
                         callable_nodes.append((anonymous_id, anonymous_node, node.name))
@@ -718,11 +724,7 @@ class PythonSyntaxParser(SourceParser):
                 by_qualified_name=by_qualified_name,
                 constructors_by_name=constructors_by_name,
             )
-            if isinstance(node, ast.Lambda):
-                calls.extend(self.calls.collect(node.body, context))
-            else:
-                for child in getattr(node, "body", []):
-                    calls.extend(self.calls.collect(child, context))
+            calls.extend(self.calls.collect(observation.calls(node), context))
         return (values, callables, calls)
 
     def code_line_count(self, content: str) -> int:
@@ -741,9 +743,11 @@ class PythonSyntaxParser(SourceParser):
             "is_star": alias.name == "*",
         }
 
-    def collect_imports(self, tree: ast.Module, path: str, sources_root: str) -> list[dict[str, object]]:
+    def collect_imports(
+        self, observation: PythonSyntaxObservation, path: str, sources_root: str
+    ) -> list[dict[str, object]]:
         imports: list[dict[str, object]] = []
-        for statement_id, node in enumerate(ast.walk(tree), start=1):
+        for statement_id, node in enumerate(observation.nodes, start=1):
             if isinstance(node, ast.Import):
                 for alias in node.names:
                     imports.append(
@@ -850,6 +854,7 @@ class PythonSyntaxParser(SourceParser):
     def collect_exports(
         self,
         tree: ast.Module,
+        observation: PythonSyntaxObservation,
         path: str,
         sources_root: str,
         classes: list[dict[str, object]],
@@ -901,7 +906,7 @@ class PythonSyntaxParser(SourceParser):
             },
         }
         import_exports: dict[str, dict[str, object]] = {}
-        for statement_id, node in enumerate(ast.walk(tree), start=1):
+        for statement_id, node in enumerate(observation.nodes, start=1):
             if not isinstance(node, ast.ImportFrom):
                 continue
             node_path = self.import_path(node)
@@ -931,13 +936,16 @@ class PythonSyntaxParser(SourceParser):
 
     def extract(self, content: str, path: str, sources_root: str, source_id: str | None) -> dict[str, object]:
         tree = ast.parse(content, filename=str(path))
+        observation = self.syntax.observe(tree)
         resolved_source_id = source_id or self.source_id_for_path(path, sources_root)
-        class_nodes = [node for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
+        class_nodes = [node for node in observation.nodes if isinstance(node, ast.ClassDef)]
         classes = [
-            self.class_definition(node, resolved_source_id) for node in class_nodes if not self.class_is_abstract(node)
+            self.class_definition(node, resolved_source_id, observation)
+            for node in class_nodes
+            if not self.class_is_abstract(node)
         ]
         abstract_classes = [
-            self.abstract_class_definition(node, resolved_source_id)
+            self.abstract_class_definition(node, resolved_source_id, observation)
             for node in class_nodes
             if self.class_is_abstract(node)
         ]
@@ -946,10 +954,12 @@ class PythonSyntaxParser(SourceParser):
             for node in tree.body
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
         ]
-        values, callables, calls = self.collect_callable_graph(tree, resolved_source_id)
+        values, callables, calls = self.collect_callable_graph(tree, observation, resolved_source_id)
         return {
-            "imports": self.collect_imports(tree, path, sources_root),
-            "exports": self.collect_exports(tree, path, sources_root, classes, abstract_classes, functions),
+            "imports": self.collect_imports(observation, path, sources_root),
+            "exports": self.collect_exports(
+                tree, observation, path, sources_root, classes, abstract_classes, functions
+            ),
             "classes": classes,
             "interfaces": [],
             "types": [],

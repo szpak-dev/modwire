@@ -10,11 +10,9 @@ from .domain import PythonCallReader
 @injectable(as_type=PythonCallReader)
 @dataclass(frozen=True)
 class SyntaxCallReader(PythonCallReader):
-    def collect(self, node: ast.AST, context: PythonCallContext) -> list[dict[str, object]]:
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
-            return []
+    def collect(self, nodes: tuple[ast.Call, ...], context: PythonCallContext) -> list[dict[str, object]]:
         calls: list[dict[str, object]] = []
-        if isinstance(node, ast.Call):
+        for node in nodes:
             expression = ast.unparse(node.func)
             target_name = self._node_name(node.func) or expression
             target, resolution = self._resolve(node.func, expression, context)
@@ -29,8 +27,6 @@ class SyntaxCallReader(PythonCallReader):
                     "target_name": target_name,
                 }
             )
-        for child in ast.iter_child_nodes(node):
-            calls.extend(self.collect(child, context))
         return calls
 
     def _node_name(self, node: ast.AST) -> str:
