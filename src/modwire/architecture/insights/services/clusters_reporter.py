@@ -26,14 +26,37 @@ class ClustersReporter(InsightReporterInterface):
 
     def collect(self, architecture_map: ArchitectureMap) -> ClustersReport:
         source_ids = architecture_map.code_map.source_ids()
+        tracked_source_ids = set(source_ids)
         file_sets: dict[str, list[str]] = {}
+        cluster_by_source_id: dict[str, str] = {}
         for source_id in source_ids:
-            file_sets.setdefault(self.cluster_name(source_id), []).append(source_id)
+            cluster_name = self.cluster_name(source_id)
+            file_sets.setdefault(cluster_name, []).append(source_id)
+            cluster_by_source_id[source_id] = cluster_name
+
+        incoming_by_cluster = dict.fromkeys(file_sets, 0)
+        outgoing_by_cluster = dict.fromkeys(file_sets, 0)
+        pressure_by_file: dict[str, int] = dict.fromkeys(source_ids, 0)
+        for edge in architecture_map.code_map.cm.dependency_graph.edges:
+            if edge.from_id in tracked_source_ids:
+                pressure_by_file[edge.from_id] += 1
+            if edge.to_id is None or edge.to_id not in tracked_source_ids:
+                continue
+
+            pressure_by_file[edge.to_id] += 1
+            target_cluster = cluster_by_source_id[edge.to_id]
+            source_cluster = cluster_by_source_id.get(edge.from_id)
+            if source_cluster == target_cluster:
+                continue
+            incoming_by_cluster[target_cluster] += 1
+            if source_cluster is not None:
+                outgoing_by_cluster[source_cluster] += 1
+
         clusters: list[ClustersReportItem] = []
         for name, files in sorted(file_sets.items()):
             file_tuple = tuple(sorted(files))
-            incoming_count = self.incoming_count(architecture_map, file_tuple)
-            outgoing_count = self.outgoing_count(architecture_map, file_tuple)
+            incoming_count = incoming_by_cluster[name]
+            outgoing_count = outgoing_by_cluster[name]
             clusters.append(
                 ClustersReportItem(
                     name=name,
@@ -41,7 +64,11 @@ class ClustersReporter(InsightReporterInterface):
                     incoming_count=incoming_count,
                     outgoing_count=outgoing_count,
                     pressure_score=incoming_count + outgoing_count,
-                    top_files=self.top_files(architecture_map, file_tuple),
+                    top_files=tuple(
+                        sorted(files, key=lambda source_id: (-pressure_by_file[source_id], source_id))[
+                            : self.top_file_limit
+                        ]
+                    ),
                 )
             )
         return self.report_type(
@@ -78,7 +105,5 @@ class ClustersReporter(InsightReporterInterface):
         )
 
     def file_pressure(self, architecture_map: ArchitectureMap, source_id: str) -> int:
-        return (
-            architecture_map.code_map.incoming_dependencies(FileId(source_id)).count()
-            + architecture_map.code_map.outgoing_dependencies(FileId(source_id)).count()
-        )
+        graph = architecture_map.code_map.cm.dependency_graph
+        return len(graph.incoming(FileId(source_id))) + len(graph.outgoing(FileId(source_id)))

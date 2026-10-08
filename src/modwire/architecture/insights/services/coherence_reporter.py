@@ -21,12 +21,13 @@ class CoherenceReporter(InsightReporterInterface):
 
     def collect(self, architecture_map: ArchitectureMap) -> CoherenceReport:
         source_ids = set(architecture_map.code_map.source_ids())
+        graph = architecture_map.code_map.cm.dependency_graph
         roots: list[str] = []
         leaves: list[str] = []
         isolated: list[str] = []
         for source_id in sorted(source_ids):
-            has_incoming = architecture_map.code_map.incoming_dependencies(FileId(source_id)).count() > 0
-            has_outgoing = architecture_map.code_map.outgoing_dependencies(FileId(source_id)).count() > 0
+            has_incoming = len(graph.incoming(FileId(source_id))) > 0
+            has_outgoing = len(graph.outgoing(FileId(source_id))) > 0
             if not has_incoming:
                 roots.append(source_id)
             if not has_outgoing:
@@ -34,9 +35,7 @@ class CoherenceReporter(InsightReporterInterface):
             if not has_incoming and (not has_outgoing):
                 isolated.append(source_id)
         external_dependencies = {
-            edge_result.edge.specifier
-            for edge_result in architecture_map.code_map.external_dependency_edges().all()
-            if edge_result.edge.resolution == "external"
+            edge.specifier for edge in graph.external_edges(source_ids) if edge.resolution == "external"
         }
         return self.report_type(
             roots=tuple(roots),

@@ -14,11 +14,14 @@ from ..models.batch_config import BatchConfig
 from ..models.extractor_resource import ExtractorResource
 from ..models.extractor_resource_set import ExtractorResourceSet
 from ..models.extractor_runtime import ExtractorRuntime
+from .semantics.policies.module_identity_policy import PythonModuleIdentityPolicy
 
 
 @injectable(as_type=SourceExtractor, qualifier="python")
 @dataclass(frozen=True)
 class PythonExtractor(SourceExtractor):
+    identities: PythonModuleIdentityPolicy
+
     @property
     def runtime(self) -> ExtractorRuntime:
         return ExtractorRuntime(
@@ -103,31 +106,11 @@ class PythonExtractor(SourceExtractor):
                     package="modwire.extraction.extractors.resources",
                     path="python/script.py",
                 ),
-                identity_resources=(
-                    ExtractorResource(
-                        package="modwire.extraction.extractors.python",
-                        path="assigned_value_reader.py",
-                    ),
-                    ExtractorResource(
-                        package="modwire.extraction.extractors.python",
-                        path="call_context.py",
-                    ),
-                    ExtractorResource(
-                        package="modwire.extraction.extractors.python",
-                        path="call_reader.py",
-                    ),
-                    ExtractorResource(
-                        package="modwire.extraction.extractors.python",
-                        path="domain.py",
-                    ),
-                    ExtractorResource(
-                        package="modwire.extraction.extractors.python",
-                        path="expression_reference_reader.py",
-                    ),
-                    ExtractorResource(
-                        package="modwire.extraction.extractors.python",
-                        path="syntax_parser.py",
-                    ),
+                identity_resources=tuple(
+                    ExtractorResource(package="modwire.extraction.extractors.python", path=path)
+                    for path in self.identity_resource_paths()
+                )
+                + (
                     ExtractorResource(
                         package="modwire.extraction.extractors.resources",
                         path="python/script.py",
@@ -138,32 +121,99 @@ class PythonExtractor(SourceExtractor):
 
     @property
     def batch_config(self) -> BatchConfig:
-        return BatchConfig(size=500, output_format="json")
+        return BatchConfig(
+            size=500,
+            parallel_threshold=1000,
+            parallel_size=1000,
+            max_workers=4,
+            output_format="json",
+            planner="balanced",
+        )
 
     def module_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ModuleId, ...]]:
-        package_modules = {
-            str(source_file.module_id).removesuffix("/__init__")
-            for source_file in files.values()
-            if str(source_file.module_id).endswith("/__init__")
-        }
-        identities: dict[FileId, tuple[ModuleId, ...]] = {}
-        for file_id, source_file in files.items():
-            module_id = source_file.module_id
-            value = str(module_id)
-            candidates = [module_id]
-            if value.endswith("/__init__"):
-                candidates.append(ModuleId(value.rsplit("/", 1)[0]))
-            parts = value.split("/")
-            package_start = len(parts) - 1
-            for index in range(len(parts) - 2, -1, -1):
-                if "/".join(parts[: index + 1]) not in package_modules:
-                    break
-                package_start = index
-            if package_start < len(parts) - 1:
-                import_parts = parts[package_start:]
-                if import_parts[-1] == "__init__":
-                    import_parts = import_parts[:-1]
-                if import_parts:
-                    candidates.append(ModuleId("/".join(import_parts)))
-            identities[file_id] = tuple(dict.fromkeys(candidates))
-        return identities
+        return self.identities.identities(files)
+
+    def identity_resource_paths(self) -> tuple[str, ...]:
+        return tuple(
+            sorted(
+                (
+                    "extractor.py",
+                    "pipeline/source_parser.py",
+                    "traversal/observation_reader.py",
+                    "traversal/context.py",
+                    "traversal/ordered_observation_visitor.py",
+                    "observations/source_observation.py",
+                    "observations/class_candidate.py",
+                    "observations/function_candidate.py",
+                    "observations/value_candidate.py",
+                    "observations/callable_candidate.py",
+                    "observations/call_candidate.py",
+                    "observations/call_observation.py",
+                    "observations/call_reference.py",
+                    "observations/import_candidate.py",
+                    "observations/export_candidate.py",
+                    "observations/property_candidate.py",
+                    "observations/inheritance_candidate.py",
+                    "observations/source_context.py",
+                    "semantics/reader.py",
+                    "semantics/catalog.py",
+                    "semantics/contribution.py",
+                    "semantics/callables/classifier.py",
+                    "semantics/callables/constructor_rule.py",
+                    "semantics/callables/type_method_rule.py",
+                    "semantics/callables/static_method_rule.py",
+                    "semantics/callables/instance_method_rule.py",
+                    "semantics/callables/function_rule.py",
+                    "semantics/classes/classifier.py",
+                    "semantics/classes/abstract_rule.py",
+                    "semantics/classes/concrete_rule.py",
+                    "semantics/exports/classifier.py",
+                    "semantics/exports/explicit_rule.py",
+                    "semantics/exports/implicit_rule.py",
+                    "semantics/properties/classifier.py",
+                    "semantics/properties/annotated_class_rule.py",
+                    "semantics/properties/assigned_class_rule.py",
+                    "semantics/properties/annotated_instance_rule.py",
+                    "semantics/properties/assigned_instance_rule.py",
+                    "semantics/calls/classifier.py",
+                    "semantics/calls/reference_reader.py",
+                    "semantics/calls/qualified_target_rule.py",
+                    "semantics/calls/local_target_rule.py",
+                    "semantics/calls/instance_target_rule.py",
+                    "semantics/calls/constructor_target_rule.py",
+                    "semantics/calls/unresolved_target_rule.py",
+                    "semantics/calls/dynamic_target_rule.py",
+                    "semantics/policies/visibility_policy.py",
+                    "semantics/policies/import_path_policy.py",
+                    "semantics/policies/module_identity_policy.py",
+                    "semantics/policies/declaration_identity_factory.py",
+                    "semantics/policies/type_alias_classifier.py",
+                    "semantics/policies/assigned_value_reader.py",
+                    "semantics/policies/annotation_reader.py",
+                    "semantics/policies/parameter_reader.py",
+                    "semantics/policies/expression_reference_reader.py",
+                    "semantics/contributors/class_contributor.py",
+                    "semantics/contributors/function_contributor.py",
+                    "semantics/contributors/value_contributor.py",
+                    "semantics/contributors/callable_contributor.py",
+                    "semantics/contributors/property_contributor.py",
+                    "semantics/contributors/call_contributor.py",
+                    "semantics/contributors/import_contributor.py",
+                    "semantics/contributors/export_contributor.py",
+                    "semantics/contributors/inheritance_contributor.py",
+                    "semantics/contributors/metric_contributor.py",
+                    "source_facts/reader.py",
+                    "source_facts/contribution.py",
+                    "source_facts/class_contributor.py",
+                    "source_facts/function_contributor.py",
+                    "source_facts/value_contributor.py",
+                    "source_facts/callable_contributor.py",
+                    "source_facts/property_contributor.py",
+                    "source_facts/call_contributor.py",
+                    "source_facts/import_contributor.py",
+                    "source_facts/export_contributor.py",
+                    "source_facts/inheritance_contributor.py",
+                    "source_facts/metric_contributor.py",
+                )
+            )
+        )

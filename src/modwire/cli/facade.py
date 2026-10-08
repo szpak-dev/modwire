@@ -8,6 +8,7 @@ from ..architecture.config.models.architecture_config import ArchitectureConfig
 from ..architecture.facade import ArchitectureFacade
 from ..architecture.report.models.report_node import ReportNode
 from ..extraction.extractors.models.extraction_request import ExtractionRequest
+from ..extraction.extractors.models.parsed_source_batch import ParsedSourceBatch
 from ..extraction.facade import ExtractionFacade
 from ..shared.code.models.code_map import CodeMap
 from ..shared.code.models.queryable_code_map import QueryableCodeMap
@@ -99,8 +100,8 @@ class CliFacade:
     def read_sources(self, language: str) -> ExtractorCommandInput | None:
         return self.pipeline.read_sources(language)
 
-    def write_sources(self, result: dict[str, object]) -> int:
-        return self.pipeline.write_sources(result)
+    def write_sources(self, document: str) -> int:
+        return self.pipeline.write_sources(document)
 
     def generate_documentation(self, readme: str, public_interfaces: tuple[type[object], ...], check: bool) -> int:
         return self.documentation.generate(Path(readme), public_interfaces, check)
@@ -110,16 +111,21 @@ class CliFacade:
         if request is None:
             return 1
         if request.batch:
-            result: dict[str, object] = {
-                source.source_id: self.extraction.parse_source(
-                    language, source.content, str(source.path), str(source.root), source.source_id
-                )
-                for source in request.sources
-            }
-            return self.write_sources(result)
+            return self.write_sources(
+                ParsedSourceBatch(
+                    sources={
+                        source.source_id: self.extraction.parse_source(
+                            language, source.content, str(source.path), str(source.root), source.source_id
+                        )
+                        for source in request.sources
+                    }
+                ).document()
+            )
         source = request.sources[0]
         return self.write_sources(
-            self.extraction.parse_source(language, source.content, str(source.path), str(source.root), source.source_id)
+            self.extraction.parse_source(
+                language, source.content, str(source.path), str(source.root), source.source_id
+            ).model_dump_json()
         )
 
     def run(self, argv: Sequence[str]) -> int:

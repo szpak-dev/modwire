@@ -30,8 +30,9 @@ class HotspotsReporter(InsightReporterInterface):
         return self.report_type(hotspots=hotspots)
 
     def hotspot_for(self, architecture_map: ArchitectureMap, source_id: str) -> HotspotsReportItem:
-        incoming_count = architecture_map.code_map.incoming_dependencies(FileId(source_id)).count()
-        outgoing_count = architecture_map.code_map.outgoing_dependencies(FileId(source_id)).count()
+        graph = architecture_map.code_map.cm.dependency_graph
+        incoming_count = len(graph.incoming(FileId(source_id)))
+        outgoing_count = len(graph.outgoing(FileId(source_id)))
         return HotspotsReportItem(
             source_id=source_id,
             incoming_count=incoming_count,

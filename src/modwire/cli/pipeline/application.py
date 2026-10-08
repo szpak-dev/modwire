@@ -53,8 +53,8 @@ class PipelineApplication:
     def read_sources(self, language: str) -> ExtractorCommandInput | None:
         return self.extractor_command.read(language)
 
-    def write_sources(self, result: dict[str, object]) -> int:
-        return self.extractor_command.write(result)
+    def write_sources(self, document: str) -> int:
+        return self.extractor_command.write(document)
 
     def run(self, reports: tuple[ReportNode, ...], *, summary: bool) -> int:
         context = ReportPipelineContext(reports=reports, summary=summary)

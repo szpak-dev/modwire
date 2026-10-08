@@ -38,11 +38,11 @@ class NoCyclesFlowAnalyzer(FlowAnalyzerInterface, BaseFlowAnalyzer):
 
     def module_adjacency(self, architecture_map: ArchitectureMap) -> dict[str, set[str]]:
         adjacency: dict[str, set[str]] = {}
-        for dependency in architecture_map.code_map.dependency_edges().all():
-            if dependency.edge.to_id is None:
+        for edge in architecture_map.code_map.cm.dependency_graph.edges:
+            if edge.to_id is None:
                 continue
-            source = self.module_for(architecture_map, dependency.edge.from_id)
-            target = self.module_for(architecture_map, dependency.edge.to_id)
+            source = self.module_for(architecture_map, edge.from_id)
+            target = self.module_for(architecture_map, edge.to_id)
             if not source or not target or source == target:
                 continue
             adjacency.setdefault(source, set()).add(target)

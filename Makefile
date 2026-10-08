@@ -3,6 +3,7 @@ BUILD_DIR := $(DEV_DIR)/build
 DIST_DIR := $(DEV_DIR)/dist
 EGG_INFO_DIR := src/modwire.egg-info
 PROJECT_ROOT := $(CURDIR)
+BIG_PROJECT_ARGS ?=
 
 export PYTHONPYCACHEPREFIX := $(PROJECT_ROOT)/$(DEV_DIR)/cache/python
 export UV_CACHE_DIR := $(PROJECT_ROOT)/$(DEV_DIR)/cache/uv
@@ -26,7 +27,7 @@ test:
 	uv run pytest
 
 big-projects:
-	uv run python -m tests.extraction.big_projects.run
+	uv run python -u -m tests.extraction.big_projects.run $(BIG_PROJECT_ARGS)
 
 scan-benchmark-fixture:
 	uv run python -m tests.extraction.scan_benchmark.prepare --root .dev/benchmarks/scan-project --source-template "$(SCAN_BENCHMARK_SOURCE)"

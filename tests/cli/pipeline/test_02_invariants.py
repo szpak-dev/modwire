@@ -109,7 +109,8 @@ class TestNativeExtractionInvariants(NativeExtractionTestCase):
         assert result.extraction.files["example.php"].calls == []
 
     def test_large_source_input_keeps_every_file_and_identity(self) -> None:
-        self.write_files({f"example_{index}.py": "class ExampleValue:\n    pass\n" for index in range(501)})
+        names = tuple(f"example_{index:04d}.py" for index in range(1001))
+        self.write_files({name: "class ExampleValue:\n    pass\n" for name in names})
         result = self.extract_project("python")
-        assert len(result.extraction.files) == 501
-        assert set(result.extraction.files) == {f"example_{index}.py" for index in range(501)}
+        assert len(result.extraction.files) == 1001
+        assert tuple(result.extraction.files) == names
