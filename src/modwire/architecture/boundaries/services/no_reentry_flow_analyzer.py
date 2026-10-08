@@ -45,9 +45,7 @@ class NoReentryFlowAnalyzer(FlowAnalyzerInterface, BaseFlowAnalyzer):
     def roots(self, architecture_map: ArchitectureMap) -> tuple[str, ...]:
         graph = architecture_map.code_map.cm.dependency_graph
         roots = tuple(
-            source_id
-            for source_id in architecture_map.code_map.source_ids()
-            if not graph.incoming(FileId(source_id))
+            source_id for source_id in architecture_map.code_map.source_ids() if not graph.incoming(FileId(source_id))
         )
         if roots:
             return tuple(sorted(roots))
