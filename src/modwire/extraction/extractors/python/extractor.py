@@ -121,7 +121,14 @@ class PythonExtractor(SourceExtractor):
 
     @property
     def batch_config(self) -> BatchConfig:
-        return BatchConfig(size=500, output_format="json")
+        return BatchConfig(
+            size=500,
+            parallel_threshold=1000,
+            parallel_size=1000,
+            max_workers=4,
+            output_format="json",
+            planner="balanced",
+        )
 
     def module_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ModuleId, ...]]:
         return self.identities.identities(files)
@@ -133,8 +140,8 @@ class PythonExtractor(SourceExtractor):
                     "extractor.py",
                     "pipeline/source_parser.py",
                     "traversal/observation_reader.py",
-                    "traversal/breadth_first_visitor.py",
-                    "traversal/depth_first_visitor.py",
+                    "traversal/context.py",
+                    "traversal/ordered_observation_visitor.py",
                     "observations/source_observation.py",
                     "observations/class_candidate.py",
                     "observations/function_candidate.py",
@@ -142,6 +149,7 @@ class PythonExtractor(SourceExtractor):
                     "observations/callable_candidate.py",
                     "observations/call_candidate.py",
                     "observations/call_observation.py",
+                    "observations/call_reference.py",
                     "observations/import_candidate.py",
                     "observations/export_candidate.py",
                     "observations/property_candidate.py",
@@ -168,6 +176,7 @@ class PythonExtractor(SourceExtractor):
                     "semantics/properties/annotated_instance_rule.py",
                     "semantics/properties/assigned_instance_rule.py",
                     "semantics/calls/classifier.py",
+                    "semantics/calls/reference_reader.py",
                     "semantics/calls/qualified_target_rule.py",
                     "semantics/calls/local_target_rule.py",
                     "semantics/calls/instance_target_rule.py",

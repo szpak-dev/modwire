@@ -1,8 +1,6 @@
-import ast
 from abc import ABC, abstractmethod
-from collections.abc import Hashable, Mapping
+from collections.abc import Collection, Hashable, Mapping
 from dataclasses import dataclass
-from functools import singledispatchmethod
 
 from wireup import injectable
 
@@ -31,35 +29,20 @@ class PythonCallTargetRule(ABC):
         target_callable_id: str,
         resolution: SourceCallResolution,
     ) -> SourceCall:
-        expression = ast.unparse(candidate.node.func)
-        target_name = self.node_name(candidate.node.func) or expression
         return SourceCall(
             source_callable_id=candidate.source_callable_id,
             target_callable_id=target_callable_id,
             source_id=candidate.source_id,
             line=candidate.node.lineno,
-            expression=expression,
+            expression=candidate.reference.expression,
             resolution=resolution,
-            target_name=target_name,
+            target_name=candidate.reference.target_name or candidate.reference.expression,
         )
-
-    @singledispatchmethod
-    def node_name(self, node: ast.AST) -> str:
-        return ""
-
-    @node_name.register
-    def name_node_name(self, node: ast.Name) -> str:
-        return node.id
-
-    @node_name.register
-    def attribute_node_name(self, node: ast.Attribute) -> str:
-        parent = self.node_name(node.value)
-        return f"{parent}.{node.attr}" if parent else node.attr
 
 
 class PythonCallTargetClassifier(ABC):
     @abstractmethod
-    def classify(self, candidate: PythonCallCandidate) -> SourceCall:
+    def classify(self, candidates: Collection[PythonCallCandidate]) -> Collection[SourceCall]:
         raise NotImplementedError
 
 
@@ -68,8 +51,14 @@ class PythonCallTargetClassifier(ABC):
 class OrderedPythonCallTargetClassifier(PythonCallTargetClassifier):
     rules: Mapping[Hashable, PythonCallTargetRule]
 
-    def classify(self, candidate: PythonCallCandidate) -> SourceCall:
-        for rule in sorted(self.rules.values(), key=lambda item: item.order):
-            if rule.applies(candidate):
-                return rule.classify(candidate)
-        raise ValueError("No Python call-target rule accepted the candidate.")
+    def classify(self, candidates: Collection[PythonCallCandidate]) -> Collection[SourceCall]:
+        ordered_rules = tuple(sorted(self.rules.values(), key=lambda item: item.order))
+        calls: list[SourceCall] = []
+        for candidate in candidates:
+            for rule in ordered_rules:
+                if rule.applies(candidate):
+                    calls.append(rule.classify(candidate))
+                    break
+            else:
+                raise ValueError("No Python call-target rule accepted the candidate.")
+        return tuple(calls)

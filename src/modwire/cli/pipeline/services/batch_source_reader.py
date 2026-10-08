@@ -3,12 +3,12 @@ import json
 import os
 import shutil
 import subprocess
+from collections.abc import Hashable, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from importlib import resources
 from itertools import repeat
 from pathlib import Path
-from typing import Any, cast
 
 from wireup import injectable
 
@@ -21,9 +21,12 @@ from ....shared.code.models.identity import FileId, ModuleId
 from ....shared.code.models.scan_policy import ScanPolicy
 from ....shared.code.models.source_extraction import SourceExtraction
 from ....shared.code.models.source_file import SourceFile
+from ..batching.planner import SourceBatchPlanner
 from ..domain import SourceReader
 from ..models.source_entry import SourceEntry
 from ..models.source_inventory import SourceInventory
+from ..transport.output_reader import ExtractorBatchOutputReader
+from ..transport.source_file_factory import SourceFileFactory
 from .source_manifest_builder import SourceManifestBuilder
 
 
@@ -31,8 +34,11 @@ from .source_manifest_builder import SourceManifestBuilder
 @dataclass(frozen=True)
 class BatchSourceReader(SourceReader):
     code: CodeApplication
+    files: SourceFileFactory
     paths: PathMatcher
     manifests: SourceManifestBuilder
+    outputs: Mapping[Hashable, ExtractorBatchOutputReader]
+    planners: Mapping[Hashable, SourceBatchPlanner]
 
     def ensure_available(self, runtime: ExtractorRuntime) -> None:
         executable = runtime.command[0]
@@ -102,16 +108,15 @@ class BatchSourceReader(SourceReader):
             missing = sorted(str(source_id) for source_id in requested - {entry.source_id for entry in entries})
             raise ValueError(f"Source inventory does not contain requested identities: {missing}")
         root = Path(request.root).resolve()
-        source_paths = [Path(entry.path) for entry in entries]
+        source_paths = tuple(Path(entry.path) for entry in entries)
         files: dict[FileId, SourceFile] = {}
-        batches = self._source_batches(request, source_paths)
-        if self._uses_parallel_batches(request, len(source_paths)):
-            max_workers = max(1, request.batch_config.max_workers)
-            with ThreadPoolExecutor(max_workers=max_workers) as executor:
-                for extracted in executor.map(self._extract_batch, repeat(request), repeat(root), batches):
+        plan = self.planners[request.batch_config.planner].plan(source_paths, request.batch_config)
+        if plan.parallel:
+            with ThreadPoolExecutor(max_workers=request.batch_config.max_workers) as executor:
+                for extracted in executor.map(self._extract_batch, repeat(request), repeat(root), plan.batches):
                     self._merge_files(files, extracted)
         else:
-            for batch_paths in batches:
+            for batch_paths in plan.batches:
                 self._merge_files(files, self._extract_batch(request, root, batch_paths))
         expected_digests = {entry.source_id: entry.content_digest for entry in entries}
         for source_path in source_paths:
@@ -119,22 +124,6 @@ class BatchSourceReader(SourceReader):
             if self._content_digest(source_path) != expected_digests[source_id]:
                 raise RuntimeError(f"Source file changed during extraction: {source_id}")
         return {entry.source_id: files[entry.source_id] for entry in entries}
-
-    def _source_batches(self, request: ExtractionRequest, source_paths: list[Path]) -> list[list[Path]]:
-        batch_size = self._batch_size(request, len(source_paths))
-        return [source_paths[start : start + batch_size] for start in range(0, len(source_paths), batch_size)]
-
-    def _batch_size(self, request: ExtractionRequest, source_count: int) -> int:
-        if self._uses_parallel_batches(request, source_count) and request.batch_config.parallel_size:
-            return max(1, request.batch_config.parallel_size)
-        return max(1, request.batch_config.size)
-
-    def _uses_parallel_batches(self, request: ExtractionRequest, source_count: int) -> bool:
-        return (
-            request.batch_config.parallel_threshold > 0
-            and source_count >= request.batch_config.parallel_threshold
-            and (request.batch_config.max_workers > 1)
-        )
 
     def _discover_source_files(
         self, request: ExtractionRequest, root: Path, policy: ScanPolicy, limit: int | None
@@ -180,7 +169,7 @@ class BatchSourceReader(SourceReader):
         )
 
     def _extract_batch(
-        self, request: ExtractionRequest, root: Path, source_paths: list[Path]
+        self, request: ExtractionRequest, root: Path, source_paths: tuple[Path, ...]
     ) -> dict[FileId, SourceFile]:
         if not source_paths:
             return {}
@@ -203,20 +192,17 @@ class BatchSourceReader(SourceReader):
             raise RuntimeError(
                 f"{runtime.descriptor.language} extractor failed with exit code {completed.returncode}: {message}"
             )
-        extracted = self._parse_batch_output(request, completed.stdout)
+        extracted = self.outputs[request.batch_config.output_format].read(completed.stdout)
         source_paths_by_id = {
             self.code.file_id(str(root), str(source_path)): source_path for source_path in source_paths
         }
         extracted_files: dict[FileId, SourceFile] = {}
-        for raw_file_id, source_file in extracted.items():
-            file_id = FileId(raw_file_id)
+        for file_id, parsed_source_file in extracted.items():
             source_path = source_paths_by_id[file_id]
-            extracted_files[file_id] = SourceFile.model_validate(
-                {
-                    **source_file,
-                    "file_id": file_id,
-                    "module_id": self.code.module_id(str(root), str(source_path)),
-                }
+            extracted_files[file_id] = self.files.create(
+                file_id,
+                self.code.module_id(str(root), str(source_path)),
+                parsed_source_file,
             )
         return extracted_files
 
@@ -225,28 +211,6 @@ class BatchSourceReader(SourceReader):
             if file_id in files:
                 raise DuplicateIdentityError("file", file_id, file_id, file_id)
             files[file_id] = source_file
-
-    def _parse_batch_output(self, request: ExtractionRequest, output: str) -> dict[str, Any]:
-        if request.batch_config.output_format == "jsonl":
-            result: dict[str, Any] = {}
-            for line in output.splitlines():
-                if not line.strip():
-                    continue
-                item: Any = json.loads(line)
-                if not isinstance(item, list):
-                    raise RuntimeError("Extractor returned invalid JSONL batch output.")
-                item_list = cast(list[Any], item)
-                if len(item_list) != 2:
-                    raise RuntimeError("Extractor returned invalid JSONL batch output.")
-                source_id, source_file = item_list
-                if not isinstance(source_id, str):
-                    raise RuntimeError("Extractor returned a non-string source id.")
-                result[source_id] = source_file
-            return result
-        parsed: Any = json.loads(output)
-        if not isinstance(parsed, dict):
-            raise RuntimeError("Extractor returned invalid JSON batch output.")
-        return cast(dict[str, Any], parsed)
 
     def _source_id_for_path(self, request: ExtractionRequest, root: Path, path: Path) -> FileId:
         return self.code.file_id(str(root), str(path))

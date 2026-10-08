@@ -1,6 +1,4 @@
-import ast
 from dataclasses import dataclass
-from functools import singledispatchmethod
 
 from wireup import injectable
 
@@ -17,19 +15,7 @@ class UnresolvedCallTargetRule(PythonCallTargetRule):
         return 50
 
     def applies(self, candidate: PythonCallCandidate) -> bool:
-        return self.is_reference(candidate.node.func)
+        return candidate.reference.is_reference
 
     def classify(self, candidate: PythonCallCandidate) -> SourceCall:
         return self.source_call(candidate, "", "unresolved")
-
-    @singledispatchmethod
-    def is_reference(self, node: ast.AST) -> bool:
-        return False
-
-    @is_reference.register
-    def name_is_reference(self, node: ast.Name) -> bool:
-        return True
-
-    @is_reference.register
-    def attribute_is_reference(self, node: ast.Attribute) -> bool:
-        return True

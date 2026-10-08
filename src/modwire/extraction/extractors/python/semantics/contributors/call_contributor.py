@@ -6,6 +6,7 @@ from ...observations.call_candidate import PythonCallCandidate
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
 from ..calls.classifier import PythonCallTargetClassifier
+from ..calls.reference_reader import PythonCallReferenceReader
 from ..catalog import PythonSemanticCatalog
 from ..contribution import PythonSemanticContribution
 from ..reader import PythonSemanticContributor
@@ -15,6 +16,7 @@ from ..reader import PythonSemanticContributor
 @dataclass(frozen=True)
 class CallSemanticContributor(PythonSemanticContributor):
     targets: PythonCallTargetClassifier
+    references: PythonCallReferenceReader
 
     @property
     def order(self) -> int:
@@ -32,6 +34,7 @@ class CallSemanticContributor(PythonSemanticContributor):
         candidates = tuple(
             PythonCallCandidate(
                 node=call.node,
+                reference=self.references.read(call),
                 source_qualified_name=call.source_qualified_name,
                 owner_name=call.owner_name,
                 source_id=context.source_id,
@@ -42,4 +45,4 @@ class CallSemanticContributor(PythonSemanticContributor):
             )
             for call in observation.calls
         )
-        return PythonSemanticContribution(calls=tuple(self.targets.classify(candidate) for candidate in candidates))
+        return PythonSemanticContribution(calls=tuple(self.targets.classify(candidates)))

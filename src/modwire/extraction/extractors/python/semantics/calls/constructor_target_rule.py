@@ -1,6 +1,4 @@
-import ast
 from dataclasses import dataclass
-from functools import singledispatchmethod
 
 from wireup import injectable
 
@@ -17,20 +15,8 @@ class ConstructorCallTargetRule(PythonCallTargetRule):
         return 40
 
     def applies(self, candidate: PythonCallCandidate) -> bool:
-        return self.constructor_name(candidate.node.func) in candidate.constructors_by_name
+        return candidate.reference.constructor_name in candidate.constructors_by_name
 
     def classify(self, candidate: PythonCallCandidate) -> SourceCall:
-        name = self.constructor_name(candidate.node.func)
+        name = candidate.reference.constructor_name
         return self.source_call(candidate, candidate.constructors_by_name[name], "resolved")
-
-    @singledispatchmethod
-    def constructor_name(self, node: ast.AST) -> str:
-        return ""
-
-    @constructor_name.register
-    def named_constructor_name(self, node: ast.Name) -> str:
-        return node.id
-
-    @constructor_name.register
-    def attribute_constructor_name(self, node: ast.Attribute) -> str:
-        return node.attr

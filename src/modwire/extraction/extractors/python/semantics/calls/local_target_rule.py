@@ -1,6 +1,4 @@
-import ast
 from dataclasses import dataclass
-from functools import singledispatchmethod
 
 from wireup import injectable
 
@@ -17,16 +15,8 @@ class LocalCallTargetRule(PythonCallTargetRule):
         return 20
 
     def applies(self, candidate: PythonCallCandidate) -> bool:
-        return self.local_name(candidate.node.func) in candidate.by_name
+        return candidate.reference.local_name in candidate.by_name
 
     def classify(self, candidate: PythonCallCandidate) -> SourceCall:
-        name = self.local_name(candidate.node.func)
+        name = candidate.reference.local_name
         return self.source_call(candidate, candidate.by_name[name], "resolved")
-
-    @singledispatchmethod
-    def local_name(self, node: ast.AST) -> str:
-        return ""
-
-    @local_name.register
-    def named_local_name(self, node: ast.Name) -> str:
-        return node.id

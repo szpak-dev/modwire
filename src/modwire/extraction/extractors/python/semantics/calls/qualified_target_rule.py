@@ -1,4 +1,3 @@
-import ast
 from dataclasses import dataclass
 
 from wireup import injectable
@@ -16,8 +15,8 @@ class QualifiedCallTargetRule(PythonCallTargetRule):
         return 10
 
     def applies(self, candidate: PythonCallCandidate) -> bool:
-        return ast.unparse(candidate.node.func) in candidate.by_qualified_name
+        return candidate.reference.expression in candidate.by_qualified_name
 
     def classify(self, candidate: PythonCallCandidate) -> SourceCall:
-        expression = ast.unparse(candidate.node.func)
+        expression = candidate.reference.expression
         return self.source_call(candidate, candidate.by_qualified_name[expression], "resolved")
