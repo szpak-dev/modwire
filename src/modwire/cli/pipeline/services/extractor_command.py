@@ -44,6 +44,6 @@ class ExtractorCommand:
             ),
         )
 
-    def write(self, result: dict[str, object]) -> int:
-        print(json.dumps(result))
+    def write(self, document: str) -> int:
+        print(document)
         return 0

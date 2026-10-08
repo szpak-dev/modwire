@@ -4,11 +4,12 @@ from ...shared.code.models.identity import FileId, ModuleId
 from ...shared.code.models.source_file import SourceFile
 from .models.batch_config import BatchConfig
 from .models.extractor_runtime import ExtractorRuntime
+from .models.parsed_source_file import ParsedSourceFile
 
 
 class SourceParser(ABC):
     @abstractmethod
-    def extract(self, content: str, path: str, sources_root: str, source_id: str | None) -> dict[str, object]:
+    def extract(self, content: str, path: str, sources_root: str, source_id: FileId) -> ParsedSourceFile:
         raise NotImplementedError
 
 

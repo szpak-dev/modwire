@@ -7,11 +7,13 @@ from ...shared.code.application import CodeApplication
 from ...shared.code.domain import PackageVersion
 from ...shared.code.models.code_map import CodeMap
 from ...shared.code.models.code_map_producer import CodeMapProducer
+from ...shared.code.models.identity import FileId
 from ...shared.code.models.queryable_code_map import QueryableCodeMap
 from ...shared.code.models.source_extraction import SourceExtraction
 from ..dependency.application import DependencyApplication
 from .domain import SourceExtractor, SourceParser
 from .models.extraction_request import ExtractionRequest
+from .models.parsed_source_file import ParsedSourceFile
 
 
 @injectable
@@ -58,7 +60,7 @@ class ExtractorsApplication:
     def generate_queryable_map(self, request: ExtractionRequest, extraction: SourceExtraction) -> QueryableCodeMap:
         return self.code.queryable(self.generate_map(request, extraction))
 
-    def parse_source(self, language: str, content: str, path: str, root: str, source_id: str) -> dict[str, object]:
+    def parse_source(self, language: str, content: str, path: str, root: str, source_id: FileId) -> ParsedSourceFile:
         if language not in self.parsers:
             raise ValueError(f"In-process parsing is not supported for language: {language}")
         return self.parsers[language].extract(content, path, root, source_id)
