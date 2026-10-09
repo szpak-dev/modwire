@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from ......shared.code.models.source_callable_kind import SourceCallableKind
 from ...observations.call_candidate import PythonCallCandidate
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
@@ -29,8 +30,14 @@ class CallSemanticContributor(PythonSemanticContributor):
         context: PythonSourceContext,
     ) -> PythonSemanticContribution:
         by_qualified_name = {item.qualified_name: item.id for item in catalog.callables}
-        by_name = {item.name: item.id for item in catalog.callables if item.kind in {"function", "callable_value"}}
-        constructors_by_name = {item.owner_name: item.id for item in catalog.callables if item.kind == "constructor"}
+        by_name = {
+            item.name: item.id
+            for item in catalog.callables
+            if item.kind in {SourceCallableKind.FUNCTION, SourceCallableKind.CALLABLE_VALUE}
+        }
+        constructors_by_name = {
+            item.owner_name: item.id for item in catalog.callables if item.kind is SourceCallableKind.CONSTRUCTOR
+        }
         candidates = tuple(
             PythonCallCandidate(
                 node=call.node,

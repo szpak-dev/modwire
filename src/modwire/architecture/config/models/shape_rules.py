@@ -1,5 +1,6 @@
 from pydantic import Field
 
+from ....shared.code.models.import_crossing_type import ImportCrossingType
 from .configuration_value import ConfigurationValue
 
 
@@ -20,4 +21,7 @@ class ShapeRules(ConfigurationValue):
     allow_optional_class_properties: bool = False
     allow_import_aliases: bool = False
     require_joined_imports: bool = True
-    allowed_import_crossing_types: tuple[str, ...] = ("module", "symbol")
+    allowed_import_crossing_types: tuple[ImportCrossingType, ...] = (
+        ImportCrossingType.MODULE,
+        ImportCrossingType.SYMBOL,
+    )

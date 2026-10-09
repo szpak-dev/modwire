@@ -22,6 +22,7 @@ from .cache.models.cached_result import CachedResult
 from .documentation.application import DocumentationApplication
 from .initialization.application import InitializationApplication
 from .pipeline.application import PipelineApplication
+from .pipeline.models.command_name import CommandName
 from .pipeline.models.command_request import CommandRequest
 from .pipeline.models.extractor_command_input import ExtractorCommandInput
 
@@ -130,14 +131,14 @@ class CliFacade:
 
     def run(self, argv: Sequence[str]) -> int:
         request = self.parse(argv)
-        if request.command == "init":
+        if request.command is CommandName.INIT:
             return self.initialize(self.working_directory(), str(request.dot_dir), request.force)
         cache_options = CacheOptions(
             directory=str(request.cache_directory),
             namespace=request.cache_namespace,
             max_bytes=request.cache_max_bytes,
         )
-        if request.command == "cache-clear":
+        if request.command is CommandName.CACHE_CLEAR:
             self.clear_cache(cache_options)
             return 0
         config = self.load_configuration(str(request.dot_dir))

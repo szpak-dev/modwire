@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ......shared.code.models.types import SourceCallableKind
+from ......shared.code.models.source_callable_kind import SourceCallableKind
 from ...observations.callable_candidate import PythonCallableCandidate
 from .classifier import PythonCallableRule
 
@@ -18,4 +18,4 @@ class ConstructorCallableRule(PythonCallableRule):
         return bool(candidate.owner_name) and candidate.name == "__init__"
 
     def classify(self, candidate: PythonCallableCandidate) -> SourceCallableKind:
-        return "constructor"
+        return SourceCallableKind.CONSTRUCTOR

@@ -2,8 +2,9 @@ from pydantic import Field
 
 from ...values.models.value_model import ValueModel
 from .identity import FileId, ImportSpecifier
+from .import_crossing_type import ImportCrossingType
+from .source_dependency_resolution import SourceDependencyResolution
 from .source_imported_symbol import SourceImportedSymbol
-from .types import ImportCrossingType, SourceImportResolution
 
 
 class SourceImport(ValueModel):
@@ -17,6 +18,6 @@ class SourceImport(ValueModel):
     statement_id: int
     join_key: str
     uses_joined_import: bool
-    resolution: SourceImportResolution = "unresolved"
+    resolution: SourceDependencyResolution = SourceDependencyResolution.UNRESOLVED
     target_file_id: FileId | None = None
     imported_symbols: list[SourceImportedSymbol] = Field(default_factory=list[SourceImportedSymbol])

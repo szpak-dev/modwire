@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from .....shared.code.models.identity import ImportSpecifier
-from .....shared.code.models.types import SourceExportKind
+from .....shared.code.models.source_export_kind import SourceExportKind
 
 
 @dataclass(frozen=True)

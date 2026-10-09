@@ -5,7 +5,7 @@ from functools import singledispatchmethod
 from wireup import injectable
 
 from ......shared.code.models.identity import ImportSpecifier
-from ......shared.code.models.types import SourceExportKind
+from ......shared.code.models.source_export_kind import SourceExportKind
 from ...observations.export_candidate import PythonExportCandidate
 from ...observations.import_candidate import PythonImportCandidate
 from ...observations.source_context import PythonSourceContext
@@ -51,11 +51,11 @@ class ExportSemanticContributor(PythonSemanticContributor):
     def declaration_candidates(self, catalog: PythonSemanticCatalog) -> dict[str, PythonExportCandidate]:
         candidates: dict[str, PythonExportCandidate] = {}
         for item in catalog.classes:
-            candidates[item.name] = self.direct_candidate(item.name, "class", False)
+            candidates[item.name] = self.direct_candidate(item.name, SourceExportKind.CLASS, False)
         for item in catalog.abstract_classes:
-            candidates[item.name] = self.direct_candidate(item.name, "abstract_class", False)
+            candidates[item.name] = self.direct_candidate(item.name, SourceExportKind.ABSTRACT_CLASS, False)
         for item in catalog.functions:
-            candidates[item.name] = self.direct_candidate(item.name, "function", False)
+            candidates[item.name] = self.direct_candidate(item.name, SourceExportKind.FUNCTION, False)
         return candidates
 
     def import_candidates(
@@ -84,7 +84,7 @@ class ExportSemanticContributor(PythonSemanticContributor):
         candidate: PythonImportCandidate,
         context: PythonSourceContext,
     ) -> PythonExportCandidate:
-        return self.direct_candidate("", "unknown", False)
+        return self.direct_candidate("", SourceExportKind.UNKNOWN, False)
 
     @import_from_node.register
     def import_from_node_candidate(
@@ -96,7 +96,7 @@ class ExportSemanticContributor(PythonSemanticContributor):
         return PythonExportCandidate(
             name=candidate.alias.asname or candidate.alias.name,
             local_name=candidate.alias.name,
-            kind="unknown",
+            kind=SourceExportKind.UNKNOWN,
             path=ImportSpecifier(candidate.path),
             is_relative=candidate.is_relative,
             normalized_path=self.paths.normalize(candidate, context),
@@ -199,7 +199,7 @@ class ExportSemanticContributor(PythonSemanticContributor):
                 statement_id=item.statement_id,
                 explicit=True,
             )
-        return self.direct_candidate(name, "unknown", True)
+        return self.direct_candidate(name, SourceExportKind.UNKNOWN, True)
 
     def direct_candidate(
         self,

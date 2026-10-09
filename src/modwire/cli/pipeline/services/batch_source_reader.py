@@ -12,12 +12,14 @@ from pathlib import Path
 
 from wireup import injectable
 
+from ....extraction.extractors.models.batch_output_format import BatchOutputFormat
 from ....extraction.extractors.models.extraction_request import ExtractionRequest
 from ....extraction.extractors.models.extractor_runtime import ExtractorRuntime
 from ....shared.code.application import CodeApplication
 from ....shared.code.domain import PathMatcher
 from ....shared.code.models.duplicate_identity_error import DuplicateIdentityError
 from ....shared.code.models.identity import FileId, ModuleId
+from ....shared.code.models.identity_kind import IdentityKind
 from ....shared.code.models.scan_policy import ScanPolicy
 from ....shared.code.models.source_extraction import SourceExtraction
 from ....shared.code.models.source_file import SourceFile
@@ -62,7 +64,7 @@ class BatchSourceReader(SourceReader):
         for file_id, source_file in files.items():
             existing = modules.get(source_file.module_id)
             if existing is not None:
-                raise DuplicateIdentityError("module", source_file.module_id, existing, file_id)
+                raise DuplicateIdentityError(IdentityKind.MODULE, source_file.module_id, existing, file_id)
             modules[source_file.module_id] = file_id
         return SourceExtraction(
             files=files,
@@ -174,7 +176,7 @@ class BatchSourceReader(SourceReader):
         if not source_paths:
             return {}
         runtime = request.runtime
-        entrypoint = runtime.resources.entrypoint
+        entrypoint = runtime.entrypoint
         script_path = Path(str(resources.files(entrypoint.package).joinpath(entrypoint.path)))
         if not script_path.is_file():
             raise RuntimeError(f"{runtime.descriptor.language} extractor script is missing: {script_path}")
@@ -182,7 +184,7 @@ class BatchSourceReader(SourceReader):
             self.code.file_id(str(root), str(source_path)): str(source_path) for source_path in source_paths
         }
         command = [*runtime.command, str(script_path), "--batch", str(root)]
-        if request.batch_config.output_format == "jsonl":
+        if request.batch_config.output_format is BatchOutputFormat.JSON_LINES:
             command.append("--jsonl")
         completed = subprocess.run(
             command, input=json.dumps(paths_by_source_id), text=True, capture_output=True, check=False
@@ -209,7 +211,7 @@ class BatchSourceReader(SourceReader):
     def _merge_files(self, files: dict[FileId, SourceFile], extracted: dict[FileId, SourceFile]) -> None:
         for file_id, source_file in extracted.items():
             if file_id in files:
-                raise DuplicateIdentityError("file", file_id, file_id, file_id)
+                raise DuplicateIdentityError(IdentityKind.FILE, file_id, file_id, file_id)
             files[file_id] = source_file
 
     def _source_id_for_path(self, request: ExtractionRequest, root: Path, path: Path) -> FileId:

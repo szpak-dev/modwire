@@ -8,6 +8,7 @@ from ......shared.code.models.declaration_family import DeclarationFamily
 from ......shared.code.models.source_abstract_class import SourceAbstractClass
 from ......shared.code.models.source_class import SourceClass
 from ......shared.code.models.source_class_method import SourceClassMethod
+from ......shared.code.models.source_visibility import SourceVisibility
 from ...observations.class_candidate import PythonClassCandidate
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
@@ -62,7 +63,7 @@ class ClassSemanticContributor(PythonSemanticContributor):
                 candidate.node.col_offset,
             ),
             name=candidate.node.name,
-            visibility="public",
+            visibility=SourceVisibility.PUBLIC,
             visibility_intent=self.visibility.classify(candidate.node.name),
             declaration_annotations=[ast.unparse(item) for item in candidate.node.decorator_list],
             methods=list(methods),
@@ -90,7 +91,7 @@ class ClassSemanticContributor(PythonSemanticContributor):
                 candidate.node.col_offset,
             ),
             name=candidate.node.name,
-            visibility="public",
+            visibility=SourceVisibility.PUBLIC,
             visibility_intent=self.visibility.classify(candidate.node.name),
             declaration_annotations=[ast.unparse(item) for item in candidate.node.decorator_list],
             abstract_methods=[item for item in methods if item.name in abstract_names],
@@ -118,7 +119,7 @@ class ClassSemanticContributor(PythonSemanticContributor):
         declared_args, optional_args = self.argument_counts(node)
         return SourceClassMethod(
             name=node.name,
-            visibility="public",
+            visibility=SourceVisibility.PUBLIC,
             visibility_intent=self.visibility.classify(node.name),
             declaration_annotations=[],
             line_count=self.function_line_count(node),

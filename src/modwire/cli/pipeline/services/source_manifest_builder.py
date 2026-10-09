@@ -7,6 +7,7 @@ from importlib import resources
 from wireup import injectable
 
 from ....extraction.extractors.models.extraction_request import ExtractionRequest
+from ....shared.code.models.digest_algorithm import DigestAlgorithm
 from ....shared.code.models.runtime_observation import RuntimeObservation
 from ....shared.code.models.scan_policy import ScanPolicy
 from ....shared.code.models.source_manifest import SourceManifest
@@ -35,7 +36,7 @@ class SourceManifestBuilder:
             policy=policy,
             runtime=runtime,
             sources=sources,
-            digest_algorithm="sha256",
+            digest_algorithm=DigestAlgorithm.SHA256,
             digest=hashlib.sha256(serialized).hexdigest(),
         )
 
@@ -50,14 +51,8 @@ class SourceManifestBuilder:
         version = completed.stdout.strip()
         if not version:
             raise RuntimeError(f"{runtime.descriptor.language} runtime returned an empty version.")
-        digest = hashlib.sha256()
-        for resource in runtime.resources.identity_resources:
-            digest.update(resource.package.encode("utf-8"))
-            digest.update(b"\x00")
-            digest.update(resource.path.encode("utf-8"))
-            digest.update(b"\x00")
-            digest.update(resources.files(resource.package).joinpath(resource.path).read_bytes())
-            digest.update(b"\x00")
+        entrypoint = runtime.entrypoint
+        digest = hashlib.sha256(resources.files(entrypoint.package).joinpath(entrypoint.path).read_bytes())
         return RuntimeObservation(
             version=version,
             resource_digest=digest.hexdigest(),

@@ -1,6 +1,7 @@
 from ...values.models.value_model import ValueModel
 from .identity import ImportSpecifier
-from .types import ImportCrossingType, SourceExportKind
+from .import_crossing_type import ImportCrossingType
+from .source_export_kind import SourceExportKind
 
 
 class SourceExport(ValueModel):

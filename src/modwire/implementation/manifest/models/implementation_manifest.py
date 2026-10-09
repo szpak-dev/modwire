@@ -4,12 +4,14 @@ from typing import Literal, Self
 from pydantic import model_validator
 
 from ....shared.code.models.code_map_producer import CodeMapProducer
+from ....shared.code.models.source_dependency_resolution import SourceDependencyResolution
 from ....shared.code.models.source_manifest import SourceManifest
 from ....shared.values.models.value_model import ValueModel
 from .manifest_annotation import ManifestAnnotation
 from .manifest_attribute import ManifestAttribute
 from .manifest_callable import ManifestCallable
 from .manifest_dependency import ManifestDependency
+from .manifest_dependency_target_kind import ManifestDependencyTargetKind
 from .manifest_inheritance import ManifestInheritance
 from .manifest_parameter import ManifestParameter
 from .manifest_span import ManifestSpan
@@ -91,12 +93,15 @@ class ImplementationManifest(ValueModel):
             raise ValueError("Implementation manifest spans must reference declared symbols.")
         if any(item.source_id not in source_ids for item in self.dependencies):
             raise ValueError("Implementation manifest dependencies must originate from manifest sources.")
-        if any(item.target_kind == "source" and item.target not in source_ids for item in self.dependencies):
+        if any(
+            item.target_kind is ManifestDependencyTargetKind.SOURCE and item.target not in source_ids
+            for item in self.dependencies
+        ):
             raise ValueError("Implementation manifest source dependencies must target manifest sources.")
         expected_resolutions = {
-            "source": "resolved",
-            "external": "external",
-            "unresolved": "unresolved",
+            ManifestDependencyTargetKind.SOURCE: SourceDependencyResolution.RESOLVED,
+            ManifestDependencyTargetKind.EXTERNAL: SourceDependencyResolution.EXTERNAL,
+            ManifestDependencyTargetKind.UNRESOLVED: SourceDependencyResolution.UNRESOLVED,
         }
         if any(expected_resolutions[item.target_kind] != item.resolution for item in self.dependencies):
             raise ValueError("Implementation manifest dependency targets must agree with their resolution.")

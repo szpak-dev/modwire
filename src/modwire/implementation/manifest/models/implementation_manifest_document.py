@@ -3,8 +3,8 @@ from typing import Self
 
 from pydantic import Field, model_validator
 
+from ....shared.code.models.digest_algorithm import DigestAlgorithm
 from ....shared.values.models.value_model import ValueModel
-from .digest_algorithm import DigestAlgorithm
 from .manifest_format import ManifestFormat
 
 

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from ....shared.code.models.source_dependency_resolution import SourceDependencyResolution
 from ...config.models.boundaries_config import BoundariesConfig
 from ...config.models.boundary_rule import BoundaryRule
 from ...map.models.architecture_map import ArchitectureMap
@@ -32,7 +33,7 @@ class ModuleBoundaryAnalyzer(FlowAnalyzerInterface):
         ]
         for dependency in architecture_map.code_map.dependency_edges().all():
             edge = dependency.edge
-            if edge.resolution != "resolved" or edge.to_id is None:
+            if edge.resolution is not SourceDependencyResolution.RESOLVED or edge.to_id is None:
                 continue
             source_tags = architecture_map.tag_map.tags_for(edge.from_id)
             target_tags = architecture_map.tag_map.tags_for(edge.to_id)

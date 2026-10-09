@@ -5,6 +5,7 @@ from typing import Self
 from pydantic import Field, model_validator
 
 from ...values.models.value_model import ValueModel
+from .digest_algorithm import DigestAlgorithm
 from .runtime_observation import RuntimeObservation
 from .scan_policy import ScanPolicy
 from .source_artifact import SourceArtifact
@@ -14,7 +15,7 @@ class SourceManifest(ValueModel):
     policy: ScanPolicy
     runtime: RuntimeObservation
     sources: tuple[SourceArtifact, ...]
-    digest_algorithm: str = Field(pattern="^sha256$")
+    digest_algorithm: DigestAlgorithm
     digest: str = Field(pattern="^[0-9a-f]{64}$")
 
     @model_validator(mode="after")

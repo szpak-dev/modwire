@@ -4,7 +4,7 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.types import SourceCallableKind
+from ......shared.code.models.source_callable_kind import SourceCallableKind
 from ...observations.callable_candidate import PythonCallableCandidate
 from .classifier import PythonCallableRule
 
@@ -20,7 +20,7 @@ class StaticMethodCallableRule(PythonCallableRule):
         return bool(candidate.owner_name) and self.has_decorator(candidate.node)
 
     def classify(self, candidate: PythonCallableCandidate) -> SourceCallableKind:
-        return "static_method"
+        return SourceCallableKind.STATIC_METHOD
 
     @singledispatchmethod
     def has_decorator(self, node: ast.AST) -> bool:

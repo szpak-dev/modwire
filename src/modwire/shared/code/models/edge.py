@@ -3,8 +3,8 @@ from typing import Self
 from pydantic import ConfigDict, model_validator
 
 from ...values.models.value_model import ValueModel
-from .edge_resolution import EdgeResolution
 from .identity import FileId, ImportSpecifier
+from .source_dependency_resolution import SourceDependencyResolution
 from .source_relation_kind import SourceRelationKind
 
 
@@ -13,7 +13,7 @@ class Edge(ValueModel):
     from_id: FileId
     to_id: FileId | None
     specifier: ImportSpecifier
-    resolution: EdgeResolution
+    resolution: SourceDependencyResolution
     kind: SourceRelationKind = SourceRelationKind.IMPORTS
 
     @model_validator(mode="after")

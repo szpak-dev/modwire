@@ -4,7 +4,7 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.types import SourceCallableKind
+from ......shared.code.models.source_callable_kind import SourceCallableKind
 from ...observations.callable_candidate import PythonCallableCandidate
 from .classifier import PythonCallableRule
 
@@ -21,10 +21,14 @@ class FunctionCallableRule(PythonCallableRule):
 
     def classify(self, candidate: PythonCallableCandidate) -> SourceCallableKind:
         if candidate.requires_call:
-            return "anonymous"
+            return SourceCallableKind.ANONYMOUS
         if candidate.qualified_name == candidate.name:
-            return "callable_value" if candidate.name != self.function_name(candidate) else "function"
-        return "function"
+            return (
+                SourceCallableKind.CALLABLE_VALUE
+                if candidate.name != self.function_name(candidate)
+                else SourceCallableKind.FUNCTION
+            )
+        return SourceCallableKind.FUNCTION
 
     def function_name(self, candidate: PythonCallableCandidate) -> str:
         return self.node_name(candidate.node)

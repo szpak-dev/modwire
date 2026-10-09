@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ......shared.code.models.source_call import SourceCall
-from ......shared.code.models.types import SourceCallResolution
+from ......shared.code.models.source_call_resolution import SourceCallResolution
 from ...observations.call_candidate import PythonCallCandidate
 
 

@@ -6,7 +6,8 @@ from wireup import injectable
 
 from ......shared.code.models.declaration_family import DeclarationFamily
 from ......shared.code.models.source_callable import SourceCallable
-from ......shared.code.models.types import SourceCallableKind
+from ......shared.code.models.source_callable_kind import SourceCallableKind
+from ......shared.code.models.source_visibility import SourceVisibility
 from ...observations.callable_candidate import PythonCallableCandidate
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
@@ -63,7 +64,7 @@ class CallableSemanticContributor(PythonSemanticContributor):
             qualified_name=candidate.qualified_name,
             owner_name=candidate.owner_name,
             kind=kind,
-            visibility="public",
+            visibility=SourceVisibility.PUBLIC,
             visibility_intent=self.visibility.classify(candidate.name),
             declaration_annotations=[],
             line_start=candidate.node.lineno,
@@ -78,11 +79,16 @@ class CallableSemanticContributor(PythonSemanticContributor):
         )
 
     def family(self, kind: SourceCallableKind) -> DeclarationFamily:
-        if kind in {"instance_method", "type_method", "static_method", "constructor"}:
+        if kind in {
+            SourceCallableKind.INSTANCE_METHOD,
+            SourceCallableKind.TYPE_METHOD,
+            SourceCallableKind.STATIC_METHOD,
+            SourceCallableKind.CONSTRUCTOR,
+        }:
             return DeclarationFamily.METHOD
-        if kind == "callable_value":
+        if kind is SourceCallableKind.CALLABLE_VALUE:
             return DeclarationFamily.VALUE
-        if kind == "anonymous":
+        if kind is SourceCallableKind.ANONYMOUS:
             return DeclarationFamily.CALLABLE
         return DeclarationFamily.FUNCTION
 

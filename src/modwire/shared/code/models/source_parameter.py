@@ -1,5 +1,5 @@
 from ...values.models.value_model import ValueModel
-from .types import SourceParameterKind
+from .source_parameter_kind import SourceParameterKind
 
 
 class SourceParameter(ValueModel):

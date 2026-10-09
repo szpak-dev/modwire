@@ -17,7 +17,6 @@ from .cli.cache.models.cached_result import CachedResult
 from .cli.facade import CliFacade
 from .extraction.facade import ExtractionFacade
 from .implementation.facade import ImplementationFacade
-from .implementation.manifest.models.digest_algorithm import DigestAlgorithm
 from .implementation.manifest.models.implementation_manifest import ImplementationManifest
 from .implementation.manifest.models.implementation_manifest_document import ImplementationManifestDocument
 from .implementation.manifest.models.manifest_format import ManifestFormat
@@ -26,6 +25,7 @@ from .shared.code.models.capability_status import CapabilityStatus
 from .shared.code.models.code_map import CodeMap
 from .shared.code.models.declaration_family import DeclarationFamily
 from .shared.code.models.declaration_identity import DeclarationIdentity
+from .shared.code.models.digest_algorithm import DigestAlgorithm
 from .shared.code.models.fact_capability import FactCapability
 from .shared.code.models.queryable_code_map import QueryableCodeMap
 from .shared.code.models.scan_policy import ScanPolicy

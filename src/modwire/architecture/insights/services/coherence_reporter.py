@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ....shared.code.models.identity import FileId
+from ....shared.code.models.source_dependency_resolution import SourceDependencyResolution
 from ...map.models.architecture_map import ArchitectureMap
 from ..domain import InsightReporterInterface
 from ..models.coherence_report import CoherenceReport
@@ -35,7 +36,9 @@ class CoherenceReporter(InsightReporterInterface):
             if not has_incoming and (not has_outgoing):
                 isolated.append(source_id)
         external_dependencies = {
-            edge.specifier for edge in graph.external_edges(source_ids) if edge.resolution == "external"
+            edge.specifier
+            for edge in graph.external_edges(source_ids)
+            if edge.resolution is SourceDependencyResolution.EXTERNAL
         }
         return self.report_type(
             roots=tuple(roots),

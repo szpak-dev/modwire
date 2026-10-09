@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from ....shared.code.models.import_crossing_type import ImportCrossingType
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, ShapeResolverInterface
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
@@ -49,7 +50,7 @@ class ImportResolver(ShapeResolverInterface, BaseShapeResolver):
                 )
             if (
                 config.require_joined_imports
-                and source_import.crossing_type != "module"
+                and source_import.crossing_type is not ImportCrossingType.MODULE
                 and (not source_import.uses_joined_import)
             ):
                 violations.append(

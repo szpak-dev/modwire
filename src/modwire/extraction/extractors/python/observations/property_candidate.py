@@ -1,6 +1,8 @@
 import ast
 from dataclasses import dataclass
 
+from .property_scope import PythonPropertyScope
+
 
 @dataclass(frozen=True)
 class PythonPropertyCandidate:
@@ -11,4 +13,4 @@ class PythonPropertyCandidate:
     method: ast.FunctionDef | ast.AsyncFunctionDef | ast.Module
     name: str
     receiver: str
-    scope: str
+    scope: PythonPropertyScope

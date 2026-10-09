@@ -1,5 +1,5 @@
 from ...values.models.value_model import ValueModel
-from .types import SourceSignatureKind
+from .source_signature_kind import SourceSignatureKind
 
 
 class SourceSignature(ValueModel):
