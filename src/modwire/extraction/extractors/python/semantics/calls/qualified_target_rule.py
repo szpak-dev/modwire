@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ......shared.code.models.source_call import SourceCall
+from ......shared.code.models.source_call_resolution import SourceCallResolution
 from ...observations.call_candidate import PythonCallCandidate
 from .classifier import PythonCallTargetRule
 
@@ -19,4 +20,4 @@ class QualifiedCallTargetRule(PythonCallTargetRule):
 
     def classify(self, candidate: PythonCallCandidate) -> SourceCall:
         expression = candidate.reference.expression
-        return self.source_call(candidate, candidate.by_qualified_name[expression], "resolved")
+        return self.source_call(candidate, candidate.by_qualified_name[expression], SourceCallResolution.RESOLVED)

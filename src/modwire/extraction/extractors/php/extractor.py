@@ -10,8 +10,8 @@ from ....shared.code.models.identity import FileId, ModuleId
 from ....shared.code.models.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
+from ..models.batch_output_format import BatchOutputFormat
 from ..models.extractor_resource import ExtractorResource
-from ..models.extractor_resource_set import ExtractorResourceSet
 from ..models.extractor_runtime import ExtractorRuntime
 
 
@@ -94,23 +94,21 @@ class PhpExtractor(SourceExtractor):
             file_extensions=(".php",),
             command=("php",),
             version_arguments=("--version",),
-            resources=ExtractorResourceSet(
-                entrypoint=ExtractorResource(
-                    package="modwire.extraction.extractors.resources",
-                    path="php/script.php",
-                ),
-                identity_resources=(
-                    ExtractorResource(
-                        package="modwire.extraction.extractors.resources",
-                        path="php/script.php",
-                    ),
-                ),
+            entrypoint=ExtractorResource(
+                package="modwire.extraction.extractors.resources",
+                path="php/script.php",
             ),
         )
 
     @property
     def batch_config(self) -> BatchConfig:
-        return BatchConfig(size=500, parallel_threshold=500, parallel_size=500, max_workers=16, output_format="jsonl")
+        return BatchConfig(
+            size=500,
+            parallel_threshold=500,
+            parallel_size=500,
+            max_workers=16,
+            output_format=BatchOutputFormat.JSON_LINES,
+        )
 
     def module_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ModuleId, ...]]:
         return {file_id: (source_file.module_id,) for file_id, source_file in files.items()}

@@ -1,6 +1,5 @@
-from typing import Literal
-
 from .identity import FileId
+from .identity_kind import IdentityKind
 
 
 class DuplicateIdentityError(ValueError):
@@ -8,7 +7,7 @@ class DuplicateIdentityError(ValueError):
 
     def __init__(
         self,
-        identity_kind: Literal["file", "module"],
+        identity_kind: IdentityKind,
         identity: str,
         existing_file_id: FileId,
         duplicate_file_id: FileId,

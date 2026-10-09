@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from ......shared.code.models.import_crossing_type import ImportCrossingType
 from ......shared.code.models.source_export import SourceExport
 from ...observations.export_candidate import PythonExportCandidate
 
@@ -25,7 +26,7 @@ class PythonExportRule(ABC):
                 name=candidate.name,
                 local_name=candidate.local_name,
                 kind=candidate.kind,
-                crossing_type="symbol",
+                crossing_type=ImportCrossingType.SYMBOL,
                 path=candidate.path,
                 is_relative=candidate.is_relative,
                 normalized_path=candidate.normalized_path,

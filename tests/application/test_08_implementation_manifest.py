@@ -9,6 +9,40 @@ from .base_test import ApplicationTestCase
 
 
 class TestImplementationManifest(ApplicationTestCase):
+    def test_public_manifest_serializes_closed_vocabularies_as_exact_strings(self) -> None:
+        root = self.project(
+            {
+                "src/example.py": (
+                    "from example_external import ExampleExternal\n\n"
+                    "class ExampleValue:\n"
+                    "    example_name: str\n\n"
+                    "    @example_decorator\n"
+                    "    def execute(self, example_input: int = 1) -> str:\n"
+                    "        return str(example_input)\n"
+                )
+            }
+        )
+        format = self.application.implementation_manifest_formats()[0]
+        document = self.application.implementation_manifest(
+            self.application.generate_map("python", root, self.scan_policy()), format
+        )
+        payload = json.loads(document.payload)
+
+        assert payload["source_manifest"]["digest_algorithm"] == "sha256"
+        assert {item["kind"] for item in payload["symbols"]} == {"callable", "class"}
+        assert {item["visibility"] for item in payload["symbols"]} == {"public"}
+        assert {item["callable_kind"] for item in payload["callables"]} == {"instance_method"}
+        assert {item["kind"] for item in payload["parameters"]} == {"positional"}
+        assert {item["role"] for item in payload["annotations"]} == {
+            "attribute_type",
+            "decorator",
+            "parameter_type",
+            "return_type",
+        }
+        assert {(item["target_kind"], item["resolution"]) for item in payload["dependencies"]} == {
+            ("external", "external")
+        }
+
     def test_public_manifest_is_canonical_complete_and_provenance_bearing(self) -> None:
         root = self.project(
             {

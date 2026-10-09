@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from ....shared.code.models.digest_algorithm import DigestAlgorithm
 from ..contracts.manifest_serializer import ManifestSerializer
-from ..models.digest_algorithm import DigestAlgorithm
 from ..models.implementation_manifest import ImplementationManifest
 from ..models.implementation_manifest_document import ImplementationManifestDocument
 from ..models.manifest_format import ManifestFormat

@@ -18,19 +18,21 @@ class InitializationApplication:
 
     def initialize(self, project_root: Path, dot_dir: Path, force: bool) -> int:
         try:
-            outcomes: list[tuple[str, Path]] = []
+            created: list[Path] = []
+            preserved: list[Path] = []
+            overwritten: list[Path] = []
             for asset in self.resources.assets():
                 target = self.service.target(project_root, dot_dir, asset)
                 existed = target.exists()
                 if existed and not force:
-                    outcomes.append(("preserved", target))
+                    preserved.append(target)
                     continue
                 self.service.write(target, self.resources.content(asset.source))
-                outcomes.append(("overwritten" if existed else "created", target))
+                (overwritten if existed else created).append(target)
             result = InitializationResult(
-                created=tuple(path for action, path in outcomes if action == "created"),
-                preserved=tuple(path for action, path in outcomes if action == "preserved"),
-                overwritten=tuple(path for action, path in outcomes if action == "overwritten"),
+                created=tuple(created),
+                preserved=tuple(preserved),
+                overwritten=tuple(overwritten),
             )
         except (OSError, ValueError) as error:
             self.console.print(f"Initialization failed: {error}", style="red", markup=False)

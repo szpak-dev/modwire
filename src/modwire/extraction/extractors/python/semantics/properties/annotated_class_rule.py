@@ -7,6 +7,7 @@ from wireup import injectable
 from ......shared.code.models.source_class_property import SourceClassProperty
 from ......shared.code.models.source_member_kind import SourceMemberKind
 from ...observations.property_candidate import PythonPropertyCandidate
+from ...observations.property_scope import PythonPropertyScope
 from ..policies.assigned_value_reader import PythonAssignedValueReader
 from ..policies.visibility_policy import PythonVisibilityPolicy
 from .classifier import PythonPropertyRule
@@ -23,7 +24,7 @@ class AnnotatedClassPropertyRule(PythonPropertyRule):
         return 10
 
     def applies(self, candidate: PythonPropertyCandidate) -> bool:
-        return candidate.scope == "class" and self.is_annotated(candidate.statement)
+        return candidate.scope is PythonPropertyScope.CLASS and self.is_annotated(candidate.statement)
 
     def classify(self, candidate: PythonPropertyCandidate) -> SourceClassProperty:
         return self.read(candidate.statement, candidate)

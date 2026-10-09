@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ....shared.code.models.identity import FileId, ModuleId
+from ....shared.code.models.import_crossing_type import ImportCrossingType
+from ....shared.code.models.source_dependency_resolution import SourceDependencyResolution
 from ....shared.code.models.source_file import SourceFile
 from ....shared.code.models.source_import import SourceImport
 from ..domain import ImportResolver
@@ -39,10 +41,19 @@ class SourceImportResolver(ImportResolver):
     ) -> SourceImport:
         candidates = self._candidates(imported, modules, symbols)
         if len(candidates) == 1:
-            return imported.model_copy(update={"resolution": "resolved", "target_file_id": next(iter(candidates))})
+            return imported.model_copy(
+                update={
+                    "resolution": SourceDependencyResolution.RESOLVED,
+                    "target_file_id": next(iter(candidates)),
+                }
+            )
         return imported.model_copy(
             update={
-                "resolution": "unresolved" if candidates or imported.is_relative else "external",
+                "resolution": (
+                    SourceDependencyResolution.UNRESOLVED
+                    if candidates or imported.is_relative
+                    else SourceDependencyResolution.EXTERNAL
+                ),
                 "target_file_id": None,
             }
         )
@@ -54,7 +65,7 @@ class SourceImportResolver(ImportResolver):
         candidates = modules.exact("", specifier)
         if candidates:
             return candidates
-        if imported.crossing_type == "symbol" and imported.imported_symbols:
+        if imported.crossing_type is ImportCrossingType.SYMBOL and imported.imported_symbols:
             symbol_names = {symbol.name.casefold() for symbol in imported.imported_symbols}
             imported_parent = self._normalize(imported.join_key)
             for symbol_name in symbol_names:
@@ -64,7 +75,7 @@ class SourceImportResolver(ImportResolver):
         candidates = modules.suffix("", specifier)
         if candidates:
             return candidates
-        if imported.crossing_type == "symbol" and imported.imported_symbols:
+        if imported.crossing_type is ImportCrossingType.SYMBOL and imported.imported_symbols:
             symbol_names = {symbol.name.casefold() for symbol in imported.imported_symbols}
             imported_parent = self._normalize(imported.join_key)
             for symbol_name in symbol_names:

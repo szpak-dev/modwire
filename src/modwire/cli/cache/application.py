@@ -11,6 +11,7 @@ from ...extraction.extractors.models.extraction_request import ExtractionRequest
 from ...shared.code.models.code_map import CodeMap
 from ...shared.code.models.duplicate_identity_error import DuplicateIdentityError
 from ...shared.code.models.identity import FileId, ModuleId
+from ...shared.code.models.identity_kind import IdentityKind
 from ...shared.code.models.scan_policy import ScanPolicy
 from ...shared.code.models.source_extraction import SourceExtraction
 from ...shared.code.models.source_file import SourceFile
@@ -103,7 +104,7 @@ class CacheApplication:
         for file_id, source_file in ordered_files.items():
             existing = modules.get(source_file.module_id)
             if existing is not None:
-                raise DuplicateIdentityError("module", source_file.module_id, existing, file_id)
+                raise DuplicateIdentityError(IdentityKind.MODULE, source_file.module_id, existing, file_id)
             modules[source_file.module_id] = file_id
 
         extraction = SourceExtraction(

@@ -7,8 +7,10 @@ from wireup import injectable
 from ......shared.code.models.declaration_family import DeclarationFamily
 from ......shared.code.models.source_callable import SourceCallable
 from ......shared.code.models.source_value import SourceValue
+from ......shared.code.models.source_value_declaration_kind import SourceValueDeclarationKind
+from ......shared.code.models.source_value_kind import SourceValueKind
 from ......shared.code.models.source_value_scope import SourceValueScope
-from ......shared.code.models.types import SourceValueKind
+from ......shared.code.models.source_visibility import SourceVisibility
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
 from ...observations.value_candidate import PythonValueCandidate
@@ -74,10 +76,14 @@ class ValueSemanticContributor(PythonSemanticContributor):
                 candidate.target.col_offset,
             ),
             name=candidate.target.id,
-            visibility="public",
+            visibility=SourceVisibility.PUBLIC,
             visibility_intent=self.visibility.classify(candidate.target.id),
             line_count=line_end - candidate.statement.lineno + 1,
-            declaration_kind="constant" if self.is_constant(candidate) else "assignment",
+            declaration_kind=(
+                SourceValueDeclarationKind.CONSTANT
+                if self.is_constant(candidate)
+                else SourceValueDeclarationKind.ASSIGNMENT
+            ),
             value_kind=self.value_kind(candidate.statement),
             scope=SourceValueScope.MODULE,
             declared_args=declared_args,
@@ -97,7 +103,7 @@ class ValueSemanticContributor(PythonSemanticContributor):
 
     @singledispatchmethod
     def value_kind(self, statement: ast.stmt) -> SourceValueKind:
-        return "unknown"
+        return SourceValueKind.UNKNOWN
 
     @value_kind.register
     def assigned_value_kind(self, statement: ast.Assign) -> SourceValueKind:
@@ -106,37 +112,37 @@ class ValueSemanticContributor(PythonSemanticContributor):
     @value_kind.register
     def annotated_value_kind(self, statement: ast.AnnAssign) -> SourceValueKind:
         if statement.value is None:
-            return "unknown"
+            return SourceValueKind.UNKNOWN
         return self.expression_kind(statement.value)
 
     @singledispatchmethod
     def expression_kind(self, expression: ast.expr) -> SourceValueKind:
-        return "unknown"
+        return SourceValueKind.UNKNOWN
 
     @expression_kind.register
     def lambda_expression_kind(self, expression: ast.Lambda) -> SourceValueKind:
-        return "callable"
+        return SourceValueKind.CALLABLE
 
     @expression_kind.register
     def constant_expression_kind(self, expression: ast.Constant) -> SourceValueKind:
-        return "literal"
+        return SourceValueKind.LITERAL
 
     @expression_kind.register
     def list_expression_kind(self, expression: ast.List) -> SourceValueKind:
-        return "object"
+        return SourceValueKind.OBJECT
 
     @expression_kind.register
     def tuple_expression_kind(self, expression: ast.Tuple) -> SourceValueKind:
-        return "object"
+        return SourceValueKind.OBJECT
 
     @expression_kind.register
     def set_expression_kind(self, expression: ast.Set) -> SourceValueKind:
-        return "object"
+        return SourceValueKind.OBJECT
 
     @expression_kind.register
     def dict_expression_kind(self, expression: ast.Dict) -> SourceValueKind:
-        return "object"
+        return SourceValueKind.OBJECT
 
     @expression_kind.register
     def call_expression_kind(self, expression: ast.Call) -> SourceValueKind:
-        return "object"
+        return SourceValueKind.OBJECT

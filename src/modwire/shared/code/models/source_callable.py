@@ -5,9 +5,9 @@ from pydantic import Field, model_validator
 from .declaration_family import DeclarationFamily
 from .declaration_identity import DeclarationIdentity
 from .identity import FileId
+from .source_callable_kind import SourceCallableKind
 from .source_callable_symbol import SourceCallableSymbol
 from .source_parameter import SourceParameter
-from .types import SourceCallableKind
 
 
 class SourceCallable(SourceCallableSymbol):
@@ -33,13 +33,13 @@ class SourceCallable(SourceCallableSymbol):
         if self.declaration_id.qualified_name != self.qualified_name:
             raise ValueError("Callable declaration identity must match its qualified name.")
         families = {
-            "function": DeclarationFamily.FUNCTION,
-            "instance_method": DeclarationFamily.METHOD,
-            "type_method": DeclarationFamily.METHOD,
-            "static_method": DeclarationFamily.METHOD,
-            "constructor": DeclarationFamily.METHOD,
-            "callable_value": DeclarationFamily.VALUE,
-            "anonymous": DeclarationFamily.CALLABLE,
+            SourceCallableKind.FUNCTION: DeclarationFamily.FUNCTION,
+            SourceCallableKind.INSTANCE_METHOD: DeclarationFamily.METHOD,
+            SourceCallableKind.TYPE_METHOD: DeclarationFamily.METHOD,
+            SourceCallableKind.STATIC_METHOD: DeclarationFamily.METHOD,
+            SourceCallableKind.CONSTRUCTOR: DeclarationFamily.METHOD,
+            SourceCallableKind.CALLABLE_VALUE: DeclarationFamily.VALUE,
+            SourceCallableKind.ANONYMOUS: DeclarationFamily.CALLABLE,
         }
         if self.declaration_id.family is not families[self.kind]:
             raise ValueError("Callable declaration identity family must match its callable kind.")

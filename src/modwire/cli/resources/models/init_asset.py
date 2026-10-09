@@ -1,10 +1,10 @@
 from pathlib import Path
-from typing import Literal
 
 from ....shared.values.models.value_model import ValueModel
+from .init_target_base import InitTargetBase
 
 
 class InitAsset(ValueModel):
     source: str
-    target_base: Literal["project", "dot_dir"]
+    target_base: InitTargetBase
     target: Path

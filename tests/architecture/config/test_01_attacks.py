@@ -31,6 +31,22 @@ class TestConfigurationAttacks(ArchitectureTestCase):
                 }
             )
 
+    def test_rejects_unknown_import_crossing_type(self) -> None:
+        with pytest.raises(ValidationError):
+            self.application.configure(
+                {
+                    "shape": {
+                        "realms": [
+                            {
+                                "name": "example-source",
+                                "match": "*",
+                                "shape": {"allowed_import_crossing_types": ["module", "example_invalid"]},
+                            }
+                        ]
+                    }
+                }
+            )
+
     @pytest.mark.parametrize("shape", ({}, {"realms": []}))
     def test_rejects_configuration_without_a_shape_realm(self, shape: dict[str, object]) -> None:
         with pytest.raises(ValidationError):

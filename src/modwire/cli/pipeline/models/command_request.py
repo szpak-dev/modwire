@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import Literal
 
 from ....shared.values.models.value_model import ValueModel
+from .command_name import CommandName
 
 
 class CommandRequest(ValueModel):
-    command: Literal["init", "report", "cache-clear"]
+    command: CommandName
     dot_dir: Path
     architecture_root: Path = Path(".")
     language: str = ""

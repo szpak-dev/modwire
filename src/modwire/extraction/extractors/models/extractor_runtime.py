@@ -1,7 +1,7 @@
 from ....shared.code.models.capability_coverage import CapabilityCoverage
 from ....shared.code.models.extractor_descriptor import ExtractorDescriptor
 from ....shared.values.models.value_model import ValueModel
-from .extractor_resource_set import ExtractorResourceSet
+from .extractor_resource import ExtractorResource
 
 
 class ExtractorRuntime(ValueModel):
@@ -11,4 +11,4 @@ class ExtractorRuntime(ValueModel):
     file_extensions: tuple[str, ...]
     command: tuple[str, ...]
     version_arguments: tuple[str, ...]
-    resources: ExtractorResourceSet
+    entrypoint: ExtractorResource

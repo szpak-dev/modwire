@@ -1,11 +1,13 @@
 import ast
 from dataclasses import dataclass
 
+from .traversal_role import PythonTraversalRole
+
 
 @dataclass(frozen=True)
 class PythonTraversalContext:
     module: ast.Module
-    parent_role: str
+    parent_role: PythonTraversalRole
     class_name: str
     lambda_root: str
     lambda_owner: str

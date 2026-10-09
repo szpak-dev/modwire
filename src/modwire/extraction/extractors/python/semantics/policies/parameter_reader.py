@@ -6,6 +6,7 @@ from functools import singledispatchmethod
 from wireup import injectable
 
 from ......shared.code.models.source_parameter import SourceParameter
+from ......shared.code.models.source_parameter_kind import SourceParameterKind
 from ...observations.callable_candidate import PythonCallableCandidate
 
 
@@ -72,7 +73,7 @@ class SyntaxParameterReader(PythonParameterReader):
             SourceParameter(
                 name=argument.arg,
                 annotation=self.argument_annotation(argument),
-                kind="positional",
+                kind=SourceParameterKind.POSITIONAL,
                 has_default=index >= required_count,
             )
             for index, argument in enumerate(positional)
@@ -82,7 +83,7 @@ class SyntaxParameterReader(PythonParameterReader):
                 SourceParameter(
                     name=arguments.vararg.arg,
                     annotation=self.argument_annotation(arguments.vararg),
-                    kind="variadic_positional",
+                    kind=SourceParameterKind.VARIADIC_POSITIONAL,
                     has_default=True,
                 )
             )
@@ -90,7 +91,7 @@ class SyntaxParameterReader(PythonParameterReader):
             SourceParameter(
                 name=argument.arg,
                 annotation=self.argument_annotation(argument),
-                kind="named_only",
+                kind=SourceParameterKind.NAMED_ONLY,
                 has_default=default is not None,
             )
             for argument, default in zip(arguments.kwonlyargs, arguments.kw_defaults, strict=True)
@@ -100,7 +101,7 @@ class SyntaxParameterReader(PythonParameterReader):
                 SourceParameter(
                     name=arguments.kwarg.arg,
                     annotation=self.argument_annotation(arguments.kwarg),
-                    kind="variadic_named",
+                    kind=SourceParameterKind.VARIADIC_NAMED,
                     has_default=True,
                 )
             )

@@ -2,9 +2,10 @@ from pydantic import Field, PrivateAttr
 
 from ...values.models.value_model import ValueModel
 from .edge import Edge
-from .edge_resolution import EdgeResolution
 from .identity import FileId, ImportSpecifier
 from .node import Node
+from .node_kind import NodeKind
+from .source_dependency_resolution import SourceDependencyResolution
 from .source_relation_kind import SourceRelationKind
 
 
@@ -25,7 +26,7 @@ class DependencyGraph(ValueModel):
             if edge.to_id is not None:
                 self._incoming_by_node.setdefault(edge.to_id, []).append(edge)
 
-    def add_node(self, node_id: FileId, *, kind: str = "file") -> None:
+    def add_node(self, node_id: FileId, *, kind: NodeKind = NodeKind.FILE) -> None:
         self.nodes.setdefault(node_id, Node(id=node_id, kind=kind))
         self._outgoing_by_node.setdefault(node_id, [])
         self._incoming_by_node.setdefault(node_id, [])
@@ -36,7 +37,7 @@ class DependencyGraph(ValueModel):
         to_id: FileId | None,
         *,
         specifier: ImportSpecifier,
-        resolution: EdgeResolution,
+        resolution: SourceDependencyResolution,
         kind: SourceRelationKind = SourceRelationKind.IMPORTS,
     ) -> None:
         self.add_node(from_id)

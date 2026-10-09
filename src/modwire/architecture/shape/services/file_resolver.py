@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ....shared.code.models.identity import FileId
+from ....shared.code.models.source_value_declaration_kind import SourceValueDeclarationKind
 from ....shared.code.models.source_value_scope import SourceValueScope
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, ShapeResolverInterface
@@ -75,7 +76,8 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
                         source_id=source_id,
                         rule_name="max_variables_per_file",
                         actual=sum(
-                            value.scope == SourceValueScope.MODULE and value.declaration_kind == "assignment"
+                            value.scope is SourceValueScope.MODULE
+                            and value.declaration_kind is SourceValueDeclarationKind.ASSIGNMENT
                             for value in source_file.values
                         ),
                         limit=config.max_variables_per_file,

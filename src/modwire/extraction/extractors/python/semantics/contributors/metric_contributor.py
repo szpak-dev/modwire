@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from ......shared.code.models.source_visibility import SourceVisibility
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
 from ..catalog import PythonSemanticCatalog
@@ -30,14 +31,15 @@ class MetricSemanticContributor(PythonSemanticContributor):
             for candidate in observation.classes
             if (
                 candidate.module_level
-                and self.visibility.classify(candidate.node.name) == "public"
+                and self.visibility.classify(candidate.node.name) is SourceVisibility.PUBLIC
                 and not candidate.node.name.startswith("_")
             )
         )
         public_functions = sum(
             1
             for candidate in observation.functions
-            if self.visibility.classify(candidate.node.name) == "public" and not candidate.node.name.startswith("_")
+            if self.visibility.classify(candidate.node.name) is SourceVisibility.PUBLIC
+            and not candidate.node.name.startswith("_")
         )
         return PythonSemanticContribution(
             line_count=len(context.content.splitlines()),

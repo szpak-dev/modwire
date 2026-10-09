@@ -1,6 +1,6 @@
 from ...values.models.value_model import ValueModel
 from .identity import FileId
-from .types import SourceCallResolution
+from .source_call_resolution import SourceCallResolution
 
 
 class SourceCall(ValueModel):

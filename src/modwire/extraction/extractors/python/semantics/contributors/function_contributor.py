@@ -5,6 +5,7 @@ from wireup import injectable
 from ......shared.code.models.declaration_family import DeclarationFamily
 from ......shared.code.models.source_callable import SourceCallable
 from ......shared.code.models.source_function import SourceFunction
+from ......shared.code.models.source_visibility import SourceVisibility
 from ...observations.function_candidate import PythonFunctionCandidate
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
@@ -61,7 +62,7 @@ class FunctionSemanticContributor(PythonSemanticContributor):
                 candidate.node.col_offset,
             ),
             name=candidate.node.name,
-            visibility="public",
+            visibility=SourceVisibility.PUBLIC,
             visibility_intent=self.visibility.classify(candidate.node.name),
             declaration_annotations=[],
             line_count=source_callable.line_count,

@@ -3,7 +3,7 @@ from pydantic import Field
 from ...values.models.value_model import ValueModel
 from .source_assigned_value import SourceAssignedValue
 from .source_member_kind import SourceMemberKind
-from .types import SourceVisibility
+from .source_visibility import SourceVisibility
 
 
 class SourceClassProperty(ValueModel):

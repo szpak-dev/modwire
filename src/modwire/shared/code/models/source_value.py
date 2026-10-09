@@ -1,7 +1,9 @@
 from ...values.models.value_model import ValueModel
 from .declaration_identity import DeclarationIdentity
+from .source_value_declaration_kind import SourceValueDeclarationKind
+from .source_value_kind import SourceValueKind
 from .source_value_scope import SourceValueScope
-from .types import SourceValueDeclarationKind, SourceValueKind, SourceVisibility
+from .source_visibility import SourceVisibility
 
 
 class SourceValue(ValueModel):

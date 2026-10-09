@@ -5,7 +5,7 @@ from pydantic import Field, model_validator
 from ....shared.code.models.declaration_identity import DeclarationIdentity
 from ....shared.code.models.source_assigned_value import SourceAssignedValue
 from ....shared.code.models.source_member_kind import SourceMemberKind
-from ....shared.code.models.types import SourceVisibility
+from ....shared.code.models.source_visibility import SourceVisibility
 from ....shared.values.models.value_model import ValueModel
 
 

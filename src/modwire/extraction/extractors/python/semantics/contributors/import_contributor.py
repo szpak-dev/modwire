@@ -5,6 +5,7 @@ from functools import singledispatchmethod
 from wireup import injectable
 
 from ......shared.code.models.identity import ImportSpecifier
+from ......shared.code.models.import_crossing_type import ImportCrossingType
 from ......shared.code.models.source_import import SourceImport
 from ......shared.code.models.source_imported_symbol import SourceImportedSymbol
 from ...observations.import_candidate import PythonImportCandidate
@@ -61,7 +62,7 @@ class ImportSemanticContributor(PythonSemanticContributor):
             normalized_path=normalized_path,
             imported_name="",
             is_aliased=candidate.alias.asname is not None,
-            crossing_type="module",
+            crossing_type=ImportCrossingType.MODULE,
             file_barrier_crossed=True,
             statement_id=candidate.statement_id,
             join_key=str(normalized_path).rsplit("/", 1)[0],
@@ -82,7 +83,7 @@ class ImportSemanticContributor(PythonSemanticContributor):
             normalized_path=self.paths.normalize(candidate, context),
             imported_name=candidate.alias.name,
             is_aliased=candidate.alias.asname is not None,
-            crossing_type="symbol",
+            crossing_type=ImportCrossingType.SYMBOL,
             file_barrier_crossed=True,
             statement_id=candidate.statement_id,
             join_key=candidate.path,

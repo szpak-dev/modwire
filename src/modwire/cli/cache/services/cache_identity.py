@@ -98,7 +98,9 @@ class CacheIdentity:
 
     def runtime_identity(self, request: ExtractionRequest, observation: RuntimeObservation) -> dict[str, object]:
         return {
-            "runtime": request.runtime.model_dump(mode="json"),
+            "descriptor": request.runtime.descriptor.model_dump(mode="json"),
+            "capabilities": [item.model_dump(mode="json") for item in request.runtime.capabilities],
+            "file_extensions": list(request.runtime.file_extensions),
             "batch": request.batch_config.model_dump(mode="json"),
             "observation": observation.model_dump(mode="json"),
         }

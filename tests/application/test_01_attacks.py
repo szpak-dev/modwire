@@ -1,5 +1,6 @@
 import hashlib
 import json
+from typing import Any
 
 import pytest
 from pydantic import ValidationError
@@ -10,6 +11,52 @@ from .base_test import ApplicationTestCase
 
 
 class TestModwireApplicationAttacks(ApplicationTestCase):
+    @pytest.mark.parametrize(
+        "path",
+        (
+            ("source_manifest", "digest_algorithm"),
+            ("symbols", 0, "kind"),
+            ("symbols", 0, "visibility"),
+            ("callables", 0, "callable_kind"),
+            ("parameters", 0, "kind"),
+            ("annotations", 0, "role"),
+            ("dependencies", 0, "target_kind"),
+            ("dependencies", 0, "resolution"),
+        ),
+    )
+    def test_manifest_rejects_unknown_closed_vocabulary_values(self, path: tuple[str | int, ...]) -> None:
+        root = self.project(
+            {
+                "src/example.py": (
+                    "from example_external import ExampleExternal\n\n"
+                    "class ExampleValue:\n"
+                    "    example_name: str\n\n"
+                    "    @example_decorator\n"
+                    "    def execute(self, example_input: int = 1) -> str:\n"
+                    "        return str(example_input)\n"
+                )
+            }
+        )
+        format = self.application.implementation_manifest_formats()[0]
+        document = self.application.implementation_manifest(
+            self.application.generate_map("python", root, self.scan_policy()), format
+        )
+        payload: dict[str, Any] = json.loads(document.payload)
+        target: Any = payload
+        for segment in path[:-1]:
+            target = target[segment]
+        target[path[-1]] = "example_invalid"
+        invalid_payload = json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+        invalid_document = ImplementationManifestDocument(
+            format=format,
+            payload=invalid_payload,
+            algorithm=DigestAlgorithm.SHA256,
+            digest=hashlib.sha256(invalid_payload.encode("utf-8")).hexdigest(),
+        )
+
+        with pytest.raises(ValidationError):
+            self.application.read_implementation_manifest(invalid_document)
+
     def test_manifest_without_assigned_value_evidence_is_rejected(self) -> None:
         root = self.project({"src/example.py": "class ExampleValue:\n    example_value: int\n"})
         format = self.application.implementation_manifest_formats()[0]

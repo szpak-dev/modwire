@@ -9,9 +9,11 @@ from ..observations.function_candidate import PythonFunctionCandidate
 from ..observations.import_candidate import PythonImportCandidate
 from ..observations.inheritance_candidate import PythonInheritanceCandidate
 from ..observations.property_candidate import PythonPropertyCandidate
+from ..observations.property_scope import PythonPropertyScope
 from ..observations.source_observation import PythonSourceObservation
 from ..observations.value_candidate import PythonValueCandidate
 from .context import PythonTraversalContext
+from .traversal_role import PythonTraversalRole
 
 
 @dataclass
@@ -45,7 +47,7 @@ class OrderedObservationVisitor:
     def read(self, tree: ast.Module) -> PythonSourceObservation:
         context = PythonTraversalContext(
             module=tree,
-            parent_role="module",
+            parent_role=PythonTraversalRole.MODULE,
             class_name="",
             lambda_root="",
             lambda_owner="",
@@ -81,13 +83,17 @@ class OrderedObservationVisitor:
                 PythonClassCandidate(
                     node=node,
                     ordinal=self.declaration_ordinal(node),
-                    module_level=context.parent_role == "module",
+                    module_level=context.parent_role is PythonTraversalRole.MODULE,
                 ),
                 depth,
                 self.sequence_at_depth,
             )
         )
-        role = "module_class" if context.parent_role == "module" else "nested_class"
+        role = (
+            PythonTraversalRole.MODULE_CLASS
+            if context.parent_role is PythonTraversalRole.MODULE
+            else PythonTraversalRole.NESTED_CLASS
+        )
         body = set(node.body)
         body_context = PythonTraversalContext(
             module=context.module,
@@ -103,7 +109,7 @@ class OrderedObservationVisitor:
         )
         nested_context = PythonTraversalContext(
             module=context.module,
-            parent_role="nested",
+            parent_role=PythonTraversalRole.NESTED,
             class_name=node.name,
             lambda_root=context.lambda_root,
             lambda_owner=context.lambda_owner,
@@ -146,7 +152,7 @@ class OrderedObservationVisitor:
             owners = (node,)
         body_context = PythonTraversalContext(
             module=context.module,
-            parent_role="nested",
+            parent_role=PythonTraversalRole.NESTED,
             class_name=context.class_name,
             lambda_root=context.lambda_root,
             lambda_owner=context.lambda_owner,
@@ -158,7 +164,7 @@ class OrderedObservationVisitor:
         )
         nested_context = PythonTraversalContext(
             module=context.module,
-            parent_role="nested",
+            parent_role=PythonTraversalRole.NESTED,
             class_name=context.class_name,
             lambda_root=context.lambda_root,
             lambda_owner=context.lambda_owner,
@@ -184,7 +190,7 @@ class OrderedObservationVisitor:
 
     @visit.register
     def visit_Assign(self, node: ast.Assign, depth: int, context: PythonTraversalContext) -> None:
-        if context.parent_role == "module":
+        if context.parent_role is PythonTraversalRole.MODULE:
             for target in node.targets:
                 self.visit_assignment_target(target, node, node.value)
         for target in node.targets:
@@ -193,7 +199,7 @@ class OrderedObservationVisitor:
 
     @visit.register
     def visit_AnnAssign(self, node: ast.AnnAssign, depth: int, context: PythonTraversalContext) -> None:
-        if context.parent_role == "module":
+        if context.parent_role is PythonTraversalRole.MODULE:
             self.visit_annotated_target(node.target, node)
         self.collect_property_target(node.target, node, context)
         self.enqueue(node, depth, context)
@@ -218,12 +224,12 @@ class OrderedObservationVisitor:
     ) -> None:
         qualified_name = ""
         owner_name = ""
-        if context.parent_role == "module":
+        if context.parent_role is PythonTraversalRole.MODULE:
             self.functions.append(PythonFunctionCandidate(node=node, ordinal=self.declaration_ordinal(node)))
             qualified_name = node.name
-        elif context.parent_role in {"module_class", "nested_class"}:
+        elif context.parent_role in {PythonTraversalRole.MODULE_CLASS, PythonTraversalRole.NESTED_CLASS}:
             owner_name = context.class_name
-            if context.parent_role == "module_class":
+            if context.parent_role is PythonTraversalRole.MODULE_CLASS:
                 qualified_name = f"{owner_name}.{node.name}"
         lambda_root = context.lambda_root
         lambda_owner = context.lambda_owner
@@ -258,7 +264,7 @@ class OrderedObservationVisitor:
         body = set(node.body)
         body_context = PythonTraversalContext(
             module=context.module,
-            parent_role="nested",
+            parent_role=PythonTraversalRole.NESTED,
             class_name=context.class_name,
             lambda_root=lambda_root,
             lambda_owner=lambda_owner,
@@ -270,7 +276,7 @@ class OrderedObservationVisitor:
         )
         nested_context = PythonTraversalContext(
             module=context.module,
-            parent_role="nested",
+            parent_role=PythonTraversalRole.NESTED,
             class_name=context.class_name,
             lambda_root=lambda_root,
             lambda_owner=lambda_owner,
@@ -286,10 +292,10 @@ class OrderedObservationVisitor:
 
     def enqueue(self, node: ast.AST, depth: int, context: PythonTraversalContext) -> None:
         child_context = context
-        if context.parent_role != "nested" or context.direct_classes:
+        if context.parent_role is not PythonTraversalRole.NESTED or context.direct_classes:
             child_context = PythonTraversalContext(
                 module=context.module,
-                parent_role="nested",
+                parent_role=PythonTraversalRole.NESTED,
                 class_name=context.class_name,
                 lambda_root=context.lambda_root,
                 lambda_owner=context.lambda_owner,
@@ -471,7 +477,7 @@ class OrderedObservationVisitor:
                     method=context.module,
                     name=target.id,
                     receiver="",
-                    scope="class",
+                    scope=PythonPropertyScope.CLASS,
                 )
             )
 
@@ -511,7 +517,7 @@ class OrderedObservationVisitor:
                     method=method,
                     name=name,
                     receiver=receiver.id,
-                    scope="method",
+                    scope=PythonPropertyScope.METHOD,
                 )
             )
 

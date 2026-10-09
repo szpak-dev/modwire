@@ -1,5 +1,5 @@
 from ...values.models.value_model import ValueModel
-from .types import SourceVisibility
+from .source_visibility import SourceVisibility
 
 
 class SourceSymbol(ValueModel):
