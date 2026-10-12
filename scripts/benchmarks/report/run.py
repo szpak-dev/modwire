@@ -107,7 +107,7 @@ class ReportBenchmark:
         cleanup_reserve = min(1.0, max_process_seconds * 0.1)
         supervisor_seconds = max_process_seconds - cleanup_reserve
         if Path(sys.argv[0]).resolve() == Path(__file__).resolve():
-            entrypoint = [sys.executable, "-m", "tests.architecture.report_benchmark.run"]
+            entrypoint = [sys.executable, "-m", "scripts.benchmarks.report.run"]
         else:
             entrypoint = [sys.executable, sys.argv[0]]
         command = [*entrypoint, *sys.argv[1:], "--worker"]
