@@ -104,7 +104,7 @@ class OrderedObservationVisitor:
             lambda_root_ordinal=context.lambda_root_ordinal,
             owners=(),
             property_contexts=context.property_contexts,
-            direct_classes=((node.name, node.lineno, node.col_offset),),
+            direct_classes=(node,),
             active_lambda=context.active_lambda,
         )
         nested_context = PythonTraversalContext(
@@ -224,18 +224,22 @@ class OrderedObservationVisitor:
     ) -> None:
         qualified_name = ""
         owner_name = ""
+        property_method = False
         if context.parent_role is PythonTraversalRole.MODULE:
             self.functions.append(PythonFunctionCandidate(node=node, ordinal=self.declaration_ordinal(node)))
             qualified_name = node.name
         elif context.parent_role in {PythonTraversalRole.MODULE_CLASS, PythonTraversalRole.NESTED_CLASS}:
             owner_name = context.class_name
+            property_method = self.has_decorator(node, "property")
+            if property_method:
+                self.collect_decorated_property(node, context)
             if context.parent_role is PythonTraversalRole.MODULE_CLASS:
                 qualified_name = f"{owner_name}.{node.name}"
         lambda_root = context.lambda_root
         lambda_owner = context.lambda_owner
         lambda_root_ordinal = context.lambda_root_ordinal
         owners: tuple[ast.FunctionDef | ast.AsyncFunctionDef, ...] = ()
-        if qualified_name:
+        if qualified_name and not property_method:
             ordinal = self.declaration_ordinal(node)
             self.callables.append(
                 PythonCallableCandidate(
@@ -256,10 +260,7 @@ class OrderedObservationVisitor:
             owners = (node,)
         property_contexts = (
             *context.property_contexts,
-            *(
-                (class_name, class_line, class_column, node)
-                for class_name, class_line, class_column in context.direct_classes
-            ),
+            *((class_node, node) for class_node in context.direct_classes),
         )
         body = set(node.body)
         body_context = PythonTraversalContext(
@@ -289,6 +290,31 @@ class OrderedObservationVisitor:
         for child in reversed(tuple(ast.iter_child_nodes(node))):
             child_context = body_context if child in body else nested_context
             self.stack.append((child, depth + 1, child_context, False))
+
+    def has_decorator(self, node: ast.FunctionDef | ast.AsyncFunctionDef, name: str) -> bool:
+        return any(ast.unparse(item).rsplit(".", 1)[-1] == name for item in node.decorator_list)
+
+    def collect_decorated_property(
+        self,
+        node: ast.FunctionDef | ast.AsyncFunctionDef,
+        context: PythonTraversalContext,
+    ) -> None:
+        positional = [*node.args.posonlyargs, *node.args.args]
+        receiver = positional[0].arg if positional else ""
+        self.properties.extend(
+            PythonPropertyCandidate(
+                statement=node,
+                class_name=class_node.name,
+                class_line=class_node.lineno,
+                class_column=class_node.col_offset,
+                class_bases=tuple(class_node.bases),
+                method=node,
+                name=node.name,
+                receiver=receiver,
+                scope=PythonPropertyScope.METHOD,
+            )
+            for class_node in context.direct_classes
+        )
 
     def enqueue(self, node: ast.AST, depth: int, context: PythonTraversalContext) -> None:
         child_context = context
@@ -467,13 +493,14 @@ class OrderedObservationVisitor:
     def collect_property_name(
         self, target: ast.Name, statement: ast.Assign | ast.AnnAssign, context: PythonTraversalContext
     ) -> None:
-        for class_name, class_line, class_column in context.direct_classes:
+        for class_node in context.direct_classes:
             self.properties.append(
                 PythonPropertyCandidate(
                     statement=statement,
-                    class_name=class_name,
-                    class_line=class_line,
-                    class_column=class_column,
+                    class_name=class_node.name,
+                    class_line=class_node.lineno,
+                    class_column=class_node.col_offset,
+                    class_bases=tuple(class_node.bases),
                     method=context.module,
                     name=target.id,
                     receiver="",
@@ -507,13 +534,14 @@ class OrderedObservationVisitor:
     ) -> None:
         if receiver.id not in {"self", "cls"}:
             return
-        for class_name, class_line, class_column, method in context.property_contexts:
+        for class_node, method in context.property_contexts:
             self.properties.append(
                 PythonPropertyCandidate(
                     statement=statement,
-                    class_name=class_name,
-                    class_line=class_line,
-                    class_column=class_column,
+                    class_name=class_node.name,
+                    class_line=class_node.lineno,
+                    class_column=class_node.col_offset,
+                    class_bases=tuple(class_node.bases),
                     method=method,
                     name=name,
                     receiver=receiver.id,

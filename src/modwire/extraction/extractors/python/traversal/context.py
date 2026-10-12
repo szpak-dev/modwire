@@ -13,6 +13,6 @@ class PythonTraversalContext:
     lambda_owner: str
     lambda_root_ordinal: int
     owners: tuple[ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda, ...]
-    property_contexts: tuple[tuple[str, int, int, ast.FunctionDef | ast.AsyncFunctionDef], ...]
-    direct_classes: tuple[tuple[str, int, int], ...]
+    property_contexts: tuple[tuple[ast.ClassDef, ast.FunctionDef | ast.AsyncFunctionDef], ...]
+    direct_classes: tuple[ast.ClassDef, ...]
     active_lambda: ast.Module | ast.Lambda
