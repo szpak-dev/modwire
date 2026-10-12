@@ -162,6 +162,112 @@ class TestImplementationManifest(ApplicationTestCase):
         )
         assert tuple(item.specifier for item in manifest.dependencies) == ("abc", "dataclasses", "typing")
 
+    def test_python_manifest_does_not_misclassify_public_functions_or_method_names_as_properties(self) -> None:
+        root = self.project(
+            {
+                "src/example.py": (
+                    "@property\n"
+                    "def example_label() -> str:\n"
+                    "    return 'example'\n\n"
+                    "class ExampleValue:\n"
+                    "    @example_decorator\n"
+                    "    def property(self) -> str:\n"
+                    "        return 'example'\n"
+                )
+            }
+        )
+        format = self.application.implementation_manifest_formats()[0]
+        manifest = self.application.read_implementation_manifest(
+            self.application.implementation_manifest(
+                self.application.generate_map("python", root, self.scan_policy()), format
+            )
+        )
+
+        assert {item.symbol_id.qualified_name for item in manifest.callables} >= {
+            "example_label",
+            "ExampleValue.property",
+        }
+        assert not manifest.attributes
+
+    def test_python_manifest_preserves_property_annotation_boundaries(self) -> None:
+        root = self.project(
+            {
+                "src/example.py": (
+                    "class ExampleValue:\n"
+                    "    @property\n"
+                    "    def example_optional(self) -> str | None:\n"
+                    "        return None\n\n"
+                    "    @property\n"
+                    "    def example_untyped(self):\n"
+                    "        return 'example'\n"
+                )
+            }
+        )
+        format = self.application.implementation_manifest_formats()[0]
+        manifest = self.application.read_implementation_manifest(
+            self.application.implementation_manifest(
+                self.application.generate_map("python", root, self.scan_policy()), format
+            )
+        )
+        attributes = {item.name: item for item in manifest.attributes}
+
+        assert attributes["example_optional"].annotation == "str | None"
+        assert attributes["example_optional"].is_optional
+        assert attributes["example_untyped"].annotation == ""
+        assert not attributes["example_untyped"].is_optional
+
+    def test_python_manifest_publishes_strenum_members_as_string_attributes(self) -> None:
+        root = self.project(
+            {
+                "src/example.py": (
+                    "from enum import StrEnum\n\nclass ExampleKind(StrEnum):\n    EXAMPLE_VALUE = 'example'\n"
+                )
+            }
+        )
+        format = self.application.implementation_manifest_formats()[0]
+        manifest = self.application.read_implementation_manifest(
+            self.application.implementation_manifest(
+                self.application.generate_map("python", root, self.scan_policy()), format
+            )
+        )
+        kind_id = next(item.id for item in manifest.symbols if item.id.qualified_name == "ExampleKind")
+        attribute = next(item for item in manifest.attributes if item.owner_symbol_id == kind_id)
+
+        assert attribute.name == "EXAMPLE_VALUE"
+        assert attribute.annotation == "str"
+        assert attribute.member_kind is SourceMemberKind.STATIC
+        assert (attribute.id, "attribute_type", "str") in {
+            (item.target_id, item.role, item.expression) for item in manifest.annotations
+        }
+
+    def test_python_manifest_projects_properties_as_attributes(self) -> None:
+        root = self.project(
+            {
+                "src/example.py": (
+                    "class ExampleValue:\n    @property\n    def example_name(self) -> str:\n        return 'example'\n"
+                )
+            }
+        )
+        format = self.application.implementation_manifest_formats()[0]
+        manifest = self.application.read_implementation_manifest(
+            self.application.implementation_manifest(
+                self.application.generate_map("python", root, self.scan_policy()), format
+            )
+        )
+        value_id = next(item.id for item in manifest.symbols if item.id.qualified_name == "ExampleValue")
+        attribute = next(
+            item for item in manifest.attributes if item.owner_symbol_id == value_id and item.name == "example_name"
+        )
+
+        assert attribute.annotation == "str"
+        assert not attribute.is_optional
+        assert attribute.member_kind is SourceMemberKind.INSTANCE
+        assert not any(item.symbol_id.qualified_name == "ExampleValue.example_name" for item in manifest.callables)
+        assert not any(item.id.qualified_name == "ExampleValue.example_name" for item in manifest.symbols)
+        assert (attribute.id, "attribute_type", "str") in {
+            (item.target_id, item.role, item.expression) for item in manifest.annotations
+        }
+
     def test_typescript_manifest_distinguishes_undefined_value_types_from_optional_properties(self) -> None:
         root = self.project(
             {

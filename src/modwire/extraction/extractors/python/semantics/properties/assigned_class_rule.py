@@ -46,8 +46,13 @@ class AssignedClassPropertyRule(PythonPropertyRule):
         return self.build(
             candidate=candidate,
             is_optional=self.value_is_none(statement.value),
-            annotation="",
+            annotation=self.annotation(candidate),
             visibility=self.visibility.classify(candidate.name),
             member_kind=SourceMemberKind.STATIC,
             assigned_value=self.assigned_values.read_expression(statement.value),
         )
+
+    def annotation(self, candidate: PythonPropertyCandidate) -> str:
+        if any(ast.unparse(base).rsplit(".", 1)[-1] == "StrEnum" for base in candidate.class_bases):
+            return "str"
+        return ""

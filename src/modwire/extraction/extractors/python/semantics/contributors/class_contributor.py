@@ -5,6 +5,7 @@ from functools import singledispatchmethod
 from wireup import injectable
 
 from ......shared.code.models.declaration_family import DeclarationFamily
+from ......shared.code.models.declaration_identity import DeclarationIdentity
 from ......shared.code.models.source_abstract_class import SourceAbstractClass
 from ......shared.code.models.source_class import SourceClass
 from ......shared.code.models.source_class_method import SourceClassMethod
@@ -41,27 +42,31 @@ class ClassSemanticContributor(PythonSemanticContributor):
         abstract_classes: list[SourceAbstractClass] = []
         for candidate in observation.classes:
             family = self.classes.classify(candidate)
-            methods = self.class_methods(candidate.node)
+            class_id = self.identities.create(
+                context.source_id,
+                family,
+                candidate.node.name,
+                candidate.node.lineno,
+                candidate.node.col_offset,
+            )
+            property_names: set[str] = set()
+            if str(class_id.ordinal) in catalog.properties:
+                property_names = {item.name for item in catalog.properties[str(class_id.ordinal)]}
+            methods = tuple(item for item in self.class_methods(candidate.node) if item.name not in property_names)
             if family is DeclarationFamily.ABSTRACT_CLASS:
-                abstract_classes.append(self.abstract_class(candidate, methods, context))
+                abstract_classes.append(self.abstract_class(candidate, class_id, methods))
             else:
-                classes.append(self.concrete_class(candidate, methods, context))
+                classes.append(self.concrete_class(candidate, class_id, methods))
         return PythonSemanticContribution(classes=tuple(classes), abstract_classes=tuple(abstract_classes))
 
     def concrete_class(
         self,
         candidate: PythonClassCandidate,
+        declaration_id: DeclarationIdentity,
         methods: tuple[SourceClassMethod, ...],
-        context: PythonSourceContext,
     ) -> SourceClass:
         return SourceClass(
-            declaration_id=self.identities.create(
-                context.source_id,
-                DeclarationFamily.CLASS,
-                candidate.node.name,
-                candidate.node.lineno,
-                candidate.node.col_offset,
-            ),
+            declaration_id=declaration_id,
             name=candidate.node.name,
             visibility=SourceVisibility.PUBLIC,
             visibility_intent=self.visibility.classify(candidate.node.name),
@@ -74,8 +79,8 @@ class ClassSemanticContributor(PythonSemanticContributor):
     def abstract_class(
         self,
         candidate: PythonClassCandidate,
+        declaration_id: DeclarationIdentity,
         methods: tuple[SourceClassMethod, ...],
-        context: PythonSourceContext,
     ) -> SourceAbstractClass:
         abstract_names: set[str] = set()
         for statement in candidate.node.body:
@@ -83,13 +88,7 @@ class ClassSemanticContributor(PythonSemanticContributor):
             if name:
                 abstract_names.add(name)
         return SourceAbstractClass(
-            declaration_id=self.identities.create(
-                context.source_id,
-                DeclarationFamily.ABSTRACT_CLASS,
-                candidate.node.name,
-                candidate.node.lineno,
-                candidate.node.col_offset,
-            ),
+            declaration_id=declaration_id,
             name=candidate.node.name,
             visibility=SourceVisibility.PUBLIC,
             visibility_intent=self.visibility.classify(candidate.node.name),
