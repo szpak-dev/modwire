@@ -127,7 +127,6 @@ class CacheApplication:
                     invalidated=invalidated,
                     computed=len(misses),
                     stored=len(misses),
-                    source_observation_reused=True,
                 ),
             ),
         )
@@ -146,12 +145,7 @@ class CacheApplication:
             value = CodeMap.model_validate(cached_value)
             if value.extraction.manifest != plan.observation.manifest:
                 raise ValueError("Cached code map provenance does not match the current source manifest.")
-            outcome = CacheOutcome(
-                stage=CacheStage.CODE_MAP,
-                namespace=options.namespace,
-                hits=1,
-                source_observation_reused=True,
-            )
+            outcome = CacheOutcome(stage=CacheStage.CODE_MAP, namespace=options.namespace, hits=1)
         except (TypeError, ValueError, ValidationError):
             if cached_value is not None and not cached_invalidated:
                 self.storage.delete(options, key)
@@ -161,7 +155,6 @@ class CacheApplication:
                 namespace=options.namespace,
                 misses=1,
                 invalidated=int(cached_invalidated or cached_value is not None),
-                source_observation_reused=True,
             )
         return CachedResult[CodeMap | None](value=value, outcomes=(outcome,))
 

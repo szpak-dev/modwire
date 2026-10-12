@@ -1,6 +1,4 @@
-from typing import Self
-
-from pydantic import Field, model_validator
+from pydantic import Field
 
 from ....extraction.extractors.models.extraction_request import ExtractionRequest
 from ....shared.code.models.source_manifest import SourceManifest
@@ -10,6 +8,8 @@ from .source_entry import SourceEntry
 
 
 class SourceObservation(ValueModel):
+    """Immutable canonical source inventory reusable by identity and cached map operations."""
+
     request: ExtractionRequest
     entries: tuple[SourceEntry, ...]
     files_found: int = Field(ge=0)
@@ -18,13 +18,6 @@ class SourceObservation(ValueModel):
     manifest: SourceManifest
 
     def identity(self) -> SourceManifestIdentity:
-        return self.manifest.identity()
+        """Return the canonical public identity of this observed source manifest."""
 
-    @model_validator(mode="after")
-    def validate_observation(self) -> Self:
-        if self.files_found != len(self.entries):
-            raise ValueError("Source observation files_found must equal its entry count.")
-        artifacts = tuple(entry.artifact() for entry in self.entries)
-        if artifacts != self.manifest.sources:
-            raise ValueError("Source observation entries must match its canonical manifest.")
-        return self
+        return self.manifest.identity()

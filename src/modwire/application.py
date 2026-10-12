@@ -160,7 +160,11 @@ class ModwireApplication:
         """Return a code map and public outcomes for extraction and complete-map reuse."""
 
         observation = self.observe_sources(language, root, policy)
-        return self.generate_map_cached_from_observation_with_diagnostics(observation, options)
+        cached = self.generate_map_cached_from_observation_with_diagnostics(observation, options)
+        outcomes = tuple(
+            outcome.model_copy(update={"source_observation_reused": False}) for outcome in cached.outcomes
+        )
+        return CachedResult(value=cached.value, outcomes=outcomes)
 
     def generate_map_cached_from_observation_with_diagnostics(
         self, observation: SourceObservation, options: CacheOptions
@@ -178,7 +182,6 @@ class ModwireApplication:
                     stage=CacheStage.EXTRACTION,
                     namespace=options.namespace,
                     hits=len(plan.sources),
-                    source_observation_reused=True,
                 ),
             )
         else:
@@ -189,7 +192,11 @@ class ModwireApplication:
             outcome = outcome.model_copy(update={"computed": 1, "stored": 1})
             extraction_outcomes = sources.outcomes
         self.cli.maintain_cache(options)
-        return CachedResult(value=code_map, outcomes=(*extraction_outcomes, outcome))
+        outcomes = tuple(
+            cache_outcome.model_copy(update={"source_observation_reused": True})
+            for cache_outcome in (*extraction_outcomes, outcome)
+        )
+        return CachedResult(value=code_map, outcomes=outcomes)
 
     def generate_queryable_map_cached(
         self, language: str, root: str, policy: ScanPolicy, options: CacheOptions

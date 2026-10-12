@@ -113,7 +113,6 @@ class BatchSourceReader(SourceReader):
             missing = sorted(str(source_id) for source_id in requested - {entry.source_id for entry in entries})
             raise ValueError(f"Source observation does not contain requested identities: {missing}")
         root = Path(request.root).resolve()
-        self._assert_source_set_current(observation, root)
         source_paths = tuple(Path(entry.path) for entry in entries)
         files: dict[FileId, SourceFile] = {}
         plan = self.planners[request.batch_config.planner].plan(source_paths, request.batch_config)
@@ -124,15 +123,6 @@ class BatchSourceReader(SourceReader):
         else:
             for batch_paths in plan.batches:
                 self._merge_files(files, self._extract_batch(request, root, batch_paths))
-        expected_digests = {entry.source_id: entry.content_digest for entry in entries}
-        for source_path in source_paths:
-            source_id = self._source_id_for_path(request, root, source_path)
-            if self._content_digest(source_path) != expected_digests[source_id]:
-                raise RuntimeError(f"Source file changed during extraction: {source_id}")
-        self._assert_source_set_current(observation, root)
-        return {entry.source_id: files[entry.source_id] for entry in entries}
-
-    def _assert_source_set_current(self, observation: SourceObservation, root: Path) -> None:
         current_paths, _, _ = self._discover_source_files(
             observation.request,
             root,
@@ -143,6 +133,12 @@ class BatchSourceReader(SourceReader):
         observed_relative_paths = tuple(entry.relative_path for entry in observation.entries)
         if current_relative_paths != observed_relative_paths:
             raise RuntimeError("Source set changed after observation.")
+        expected_digests = {entry.source_id: entry.content_digest for entry in observation.entries}
+        for source_path in current_paths:
+            source_id = self._source_id_for_path(request, root, source_path)
+            if self._content_digest(source_path) != expected_digests[source_id]:
+                raise RuntimeError(f"Source file changed during extraction: {source_id}")
+        return {entry.source_id: files[entry.source_id] for entry in entries}
 
     def _discover_source_files(
         self, request: ExtractionRequest, root: Path, policy: ScanPolicy, limit: int | None
