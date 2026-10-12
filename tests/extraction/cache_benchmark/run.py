@@ -132,7 +132,10 @@ class CacheBenchmark:
 
                 total_started = time.perf_counter()
                 cold_plan, measurement["cold_inventory"] = self._phase(
-                    repetition, "cold", "inventory", lambda: application.cli.prepare_cache(request, policy)
+                    repetition,
+                    "cold",
+                    "inventory",
+                    lambda: application.cli.prepare_cache(application.cli.observe(request, policy)),
                 )
                 cold_cached_map, measurement["cold_code_map_loading"] = self._phase(
                     repetition,
@@ -146,7 +149,7 @@ class CacheBenchmark:
                     repetition,
                     "cold",
                     "source_loading",
-                    lambda: application.cli.cached_sources(request, cold_plan, options),
+                    lambda: application.cli.cached_sources(cold_plan, options),
                 )
                 _, measurement["cold_source_set_maintenance"] = self._phase(
                     repetition,
@@ -177,7 +180,10 @@ class CacheBenchmark:
 
                 total_started = time.perf_counter()
                 warm_plan, measurement["warm_inventory"] = self._phase(
-                    repetition, "warm", "inventory", lambda: application.cli.prepare_cache(request, policy)
+                    repetition,
+                    "warm",
+                    "inventory",
+                    lambda: application.cli.prepare_cache(application.cli.observe(request, policy)),
                 )
                 warm_cached_map, measurement["warm_code_map_loading"] = self._phase(
                     repetition,
@@ -206,7 +212,7 @@ class CacheBenchmark:
                     repetition,
                     "incremental",
                     "inventory",
-                    lambda: application.cli.prepare_cache(request, policy),
+                    lambda: application.cli.prepare_cache(application.cli.observe(request, policy)),
                 )
                 incremental_cached_map, measurement["incremental_code_map_loading"] = self._phase(
                     repetition,
@@ -220,7 +226,7 @@ class CacheBenchmark:
                     repetition,
                     "incremental",
                     "source_loading",
-                    lambda: application.cli.cached_sources(request, incremental_plan, options),
+                    lambda: application.cli.cached_sources(incremental_plan, options),
                 )
                 _, measurement["incremental_source_set_maintenance"] = self._phase(
                     repetition,

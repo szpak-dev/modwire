@@ -161,9 +161,7 @@ class ModwireApplication:
 
         observation = self.observe_sources(language, root, policy)
         cached = self.generate_map_cached_from_observation_with_diagnostics(observation, options)
-        outcomes = tuple(
-            outcome.model_copy(update={"source_observation_reused": False}) for outcome in cached.outcomes
-        )
+        outcomes = tuple(outcome.model_copy(update={"source_observation_reused": False}) for outcome in cached.outcomes)
         return CachedResult(value=cached.value, outcomes=outcomes)
 
     def generate_map_cached_from_observation_with_diagnostics(
