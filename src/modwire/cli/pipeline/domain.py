@@ -7,7 +7,7 @@ from ...shared.code.models.scan_policy import ScanPolicy
 from ...shared.code.models.source_extraction import SourceExtraction
 from ...shared.code.models.source_file import SourceFile
 from .models.report_pipeline_context import ReportPipelineContext
-from .models.source_inventory import SourceInventory
+from .models.source_observation import SourceObservation
 
 
 class ReportPipelineStep(ABC):
@@ -28,12 +28,12 @@ class SourceReader(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def inventory(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceInventory:
+    def observe(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceObservation:
         raise NotImplementedError
 
     @abstractmethod
     def extract_entries(
-        self, request: ExtractionRequest, inventory: SourceInventory, source_ids: tuple[FileId, ...]
+        self, observation: SourceObservation, source_ids: tuple[FileId, ...]
     ) -> dict[FileId, SourceFile]:
         raise NotImplementedError
 

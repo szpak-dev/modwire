@@ -9,6 +9,7 @@ from .digest_algorithm import DigestAlgorithm
 from .runtime_observation import RuntimeObservation
 from .scan_policy import ScanPolicy
 from .source_artifact import SourceArtifact
+from .source_manifest_identity import SourceManifestIdentity
 
 
 class SourceManifest(ValueModel):
@@ -17,6 +18,9 @@ class SourceManifest(ValueModel):
     sources: tuple[SourceArtifact, ...]
     digest_algorithm: DigestAlgorithm
     digest: str = Field(pattern="^[0-9a-f]{64}$")
+
+    def identity(self) -> SourceManifestIdentity:
+        return SourceManifestIdentity(digest_algorithm=self.digest_algorithm, digest=self.digest)
 
     @model_validator(mode="after")
     def validate_manifest(self) -> Self:

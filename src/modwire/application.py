@@ -15,6 +15,7 @@ from .cli.cache.models.cache_outcome import CacheOutcome
 from .cli.cache.models.cache_stage import CacheStage
 from .cli.cache.models.cached_result import CachedResult
 from .cli.facade import CliFacade
+from .cli.pipeline.models.source_observation import SourceObservation
 from .extraction.facade import ExtractionFacade
 from .implementation.facade import ImplementationFacade
 from .implementation.manifest.models.implementation_manifest import ImplementationManifest
@@ -57,6 +58,7 @@ __all__ = [
     "SourceAssignedValueKind",
     "SourceMemberKind",
     "SourceManifestIdentity",
+    "SourceObservation",
     "SourceRelationKind",
 ]
 
@@ -157,8 +159,16 @@ class ModwireApplication:
     ) -> CachedResult[CodeMap]:
         """Return a code map and public outcomes for extraction and complete-map reuse."""
 
-        request = self.extraction.request(language, str(root))
-        plan = self.cli.prepare_cache(request, policy)
+        observation = self.observe_sources(language, root, policy)
+        return self.generate_map_cached_from_observation_with_diagnostics(observation, options)
+
+    def generate_map_cached_from_observation_with_diagnostics(
+        self, observation: SourceObservation, options: CacheOptions
+    ) -> CachedResult[CodeMap]:
+        """Return a cached code map derived from the exact supplied source observation."""
+
+        request = observation.request
+        plan = self.cli.prepare_cache(observation)
         cached = self.cli.cached_code_map(plan, options)
         outcome = cached.outcome(CacheStage.CODE_MAP)
         if cached.value is not None:
@@ -168,10 +178,11 @@ class ModwireApplication:
                     stage=CacheStage.EXTRACTION,
                     namespace=options.namespace,
                     hits=len(plan.sources),
+                    source_observation_reused=True,
                 ),
             )
         else:
-            sources = self.cli.cached_sources(request, plan, options)
+            sources = self.cli.cached_sources(plan, options)
             self.cli.maintain_source_set(plan, options)
             code_map = self.extraction.generate_map(request, sources.value)
             self.cli.store_code_map(plan, code_map, options)
@@ -195,11 +206,24 @@ class ModwireApplication:
         cached = self.generate_map_cached_with_diagnostics(language, root, policy, options)
         return CachedResult(value=QueryableCodeMap(code_map=cached.value), outcomes=cached.outcomes)
 
+    def generate_queryable_map_cached_from_observation_with_diagnostics(
+        self, observation: SourceObservation, options: CacheOptions
+    ) -> CachedResult[QueryableCodeMap]:
+        """Return a queryable cached map derived from the exact supplied source observation."""
+
+        cached = self.generate_map_cached_from_observation_with_diagnostics(observation, options)
+        return CachedResult(value=QueryableCodeMap(code_map=cached.value), outcomes=cached.outcomes)
+
+    def observe_sources(self, language: str, root: str, policy: ScanPolicy) -> SourceObservation:
+        """Observe one complete immutable canonical source inventory without parsing source."""
+
+        request = self.extraction.request(language, str(root))
+        return self.cli.observe(request, policy)
+
     def source_manifest_identity(self, language: str, root: str, policy: ScanPolicy) -> SourceManifestIdentity:
         """Observe the current canonical source-manifest identity without parsing source."""
 
-        request = self.extraction.request(language, str(root))
-        return self.cli.source_manifest_identity(request, policy)
+        return self.observe_sources(language, root, policy).identity()
 
     def implementation_manifest(self, code_map: CodeMap, format: ManifestFormat) -> ImplementationManifestDocument:
         """Publish a deterministic, provenance-bearing implementation manifest."""
@@ -246,6 +270,7 @@ class ModwireApplication:
                 SourceAssignedValue,
                 SourceAssignedValueKind,
                 SourceManifestIdentity,
+                SourceObservation,
                 SourceMemberKind,
                 SourceRelationKind,
                 ImplementationManifest,

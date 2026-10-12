@@ -1,18 +1,18 @@
 from ....shared.values.models.value_model import ValueModel
-from ...pipeline.models.source_inventory import SourceInventory
+from ...pipeline.models.source_observation import SourceObservation
 from .cache_key import CacheKey
 from .source_cache_entry import SourceCacheEntry
 
 
 class CachePlan(ValueModel):
     language: str
-    inventory: SourceInventory
+    observation: SourceObservation
     sources: tuple[SourceCacheEntry, ...]
     source_set: CacheKey
 
     def source_set_value(self) -> dict[str, object]:
         return {
-            "source_manifest": self.inventory.manifest.digest,
+            "source_manifest": self.observation.manifest.digest,
             "sources": [
                 {
                     "relative_path": source.entry.relative_path,

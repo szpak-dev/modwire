@@ -14,6 +14,7 @@ from .domain import ReportPipelineStep, SourceReader
 from .models.command_request import CommandRequest
 from .models.extractor_command_input import ExtractorCommandInput
 from .models.report_pipeline_context import ReportPipelineContext
+from .models.source_observation import SourceObservation
 from .services.command_line import CommandLine
 from .services.configuration_loader import ConfigurationLoader
 from .services.extractor_command import ExtractorCommand
@@ -38,13 +39,12 @@ class PipelineApplication:
         self.reader.ensure_available(request.runtime)
         return self.reader.extract_source(request, policy)
 
-    def source_manifest_identity(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceManifestIdentity:
+    def observe(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceObservation:
         self.reader.ensure_available(request.runtime)
-        manifest = self.reader.inventory(request, policy).manifest
-        return SourceManifestIdentity(
-            digest_algorithm=manifest.digest_algorithm,
-            digest=manifest.digest,
-        )
+        return self.reader.observe(request, policy)
+
+    def source_manifest_identity(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceManifestIdentity:
+        return self.observe(request, policy).identity()
 
     def has_source_files(self, request: ExtractionRequest, policy: ScanPolicy) -> bool:
         self.reader.ensure_available(request.runtime)
