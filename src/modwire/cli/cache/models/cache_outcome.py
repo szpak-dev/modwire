@@ -11,7 +11,8 @@ class CacheOutcome(ValueModel):
     reports its digest-backed source-set entries as extraction hits without loading
     individual source payloads. Code-map and report counts describe one entry.
     Invalidated entries are also misses. Diagnostics include the configured
-    namespace but never cache keys, source identities, or content.
+    namespace but never cache keys, source identities, or content. The reuse flag
+    states whether the exact supplied source observation drove the cache operation.
     """
 
     stage: CacheStage
@@ -21,6 +22,7 @@ class CacheOutcome(ValueModel):
     invalidated: int = 0
     computed: int = 0
     stored: int = 0
+    source_observation_reused: bool = False
 
     @field_validator("namespace")
     @classmethod

@@ -107,7 +107,7 @@ class ReportBenchmark:
         cleanup_reserve = min(1.0, max_process_seconds * 0.1)
         supervisor_seconds = max_process_seconds - cleanup_reserve
         if Path(sys.argv[0]).resolve() == Path(__file__).resolve():
-            entrypoint = [sys.executable, "-m", "tests.architecture.report_benchmark.run"]
+            entrypoint = [sys.executable, "-m", "scripts.benchmarks.report.run"]
         else:
             entrypoint = [sys.executable, sys.argv[0]]
         command = [*entrypoint, *sys.argv[1:], "--worker"]
@@ -228,7 +228,10 @@ class ReportBenchmark:
             cache_file = self.code_map_cache_file
             if cache_file is None:
                 plan, measurement["inventory"] = self._phase(
-                    repetition, "map", "inventory", lambda: application.cli.prepare_cache(request, policy)
+                    repetition,
+                    "map",
+                    "inventory",
+                    lambda: application.cli.prepare_cache(application.cli.observe(request, policy)),
                 )
                 cached_map, measurement["code_map_loading"] = self._phase(
                     repetition, "map", "code_map_loading", lambda: application.cli.cached_code_map(plan, options)
@@ -240,7 +243,7 @@ class ReportBenchmark:
                         repetition,
                         "map",
                         "extraction_loading",
-                        lambda: application.cli.cached_sources(request, plan, options),
+                        lambda: application.cli.cached_sources(plan, options),
                     )
                     _, measurement["source_set_maintenance"] = self._phase(
                         repetition,

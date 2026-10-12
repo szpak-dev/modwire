@@ -24,6 +24,7 @@ class TestPersistentCache(ApplicationTestCase):
             "invalidated": 0,
             "computed": 1,
             "stored": 1,
+            "source_observation_reused": False,
         }
         assert cold.outcome(CacheStage.CODE_MAP).to_dict() == {
             "stage": "code-map",
@@ -33,6 +34,7 @@ class TestPersistentCache(ApplicationTestCase):
             "invalidated": 0,
             "computed": 1,
             "stored": 1,
+            "source_observation_reused": False,
         }
         assert warm.outcome(CacheStage.EXTRACTION).hits == 1
         assert warm.outcome(CacheStage.EXTRACTION).misses == 0
@@ -91,6 +93,7 @@ class TestPersistentCache(ApplicationTestCase):
             "invalidated": 0,
             "computed": 1,
             "stored": 1,
+            "source_observation_reused": False,
         }
         assert warm.outcome(CacheStage.REPORTS).hits == 1
         assert warm.outcome(CacheStage.REPORTS).misses == 0
@@ -117,7 +120,8 @@ class TestPersistentCache(ApplicationTestCase):
             update={"batch_config": request.batch_config.model_copy(update={"size": request.batch_config.size + 1})}
         )
 
-        changed_plan = self.application.cli.prepare_cache(changed_request, policy)
+        changed_observation = self.application.cli.observe(changed_request, policy)
+        changed_plan = self.application.cli.prepare_cache(changed_observation)
         changed = self.application.cli.cached_code_map(changed_plan, options)
 
         assert changed.value is None
@@ -290,6 +294,3 @@ class TestPersistentCache(ApplicationTestCase):
 
         assert result.extraction.files
         assert sum(path.stat().st_size for path in (self.workspace / "cache").rglob("*.cache")) <= 1
-
-    def cache_options(self, namespace: str) -> CacheOptions:
-        return CacheOptions(directory=str(self.workspace / "cache"), namespace=namespace, max_bytes=10_000_000)

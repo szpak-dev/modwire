@@ -2,10 +2,15 @@ import os
 import subprocess
 from pathlib import Path
 
+from modwire.application import CacheOptions
+
 from ..support.service_test import ServiceTestCase
 
 
 class ApplicationTestCase(ServiceTestCase):
+    def cache_options(self, namespace: str) -> CacheOptions:
+        return CacheOptions(directory=str(self.workspace / "cache"), namespace=namespace, max_bytes=10_000_000)
+
     def installed_consumer(self, root: Path, language: str) -> subprocess.CompletedProcess[str]:
         distribution = self.workspace / "distribution"
         subprocess.run(

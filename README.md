@@ -52,6 +52,10 @@ Return a code map with content-addressed source and complete-source-set reuse.
 
 Return a code map and public outcomes for extraction and complete-map reuse.
 
+### `generate_map_cached_from_observation_with_diagnostics`
+
+Return a cached code map derived from the exact supplied source observation.
+
 ### `generate_queryable_map_cached`
 
 Return a queryable code map with content-addressed persistent reuse.
@@ -59,6 +63,14 @@ Return a queryable code map with content-addressed persistent reuse.
 ### `generate_queryable_map_cached_with_diagnostics`
 
 Return a queryable code map and public outcomes for every applicable cache stage.
+
+### `generate_queryable_map_cached_from_observation_with_diagnostics`
+
+Return a queryable cached map derived from the exact supplied source observation.
+
+### `observe_sources`
+
+Observe one complete immutable canonical source inventory without parsing source.
 
 ### `source_manifest_identity`
 
@@ -112,7 +124,8 @@ Extraction counts describe current source records. An exact code-map hit
 reports its digest-backed source-set entries as extraction hits without loading
 individual source payloads. Code-map and report counts describe one entry.
 Invalidated entries are also misses. Diagnostics include the configured
-namespace but never cache keys, source identities, or content.
+namespace but never cache keys, source identities, or content. The reuse flag
+states whether the exact supplied source observation drove the cache operation.
 
 ## `CachedResult`
 
@@ -145,6 +158,14 @@ Kinds of class-property assignment evidence published by extractors.
 ## `SourceManifestIdentity`
 
 Canonical identity of one observed source manifest.
+
+## `SourceObservation`
+
+Immutable canonical source inventory reusable by identity and cached map operations.
+
+### `identity`
+
+Return the canonical public identity of this observed source manifest.
 
 ## `SourceMemberKind`
 

@@ -25,6 +25,7 @@ from .pipeline.application import PipelineApplication
 from .pipeline.models.command_name import CommandName
 from .pipeline.models.command_request import CommandRequest
 from .pipeline.models.extractor_command_input import ExtractorCommandInput
+from .pipeline.models.source_observation import SourceObservation
 
 
 @injectable
@@ -52,19 +53,20 @@ class CliFacade:
     def extract(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceExtraction:
         return self.pipeline.extract(request, policy)
 
+    def observe(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceObservation:
+        return self.pipeline.observe(request, policy)
+
     def source_manifest_identity(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceManifestIdentity:
         return self.pipeline.source_manifest_identity(request, policy)
 
     def has_source_files(self, request: ExtractionRequest, policy: ScanPolicy) -> bool:
         return self.pipeline.has_source_files(request, policy)
 
-    def prepare_cache(self, request: ExtractionRequest, policy: ScanPolicy) -> CachePlan:
-        return self.cache.prepare(request, policy)
+    def prepare_cache(self, observation: SourceObservation) -> CachePlan:
+        return self.cache.prepare(observation)
 
-    def cached_sources(
-        self, request: ExtractionRequest, plan: CachePlan, options: CacheOptions
-    ) -> CachedResult[SourceExtraction]:
-        return self.cache.sources(request, plan, options)
+    def cached_sources(self, plan: CachePlan, options: CacheOptions) -> CachedResult[SourceExtraction]:
+        return self.cache.sources(plan, options)
 
     def maintain_source_set(self, plan: CachePlan, options: CacheOptions) -> bool:
         return self.cache.maintain_source_set(plan, options)
@@ -148,10 +150,11 @@ class CliFacade:
             extraction = self.extract(extraction_request, policy)
             code_map = self.extraction.generate_queryable_map(extraction_request, extraction)
             return self.render(self.architecture.analyze(code_map, config), request.summary)
-        plan = self.prepare_cache(extraction_request, policy)
+        observation = self.observe(extraction_request, policy)
+        plan = self.prepare_cache(observation)
         cached_code_map = self.cached_code_map(plan, cache_options).value
         if cached_code_map is None:
-            extraction = self.cached_sources(extraction_request, plan, cache_options).value
+            extraction = self.cached_sources(plan, cache_options).value
             self.maintain_source_set(plan, cache_options)
             cached_code_map = self.extraction.generate_map(extraction_request, extraction)
             self.store_code_map(plan, cached_code_map, cache_options)

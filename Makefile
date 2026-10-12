@@ -36,10 +36,10 @@ scan-benchmark:
 	uv run python -m tests.extraction.scan_benchmark.run --root .dev/benchmarks/scan-project --language "$(SCAN_BENCHMARK_LANGUAGE)" --excluded-pattern 'example_excluded/**'
 
 cache-benchmark:
-	uv run python -m tests.extraction.cache_benchmark.run --root "$(CACHE_BENCHMARK_ROOT)" --language "$(CACHE_BENCHMARK_LANGUAGE)" --cache-directory .dev/benchmarks/cache --incremental-source "$(CACHE_BENCHMARK_SOURCE)" --replacement-source "$(CACHE_BENCHMARK_REPLACEMENT)"
+	uv run python -m scripts.benchmarks.cache.run --root "$(CACHE_BENCHMARK_ROOT)" --language "$(CACHE_BENCHMARK_LANGUAGE)" --cache-directory .dev/benchmarks/cache --incremental-source "$(CACHE_BENCHMARK_SOURCE)" --replacement-source "$(CACHE_BENCHMARK_REPLACEMENT)"
 
 report-benchmark:
-	uv run python -m tests.architecture.report_benchmark.run --root "$(REPORT_BENCHMARK_ROOT)" --language "$(REPORT_BENCHMARK_LANGUAGE)" --cache-directory "$(REPORT_BENCHMARK_CACHE)" --cache-namespace "$(REPORT_BENCHMARK_NAMESPACE)"
+	uv run python -m scripts.benchmarks.report.run --root "$(REPORT_BENCHMARK_ROOT)" --language "$(REPORT_BENCHMARK_LANGUAGE)" --cache-directory "$(REPORT_BENCHMARK_CACHE)" --cache-namespace "$(REPORT_BENCHMARK_NAMESPACE)"
 
 docs-check:
 	uv run python scripts/generate_docs.py --check

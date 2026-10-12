@@ -26,7 +26,7 @@ from ....shared.code.models.source_file import SourceFile
 from ..batching.planner import SourceBatchPlanner
 from ..domain import SourceReader
 from ..models.source_entry import SourceEntry
-from ..models.source_inventory import SourceInventory
+from ..models.source_observation import SourceObservation
 from ..transport.output_reader import ExtractorBatchOutputReader
 from ..transport.source_file_factory import SourceFileFactory
 from .source_manifest_builder import SourceManifestBuilder
@@ -58,8 +58,8 @@ class BatchSourceReader(SourceReader):
         return bool(source_paths)
 
     def extract_source(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceExtraction:
-        inventory = self.inventory(request, policy)
-        files = self.extract_entries(request, inventory, tuple(entry.source_id for entry in inventory.entries))
+        observation = self.observe(request, policy)
+        files = self.extract_entries(observation, tuple(entry.source_id for entry in observation.entries))
         modules: dict[ModuleId, FileId] = {}
         for file_id, source_file in files.items():
             existing = modules.get(source_file.module_id)
@@ -69,17 +69,18 @@ class BatchSourceReader(SourceReader):
         return SourceExtraction(
             files=files,
             modules=modules,
-            manifest=inventory.manifest,
-            files_found=inventory.files_found,
-            files_excluded=inventory.files_excluded,
-            directories_pruned=inventory.directories_pruned,
+            manifest=observation.manifest,
+            files_found=observation.files_found,
+            files_excluded=observation.files_excluded,
+            directories_pruned=observation.directories_pruned,
         )
 
-    def inventory(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceInventory:
+    def observe(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceObservation:
         root = Path(request.root)
         resolved_root = root.resolve()
         if not resolved_root.is_dir():
             raise ValueError(f"Source root is not a directory: {root}")
+        request = request.model_copy(update={"root": str(resolved_root)})
         source_paths, files_excluded, directories_pruned = self._discover_source_files(
             request, resolved_root, policy, limit=None
         )
@@ -93,7 +94,8 @@ class BatchSourceReader(SourceReader):
             for source_path in source_paths
         )
         runtime = self.manifests.observe(request)
-        return SourceInventory(
+        return SourceObservation(
+            request=request,
             entries=entries,
             files_found=len(source_paths),
             files_excluded=files_excluded,
@@ -102,13 +104,14 @@ class BatchSourceReader(SourceReader):
         )
 
     def extract_entries(
-        self, request: ExtractionRequest, inventory: SourceInventory, source_ids: tuple[FileId, ...]
+        self, observation: SourceObservation, source_ids: tuple[FileId, ...]
     ) -> dict[FileId, SourceFile]:
+        request = observation.request
         requested = set(source_ids)
-        entries = tuple(entry for entry in inventory.entries if entry.source_id in requested)
+        entries = tuple(entry for entry in observation.entries if entry.source_id in requested)
         if len(entries) != len(requested):
             missing = sorted(str(source_id) for source_id in requested - {entry.source_id for entry in entries})
-            raise ValueError(f"Source inventory does not contain requested identities: {missing}")
+            raise ValueError(f"Source observation does not contain requested identities: {missing}")
         root = Path(request.root).resolve()
         source_paths = tuple(Path(entry.path) for entry in entries)
         files: dict[FileId, SourceFile] = {}
@@ -120,8 +123,18 @@ class BatchSourceReader(SourceReader):
         else:
             for batch_paths in plan.batches:
                 self._merge_files(files, self._extract_batch(request, root, batch_paths))
-        expected_digests = {entry.source_id: entry.content_digest for entry in entries}
-        for source_path in source_paths:
+        current_paths, _, _ = self._discover_source_files(
+            observation.request,
+            root,
+            observation.manifest.policy,
+            limit=None,
+        )
+        current_relative_paths = tuple(path.relative_to(root).as_posix() for path in current_paths)
+        observed_relative_paths = tuple(entry.relative_path for entry in observation.entries)
+        if current_relative_paths != observed_relative_paths:
+            raise RuntimeError("Source set changed after observation.")
+        expected_digests = {entry.source_id: entry.content_digest for entry in observation.entries}
+        for source_path in current_paths:
             source_id = self._source_id_for_path(request, root, source_path)
             if self._content_digest(source_path) != expected_digests[source_id]:
                 raise RuntimeError(f"Source file changed during extraction: {source_id}")

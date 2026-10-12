@@ -16,6 +16,7 @@ from ...shared.code.models.scan_policy import ScanPolicy
 from ...shared.code.models.source_extraction import SourceExtraction
 from ...shared.code.models.source_file import SourceFile
 from ..pipeline.domain import SourceReader
+from ..pipeline.models.source_observation import SourceObservation
 from .domain import CacheStorage
 from .models.cache_key import CacheKey
 from .models.cache_options import CacheOptions
@@ -43,26 +44,26 @@ class CacheApplication:
         self.reader.ensure_available(request.runtime)
         return self.reader.extract_source(request, policy)
 
-    def prepare(self, request: ExtractionRequest, policy: ScanPolicy) -> CachePlan:
-        self.reader.ensure_available(request.runtime)
-        inventory = self.reader.inventory(request, policy)
+    def prepare(self, observation: SourceObservation) -> CachePlan:
+        request = observation.request
+        policy = observation.manifest.policy
         sources = tuple(
             SourceCacheEntry(
                 entry=entry,
-                key=self.identity.source(request, policy, inventory.manifest.runtime, entry),
+                key=self.identity.source(request, policy, observation.manifest.runtime, entry),
             )
-            for entry in inventory.entries
+            for entry in observation.entries
         )
         return CachePlan(
             language=request.runtime.descriptor.language,
-            inventory=inventory,
+            observation=observation,
             sources=sources,
-            source_set=self.identity.source_set(request, inventory.manifest, sources),
+            source_set=self.identity.source_set(request, observation.manifest, sources),
         )
 
-    def sources(
-        self, request: ExtractionRequest, plan: CachePlan, options: CacheOptions
-    ) -> CachedResult[SourceExtraction]:
+    def sources(self, plan: CachePlan, options: CacheOptions) -> CachedResult[SourceExtraction]:
+        observation = plan.observation
+        request = observation.request
         payloads = self.storage.read_many(options, tuple(source.key for source in plan.sources))
         files: dict[FileId, SourceFile] = {}
         misses: list[FileId] = []
@@ -86,9 +87,9 @@ class CacheApplication:
                 misses.append(source.entry.source_id)
         self.storage.delete_many(options, tuple(invalid_keys))
 
-        if misses or not plan.inventory.entries:
+        if misses or not observation.entries:
             self.reader.ensure_available(request.runtime)
-        extracted = self.reader.extract_entries(request, plan.inventory, tuple(misses))
+        extracted = self.reader.extract_entries(observation, tuple(misses))
         writes: list[tuple[CacheKey, bytes]] = []
         for source_id in misses:
             source_file = extracted.get(source_id)
@@ -110,10 +111,10 @@ class CacheApplication:
         extraction = SourceExtraction(
             files=ordered_files,
             modules=modules,
-            manifest=plan.inventory.manifest,
-            files_found=plan.inventory.files_found,
-            files_excluded=plan.inventory.files_excluded,
-            directories_pruned=plan.inventory.directories_pruned,
+            manifest=observation.manifest,
+            files_found=observation.files_found,
+            files_excluded=observation.files_excluded,
+            directories_pruned=observation.directories_pruned,
         )
         return CachedResult(
             value=extraction,
@@ -142,7 +143,7 @@ class CacheApplication:
         cached_value, cached_invalidated = self._read(options, key)
         try:
             value = CodeMap.model_validate(cached_value)
-            if value.extraction.manifest != plan.inventory.manifest:
+            if value.extraction.manifest != plan.observation.manifest:
                 raise ValueError("Cached code map provenance does not match the current source manifest.")
             outcome = CacheOutcome(stage=CacheStage.CODE_MAP, namespace=options.namespace, hits=1)
         except (TypeError, ValueError, ValidationError):
