@@ -9,6 +9,7 @@ from ...map.models.architecture_map import ArchitectureMap
 from ...map.models.architecture_realm import ArchitectureRealm
 from ..domain import FlowAnalyzerInterface
 from ..models.flow_violation import FlowViolation
+from ..models.unknown_flow_analyzer_error import UnknownFlowAnalyzerError
 
 
 @injectable()
@@ -39,8 +40,7 @@ class BoundariesFlowAnalyzer:
         try:
             return self._analyzers[name]
         except KeyError as error:
-            known = ", ".join(sorted(self._analyzers))
-            raise ValueError(f"Unknown flow analyzer {name!r}. Known analyzers: {known}") from error
+            raise UnknownFlowAnalyzerError(name, tuple(sorted(self._analyzers))) from error
 
     def realms(self, flow: FlowRules) -> tuple[ArchitectureRealm, ...]:
         if flow.realms:

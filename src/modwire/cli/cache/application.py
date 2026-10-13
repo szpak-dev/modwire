@@ -7,9 +7,9 @@ from wireup import injectable
 
 from ...architecture.config.models.architecture_config import ArchitectureConfig
 from ...architecture.report.models.report_node import ReportNode
+from ...extraction.extractors.models.duplicate_identity_error import DuplicateIdentityError
 from ...extraction.extractors.models.extraction_request import ExtractionRequest
 from ...shared.code.models.code_map import CodeMap
-from ...shared.code.models.duplicate_identity_error import DuplicateIdentityError
 from ...shared.code.models.identity import FileId, ModuleId
 from ...shared.code.models.identity_kind import IdentityKind
 from ...shared.code.models.scan_policy import ScanPolicy
@@ -92,9 +92,7 @@ class CacheApplication:
         extracted = self.reader.extract_entries(observation, tuple(misses))
         writes: list[tuple[CacheKey, bytes]] = []
         for source_id in misses:
-            source_file = extracted.get(source_id)
-            if source_file is None:
-                raise RuntimeError(f"Extractor omitted a requested source file: {source_id}")
+            source_file = extracted[source_id]
             files[source_id] = source_file
             source = sources_by_id[source_id]
             writes.append((source.key, self.codec.encode(source.key, source_file.model_dump(mode="json"))))

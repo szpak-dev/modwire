@@ -5,6 +5,7 @@ from wireup import injectable
 
 from ...resources.models.init_asset import InitAsset
 from ...resources.models.init_target_base import InitTargetBase
+from ..models.invalid_initialization_target_error import InvalidInitializationTargetError
 
 
 @injectable
@@ -24,8 +25,8 @@ class InitializationService:
 
     def _resolve_within(self, project_root: Path, base: Path, target: Path) -> Path:
         if target.is_absolute():
-            raise ValueError(f"Initialization target must be project-relative: {target}")
+            raise InvalidInitializationTargetError(str(target), "target must be project-relative")
         resolved = (base / target).resolve()
         if not resolved.is_relative_to(project_root):
-            raise ValueError(f"Initialization target escapes the project: {target}")
+            raise InvalidInitializationTargetError(str(target), "target escapes the project")
         return resolved

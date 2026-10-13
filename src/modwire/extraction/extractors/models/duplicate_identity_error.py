@@ -1,8 +1,11 @@
-from .identity import FileId
-from .identity_kind import IdentityKind
+from ....shared.code.models.identity import FileId
+from ....shared.code.models.identity_kind import IdentityKind
+from .extraction_error import ExtractionError
 
 
-class DuplicateIdentityError(ValueError):
+class DuplicateIdentityError(ExtractionError):
+    """Report two source files that claim the same extracted identity."""
+
     code = "duplicate_identity"
 
     def __init__(
@@ -21,6 +24,8 @@ class DuplicateIdentityError(ValueError):
         )
 
     def as_dict(self) -> dict[str, str]:
+        """Return stable machine-readable evidence for the duplicate identity."""
+
         return {
             "code": self.code,
             "identity_kind": self.identity_kind,
