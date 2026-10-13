@@ -8,17 +8,15 @@ from .base_test import ApplicationTestCase
 
 class TestSourceObservation(ApplicationTestCase):
     def test_changed_cache_hit_is_rejected_after_observation(self) -> None:
-        root = self.project(
-            {
-                "src/example_cached.py": "example_cached = 1\n",
-                "src/example_changed.py": "example_changed = 1\n",
-            }
-        )
+        root = self.project({"src/example_cached.py": "example_cached = 1\n"})
         policy = self.scan_policy()
         options = self.cache_options("example-observation-cache-hit-drift")
-        self.application.generate_queryable_map_cached("python", root, policy, options)
-        (root / "src/example_changed.py").write_text("example_changed = 2\n", encoding="utf-8")
         observation = self.application.observe_sources("python", root, policy)
+        populated = self.application.generate_queryable_map_cached_from_observation_with_diagnostics(
+            observation,
+            options,
+        )
+        assert populated.value.source_ids() == ("src/example_cached.py",)
         (root / "src/example_cached.py").write_text("example_cached = 2\n", encoding="utf-8")
 
         with pytest.raises(SourceObservationInvalidatedError) as raised:

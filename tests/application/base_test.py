@@ -1,5 +1,7 @@
 import os
 import subprocess
+import sys
+from collections.abc import Mapping
 from pathlib import Path
 
 from modwire.application import CacheOptions
@@ -35,6 +37,26 @@ class ApplicationTestCase(ServiceTestCase):
                 str(self.repository / "scripts/verify_consumer.py"),
                 str(root),
                 "--language",
+                language,
+            ),
+            cwd=self.workspace,
+            env=environment,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+
+    def failure_consumer(
+        self,
+        root: Path,
+        language: str,
+        environment: Mapping[str, str],
+    ) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            (
+                sys.executable,
+                str(self.repository / "tests/application/failure_consumer.py"),
+                str(root),
                 language,
             ),
             cwd=self.workspace,

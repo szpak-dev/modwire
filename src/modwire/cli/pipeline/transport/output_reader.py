@@ -6,5 +6,5 @@ from ....shared.code.models.identity import FileId
 
 class ExtractorBatchOutputReader(ABC):
     @abstractmethod
-    def read(self, document: str) -> dict[FileId, ParsedSourceFile]:
+    def read(self, document: str) -> tuple[tuple[FileId, ParsedSourceFile], ...]:
         raise NotImplementedError

@@ -218,6 +218,7 @@ class ModwireApplication:
         """Return a cached code map derived from the exact supplied source observation."""
 
         request = observation.request
+        self.cli.validate_observation(observation)
         plan = self.cli.prepare_cache(observation)
         cached = self.cli.cached_code_map(plan, options)
         outcome = cached.outcome(CacheStage.CODE_MAP)

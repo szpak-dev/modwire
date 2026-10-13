@@ -11,5 +11,6 @@ from .output_reader import ExtractorBatchOutputReader
 @injectable(as_type=ExtractorBatchOutputReader, qualifier="json")
 @dataclass(frozen=True)
 class JsonBatchOutputReader(ExtractorBatchOutputReader):
-    def read(self, document: str) -> dict[FileId, ParsedSourceFile]:
-        return TypeAdapter(dict[FileId, ParsedSourceFile]).validate_json(document)
+    def read(self, document: str) -> tuple[tuple[FileId, ParsedSourceFile], ...]:
+        sources = TypeAdapter(dict[FileId, ParsedSourceFile]).validate_json(document)
+        return tuple(sources.items())

@@ -56,6 +56,9 @@ class CliFacade:
     def observe(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceObservation:
         return self.pipeline.observe(request, policy)
 
+    def validate_observation(self, observation: SourceObservation) -> None:
+        self.pipeline.validate_observation(observation)
+
     def source_manifest_identity(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceManifestIdentity:
         return self.pipeline.source_manifest_identity(request, policy)
 
@@ -151,6 +154,7 @@ class CliFacade:
             code_map = self.extraction.generate_queryable_map(extraction_request, extraction)
             return self.render(self.architecture.analyze(code_map, config), request.summary)
         observation = self.observe(extraction_request, policy)
+        self.validate_observation(observation)
         plan = self.prepare_cache(observation)
         cached_code_map = self.cached_code_map(plan, cache_options).value
         if cached_code_map is None:

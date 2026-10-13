@@ -130,6 +130,7 @@ class BatchSourceReader(SourceReader):
                 ExtractorContractViolation.SOURCE_SET_MISMATCH,
                 missing,
                 (),
+                (),
                 "source observation does not contain requested identities",
             )
         try:
@@ -275,24 +276,44 @@ class BatchSourceReader(SourceReader):
                 ExtractorContractViolation.INVALID_OUTPUT,
                 (),
                 (),
+                (),
                 str(error),
             ) from error
+        source_ids = tuple(source_id for source_id, _ in extracted)
+        seen_source_ids: set[FileId] = set()
+        duplicate_source_ids: set[FileId] = set()
+        for source_id in source_ids:
+            if source_id in seen_source_ids:
+                duplicate_source_ids.add(source_id)
+            else:
+                seen_source_ids.add(source_id)
+        if duplicate_source_ids:
+            raise ExtractorContractError(
+                runtime.descriptor.language,
+                ExtractorContractViolation.DUPLICATE_SOURCE_IDENTITY,
+                (),
+                (),
+                tuple(sorted(duplicate_source_ids, key=str)),
+                "extractor output contains duplicate source identities",
+            )
+        extracted_by_source_id = dict(extracted)
         source_paths_by_id = {
             self.code.file_id(str(root), str(source_path)): source_path for source_path in source_paths
         }
         expected = set(source_paths_by_id)
-        actual = set(extracted)
+        actual = set(extracted_by_source_id)
         if actual != expected:
             raise ExtractorContractError(
                 runtime.descriptor.language,
                 ExtractorContractViolation.SOURCE_SET_MISMATCH,
                 tuple(sorted(expected - actual, key=str)),
                 tuple(sorted(actual - expected, key=str)),
+                (),
                 "extractor output identities do not match the requested batch",
             )
         extracted_files: dict[FileId, SourceFile] = {}
         try:
-            for file_id, parsed_source_file in extracted.items():
+            for file_id, parsed_source_file in extracted_by_source_id.items():
                 source_path = source_paths_by_id[file_id]
                 extracted_files[file_id] = self.files.create(
                     file_id,
@@ -303,6 +324,7 @@ class BatchSourceReader(SourceReader):
             raise ExtractorContractError(
                 runtime.descriptor.language,
                 ExtractorContractViolation.INVALID_OUTPUT,
+                (),
                 (),
                 (),
                 str(error),

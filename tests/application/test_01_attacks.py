@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 import sys
 from typing import Any
 
@@ -84,17 +85,19 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
 
         assert raised.value.root == str(missing)
 
-    def test_unavailable_extractor_reports_the_runtime_contract(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_unavailable_extractor_reports_the_runtime_contract(self) -> None:
         root = self.project({"src/example.ts": "export const exampleValue = 1;\n"})
-        monkeypatch.setenv("PATH", "")
 
-        with pytest.raises(ExtractorUnavailableError) as raised:
-            self.application.generate_map("typescript", root, self.scan_policy())
+        result = self.failure_consumer(root, "typescript", {**os.environ, "PATH": ""})
 
-        assert raised.value.language == "typescript"
-        assert raised.value.executable == "node"
+        assert result.returncode == 0, result.stderr
+        assert json.loads(result.stdout) == {
+            "executable": "node",
+            "language": "typescript",
+            "type": "ExtractorUnavailableError",
+        }
 
-    def test_invalid_extractor_output_reports_a_contract_violation(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_invalid_extractor_output_reports_a_contract_violation(self) -> None:
         root = self.project({"src/example.ts": "export const exampleValue = 1;\n"})
         runtime_directory = self.workspace / "example-runtime"
         runtime_directory.mkdir()
@@ -106,14 +109,46 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
             encoding="utf-8",
         )
         runtime.chmod(0o755)
-        monkeypatch.setenv("PATH", str(runtime_directory))
 
-        with pytest.raises(ExtractorContractError) as raised:
-            self.application.generate_map("typescript", root, self.scan_policy())
+        result = self.failure_consumer(root, "typescript", {**os.environ, "PATH": str(runtime_directory)})
 
-        assert raised.value.language == "typescript"
-        assert raised.value.violation is ExtractorContractViolation.INVALID_OUTPUT
-        assert isinstance(raised.value.__cause__, ValidationError)
+        assert result.returncode == 0, result.stderr
+        failure = json.loads(result.stdout)
+        assert failure["type"] == "ExtractorContractError"
+        assert failure["language"] == "typescript"
+        assert failure["violation"] == ExtractorContractViolation.INVALID_OUTPUT
+        assert failure["cause"] == ValidationError.__name__
+
+    def test_duplicate_extractor_output_identities_report_a_contract_violation(self) -> None:
+        root = self.project({"src/example.ts": "export const exampleValue = 1;\n"})
+        runtime_directory = self.workspace / "example-duplicate-runtime"
+        runtime_directory.mkdir()
+        runtime = runtime_directory / "node"
+        runtime.write_text(
+            f"#!{sys.executable}\n"
+            "import json\n"
+            "import sys\n"
+            "if '--version' in sys.argv:\n"
+            "    print('example 1')\n"
+            "else:\n"
+            "    for source_id in json.load(sys.stdin):\n"
+            "        document = json.dumps([source_id, {}])\n"
+            "        print(document)\n"
+            "        print(document)\n",
+            encoding="utf-8",
+        )
+        runtime.chmod(0o755)
+
+        result = self.failure_consumer(root, "typescript", {**os.environ, "PATH": str(runtime_directory)})
+
+        assert result.returncode == 0, result.stderr
+        failure = json.loads(result.stdout)
+        assert failure["type"] == "ExtractorContractError"
+        assert failure["language"] == "typescript"
+        assert failure["violation"] == ExtractorContractViolation.DUPLICATE_SOURCE_IDENTITY
+        assert failure["missing_source_ids"] == []
+        assert failure["unexpected_source_ids"] == []
+        assert failure["duplicate_source_ids"] == ["src/example.ts"]
 
     def test_cache_access_reports_the_public_cache_path(self) -> None:
         cache_file = self.workspace / "example-cache-file"

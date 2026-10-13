@@ -7,3 +7,4 @@ class ExtractorContractViolation(StrEnum):
     EMPTY_RUNTIME_VERSION = "empty_runtime_version"
     INVALID_OUTPUT = "invalid_output"
     SOURCE_SET_MISMATCH = "source_set_mismatch"
+    DUPLICATE_SOURCE_IDENTITY = "duplicate_source_identity"

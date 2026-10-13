@@ -65,6 +65,7 @@ class SourceManifestBuilder:
                 ExtractorContractViolation.EMPTY_RUNTIME_VERSION,
                 (),
                 (),
+                (),
                 "runtime returned an empty version",
             )
         entrypoint = runtime.entrypoint
