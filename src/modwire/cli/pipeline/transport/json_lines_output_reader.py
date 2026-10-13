@@ -11,6 +11,6 @@ from .output_reader import ExtractorBatchOutputReader
 @injectable(as_type=ExtractorBatchOutputReader, qualifier="jsonl")
 @dataclass(frozen=True)
 class JsonLinesBatchOutputReader(ExtractorBatchOutputReader):
-    def read(self, document: str) -> dict[FileId, ParsedSourceFile]:
+    def read(self, document: str) -> tuple[tuple[FileId, ParsedSourceFile], ...]:
         adapter = TypeAdapter(tuple[FileId, ParsedSourceFile])
-        return dict(adapter.validate_json(line) for line in document.splitlines())
+        return tuple(adapter.validate_json(line) for line in document.splitlines())

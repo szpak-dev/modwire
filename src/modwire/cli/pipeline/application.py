@@ -43,6 +43,9 @@ class PipelineApplication:
         self.reader.ensure_available(request.runtime)
         return self.reader.observe(request, policy)
 
+    def validate_observation(self, observation: SourceObservation) -> None:
+        self.reader.validate_observation(observation)
+
     def source_manifest_identity(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceManifestIdentity:
         return self.observe(request, policy).identity()
 

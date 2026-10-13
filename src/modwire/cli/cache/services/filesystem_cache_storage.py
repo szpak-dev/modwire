@@ -14,9 +14,12 @@ from pydantic import ValidationError
 from wireup import injectable
 
 from ..domain import CacheStorage
+from ..models.cache_access_error import CacheAccessError
 from ..models.cache_entry import CacheEntry
+from ..models.cache_error import CacheError
 from ..models.cache_key import CacheKey
 from ..models.cache_options import CacheOptions
+from ..models.cache_ownership_error import CacheOwnershipError
 from ..models.cache_storage_state import CacheStorageState
 
 
@@ -44,7 +47,7 @@ class FileCacheStorage(CacheStorage):
                     status = path.stat()
                     os.utime(path, ns=(now, status.st_mtime_ns))
                     payloads.append(payload)
-                except (FileNotFoundError, OSError):
+                except FileNotFoundError:
                     payloads.append(None)
             return tuple(payloads)
 
@@ -70,14 +73,14 @@ class FileCacheStorage(CacheStorage):
                     target.parent.mkdir(parents=True, exist_ok=True)
                     try:
                         existing = target.read_bytes()
-                    except (FileNotFoundError, OSError):
+                    except FileNotFoundError:
                         existing = None
                     if existing == payload:
                         continue
                     try:
                         old_size = target.stat().st_size
                         existed = True
-                    except (FileNotFoundError, OSError):
+                    except FileNotFoundError:
                         old_size = 0
                         existed = False
                     self._atomic_write(target, payload)
@@ -116,7 +119,7 @@ class FileCacheStorage(CacheStorage):
                     try:
                         size = target.stat().st_size
                         target.unlink()
-                    except (FileNotFoundError, OSError):
+                    except FileNotFoundError:
                         continue
                     total_bytes -= size
                     entry_count -= 1
@@ -150,7 +153,7 @@ class FileCacheStorage(CacheStorage):
                         break
                     try:
                         self._entry_path(root, entry.key).unlink()
-                    except (FileNotFoundError, OSError):
+                    except FileNotFoundError:
                         continue
                     total_bytes -= entry.size
                     retained -= 1
@@ -171,7 +174,7 @@ class FileCacheStorage(CacheStorage):
             if not root.exists():
                 return
             if not self._is_owned(root, options):
-                raise RuntimeError(f"Refusing to clear a cache directory without Modwire ownership: {root}")
+                raise CacheOwnershipError(str(root), "directory is not owned by Modwire")
             shutil.rmtree(root)
 
     def _entries(self, root: Path) -> tuple[CacheEntry, ...]:
@@ -184,7 +187,7 @@ class FileCacheStorage(CacheStorage):
                 )
                 status = path.stat()
                 entries.append(CacheEntry(key=key, size=status.st_size, last_access_ns=status.st_atime_ns))
-            except (OSError, ValueError):
+            except (FileNotFoundError, ValueError):
                 continue
         return tuple(entries)
 
@@ -193,7 +196,7 @@ class FileCacheStorage(CacheStorage):
             return self._recover_state(root)
         try:
             return CacheStorageState.model_validate_json(self._state_path(root).read_text(encoding="utf-8"))
-        except (OSError, ValueError, ValidationError):
+        except (FileNotFoundError, ValueError, ValidationError):
             return self._recover_state(root)
 
     def _recover_state(self, root: Path) -> CacheStorageState:
@@ -233,43 +236,45 @@ class FileCacheStorage(CacheStorage):
         namespace_digest = hashlib.sha256(options.namespace.encode()).hexdigest()[:24]
         root = directory / f"namespace-{namespace_digest}"
         if root.parent != directory:
-            raise RuntimeError(f"Invalid cache namespace root: {root}")
+            raise CacheOwnershipError(str(root), "namespace root escapes the configured cache directory")
         return root
 
     def _ensure_owned(self, root: Path, options: CacheOptions) -> None:
         marker = root / self._MARKER
         if root.exists() and not marker.is_file() and any(root.iterdir()):
-            raise RuntimeError(f"Refusing to use a cache directory without Modwire ownership: {root}")
+            raise CacheOwnershipError(str(root), "non-empty directory is not owned by Modwire")
         root.mkdir(parents=True, exist_ok=True)
         if marker.is_file():
             if marker.read_text(encoding="utf-8") != f"{options.namespace}\n":
-                raise RuntimeError(f"Cache ownership marker does not match namespace: {root}")
+                raise CacheOwnershipError(str(root), "ownership marker does not match the namespace")
             return
         marker.write_text(f"{options.namespace}\n", encoding="utf-8")
 
     def _is_owned(self, root: Path, options: CacheOptions) -> bool:
         marker = root / self._MARKER
-        try:
-            return marker.is_file() and marker.read_text(encoding="utf-8") == f"{options.namespace}\n"
-        except OSError:
-            return False
+        return marker.is_file() and marker.read_text(encoding="utf-8") == f"{options.namespace}\n"
 
     @contextmanager
     def _locked(self, options: CacheOptions) -> Generator[None, None, None]:
         directory = Path(options.directory).expanduser().resolve()
-        directory.mkdir(parents=True, exist_ok=True)
-        namespace_digest = hashlib.sha256(options.namespace.encode()).hexdigest()[:24]
-        lock_path = directory / f".namespace-{namespace_digest}.lock"
-        with lock_path.open("a+b") as handle:
-            if handle.tell() == 0:
-                handle.write(b"\0")
-                handle.flush()
-            module = importlib.import_module("msvcrt" if os.name == "nt" else "fcntl")
-            self._acquire(module, handle.fileno())
-            try:
-                yield
-            finally:
-                self._release(module, handle.fileno())
+        try:
+            directory.mkdir(parents=True, exist_ok=True)
+            namespace_digest = hashlib.sha256(options.namespace.encode()).hexdigest()[:24]
+            lock_path = directory / f".namespace-{namespace_digest}.lock"
+            with lock_path.open("a+b") as handle:
+                if handle.tell() == 0:
+                    handle.write(b"\0")
+                    handle.flush()
+                module = importlib.import_module("msvcrt" if os.name == "nt" else "fcntl")
+                self._acquire(module, handle.fileno())
+                try:
+                    yield
+                finally:
+                    self._release(module, handle.fileno())
+        except CacheError:
+            raise
+        except OSError as error:
+            raise CacheAccessError(str(directory), "access") from error
 
     def _acquire(self, module: ModuleType, descriptor: int) -> None:
         if os.name == "nt":

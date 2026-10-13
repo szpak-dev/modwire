@@ -319,3 +319,103 @@ Declared completeness of an extractor's support for a fact family.
 ## `CapabilityCoverage`
 
 An extractor's explicit support status for one implementation fact family.
+
+## `ModwireError`
+
+Base class for every expected failure exposed by Modwire.
+
+## `ArchitectureError`
+
+Base class for architecture configuration and analysis failures.
+
+## `UnknownFlowAnalyzerError`
+
+Report a configured flow analyzer that is not registered.
+
+## `CacheError`
+
+Base class for persistent-cache ownership and access failures.
+
+## `CacheOwnershipError`
+
+Report a cache path that cannot be safely used by Modwire.
+
+## `CacheAccessError`
+
+Report an operating-system failure while accessing persistent cache state.
+
+## `ExtractionError`
+
+Base class for failures while discovering, extracting, or parsing source code.
+
+## `UnsupportedLanguageError`
+
+Report a language for which no source extractor is registered.
+
+## `UnsupportedParserError`
+
+Report a language for which no in-process source parser is registered.
+
+## `InvalidSourceRootError`
+
+Report a requested source root that is not a directory.
+
+## `SourceAccessError`
+
+Report an operating-system failure while reading a source tree.
+
+## `SourceObservationInvalidatedError`
+
+Report exact source identities that changed after their observation.
+
+## `DuplicateIdentityError`
+
+Report two source files that claim the same extracted identity.
+
+### `as_dict`
+
+Return stable machine-readable evidence for the duplicate identity.
+
+## `ExtractorError`
+
+Base class for failures at a native extractor boundary.
+
+## `ExtractorUnavailableError`
+
+Report a required extractor executable that is unavailable on PATH.
+
+## `ExtractorResourceError`
+
+Report a missing or unreadable packaged extractor resource.
+
+## `ExtractorExecutionError`
+
+Report a native extractor process that exited unsuccessfully.
+
+## `ExtractorContractError`
+
+Report extractor output that violates the registered runtime contract.
+
+## `ExtractorContractViolation`
+
+Identify the extractor contract clause violated by runtime output.
+
+## `ImplementationManifestError`
+
+Base class for implementation-manifest contract failures.
+
+## `UnsupportedManifestFormatError`
+
+Report an implementation-manifest format with no matching serializer.
+
+## `InvalidImplementationManifestError`
+
+Report a manifest document or serializer that violates its declared format contract.
+
+## `InitializationError`
+
+Base class for project initialization failures.
+
+## `InvalidInitializationTargetError`
+
+Report an initialization target outside the accepted project boundary.

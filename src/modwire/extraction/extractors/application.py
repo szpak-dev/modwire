@@ -14,6 +14,8 @@ from ..dependency.application import DependencyApplication
 from .domain import SourceExtractor, SourceParser
 from .models.extraction_request import ExtractionRequest
 from .models.parsed_source_file import ParsedSourceFile
+from .models.unsupported_language_error import UnsupportedLanguageError
+from .models.unsupported_parser_error import UnsupportedParserError
 
 
 @injectable
@@ -33,14 +35,14 @@ class ExtractorsApplication:
 
     def request(self, language: str, root: str) -> ExtractionRequest:
         if language not in self.extractors:
-            raise ValueError(f"Language is not supported: {language}")
+            raise UnsupportedLanguageError(language, self.supported_languages())
         extractor = self.extractors[language]
         return ExtractionRequest(root=root, runtime=extractor.runtime, batch_config=extractor.batch_config)
 
     def generate_map(self, request: ExtractionRequest, extraction: SourceExtraction) -> CodeMap:
         language = request.runtime.descriptor.language
         if language not in self.extractors:
-            raise ValueError(f"Language is not supported: {language}")
+            raise UnsupportedLanguageError(language, self.supported_languages())
         extractor = self.extractors[language]
         identities = extractor.module_identities(extraction.files)
         files = self.dependency.resolve(extraction.files, identities)
@@ -62,5 +64,6 @@ class ExtractorsApplication:
 
     def parse_source(self, language: str, content: str, path: str, root: str, source_id: FileId) -> ParsedSourceFile:
         if language not in self.parsers:
-            raise ValueError(f"In-process parsing is not supported for language: {language}")
+            supported = tuple(sorted(str(item) for item in self.parsers))
+            raise UnsupportedParserError(language, supported)
         return self.parsers[language].extract(content, path, root, source_id)

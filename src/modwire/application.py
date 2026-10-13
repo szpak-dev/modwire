@@ -6,21 +6,44 @@ from wireup import create_sync_container
 
 import modwire
 
+from .architecture.boundaries.models.architecture_error import ArchitectureError
+from .architecture.boundaries.models.unknown_flow_analyzer_error import UnknownFlowAnalyzerError
 from .architecture.config.models.architecture_config import ArchitectureConfig
 from .architecture.facade import ArchitectureFacade
 from .architecture.report.models.report_catalog import ReportCatalog
 from .architecture.report.models.report_node import ReportNode
+from .cli.cache.models.cache_access_error import CacheAccessError
+from .cli.cache.models.cache_error import CacheError
 from .cli.cache.models.cache_options import CacheOptions
 from .cli.cache.models.cache_outcome import CacheOutcome
+from .cli.cache.models.cache_ownership_error import CacheOwnershipError
 from .cli.cache.models.cache_stage import CacheStage
 from .cli.cache.models.cached_result import CachedResult
 from .cli.facade import CliFacade
+from .cli.initialization.models.initialization_error import InitializationError
+from .cli.initialization.models.invalid_initialization_target_error import InvalidInitializationTargetError
+from .cli.pipeline.models.extractor_contract_error import ExtractorContractError
+from .cli.pipeline.models.extractor_contract_violation import ExtractorContractViolation
+from .cli.pipeline.models.extractor_execution_error import ExtractorExecutionError
+from .cli.pipeline.models.extractor_resource_error import ExtractorResourceError
+from .cli.pipeline.models.extractor_unavailable_error import ExtractorUnavailableError
+from .cli.pipeline.models.invalid_source_root_error import InvalidSourceRootError
+from .cli.pipeline.models.source_access_error import SourceAccessError
 from .cli.pipeline.models.source_observation import SourceObservation
+from .cli.pipeline.models.source_observation_invalidated_error import SourceObservationInvalidatedError
+from .extraction.extractors.models.duplicate_identity_error import DuplicateIdentityError
+from .extraction.extractors.models.extraction_error import ExtractionError
+from .extraction.extractors.models.extractor_error import ExtractorError
+from .extraction.extractors.models.unsupported_language_error import UnsupportedLanguageError
+from .extraction.extractors.models.unsupported_parser_error import UnsupportedParserError
 from .extraction.facade import ExtractionFacade
 from .implementation.facade import ImplementationFacade
 from .implementation.manifest.models.implementation_manifest import ImplementationManifest
 from .implementation.manifest.models.implementation_manifest_document import ImplementationManifestDocument
+from .implementation.manifest.models.implementation_manifest_error import ImplementationManifestError
+from .implementation.manifest.models.invalid_implementation_manifest_error import InvalidImplementationManifestError
 from .implementation.manifest.models.manifest_format import ManifestFormat
+from .implementation.manifest.models.unsupported_manifest_format_error import UnsupportedManifestFormatError
 from .shared.code.models.capability_coverage import CapabilityCoverage
 from .shared.code.models.capability_status import CapabilityStatus
 from .shared.code.models.code_map import CodeMap
@@ -35,10 +58,15 @@ from .shared.code.models.source_assigned_value_kind import SourceAssignedValueKi
 from .shared.code.models.source_manifest_identity import SourceManifestIdentity
 from .shared.code.models.source_member_kind import SourceMemberKind
 from .shared.code.models.source_relation_kind import SourceRelationKind
+from .shared.failures.models.modwire_error import ModwireError
 
 __all__ = [
+    "ArchitectureError",
+    "CacheAccessError",
+    "CacheError",
     "CacheOptions",
     "CacheOutcome",
+    "CacheOwnershipError",
     "CacheStage",
     "CachedResult",
     "CodeMap",
@@ -47,19 +75,39 @@ __all__ = [
     "DeclarationFamily",
     "DeclarationIdentity",
     "DigestAlgorithm",
+    "DuplicateIdentityError",
+    "ExtractionError",
+    "ExtractorContractError",
+    "ExtractorContractViolation",
+    "ExtractorError",
+    "ExtractorExecutionError",
+    "ExtractorResourceError",
+    "ExtractorUnavailableError",
     "FactCapability",
     "ImplementationManifest",
     "ImplementationManifestDocument",
+    "ImplementationManifestError",
+    "InitializationError",
+    "InvalidImplementationManifestError",
+    "InvalidInitializationTargetError",
+    "InvalidSourceRootError",
     "ManifestFormat",
+    "ModwireError",
     "ModwireApplication",
     "QueryableCodeMap",
     "ScanPolicy",
     "SourceAssignedValue",
     "SourceAssignedValueKind",
+    "SourceAccessError",
     "SourceMemberKind",
     "SourceManifestIdentity",
     "SourceObservation",
+    "SourceObservationInvalidatedError",
     "SourceRelationKind",
+    "UnknownFlowAnalyzerError",
+    "UnsupportedLanguageError",
+    "UnsupportedManifestFormatError",
+    "UnsupportedParserError",
 ]
 
 
@@ -170,6 +218,7 @@ class ModwireApplication:
         """Return a cached code map derived from the exact supplied source observation."""
 
         request = observation.request
+        self.cli.validate_observation(observation)
         plan = self.cli.prepare_cache(observation)
         cached = self.cli.cached_code_map(plan, options)
         outcome = cached.outcome(CacheStage.CODE_MAP)
@@ -287,6 +336,30 @@ class ModwireApplication:
                 FactCapability,
                 CapabilityStatus,
                 CapabilityCoverage,
+                ModwireError,
+                ArchitectureError,
+                UnknownFlowAnalyzerError,
+                CacheError,
+                CacheOwnershipError,
+                CacheAccessError,
+                ExtractionError,
+                UnsupportedLanguageError,
+                UnsupportedParserError,
+                InvalidSourceRootError,
+                SourceAccessError,
+                SourceObservationInvalidatedError,
+                DuplicateIdentityError,
+                ExtractorError,
+                ExtractorUnavailableError,
+                ExtractorResourceError,
+                ExtractorExecutionError,
+                ExtractorContractError,
+                ExtractorContractViolation,
+                ImplementationManifestError,
+                UnsupportedManifestFormatError,
+                InvalidImplementationManifestError,
+                InitializationError,
+                InvalidInitializationTargetError,
             ),
             check,
         )

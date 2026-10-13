@@ -1,9 +1,30 @@
 import pytest
 
+from modwire.application import UnknownFlowAnalyzerError
+
 from .base_test import BoundaryTestCase
 
 
 class TestBoundaryAttacks(BoundaryTestCase):
+    def test_unknown_flow_analyzer_reports_registered_public_choices(self) -> None:
+        config = self.application.configure(
+            {
+                "boundaries": {"flow": {"analyzers": ["example-unknown"]}},
+                "shape": {"realms": [{"name": "example-source", "match": "src"}]},
+            }
+        )
+
+        with pytest.raises(UnknownFlowAnalyzerError) as raised:
+            self.application.analyze(self.queryable_map(("src/example.py",), ()), config)
+
+        assert raised.value.analyzer == "example-unknown"
+        assert raised.value.known_analyzers == (
+            "backward-flow",
+            "module-boundaries",
+            "no-cycles",
+            "no-reentry",
+        )
+
     @pytest.mark.parametrize(
         ("source", "target", "denied"),
         (

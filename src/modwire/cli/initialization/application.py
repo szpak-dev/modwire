@@ -5,6 +5,7 @@ from rich.console import Console
 from wireup import injectable
 
 from ..resources.application import ResourcesApplication
+from .models.initialization_error import InitializationError
 from .models.initialization_result import InitializationResult
 from .services.initialization_service import InitializationService
 
@@ -34,7 +35,7 @@ class InitializationApplication:
                 preserved=tuple(preserved),
                 overwritten=tuple(overwritten),
             )
-        except (OSError, ValueError) as error:
+        except (InitializationError, OSError, ValueError) as error:
             self.console.print(f"Initialization failed: {error}", style="red", markup=False)
             return 1
         self._print_paths("Created", result.created, project_root)

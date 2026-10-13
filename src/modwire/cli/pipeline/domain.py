@@ -32,6 +32,10 @@ class SourceReader(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def validate_observation(self, observation: SourceObservation) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
     def extract_entries(
         self, observation: SourceObservation, source_ids: tuple[FileId, ...]
     ) -> dict[FileId, SourceFile]:

@@ -23,6 +23,35 @@ class CliTestCase(ServiceTestCase):
             text=True,
         )
 
+    def run_python_batch_extractor(self, root: Path, document: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            (
+                sys.executable,
+                str(self.repository / "src/modwire/extraction/extractors/resources/python/script.py"),
+                "--batch",
+                str(root),
+            ),
+            cwd=self.workspace,
+            input=document,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
+    def run_python_single_extractor(self, root: Path, source: Path) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            (
+                sys.executable,
+                str(self.repository / "src/modwire/extraction/extractors/resources/python/script.py"),
+                str(source),
+                str(root),
+            ),
+            cwd=self.workspace,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
     def write_project(self, function_limit: int) -> None:
         self.write_files(
             {

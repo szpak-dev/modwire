@@ -2,12 +2,14 @@ import hashlib
 import json
 from dataclasses import dataclass
 
+from pydantic import ValidationError
 from wireup import injectable
 
 from ....shared.code.models.digest_algorithm import DigestAlgorithm
 from ..contracts.manifest_serializer import ManifestSerializer
 from ..models.implementation_manifest import ImplementationManifest
 from ..models.implementation_manifest_document import ImplementationManifestDocument
+from ..models.invalid_implementation_manifest_error import InvalidImplementationManifestError
 from ..models.manifest_format import ManifestFormat
 
 
@@ -31,10 +33,19 @@ class CanonicalJsonManifestSerializer(ManifestSerializer):
 
     def deserialize(self, document: ImplementationManifestDocument) -> ImplementationManifest:
         if document.format != self.format():
-            raise ValueError("Implementation manifest document format does not match this serializer.")
-        manifest = ImplementationManifest.model_validate_json(document.payload)
+            raise InvalidImplementationManifestError(
+                document.format.id,
+                "document format does not match this serializer",
+            )
+        try:
+            manifest = ImplementationManifest.model_validate_json(document.payload)
+        except ValidationError as error:
+            raise InvalidImplementationManifestError(
+                document.format.id,
+                "document payload does not satisfy the implementation manifest schema",
+            ) from error
         if self.canonical_json(manifest) != document.payload:
-            raise ValueError("Implementation manifest document payload is not canonical.")
+            raise InvalidImplementationManifestError(document.format.id, "document payload is not canonical")
         return manifest
 
     def canonical_json(self, manifest: ImplementationManifest) -> str:

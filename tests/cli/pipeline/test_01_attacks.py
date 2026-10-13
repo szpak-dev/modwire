@@ -2,6 +2,8 @@ import os
 
 import pytest
 
+from modwire.application import DuplicateIdentityError, ExtractorExecutionError, UnsupportedLanguageError
+
 from .base_test import NativeExtractionTestCase
 
 
@@ -16,8 +18,10 @@ class TestNativeExtractionAttacks(NativeExtractionTestCase):
     )
     def test_reports_native_parser_failure(self, language: str, name: str, source: str) -> None:
         self.write_files({name: source})
-        with pytest.raises(RuntimeError, match=f"{language} extractor failed with exit code"):
+        with pytest.raises(ExtractorExecutionError) as raised:
             self.extract_project(language)
+        assert raised.value.language == language
+        assert raised.value.exit_code != 0
 
     def test_reports_missing_runtime_from_process_environment(self) -> None:
         self.write_project(1)
@@ -29,8 +33,10 @@ class TestNativeExtractionAttacks(NativeExtractionTestCase):
         assert "typescript extractor runtime is not available on PATH: node" in result.stderr
 
     def test_rejects_an_unsupported_language(self) -> None:
-        with pytest.raises(ValueError, match="Language is not supported: example_unknown"):
+        with pytest.raises(UnsupportedLanguageError) as raised:
             self.extract_project("example_unknown")
+        assert raised.value.language == "example_unknown"
+        assert raised.value.supported_languages == ("python", "typescript", "php")
 
     def test_reports_duplicate_module_identities(self) -> None:
         self.write_files(
@@ -39,6 +45,8 @@ class TestNativeExtractionAttacks(NativeExtractionTestCase):
                 "example_component.tsx": "export const example_view = <div />;\n",
             }
         )
-        with pytest.raises(ValueError) as raised:
+        with pytest.raises(DuplicateIdentityError) as raised:
             self.extract_project("typescript")
-        assert "example_component" in str(raised.value)
+        assert raised.value.identity == "example_component"
+        assert raised.value.existing_file_id == "example_component.ts"
+        assert raised.value.duplicate_file_id == "example_component.tsx"
