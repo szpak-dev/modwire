@@ -1,5 +1,7 @@
 import pytest
 
+from modwire.application import ExtractorExecutionError
+
 from .base_test import NativeExtractionTestCase
 
 
@@ -16,7 +18,7 @@ class TestExtractionRecovery(NativeExtractionTestCase):
         self, language: str, name: str, invalid: str, valid: str
     ) -> None:
         self.write_files({name: invalid})
-        with pytest.raises(RuntimeError):
+        with pytest.raises(ExtractorExecutionError):
             self.extract_project(language)
         self.write_files({name: valid})
         result = self.extract_project(language)

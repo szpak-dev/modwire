@@ -63,7 +63,9 @@ class SourceManifestBuilder:
             raise ExtractorContractError(
                 runtime.descriptor.language,
                 ExtractorContractViolation.EMPTY_RUNTIME_VERSION,
-                diagnostic="runtime returned an empty version",
+                (),
+                (),
+                "runtime returned an empty version",
             )
         entrypoint = runtime.entrypoint
         try:

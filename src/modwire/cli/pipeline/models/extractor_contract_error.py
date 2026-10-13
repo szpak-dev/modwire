@@ -12,9 +12,9 @@ class ExtractorContractError(ExtractorError):
         self,
         language: str,
         violation: ExtractorContractViolation,
-        missing_source_ids: tuple[FileId, ...] = (),
-        unexpected_source_ids: tuple[FileId, ...] = (),
-        diagnostic: str = "",
+        missing_source_ids: tuple[FileId, ...],
+        unexpected_source_ids: tuple[FileId, ...],
+        diagnostic: str,
     ) -> None:
         self.language = language
         self.violation = violation

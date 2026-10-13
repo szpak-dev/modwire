@@ -128,8 +128,9 @@ class BatchSourceReader(SourceReader):
             raise ExtractorContractError(
                 request.runtime.descriptor.language,
                 ExtractorContractViolation.SOURCE_SET_MISMATCH,
-                missing_source_ids=missing,
-                diagnostic="source observation does not contain requested identities",
+                missing,
+                (),
+                "source observation does not contain requested identities",
             )
         try:
             root = Path(request.root).resolve()
@@ -272,7 +273,9 @@ class BatchSourceReader(SourceReader):
             raise ExtractorContractError(
                 runtime.descriptor.language,
                 ExtractorContractViolation.INVALID_OUTPUT,
-                diagnostic=str(error),
+                (),
+                (),
+                str(error),
             ) from error
         source_paths_by_id = {
             self.code.file_id(str(root), str(source_path)): source_path for source_path in source_paths
@@ -283,8 +286,9 @@ class BatchSourceReader(SourceReader):
             raise ExtractorContractError(
                 runtime.descriptor.language,
                 ExtractorContractViolation.SOURCE_SET_MISMATCH,
-                missing_source_ids=tuple(sorted(expected - actual, key=str)),
-                unexpected_source_ids=tuple(sorted(actual - expected, key=str)),
+                tuple(sorted(expected - actual, key=str)),
+                tuple(sorted(actual - expected, key=str)),
+                "extractor output identities do not match the requested batch",
             )
         extracted_files: dict[FileId, SourceFile] = {}
         try:
@@ -299,7 +303,9 @@ class BatchSourceReader(SourceReader):
             raise ExtractorContractError(
                 runtime.descriptor.language,
                 ExtractorContractViolation.INVALID_OUTPUT,
-                diagnostic=str(error),
+                (),
+                (),
+                str(error),
             ) from error
         return extracted_files
 

@@ -1,6 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
+from modwire.application import SourceObservationInvalidatedError
+
 from .base_test import ApplicationTestCase
 
 
@@ -19,8 +21,11 @@ class TestSourceObservation(ApplicationTestCase):
         observation = self.application.observe_sources("python", root, policy)
         (root / "src/example_cached.py").write_text("example_cached = 2\n", encoding="utf-8")
 
-        with pytest.raises(RuntimeError, match="Source file changed during extraction"):
+        with pytest.raises(SourceObservationInvalidatedError) as raised:
             self.application.generate_queryable_map_cached_from_observation_with_diagnostics(observation, options)
+        assert tuple(map(str, raised.value.added)) == ()
+        assert tuple(map(str, raised.value.removed)) == ()
+        assert tuple(map(str, raised.value.changed)) == ("src/example_cached.py",)
 
     def test_added_source_is_rejected_after_observation(self) -> None:
         root = self.project({"src/example.py": "example_value = 1\n"})
@@ -28,33 +33,42 @@ class TestSourceObservation(ApplicationTestCase):
         observation = self.application.observe_sources("python", root, policy)
         (root / "src/example_added.py").write_text("example_added = 1\n", encoding="utf-8")
 
-        with pytest.raises(RuntimeError, match="Source set changed after observation"):
+        with pytest.raises(SourceObservationInvalidatedError) as raised:
             self.application.generate_queryable_map_cached_from_observation_with_diagnostics(
                 observation,
                 self.cache_options("example-observation-added"),
             )
+        assert tuple(map(str, raised.value.added)) == ("src/example_added.py",)
+        assert tuple(map(str, raised.value.removed)) == ()
+        assert tuple(map(str, raised.value.changed)) == ()
 
     def test_removed_source_is_rejected_after_observation(self) -> None:
         root = self.project({"src/example.py": "example_value = 1\n"})
         observation = self.application.observe_sources("python", root, self.scan_policy())
         (root / "src/example.py").unlink()
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(SourceObservationInvalidatedError) as raised:
             self.application.generate_queryable_map_cached_from_observation_with_diagnostics(
                 observation,
                 self.cache_options("example-observation-removed"),
             )
+        assert tuple(map(str, raised.value.added)) == ()
+        assert tuple(map(str, raised.value.removed)) == ("src/example.py",)
+        assert tuple(map(str, raised.value.changed)) == ()
 
     def test_renamed_source_is_rejected_after_observation(self) -> None:
         root = self.project({"src/example.py": "example_value = 1\n"})
         observation = self.application.observe_sources("python", root, self.scan_policy())
         (root / "src/example.py").rename(root / "src/example_renamed.py")
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(SourceObservationInvalidatedError) as raised:
             self.application.generate_queryable_map_cached_from_observation_with_diagnostics(
                 observation,
                 self.cache_options("example-observation-renamed"),
             )
+        assert tuple(map(str, raised.value.added)) == ("src/example_renamed.py",)
+        assert tuple(map(str, raised.value.removed)) == ("src/example.py",)
+        assert tuple(map(str, raised.value.changed)) == ()
 
     def test_observation_is_immutable(self) -> None:
         root = self.project({"src/example.py": "example_value = 1\n"})
