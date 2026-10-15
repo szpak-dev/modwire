@@ -1,0 +1,11 @@
+format: jb-book
+root: index
+chapters:
+  - file: tutorials/index
+  - file: how-to/index
+  - file: explanation/index
+  - file: architecture
+  - file: reference/index
+    sections:
+      - file: reference/api
+  - file: contributing
