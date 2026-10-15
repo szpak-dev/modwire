@@ -2,10 +2,24 @@ format: jb-book
 root: index
 chapters:
   - file: tutorials/index
+    sections:
+      - file: tutorials/check-a-polyglot-project
   - file: how-to/index
+    sections:
+      - file: how-to/configure-and-run
+      - file: how-to/cache-and-scope
+      - file: how-to/python-api
+  - file: convention
   - file: explanation/index
+    sections:
+      - file: explanation/language-neutral-model
+      - file: explanation/identity-cache-and-failure
   - file: architecture
+  - file: glossary
   - file: reference/index
     sections:
+      - file: reference/cli
+      - file: reference/configuration
+      - file: reference/reports-and-failures
       - file: reference/api
   - file: contributing

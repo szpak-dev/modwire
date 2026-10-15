@@ -8,7 +8,7 @@ BIG_PROJECT_ARGS ?=
 export PYTHONPYCACHEPREFIX := $(PROJECT_ROOT)/$(DEV_DIR)/cache/python
 export UV_CACHE_DIR := $(PROJECT_ROOT)/$(DEV_DIR)/cache/uv
 
-.PHONY: big-projects build cache-benchmark ci docs docs-check docs-linkcheck docs-lock extractor-check format format-check host-check lint package-check report-benchmark scan-benchmark scan-benchmark-fixture test type-check
+.PHONY: big-projects build cache-benchmark ci docs docs-check docs-linkcheck docs-links docs-lock extractor-check format format-check host-check lint package-check report-benchmark scan-benchmark scan-benchmark-fixture test type-check
 
 format:
 	uv run ruff format src tests scripts
@@ -41,11 +41,14 @@ cache-benchmark:
 report-benchmark:
 	uv run python -m scripts.benchmarks.report.run --root "$(REPORT_BENCHMARK_ROOT)" --language "$(REPORT_BENCHMARK_LANGUAGE)" --cache-directory "$(REPORT_BENCHMARK_CACHE)" --cache-namespace "$(REPORT_BENCHMARK_NAMESPACE)"
 
-docs-check:
+docs-check: docs-links
 	PYTHONPATH=src uv run --isolated --locked --with-requirements docs/requirements.lock sphinx-build -W --keep-going -E -a -b html docs docs/_build/html
 
 docs:
 	PYTHONPATH=src uv run --isolated --locked --with-requirements docs/requirements.lock sphinx-build -b html docs docs/_build/html
+
+docs-links:
+	uv run --isolated --no-project --python 3.12 python scripts/check_docs_links.py
 
 docs-linkcheck:
 	PYTHONPATH=src uv run --isolated --locked --with-requirements docs/requirements.lock sphinx-build -W --keep-going -E -a -b linkcheck docs docs/_build/linkcheck
