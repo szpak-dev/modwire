@@ -1,4 +1,5 @@
 # Tutorials
 
-Tutorials provide learning-oriented, end-to-end paths through Modwire, from project
-initialization through source extraction and architecture reporting.
+Start with [Check a polyglot project](check-a-polyglot-project.md). It creates one
+small Python and TypeScript system, lets an architecture rule fail, and repairs the
+implementation until both language reports pass.

@@ -5,14 +5,21 @@ architecture analysis. Applications use `ModwireApplication`; the command-line l
 coordinates filesystem access, extractor processes, configuration, reporting, and the
 persistent cache.
 
+The [Modwire architecture convention](convention.md) describes the architecture
+Modwire favours in a user's system. This page describes Modwire itself.
+
 ## Processing flow
 
 1. The CLI observes the requested source tree using an explicit `ScanPolicy`.
 2. A registered extractor translates source files into Modwire's shared code model.
 3. Modwire assembles the extracted declarations and relations into a `CodeMap`.
 4. Architecture rules evaluate a `QueryableCodeMap` and produce report nodes.
-5. Optional caches reuse extraction, code-map, and report results only when their
+5. Optional caches reuse extraction, code map, and report results only when their
    source and configuration identities still match.
+
+Each extraction and report operation selects one language. Python, PHP, and
+TypeScript therefore retain exact extractor provenance while publishing the same
+shared code contracts.
 
 ## Component boundaries
 
@@ -26,3 +33,7 @@ persistent cache.
   provenance.
 - `modwire.cli` owns filesystem and process interaction, extractor transport, project
   initialization, rendering, and persistent cache storage.
+
+`ModwireApplication.create()` composes these boundaries through Wireup. A consuming
+application receives one public object and does not need to assemble internal
+services or depend on their packages.

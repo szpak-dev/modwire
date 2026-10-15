@@ -1,10 +1,24 @@
 # Modwire
 
-Modwire extracts source code into a typed code map and evaluates it against explicit
-architecture rules. This documentation separates learning material, task guidance,
-design explanation, architecture orientation, and precise reference material.
+**Polyglot architecture checks, one model.**
 
-Start with the [tutorials](tutorials/index.md) when learning the workflow or use the
-[how-to guides](how-to/index.md) for a specific task. The
-[API reference](reference/api.md) is generated from the supported
-`modwire.application` surface.
+Modwire extracts Python, PHP, and TypeScript into the same typed, language-neutral
+code model. It evaluates each language's source set against explicit architecture
+rules.
+
+Three ideas shape the tool:
+
+1. Python, PHP, and TypeScript share one architecture vocabulary.
+2. Bounded contexts contain features or modules, which follow explicit layers.
+3. Boundary, dependency flow, cycle, re-entry, and shape rules make that convention
+   executable.
+
+Modwire does not infer an architecture from naming folklore. Glob patterns map the
+source tree to concepts you name, and reports show where the implementation stops
+matching them.
+
+Start with [Check a polyglot project](tutorials/check-a-polyglot-project.md). Read
+[The Modwire architecture convention](convention.md) before adapting the generated
+configuration. Use the [how-to guides](how-to/index.md) for a specific task and the
+[reference](reference/index.md) for exact contracts. The [glossary](glossary.md)
+defines Modwire's architecture and runtime vocabulary.

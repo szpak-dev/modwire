@@ -1,8 +1,19 @@
 # Modwire
 
-Modwire extracts source code into a typed code map and evaluates that map against
-explicit architecture rules. It provides a Python API and a command-line interface
-for extraction, implementation manifests, architecture reports, and project setup.
+**Polyglot architecture checks, one model.**
+
+Modwire extracts Python, PHP, and TypeScript into the same typed, language-neutral
+code model. It then checks explicit architecture rules for each language's source
+set.
+
+Modwire favours systems whose source tree makes the architecture visible:
+
+```text
+<bounded-context>/<feature-or-module>/<layer>/...
+```
+
+Glob patterns map that convention onto a real repository. Boundary, dependency flow,
+cycle, re-entry, and shape checks keep it consistent as the system changes.
 
 ## Installation
 
@@ -14,13 +25,18 @@ python -m pip install modwire
 
 ## Quickstart
 
-Create the project-local configuration, then run the reports for one registered
-source language:
+Create the project-local configuration, then run the reports for each language in
+the repository:
 
 ```console
 modwire init
 modwire report --language python --summary
+modwire report --language typescript --summary
+modwire report --language php --summary
 ```
+
+Each report run selects one language. The architecture vocabulary and rules stay the
+same across all three.
 
 The supported Python interface is exported by `modwire.application`:
 
@@ -40,12 +56,13 @@ code_map = application.generate_queryable_map(
 - [Documentation entrance](docs/index.md)
 - [Tutorials](docs/tutorials/index.md)
 - [How-to guides](docs/how-to/index.md)
+- [Explanation](docs/explanation/index.md)
 - [Architecture](docs/architecture.md)
-- [Python API reference](docs/reference/api.md)
+- [Technical reference](docs/reference/index.md)
 - [Contributing](docs/contributing.md)
 
-The documentation site explains the architecture and generates API reference from
-the supported Python surface.
+The documentation site covers the complete first workflow, configuration, caching,
+implementation manifests, failure contracts, and the supported Python surface.
 
 ## Development
 
