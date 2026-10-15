@@ -37,7 +37,7 @@ Name those concepts with boundary tags, configure feature or module tags as the
 `module_tag` of realms under `boundaries.flow`, and apply shape rules to the smallest
 useful source-tree scope. The complete
 reasoning and examples are in
-[The Modwire architecture convention](../convention.md). Exact fields are listed in
+[The Modwire architecture convention](../architecture/convention.md). Exact fields are listed in
 the [configuration reference](../reference/configuration.md).
 
 ## Run one report per language
