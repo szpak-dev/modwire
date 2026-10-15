@@ -19,7 +19,6 @@ from .cache.application import CacheApplication
 from .cache.models.cache_options import CacheOptions
 from .cache.models.cache_plan import CachePlan
 from .cache.models.cached_result import CachedResult
-from .documentation.application import DocumentationApplication
 from .initialization.application import InitializationApplication
 from .pipeline.application import PipelineApplication
 from .pipeline.models.command_name import CommandName
@@ -36,7 +35,6 @@ class CliFacade:
     initialization: InitializationApplication
     pipeline: PipelineApplication
     cache: CacheApplication
-    documentation: DocumentationApplication
 
     def working_directory(self) -> str:
         return str(Path.cwd())
@@ -108,9 +106,6 @@ class CliFacade:
 
     def write_sources(self, document: str) -> int:
         return self.pipeline.write_sources(document)
-
-    def generate_documentation(self, readme: str, public_interfaces: tuple[type[object], ...], check: bool) -> int:
-        return self.documentation.generate(Path(readme), public_interfaces, check)
 
     def run_extractor(self, language: str) -> int:
         request = self.read_sources(language)

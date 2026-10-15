@@ -309,61 +309,6 @@ class ModwireApplication:
 
         return self.cli.initialize(str(root), str(dot_dir), force)
 
-    def generate_documentation(self, readme: str, check: bool) -> int:
-        """Generate this README from the published interface docstrings, or check that it is current."""
-
-        return self.cli.generate_documentation(
-            str(readme),
-            (
-                type(self),
-                CacheStage,
-                CacheOutcome,
-                CachedResult,
-                CacheOptions,
-                ScanPolicy,
-                SourceAssignedValue,
-                SourceAssignedValueKind,
-                SourceManifestIdentity,
-                SourceObservation,
-                SourceMemberKind,
-                SourceRelationKind,
-                ImplementationManifest,
-                ImplementationManifestDocument,
-                ManifestFormat,
-                DeclarationFamily,
-                DeclarationIdentity,
-                DigestAlgorithm,
-                FactCapability,
-                CapabilityStatus,
-                CapabilityCoverage,
-                ModwireError,
-                ArchitectureError,
-                UnknownFlowAnalyzerError,
-                CacheError,
-                CacheOwnershipError,
-                CacheAccessError,
-                ExtractionError,
-                UnsupportedLanguageError,
-                UnsupportedParserError,
-                InvalidSourceRootError,
-                SourceAccessError,
-                SourceObservationInvalidatedError,
-                DuplicateIdentityError,
-                ExtractorError,
-                ExtractorUnavailableError,
-                ExtractorResourceError,
-                ExtractorExecutionError,
-                ExtractorContractError,
-                ExtractorContractViolation,
-                ImplementationManifestError,
-                UnsupportedManifestFormatError,
-                InvalidImplementationManifestError,
-                InitializationError,
-                InvalidInitializationTargetError,
-            ),
-            check,
-        )
-
     def run_extractor(self, language: str) -> int:
         """Run the native extractor transport for one supported language."""
 
