@@ -18,7 +18,7 @@ source tree to concepts you name, and reports show where the implementation stop
 matching them.
 
 Start with [Check a polyglot project](tutorials/check-a-polyglot-project.md). Read
-[The Modwire architecture convention](convention.md) before adapting the generated
+[The Modwire architecture convention](architecture/convention.md) before adapting the generated
 configuration. Use the [how-to guides](how-to/index.md) for a specific task and the
-[reference](reference/index.md) for exact contracts. The [glossary](glossary.md)
+[reference](reference/index.md) for exact contracts. The [glossary](reference/glossary.md)
 defines Modwire's architecture and runtime vocabulary.

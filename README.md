@@ -57,9 +57,9 @@ code_map = application.generate_queryable_map(
 - [Tutorials](docs/tutorials/index.md)
 - [How-to guides](docs/how-to/index.md)
 - [Explanation](docs/explanation/index.md)
-- [Architecture](docs/architecture.md)
+- [Architecture](docs/architecture/index.md)
 - [Technical reference](docs/reference/index.md)
-- [Contributing](docs/contributing.md)
+- [Contributing](docs/how-to/contributing.md)
 
 The documentation site covers the complete first workflow, configuration, caching,
 implementation manifests, failure contracts, and the supported Python surface.

@@ -18,7 +18,7 @@ This convention is not hardcoded into Modwire. Glob patterns map it to the actua
 source tree, which keeps the rule explicit and lets Python, PHP, and TypeScript share
 the same architecture vocabulary.
 
-The [glossary](glossary.md) distinguishes realms, bounded contexts, features,
+The [glossary](../reference/glossary.md) distinguishes realms, bounded contexts, features,
 modules, layers, tags, and shape realms.
 
 ## Start with bounded contexts
@@ -186,7 +186,7 @@ TypeScript frontend source one language report at a time.
 
 ## Use glob captures deliberately
 
-The [configuration reference](reference/configuration.md) defines the
+The [configuration reference](../reference/configuration.md) defines the
 supported glob syntax, path normalisation, and descendant matching behaviour.
 
 Use `**` carefully. A broad recursive capture can collapse architectural levels that
@@ -194,7 +194,7 @@ should remain distinct. Prefer one `*` for each convention level when the path h
 stable context, feature, and layer structure.
 
 When source should still be extracted but omitted from one tag or shape realm, use a
-local exclusion. [Control source scope and persistent cache](how-to/cache-and-scope.md)
+local exclusion. [Control source scope and persistent cache](../how-to/cache-and-scope.md)
 shows how local exclusions differ from exclusions applied before extraction.
 
 ## Apply shape where ownership is clear
@@ -214,7 +214,7 @@ shape:
         max_methods_per_class: 10
 ```
 
-The [configuration reference](reference/configuration.md) lists every shape rule,
+The [configuration reference](../reference/configuration.md) lists every shape rule,
 its default, and how to disable numeric limits. Configure each shape realm according
 to its actual role.
 

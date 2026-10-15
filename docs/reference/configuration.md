@@ -101,6 +101,6 @@ Boolean and vocabulary rules are:
 | `require_joined_imports` | `true` |
 | `allowed_import_crossing_types` | `[module, symbol]` |
 
-Read [The Modwire architecture convention](../convention.md) before choosing scopes
+Read [The Modwire architecture convention](../architecture/convention.md) before choosing scopes
 and limits. The schema tells you what is valid; the convention explains what keeps a
 large system coherent.

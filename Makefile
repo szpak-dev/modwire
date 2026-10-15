@@ -22,7 +22,7 @@ lint:
 type-check:
 	uv run pyright src/modwire
 
-test:
+test: docs-links
 	mkdir -p $(DEV_DIR)/testing
 	uv run pytest
 

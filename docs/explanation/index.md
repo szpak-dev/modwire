@@ -6,4 +6,4 @@ Read these pages when you need the reasoning behind Modwire's behaviour:
 - [Identity, cache reuse, and failure](identity-cache-and-failure.md)
 
 For the architectural convention itself, read
-[The Modwire architecture convention](../convention.md).
+[The Modwire architecture convention](../architecture/convention.md).

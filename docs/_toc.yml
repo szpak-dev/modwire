@@ -9,17 +9,18 @@ chapters:
       - file: how-to/configure-and-run
       - file: how-to/cache-and-scope
       - file: how-to/python-api
-  - file: convention
+      - file: how-to/contributing
+  - file: architecture/index
+    sections:
+      - file: architecture/convention
   - file: explanation/index
     sections:
       - file: explanation/language-neutral-model
       - file: explanation/identity-cache-and-failure
-  - file: architecture
-  - file: glossary
   - file: reference/index
     sections:
+      - file: reference/glossary
       - file: reference/cli
       - file: reference/configuration
       - file: reference/reports-and-failures
       - file: reference/api
-  - file: contributing
