@@ -2,10 +2,10 @@
 
 This tutorial builds a tiny system with a Python backend and a TypeScript frontend.
 Both use the same architecture convention: a bounded context contains a feature,
-and the feature contains a layer.
+and the feature contains directional layers.
 
-You will initialize Modwire, observe a real shape violation, fix it, and run the
-same architecture checks for both languages.
+You will initialize Modwire, observe a real backward dependency, repair it, and run
+the same architecture checks for both languages.
 
 ## Install the required runtimes
 
@@ -15,8 +15,10 @@ Modwire requires Python 3.12 or newer:
 python -m pip install modwire
 ```
 
-The Python extractor runs with Modwire. TypeScript extraction also requires Node.js
-on `PATH`. PHP extraction requires PHP on `PATH` when you use it.
+The Python extractor runs with Modwire. TypeScript extraction also requires a
+supported Node.js version on `PATH`. See
+[Language support and limits](../reference/language-support.md) for the exact runtime
+contract.
 
 ## Create the source tree
 
@@ -27,33 +29,17 @@ mkdir modwire-example
 cd modwire-example
 ```
 
-Create an `orders` feature inside the backend's `sales` bounded context:
+Create this source tree:
 
 ```text
 src/
-└── backend/
-    └── sales/
-        └── orders/
-            └── application/
-                └── totals.py
-```
-
-Put two top-level functions in
-`src/backend/sales/orders/application/totals.py`:
-
-```python
-def subtotal() -> int:
-    return 100
-
-
-def tax() -> int:
-    return 23
-```
-
-Create a `checkout` feature inside the frontend's `commerce` bounded context:
-
-```text
-src/
+├── backend/
+│   └── sales/
+│       └── orders/
+│           ├── application/
+│           │   └── totals.py
+│           └── domain/
+│               └── tax.py
 └── frontend/
     └── commerce/
         └── checkout/
@@ -61,21 +47,35 @@ src/
                 └── total.ts
 ```
 
-Put one function in `src/frontend/commerce/checkout/page/total.ts`:
+Put this application function in
+`src/backend/sales/orders/application/totals.py`:
 
-```typescript
-export function total(): number {
-  return 123;
-}
+```{literalinclude} ../_examples/tutorial/src/backend/sales/orders/application/totals.py
+:language: python
+```
+
+Put this deliberately invalid dependency in
+`src/backend/sales/orders/domain/tax.py`:
+
+```{literalinclude} ../_examples/tutorial/src/backend/sales/orders/domain/tax.py
+:language: python
+```
+
+The domain layer now imports the application layer. The configured order will run
+from entry point toward core, so this dependency points backward.
+
+Add the TypeScript page at
+`src/frontend/commerce/checkout/page/total.ts`:
+
+```{literalinclude} ../_examples/tutorial/src/frontend/commerce/checkout/page/total.ts
+:language: typescript
 ```
 
 The source tree separates language-specific code under `backend` and `frontend`.
 `sales` and `commerce` are bounded contexts, `orders` and `checkout` are features,
-and `application` and `page` are layers. The configuration below defines dependency
-analysis realms named `backend` and `frontend`, each with its own module tag and layer
-order.
+and the final directory in each path is a layer.
 
-## Initialize Modwire
+## Initialize and configure Modwire
 
 Run:
 
@@ -86,57 +86,18 @@ modwire init
 Modwire creates `.modwire/architecture.yaml` and short project guidance. Existing
 files are preserved unless you explicitly pass `--force`.
 
-Replace the generated `.modwire/architecture.yaml` with the tutorial configuration:
+Replace the generated `.modwire/architecture.yaml` with:
 
-```yaml
-excluded_patterns:
-  - .git/**
-  - .modwire/**
-
-boundaries:
-  tags:
-    - {name: backend-context, match: "src/backend/*"}
-    - {name: backend-feature, match: "src/backend/*/*"}
-    - {name: backend-api, match: "src/backend/*/*/api"}
-    - {name: backend-application, match: "src/backend/*/*/application"}
-    - {name: backend-infrastructure, match: "src/backend/*/*/infrastructure"}
-    - {name: backend-domain, match: "src/backend/*/*/domain"}
-    - {name: frontend-context, match: "src/frontend/*"}
-    - {name: frontend-feature, match: "src/frontend/*/*"}
-    - {name: frontend-page, match: "src/frontend/*/*/page"}
-    - {name: frontend-state, match: "src/frontend/*/*/state"}
-    - {name: frontend-component, match: "src/frontend/*/*/component"}
-
-  rules:
-    - {realm: backend, source: backend-context, disallow: [backend-context], allow_same_match: true}
-    - {realm: backend, source: backend-feature, disallow: [backend-feature], allow_same_match: true}
-    - {realm: frontend, source: frontend-context, disallow: [frontend-context], allow_same_match: true}
-    - {realm: frontend, source: frontend-feature, disallow: [frontend-feature], allow_same_match: true}
-
-  flow:
-    realms:
-      - name: backend
-        module_tag: backend-feature
-        layers: [backend-api, backend-application, backend-infrastructure, backend-domain]
-      - name: frontend
-        module_tag: frontend-feature
-        layers: [frontend-page, frontend-state, frontend-component]
-    analyzers: [module-boundaries, backward-flow, no-cycles, no-reentry]
-
-shape:
-  realms:
-    - name: source
-      match: src
-      shape:
-        max_functions_per_file: 1
-        max_variables_per_file: 0
+```{literalinclude} ../_examples/tutorial/.modwire/architecture.yaml
+:language: yaml
 ```
 
-The configuration names each architectural level independently. Its boundary rules
-close contexts and features by default. Its shape rules limit a source file to one
-top-level function and no module-scope variables.
+The two realms have separate layer vocabularies. Their boundary rules close bounded
+contexts and features by default, while `backward-flow` checks the declared layer
+direction. The shape realm permits this tutorial's small functions without
+introducing an unrelated failure.
 
-## Let the rule fail
+## Observe the backward dependency
 
 Run the Python report:
 
@@ -144,22 +105,36 @@ Run the Python report:
 modwire report --language python --summary
 ```
 
-The command exits with status `1`. Its shape report names
-`max_functions_per_file` and
-`src/backend/sales/orders/application/totals.py`. That file contains two top-level
-functions while the configured limit is one.
+The command exits with status `1`. Its public output identifies the rule and the
+complete dependency path:
 
-This failure is useful. The architecture rule points to a source-level decision,
-not a generic score.
+```text
+Flow violations:
+  - [analyzer:backend:backward-flow] src/backend/sales/orders/domain/tax.py
+    points backward to src/backend/sales/orders/application/totals.py
+    src/backend/sales/orders/domain/tax.py ->
+    src/backend/sales/orders/application/totals.py
+```
 
-Move `tax` into `src/backend/sales/orders/application/tax.py`, leaving one function
-in each file. Run the report again:
+This is an architecture failure rather than a style score: a core domain file
+depends on an outer application layer.
+
+## Repair the dependency
+
+Make the application pass the subtotal into the domain calculation. Replace
+`src/backend/sales/orders/domain/tax.py` with:
+
+```{literalinclude} ../_examples/tutorial-repair/tax.py
+:language: python
+```
+
+Run the report again:
 
 ```console
 modwire report --language python --summary
 ```
 
-The command now exits with status `0` and ends with:
+The command exits with status `0` and ends with:
 
 ```text
 Architecture checks passed.
@@ -173,9 +148,10 @@ Run the TypeScript report against the same configuration:
 modwire report --language typescript --summary
 ```
 
-It also ends with `Architecture checks passed.` The two report runs are separate,
-but their tags, feature boundaries, layers, and shape vocabulary are shared.
+It also exits with status `0` and ends with `Architecture checks passed.` The report
+runs are separate, but their bounded-context, feature, layer, and rule vocabulary is
+shared.
 
-You now have the smallest useful Modwire loop: express architecture in the source
-tree, map it with configuration, run a language report, and change the code or the
-rule deliberately when they disagree.
+You now have the smallest useful Modwire loop: express an architecture, observe the
+exact dependency that violates it, repair the source, and keep the decision
+executable for every supported language in the repository.

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "modwire"
 dynamic = ["version"]
-description = "Polyglot architecture checks through one typed code model."
+description = "Architecture rules for Python, PHP, and TypeScript source."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"

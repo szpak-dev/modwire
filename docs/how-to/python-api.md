@@ -6,60 +6,19 @@ output.
 
 ## Extract and analyse source
 
-Create the public application and validate configuration before analysis:
+Create the public application and validate configuration before analysis. This
+example runs against the same Python source used by the tutorial:
 
-```python
-from modwire.application import ModwireApplication, ScanPolicy
-
-application = ModwireApplication.create()
-config = application.configure(
-    {
-        "boundaries": {
-            "tags": [
-                {"name": "feature", "match": "src/*/*"},
-                {"name": "api", "match": "src/*/*/api"},
-                {"name": "application", "match": "src/*/*/application"},
-                {"name": "infrastructure", "match": "src/*/*/infrastructure"},
-                {"name": "domain", "match": "src/*/*/domain"},
-            ],
-            "rules": [
-                {
-                    "source": "feature",
-                    "disallow": ["feature"],
-                    "allow_same_match": True,
-                }
-            ],
-            "flow": {
-                "module_tag": "feature",
-                "layers": ["api", "application", "infrastructure", "domain"],
-                "analyzers": ["module-boundaries", "no-cycles", "no-reentry"],
-            },
-        },
-        "shape": {
-            "realms": [
-                {
-                    "name": "source",
-                    "match": "src",
-                    "shape": {"max_classes_per_file": 1},
-                }
-            ]
-        },
-    }
-)
-policy = ScanPolicy(excluded_patterns=("generated/**", ".venv/**"))
-code_map = application.generate_queryable_map("python", ".", policy)
-reports = application.analyze(code_map, config)
+```{literalinclude} ../_examples/python_api.py
+:language: python
 ```
 
-`generate_queryable_map` performs filesystem work through Modwire's CLI boundary and
-returns a `QueryableCodeMap`. Query declarations or dependencies without reaching
-into extractor internals:
-
-```python
-source_files = code_map.files().count()
-classes = code_map.classes().count()
-tracked_dependencies = code_map.tracked_dependency_edges().count()
-```
+`generate_queryable_map` performs filesystem work through Modwire's CLI boundary
+and returns a `QueryableCodeMap`. The example queries files and tracked dependencies,
+selects a report by its public metadata, and asserts the observable violation count
+without reaching into extractor internals. Documentation verification executes this
+file, so its configuration, public imports, and expected result cannot drift as
+unchecked prose.
 
 ## Reuse cached extraction and reports
 

@@ -27,18 +27,11 @@ Pass the same directory to later commands.
 ## Adapt the architecture convention
 
 Open `architecture.yaml` and map the repository's stable directory convention.
-Modwire favours this hierarchy:
-
-```text
-<bounded-context>/<feature-or-module>/<layer>/...
-```
-
-Name those concepts with boundary tags, configure feature or module tags as the
+Follow [The Modwire architecture convention](../architecture/convention.md), then
+name its concepts with boundary tags, configure feature or module tags as the
 `module_tag` of realms under `boundaries.flow`, and apply shape rules to the smallest
-useful source-tree scope. The complete
-reasoning and examples are in
-[The Modwire architecture convention](../architecture/convention.md). Exact fields are listed in
-the [configuration reference](../reference/configuration.md).
+useful source-tree scope. Exact fields are listed in the
+[configuration reference](../reference/configuration.md).
 
 ## Run one report per language
 
@@ -51,7 +44,8 @@ modwire report --language php
 ```
 
 Python ships with its extractor runtime. TypeScript requires Node.js on `PATH`; PHP
-requires PHP on `PATH`.
+requires PHP on `PATH`. See [Language support and limits](../reference/language-support.md)
+for exact runtime, extension, and capability coverage.
 
 Use `--summary` to omit individual files from a successful architecture map:
 
