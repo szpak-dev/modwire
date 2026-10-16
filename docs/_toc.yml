@@ -20,7 +20,9 @@ chapters:
   - file: reference/index
     sections:
       - file: reference/glossary
+      - file: reference/language-support
       - file: reference/cli
       - file: reference/configuration
       - file: reference/reports-and-failures
       - file: reference/api
+      - file: reference/evidence

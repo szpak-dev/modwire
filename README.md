@@ -1,19 +1,18 @@
 # Modwire
 
-**Polyglot architecture checks, one model.**
+> **Your architecture already has rules. Modwire makes them enforceable.**
 
-Modwire extracts Python, PHP, and TypeScript into the same typed, language-neutral
-code model. It then checks explicit architecture rules for each language's source
-set.
+Modwire turns intended boundaries into executable checks across Python, PHP, and
+TypeScript. When a dependency points backward, code crosses a boundary, a cycle
+appears, or the source layout drifts, Modwire reports the violation before the
+architecture becomes tribal knowledge.
 
-Modwire favours systems whose source tree makes the architecture visible:
+*Polyglot architecture checks, one model.*
 
-```text
-<bounded-context>/<feature-or-module>/<layer>/...
-```
-
-Glob patterns map that convention onto a real repository. Boundary, dependency flow,
-cycle, re-entry, and shape checks keep it consistent as the system changes.
+Modwire favours systems whose source tree makes bounded contexts, features or
+modules, and layers visible. Glob patterns map that convention onto a real
+repository. Boundary, dependency flow, cycle, re-entry, and shape checks keep it
+consistent as the system changes.
 
 ## Installation
 
@@ -59,10 +58,13 @@ code_map = application.generate_queryable_map(
 - [Explanation](docs/explanation/index.md)
 - [Architecture](docs/architecture/index.md)
 - [Technical reference](docs/reference/index.md)
+- [Language support and limits](docs/reference/language-support.md)
+- [Recorded evidence](docs/reference/evidence.md)
 - [Contributing](docs/how-to/contributing.md)
 
 The documentation site covers the complete first workflow, configuration, caching,
-implementation manifests, failure contracts, and the supported Python surface.
+implementation manifests, failure contracts, language capability differences,
+recorded extraction evidence, and the supported Python surface.
 
 ## Development
 

@@ -1,0 +1,40 @@
+excluded_patterns:
+  - .git/**
+  - .modwire/**
+
+boundaries:
+  tags:
+    - {name: backend-context, match: "src/backend/*"}
+    - {name: backend-feature, match: "src/backend/*/*"}
+    - {name: backend-api, match: "src/backend/*/*/api"}
+    - {name: backend-application, match: "src/backend/*/*/application"}
+    - {name: backend-infrastructure, match: "src/backend/*/*/infrastructure"}
+    - {name: backend-domain, match: "src/backend/*/*/domain"}
+    - {name: frontend-context, match: "src/frontend/*"}
+    - {name: frontend-feature, match: "src/frontend/*/*"}
+    - {name: frontend-page, match: "src/frontend/*/*/page"}
+    - {name: frontend-state, match: "src/frontend/*/*/state"}
+    - {name: frontend-component, match: "src/frontend/*/*/component"}
+
+  rules:
+    - {realm: backend, source: backend-context, disallow: [backend-context], allow_same_match: true}
+    - {realm: backend, source: backend-feature, disallow: [backend-feature], allow_same_match: true}
+    - {realm: frontend, source: frontend-context, disallow: [frontend-context], allow_same_match: true}
+    - {realm: frontend, source: frontend-feature, disallow: [frontend-feature], allow_same_match: true}
+
+  flow:
+    realms:
+      - name: backend
+        module_tag: backend-feature
+        layers: [backend-api, backend-application, backend-infrastructure, backend-domain]
+      - name: frontend
+        module_tag: frontend-feature
+        layers: [frontend-page, frontend-state, frontend-component]
+    analyzers: [module-boundaries, backward-flow, no-cycles, no-reentry]
+
+shape:
+  realms:
+    - name: source
+      match: src
+      shape:
+        max_functions_per_file: 10
