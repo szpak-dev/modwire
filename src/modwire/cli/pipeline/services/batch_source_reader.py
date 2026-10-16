@@ -20,7 +20,7 @@ from ....extraction.extractors.models.extractor_error import ExtractorError
 from ....extraction.extractors.models.extractor_runtime import ExtractorRuntime
 from ....shared.code.application import CodeApplication
 from ....shared.code.domain import PathMatcher
-from ....shared.code.models.identity import FileId, ModuleId
+from ....shared.code.models.identity import FileId, ImportIdentity
 from ....shared.code.models.identity_kind import IdentityKind
 from ....shared.code.models.scan_policy import ScanPolicy
 from ....shared.code.models.source_extraction import SourceExtraction
@@ -71,15 +71,15 @@ class BatchSourceReader(SourceReader):
     def extract_source(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceExtraction:
         observation = self.observe(request, policy)
         files = self.extract_entries(observation, tuple(entry.source_id for entry in observation.entries))
-        modules: dict[ModuleId, FileId] = {}
+        import_identities: dict[ImportIdentity, FileId] = {}
         for file_id, source_file in files.items():
-            existing = modules.get(source_file.module_id)
+            existing = import_identities.get(source_file.import_identity)
             if existing is not None:
-                raise DuplicateIdentityError(IdentityKind.MODULE, source_file.module_id, existing, file_id)
-            modules[source_file.module_id] = file_id
+                raise DuplicateIdentityError(IdentityKind.IMPORT, source_file.import_identity, existing, file_id)
+            import_identities[source_file.import_identity] = file_id
         return SourceExtraction(
             files=files,
-            modules=modules,
+            import_identities=import_identities,
             manifest=observation.manifest,
             files_found=observation.files_found,
             files_excluded=observation.files_excluded,
@@ -317,7 +317,7 @@ class BatchSourceReader(SourceReader):
                 source_path = source_paths_by_id[file_id]
                 extracted_files[file_id] = self.files.create(
                     file_id,
-                    self.code.module_id(str(root), str(source_path)),
+                    self.code.import_identity(str(root), str(source_path)),
                     parsed_source_file,
                 )
         except ValidationError as error:

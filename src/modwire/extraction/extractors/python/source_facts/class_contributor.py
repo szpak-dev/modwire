@@ -16,4 +16,4 @@ class ClassFactContributor(PythonSourceFactContributor):
         return 10
 
     def contribute(self, catalog: PythonSemanticCatalog, context: PythonSourceContext) -> PythonSourceFactContribution:
-        return PythonSourceFactContribution(classes=catalog.classes, abstract_classes=catalog.abstract_classes)
+        return PythonSourceFactContribution(declarations=catalog.declarations)

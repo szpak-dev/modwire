@@ -4,8 +4,8 @@ from pydantic import ConfigDict, model_validator
 
 from ...values.models.value_model import ValueModel
 from .identity import FileId, ImportSpecifier
+from .source_dependency_kind import SourceDependencyKind
 from .source_dependency_resolution import SourceDependencyResolution
-from .source_relation_kind import SourceRelationKind
 
 
 class Edge(ValueModel):
@@ -14,10 +14,10 @@ class Edge(ValueModel):
     to_id: FileId | None
     specifier: ImportSpecifier
     resolution: SourceDependencyResolution
-    kind: SourceRelationKind = SourceRelationKind.IMPORTS
+    kind: SourceDependencyKind = SourceDependencyKind.IMPORTS
 
     @model_validator(mode="after")
     def validate_relation_kind(self) -> Self:
-        if self.kind is not SourceRelationKind.IMPORTS:
+        if self.kind is not SourceDependencyKind.IMPORTS:
             raise ValueError("Dependency edges must use imports.")
         return self

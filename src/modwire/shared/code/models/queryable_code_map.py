@@ -2,24 +2,24 @@ from collections.abc import Callable, Iterable
 
 from ...values.models.value_model import ValueModel
 from .code_map import CodeMap
+from .declaration_family import DeclarationFamily
 from .dependency_edge_result import DependencyEdgeResult
 from .dependency_node_result import DependencyNodeResult
 from .edge import Edge
 from .identity import FileId
 from .query_builder import QueryBuilder
 from .query_types import SourceItem, T
-from .source_abstract_class import SourceAbstractClass
 from .source_call import SourceCall
 from .source_callable import SourceCallable
-from .source_class import SourceClass
+from .source_declaration import SourceDeclaration
+from .source_declaration_relation import SourceDeclarationRelation
 from .source_export import SourceExport
 from .source_file import SourceFile
 from .source_file_result import SourceFileResult
 from .source_function import SourceFunction
 from .source_import import SourceImport
-from .source_interface import SourceInterface
 from .source_item_result import SourceItemResult
-from .source_type import SourceType
+from .source_namespace import SourceNamespace
 from .source_value import SourceValue
 
 
@@ -51,10 +51,8 @@ class QueryableCodeMap(ValueModel):
     def source_files(self) -> QueryBuilder[SourceFileResult]:
         return QueryBuilder[SourceFileResult].model_construct(
             items=tuple(
-                (
-                    SourceFileResult.model_construct(source_id=source_id, file=source_file)
-                    for source_id, source_file in self.code_map.extraction.files.items()
-                )
+                SourceFileResult.model_construct(source_id=source_id, file=source_file)
+                for source_id, source_file in self.code_map.extraction.files.items()
             ),
             predicates=(),
         )
@@ -65,17 +63,23 @@ class QueryableCodeMap(ValueModel):
     def exports(self) -> QueryBuilder[SourceItemResult[SourceExport]]:
         return self._source_items(lambda source_file: source_file.exports)
 
-    def classes(self) -> QueryBuilder[SourceItemResult[SourceClass]]:
-        return self._source_items(lambda source_file: source_file.classes)
+    def namespaces(self) -> QueryBuilder[SourceItemResult[SourceNamespace]]:
+        return self._source_items(lambda source_file: source_file.namespaces)
 
-    def interfaces(self) -> QueryBuilder[SourceItemResult[SourceInterface]]:
-        return self._source_items(lambda source_file: source_file.interfaces)
+    def declarations(self) -> QueryBuilder[SourceItemResult[SourceDeclaration]]:
+        return self._source_items(lambda source_file: source_file.declarations)
 
-    def types(self) -> QueryBuilder[SourceItemResult[SourceType]]:
-        return self._source_items(lambda source_file: source_file.types)
+    def classes(self) -> QueryBuilder[SourceItemResult[SourceDeclaration]]:
+        return self._declarations(DeclarationFamily.CLASS)
 
-    def abstract_classes(self) -> QueryBuilder[SourceItemResult[SourceAbstractClass]]:
-        return self._source_items(lambda source_file: source_file.abstract_classes)
+    def interfaces(self) -> QueryBuilder[SourceItemResult[SourceDeclaration]]:
+        return self._declarations(DeclarationFamily.INTERFACE)
+
+    def types(self) -> QueryBuilder[SourceItemResult[SourceDeclaration]]:
+        return self._declarations(DeclarationFamily.TYPE)
+
+    def abstract_classes(self) -> QueryBuilder[SourceItemResult[SourceDeclaration]]:
+        return self._declarations(DeclarationFamily.ABSTRACT_CLASS)
 
     def functions(self) -> QueryBuilder[SourceItemResult[SourceFunction]]:
         return self._source_items(lambda source_file: source_file.functions)
@@ -89,14 +93,15 @@ class QueryableCodeMap(ValueModel):
     def calls(self) -> QueryBuilder[SourceItemResult[SourceCall]]:
         return self._source_items(lambda source_file: source_file.calls)
 
+    def declaration_relations(self) -> QueryBuilder[SourceItemResult[SourceDeclarationRelation]]:
+        return self._source_items(lambda source_file: source_file.declaration_relations)
+
     def dependency_nodes(self) -> QueryBuilder[DependencyNodeResult]:
         files = self.code_map.extraction.files
         return QueryBuilder[DependencyNodeResult].model_construct(
             items=tuple(
-                (
-                    DependencyNodeResult.model_construct(node_id=node_id, node=node, file=files.get(FileId(node_id)))
-                    for node_id, node in self.code_map.dependency_graph.nodes.items()
-                )
+                DependencyNodeResult.model_construct(node_id=node_id, node=node, file=files.get(FileId(node_id)))
+                for node_id, node in self.code_map.dependency_graph.nodes.items()
             ),
             predicates=(),
         )
@@ -119,16 +124,21 @@ class QueryableCodeMap(ValueModel):
     def external_dependency_edges(self) -> QueryBuilder[DependencyEdgeResult]:
         return self._dependency_edges(self.code_map.dependency_graph.external_edges(self.source_ids()))
 
+    def _declarations(self, family: DeclarationFamily) -> QueryBuilder[SourceItemResult[SourceDeclaration]]:
+        return self._source_items(
+            lambda source_file: (
+                item for item in source_file.declarations if source_file.declaration_family(item.kind) is family
+            )
+        )
+
     def _source_items(
         self, selector: Callable[[SourceFile], Iterable[SourceItem]]
     ) -> QueryBuilder[SourceItemResult[SourceItem]]:
         return QueryBuilder[SourceItemResult[SourceItem]].model_construct(
             items=tuple(
-                (
-                    SourceItemResult[SourceItem].model_construct(source_id=source_id, file=source_file, item=item)
-                    for source_id, source_file in self.code_map.extraction.files.items()
-                    for item in selector(source_file)
-                )
+                SourceItemResult[SourceItem].model_construct(source_id=source_id, file=source_file, item=item)
+                for source_id, source_file in self.code_map.extraction.files.items()
+                for item in selector(source_file)
             ),
             predicates=(),
         )

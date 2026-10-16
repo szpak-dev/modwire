@@ -16,4 +16,4 @@ class InheritanceFactContributor(PythonSourceFactContributor):
         return 90
 
     def contribute(self, catalog: PythonSemanticCatalog, context: PythonSourceContext) -> PythonSourceFactContribution:
-        return PythonSourceFactContribution(inheritance=catalog.inheritance)
+        return PythonSourceFactContribution(declaration_relations=catalog.declaration_relations)

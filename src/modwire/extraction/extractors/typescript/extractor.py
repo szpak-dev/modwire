@@ -6,7 +6,7 @@ from ....shared.code.models.capability_coverage import CapabilityCoverage
 from ....shared.code.models.capability_status import CapabilityStatus
 from ....shared.code.models.extractor_descriptor import ExtractorDescriptor
 from ....shared.code.models.fact_capability import FactCapability
-from ....shared.code.models.identity import FileId, ModuleId
+from ....shared.code.models.identity import FileId, ImportIdentity
 from ....shared.code.models.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
@@ -81,6 +81,21 @@ class TypeScriptExtractor(SourceExtractor):
                     explanation="Class and interface heritage clauses are recorded.",
                 ),
                 CapabilityCoverage(
+                    capability=FactCapability.NAMESPACES,
+                    status=CapabilityStatus.UNSUPPORTED,
+                    explanation="TypeScript namespace declarations are not extracted yet.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.DECLARATION_KINDS,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation="Classes, interfaces, and type aliases publish exact shared declaration kinds.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.COMPOSITION,
+                    status=CapabilityStatus.PARTIAL,
+                    explanation="Extension and implementation heritage is extracted.",
+                ),
+                CapabilityCoverage(
                     capability=FactCapability.DEPENDENCIES,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Imports are normalized and resolved when targets are present.",
@@ -110,5 +125,5 @@ class TypeScriptExtractor(SourceExtractor):
             output_format=BatchOutputFormat.JSON_LINES,
         )
 
-    def module_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ModuleId, ...]]:
-        return {file_id: (source_file.module_id,) for file_id, source_file in files.items()}
+    def import_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:
+        return {file_id: (source_file.import_identity,) for file_id, source_file in files.items()}

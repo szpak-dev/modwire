@@ -4,6 +4,7 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
+from ......shared.code.models.declaration_family import DeclarationFamily
 from ......shared.code.models.identity import ImportSpecifier
 from ......shared.code.models.source_export_kind import SourceExportKind
 from ...observations.export_candidate import PythonExportCandidate
@@ -50,10 +51,12 @@ class ExportSemanticContributor(PythonSemanticContributor):
 
     def declaration_candidates(self, catalog: PythonSemanticCatalog) -> dict[str, PythonExportCandidate]:
         candidates: dict[str, PythonExportCandidate] = {}
-        for item in catalog.classes:
-            candidates[item.name] = self.direct_candidate(item.name, SourceExportKind.CLASS, False)
-        for item in catalog.abstract_classes:
-            candidates[item.name] = self.direct_candidate(item.name, SourceExportKind.ABSTRACT_CLASS, False)
+        for item in catalog.declarations:
+            if item.declaration_id.family is DeclarationFamily.ABSTRACT_CLASS:
+                kind = SourceExportKind.ABSTRACT_CLASS
+            else:
+                kind = SourceExportKind.CLASS
+            candidates[item.name] = self.direct_candidate(item.name, kind, False)
         for item in catalog.functions:
             candidates[item.name] = self.direct_candidate(item.name, SourceExportKind.FUNCTION, False)
         return candidates

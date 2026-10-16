@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from .models.identity import FileId, ModuleId
+from .models.identity import FileId, ImportIdentity
 
 
 class IdentityResolver(ABC):
@@ -9,7 +9,7 @@ class IdentityResolver(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def module_id(self, root: str, path: str) -> ModuleId:
+    def import_identity(self, root: str, path: str) -> ImportIdentity:
         raise NotImplementedError
 
 

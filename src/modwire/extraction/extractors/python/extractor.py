@@ -7,7 +7,7 @@ from ....shared.code.models.capability_coverage import CapabilityCoverage
 from ....shared.code.models.capability_status import CapabilityStatus
 from ....shared.code.models.extractor_descriptor import ExtractorDescriptor
 from ....shared.code.models.fact_capability import FactCapability
-from ....shared.code.models.identity import FileId, ModuleId
+from ....shared.code.models.identity import FileId, ImportIdentity
 from ....shared.code.models.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
@@ -88,6 +88,21 @@ class PythonExtractor(SourceExtractor):
                     explanation="Every declared Python base expression is recorded.",
                 ),
                 CapabilityCoverage(
+                    capability=FactCapability.NAMESPACES,
+                    status=CapabilityStatus.UNSUPPORTED,
+                    explanation="Python namespace declarations are not extracted yet.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.DECLARATION_KINDS,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation="Classes and abstract classes publish exact shared declaration kinds.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.COMPOSITION,
+                    status=CapabilityStatus.PARTIAL,
+                    explanation="Class extension is extracted; mixin semantics are not classified.",
+                ),
+                CapabilityCoverage(
                     capability=FactCapability.DEPENDENCIES,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Imports are normalized and resolved when targets are present.",
@@ -118,5 +133,5 @@ class PythonExtractor(SourceExtractor):
             planner="balanced",
         )
 
-    def module_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ModuleId, ...]]:
+    def import_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:
         return self.identities.identities(files)

@@ -10,9 +10,10 @@ from ....shared.values.models.value_model import ValueModel
 from .manifest_annotation import ManifestAnnotation
 from .manifest_attribute import ManifestAttribute
 from .manifest_callable import ManifestCallable
+from .manifest_declaration_relation import ManifestDeclarationRelation
 from .manifest_dependency import ManifestDependency
 from .manifest_dependency_target_kind import ManifestDependencyTargetKind
-from .manifest_inheritance import ManifestInheritance
+from .manifest_namespace import ManifestNamespace
 from .manifest_parameter import ManifestParameter
 from .manifest_span import ManifestSpan
 from .manifest_symbol import ManifestSymbol
@@ -21,15 +22,16 @@ from .manifest_symbol import ManifestSymbol
 class ImplementationManifest(ValueModel):
     """A versioned, language-neutral statement of observed implementation facts and provenance."""
 
-    schema_version: Literal[3] = 3
+    schema_version: Literal[4] = 4
     producer: CodeMapProducer
     source_manifest: SourceManifest
+    namespaces: tuple[ManifestNamespace, ...]
     symbols: tuple[ManifestSymbol, ...]
     callables: tuple[ManifestCallable, ...]
     parameters: tuple[ManifestParameter, ...]
     attributes: tuple[ManifestAttribute, ...]
     annotations: tuple[ManifestAnnotation, ...]
-    inheritance: tuple[ManifestInheritance, ...]
+    declaration_relations: tuple[ManifestDeclarationRelation, ...]
     dependencies: tuple[ManifestDependency, ...]
     spans: tuple[ManifestSpan, ...]
 
@@ -38,12 +40,13 @@ class ImplementationManifest(ValueModel):
         """Validate canonical ordering, identity uniqueness, and fact references."""
 
         collections = (
+            self.namespaces,
             self.symbols,
             self.callables,
             self.parameters,
             self.attributes,
             self.annotations,
-            self.inheritance,
+            self.declaration_relations,
             self.dependencies,
             self.spans,
         )
@@ -61,6 +64,8 @@ class ImplementationManifest(ValueModel):
         if len(symbol_ids) != len(self.symbols):
             raise ValueError("Implementation manifest declaration identities must be unique.")
         source_ids = {str(item.source_id) for item in self.source_manifest.sources}
+        if any(item.source_id not in source_ids for item in self.namespaces):
+            raise ValueError("Implementation manifest namespaces must reference manifest sources.")
         if any(str(item.id.source_id) not in source_ids for item in self.symbols):
             raise ValueError("Implementation manifest symbols must reference manifest sources.")
         callable_ids = {item.symbol_id.canonical() for item in self.callables}
@@ -84,8 +89,8 @@ class ImplementationManifest(ValueModel):
         targets = symbol_ids | parameter_ids | attribute_ids
         if any(item.target_id not in targets for item in self.annotations):
             raise ValueError("Implementation manifest annotations must reference declared facts.")
-        if any(item.source_symbol_id.canonical() not in symbol_ids for item in self.inheritance):
-            raise ValueError("Implementation manifest inheritance must reference declared symbols.")
+        if any(item.source_symbol_id.canonical() not in symbol_ids for item in self.declaration_relations):
+            raise ValueError("Implementation manifest declaration relations must reference declared symbols.")
         span_targets = {item.target_id for item in self.spans}
         if len(span_targets) != len(self.spans):
             raise ValueError("Implementation manifest spans must be unique per symbol.")

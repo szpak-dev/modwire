@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ...shared.code.models.dependency_graph import DependencyGraph
-from ...shared.code.models.identity import FileId, ModuleId
+from ...shared.code.models.identity import FileId, ImportIdentity
 from ...shared.code.models.source_file import SourceFile
 from .domain import GraphBuilder, ImportResolver
 
@@ -18,6 +18,6 @@ class DependencyApplication:
         return self.builder.build(files)
 
     def resolve(
-        self, files: dict[FileId, SourceFile], identities: dict[FileId, tuple[ModuleId, ...]]
+        self, files: dict[FileId, SourceFile], identities: dict[FileId, tuple[ImportIdentity, ...]]
     ) -> dict[FileId, SourceFile]:
         return self.resolver.resolve(files, identities)
