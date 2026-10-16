@@ -17,20 +17,19 @@ not a second architecture definition. If prose and a canonical diagram diverge,
 the diagram governs and the prose must be corrected.
 
 ```text
-CLI and Python consumers
-└── modwire.application
-    └── ModwireApplication
-        ├── ArchitectureFacade     configuration, analysis, report catalog
-        ├── CliFacade              filesystem, processes, cache, CLI workflow
-        ├── ExtractionFacade       extractor registration and code-map assembly
-        └── ImplementationFacade   implementation-manifest formats and documents
-             │
-             └── modwire.shared    typed language-neutral contracts
+modwire/
+├── application.py    ModwireApplication, the public composition boundary
+├── architecture/     ArchitectureFacade: configuration, analysis, report catalog
+├── cli/              CliFacade: filesystem, processes, cache, CLI workflow
+├── extraction/       ExtractionFacade: extractors and code-map assembly
+├── implementation/   ImplementationFacade: manifest formats and documents
+└── shared/           typed language-neutral contracts used across boundaries
 ```
 
-The public object is the composition boundary. Consumers use
-`modwire.application`; the facades organize internal responsibility without asking
-consumers to construct or import internal services.
+Consumers use `modwire.application`. `ModwireApplication` aggregates the four
+facades without asking consumers to construct or import internal services;
+`modwire.shared` remains their top-level sibling and supplies contracts used across
+those boundaries.
 
 ## Processing flow
 

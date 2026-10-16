@@ -121,8 +121,9 @@ depends on an outer application layer.
 
 ## Repair the dependency
 
-Make the application pass the subtotal into the domain calculation. Replace
-`src/backend/sales/orders/domain/tax.py` with:
+Remove the domain layer's dependency on the application layer by making `tax`
+receive the subtotal as an input. Replace `src/backend/sales/orders/domain/tax.py`
+with:
 
 ```{literalinclude} ../_examples/tutorial-repair/tax.py
 :language: python

@@ -16,7 +16,7 @@ example runs against the same Python source used by the tutorial:
 `generate_queryable_map` performs filesystem work through Modwire's CLI boundary
 and returns a `QueryableCodeMap`. The example queries files and tracked dependencies,
 selects a report by its public metadata, and asserts the observable violation count
-without reaching into extractor internals. Documentation verification executes this
+without reaching into extractor internals. The repository test suite executes this
 file, so its configuration, public imports, and expected result cannot drift as
 unchecked prose.
 
