@@ -14,7 +14,9 @@ class CodeMapFactory:
         edges: tuple[tuple[str, str | None, str, str], ...],
     ) -> QueryableCodeMap:
         source_files = {source_id: self.source_file(source_id, values) for source_id, values in files.items()}
-        modules = {str(source_file["module_id"]): source_id for source_id, source_file in source_files.items()}
+        import_identities = {
+            str(source_file["import_identity"]): source_id for source_id, source_file in source_files.items()
+        }
         nodes = {source_id: {"id": source_id, "kind": "file"} for source_id in source_files}
         dependency_edges = []
         for source_id, target_id, resolution, specifier in edges:
@@ -72,7 +74,7 @@ class CodeMapFactory:
                 },
                 "extraction": {
                     "files": source_files,
-                    "modules": modules,
+                    "import_identities": import_identities,
                     "manifest": {
                         **source_manifest_payload,
                         "digest_algorithm": "sha256",
@@ -90,32 +92,33 @@ class CodeMapFactory:
     def source_file(self, source_id: str, values: Mapping[str, object]) -> dict[str, object]:
         defaults: dict[str, object] = {
             "file_id": source_id,
-            "module_id": str(PurePosixPath(source_id).with_suffix("")).replace("/", "."),
+            "import_identity": str(PurePosixPath(source_id).with_suffix("")),
             "imports": [],
             "exports": [],
-            "classes": [],
-            "interfaces": [],
-            "types": [],
-            "abstract_classes": [],
+            "namespaces": [],
+            "declarations": [],
             "functions": [],
             "values": [],
             "callables": [],
             "calls": [],
-            "inheritance": [],
+            "declaration_relations": [],
             "line_count": 1,
             "code_line_count": 1,
             "public_symbol_count": 0,
         }
         source_file = {**defaults, **values}
-        declaration_families = (
-            ("classes", "class"),
-            ("interfaces", "interface"),
-            ("types", "type"),
-            ("abstract_classes", "abstract_class"),
-            ("functions", "function"),
-            ("values", "value"),
-        )
-        for collection, family in declaration_families:
+        declaration_families = {
+            "class": "class",
+            "record": "class",
+            "enum": "class",
+            "abstract_class": "abstract_class",
+            "interface": "interface",
+            "annotation": "interface",
+            "trait": "type",
+            "module": "type",
+            "type_alias": "type",
+        }
+        for collection, family in (("functions", "function"), ("values", "value")):
             source_file[collection] = [
                 {
                     **declaration,
@@ -128,6 +131,18 @@ class CodeMapFactory:
                 }
                 for ordinal, declaration in enumerate(source_file[collection], start=1)
             ]
+        source_file["declarations"] = [
+            {
+                **declaration,
+                "declaration_id": {
+                    "source_id": source_id,
+                    "family": declaration_families[str(declaration["kind"])],
+                    "qualified_name": declaration["name"],
+                    "ordinal": ordinal,
+                },
+            }
+            for ordinal, declaration in enumerate(source_file["declarations"], start=1)
+        ]
         return source_file
 
     def symbol(self, name: str, *, line_count: int, declared_args: int, optional_args: int) -> dict[str, Any]:
@@ -151,6 +166,7 @@ class CodeMapFactory:
     ) -> dict[str, object]:
         return {
             "name": name,
+            "kind": "class",
             "visibility": "public",
             "visibility_intent": "public",
             "declaration_annotations": [],
@@ -175,7 +191,7 @@ class CodeMapFactory:
             "visibility_intent": "public",
             "line_count": 1,
             "declaration_kind": declaration_kind,
-            "value_kind": "literal",
+            "value_kind": "value_literal",
             "scope": scope,
             "declared_args": 0,
             "optional_args": 0,

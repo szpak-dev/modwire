@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.identity import FileId, ModuleId
+from ....shared.code.models.identity import FileId, ImportIdentity
 from ....shared.code.models.import_crossing_type import ImportCrossingType
 from ....shared.code.models.source_dependency_resolution import SourceDependencyResolution
 from ....shared.code.models.source_file import SourceFile
@@ -16,12 +16,12 @@ from .import_identity_index import ImportIdentityIndex
 @dataclass(frozen=True)
 class SourceImportResolver(ImportResolver):
     def resolve(
-        self, files: dict[FileId, SourceFile], identities: dict[FileId, tuple[ModuleId, ...]]
+        self, files: dict[FileId, SourceFile], identities: dict[FileId, tuple[ImportIdentity, ...]]
     ) -> dict[FileId, SourceFile]:
         modules = ImportIdentityIndex()
         symbols = ImportIdentityIndex()
         for file_id, source_file in files.items():
-            module = self._normalize(source_file.module_id)
+            module = self._normalize(source_file.import_identity)
             for identity in identities[file_id]:
                 modules.add("", self._normalize(identity), file_id)
             parent = module.rsplit("/", 1)[0] if "/" in module else ""

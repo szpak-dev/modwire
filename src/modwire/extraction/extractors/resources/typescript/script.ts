@@ -208,11 +208,11 @@ function unwrapExpression(node) {
 
 function expressionValueKind(expression) {
     if (expression === undefined) {
-        return 'unknown';
+        return 'value_unknown';
     }
     const unwrapped = unwrapExpression(expression);
     if (Node.isArrowFunction(unwrapped) || Node.isFunctionExpression(unwrapped)) {
-        return 'callable';
+        return 'value_callable';
     }
     switch (unwrapped.getKind()) {
         case SyntaxKind.StringLiteral:
@@ -222,13 +222,13 @@ function expressionValueKind(expression) {
         case SyntaxKind.TrueKeyword:
         case SyntaxKind.FalseKeyword:
         case SyntaxKind.NullKeyword:
-            return 'literal';
+            return 'value_literal';
         case SyntaxKind.ObjectLiteralExpression:
         case SyntaxKind.ArrayLiteralExpression:
         case SyntaxKind.NewExpression:
-            return 'object';
+            return 'value_object';
         default:
-            return Node.isIdentifier(unwrapped) && unwrapped.getText() === 'undefined' ? 'literal' : 'unknown';
+            return Node.isIdentifier(unwrapped) && unwrapped.getText() === 'undefined' ? 'value_literal' : 'value_unknown';
     }
 }
 
@@ -688,6 +688,7 @@ function collectClasses(sourceFile, lineStarts, sourceId) {
                 qualified_name: name,
                 ordinal: classDeclaration.getStart() + 1,
             },
+            kind: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
             name,
             visibility,
             visibility_intent: visibilityIntent(name, visibility),
@@ -700,7 +701,7 @@ function collectClasses(sourceFile, lineStarts, sourceId) {
             abstractClasses.push({
                 ...base,
                 abstract_methods: abstractMethods,
-                concrete_methods: concreteMethods,
+                methods: concreteMethods,
             });
         } else {
             classes.push({
@@ -757,6 +758,7 @@ function collectInterfaces(sourceFile, lineStarts, sourceId) {
                 qualified_name: interfaceDeclaration.getName(),
                 ordinal: interfaceDeclaration.getStart() + 1,
             },
+            kind: 'interface',
             name: interfaceDeclaration.getName(),
             visibility,
             visibility_intent: visibilityIntent(interfaceDeclaration.getName(), visibility),
@@ -789,6 +791,7 @@ function collectTypes(sourceFile, lineStarts, sourceId) {
                 qualified_name: typeAlias.getName(),
                 ordinal: typeAlias.getStart() + 1,
             },
+            kind: 'type_alias',
             name: typeAlias.getName(),
             visibility,
             visibility_intent: visibilityIntent(typeAlias.getName(), visibility),
@@ -1156,15 +1159,18 @@ function extractFile(filePath, sourcesRoot, sourceId = null) {
     return {
         imports,
         exports,
-        classes,
-        interfaces: collectInterfaces(sourceFile, lineStarts, resolvedSourceId),
-        types: collectTypes(sourceFile, lineStarts, resolvedSourceId),
-        abstract_classes: abstractClasses,
+        namespaces: [],
+        declarations: [
+            ...classes,
+            ...collectInterfaces(sourceFile, lineStarts, resolvedSourceId),
+            ...collectTypes(sourceFile, lineStarts, resolvedSourceId),
+            ...abstractClasses,
+        ],
         functions: collectFunctions(sourceFile, lineStarts, resolvedSourceId),
         values: callableGraph.values,
         callables: callableGraph.callables,
         calls: callableGraph.calls,
-        inheritance: [
+        declaration_relations: [
             ...sourceFile.getClasses().flatMap(classDeclaration => {
                 const extension = classDeclaration.getExtends();
                 return [

@@ -13,5 +13,8 @@ class FactCapability(StrEnum):
     ATTRIBUTES = "attributes"
     ASSIGNED_VALUES = "assigned_values"
     INHERITANCE = "inheritance"
+    NAMESPACES = "namespaces"
+    DECLARATION_KINDS = "declaration_kinds"
+    COMPOSITION = "composition"
     DEPENDENCIES = "dependencies"
     SPANS = "spans"

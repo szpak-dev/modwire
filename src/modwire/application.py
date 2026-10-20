@@ -41,6 +41,10 @@ from .implementation.facade import ImplementationFacade
 from .implementation.manifest.models.implementation_manifest import ImplementationManifest
 from .implementation.manifest.models.implementation_manifest_document import ImplementationManifestDocument
 from .implementation.manifest.models.implementation_manifest_error import ImplementationManifestError
+from .implementation.manifest.models.implementation_manifest_validation_error import (
+    ImplementationManifestValidationError,
+)
+from .implementation.manifest.models.implementation_manifest_violation import ImplementationManifestViolation
 from .implementation.manifest.models.invalid_implementation_manifest_error import InvalidImplementationManifestError
 from .implementation.manifest.models.manifest_format import ManifestFormat
 from .implementation.manifest.models.unsupported_manifest_format_error import UnsupportedManifestFormatError
@@ -55,9 +59,12 @@ from .shared.code.models.queryable_code_map import QueryableCodeMap
 from .shared.code.models.scan_policy import ScanPolicy
 from .shared.code.models.source_assigned_value import SourceAssignedValue
 from .shared.code.models.source_assigned_value_kind import SourceAssignedValueKind
+from .shared.code.models.source_declaration_relation_kind import SourceDeclarationRelationKind
+from .shared.code.models.source_dependency_kind import SourceDependencyKind
 from .shared.code.models.source_manifest_identity import SourceManifestIdentity
 from .shared.code.models.source_member_kind import SourceMemberKind
-from .shared.code.models.source_relation_kind import SourceRelationKind
+from .shared.code.models.source_namespace_kind import SourceNamespaceKind
+from .shared.code.models.source_symbol_kind import SourceSymbolKind
 from .shared.failures.models.modwire_error import ModwireError
 
 __all__ = [
@@ -87,6 +94,8 @@ __all__ = [
     "ImplementationManifest",
     "ImplementationManifestDocument",
     "ImplementationManifestError",
+    "ImplementationManifestValidationError",
+    "ImplementationManifestViolation",
     "InitializationError",
     "InvalidImplementationManifestError",
     "InvalidInitializationTargetError",
@@ -103,7 +112,10 @@ __all__ = [
     "SourceManifestIdentity",
     "SourceObservation",
     "SourceObservationInvalidatedError",
-    "SourceRelationKind",
+    "SourceDeclarationRelationKind",
+    "SourceDependencyKind",
+    "SourceNamespaceKind",
+    "SourceSymbolKind",
     "UnknownFlowAnalyzerError",
     "UnsupportedLanguageError",
     "UnsupportedManifestFormatError",

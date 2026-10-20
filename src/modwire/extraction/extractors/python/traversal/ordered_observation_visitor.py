@@ -5,9 +5,9 @@ from functools import singledispatchmethod
 from ..observations.call_observation import PythonCallObservation
 from ..observations.callable_candidate import PythonCallableCandidate
 from ..observations.class_candidate import PythonClassCandidate
+from ..observations.declaration_relation_candidate import PythonDeclarationRelationCandidate
 from ..observations.function_candidate import PythonFunctionCandidate
 from ..observations.import_candidate import PythonImportCandidate
-from ..observations.inheritance_candidate import PythonInheritanceCandidate
 from ..observations.property_candidate import PythonPropertyCandidate
 from ..observations.property_scope import PythonPropertyScope
 from ..observations.source_observation import PythonSourceObservation
@@ -399,8 +399,8 @@ class OrderedObservationVisitor:
             imports=imports,
             exports=(),
             properties=tuple(self.properties),
-            inheritance=tuple(
-                PythonInheritanceCandidate(source=candidate, base=base)
+            declaration_relations=tuple(
+                PythonDeclarationRelationCandidate(source=candidate, base=base)
                 for candidate in classes
                 for base in candidate.node.bases
             ),

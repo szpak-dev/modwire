@@ -9,7 +9,7 @@ class TestPublicCodeValues(ServiceTestCase):
         result = CodeMapFactory().queryable(
             {
                 "example.source": {
-                    "classes": [
+                    "declarations": [
                         CodeMapFactory().source_class("ExampleFirst", line_count=1, methods=(), properties=()),
                         CodeMapFactory().source_class("ExampleSecond", line_count=1, methods=(), properties=()),
                         CodeMapFactory().source_class("ExampleThird", line_count=1, methods=(), properties=()),
@@ -46,7 +46,7 @@ class TestPublicCodeValues(ServiceTestCase):
         original = CodeMapFactory().queryable({"src/example.source": {}}, ()).code_map
         restored = type(original).model_validate_json(original.to_json())
         assert restored.to_dict() == original.to_dict()
-        assert original.schema_version == 6
+        assert original.schema_version == 7
         assert set(json.loads(original.to_json())) == {
             "language",
             "producer",
@@ -58,7 +58,9 @@ class TestPublicCodeValues(ServiceTestCase):
         result = CodeMapFactory().queryable(
             {
                 "example_values.source": {
-                    "classes": [CodeMapFactory().source_class("ExampleValue", line_count=1, methods=(), properties=())]
+                    "declarations": [
+                        CodeMapFactory().source_class("ExampleValue", line_count=1, methods=(), properties=())
+                    ]
                 },
                 "example_consumer.source": {},
             },

@@ -327,18 +327,18 @@ function source_value_entry(
 
 function value_kind(?Expr $expr): string {
     if ($expr === null) {
-        return 'unknown';
+        return 'value_unknown';
     }
     if ($expr instanceof Expr\Closure || $expr instanceof Expr\ArrowFunction) {
-        return 'callable';
+        return 'value_callable';
     }
     if ($expr instanceof Expr\New_ || $expr instanceof Expr\Array_) {
-        return 'object';
+        return 'value_object';
     }
     if ($expr instanceof Node\Scalar || $expr instanceof Expr\ConstFetch) {
-        return 'literal';
+        return 'value_literal';
     }
-    return 'unknown';
+    return 'value_unknown';
 }
 
 function expr_name(Node|Name|string|null $expr): string {
@@ -543,6 +543,7 @@ function collect_definitions(array $nodes, string $sourceId): array {
             }
             $base = [
                 'declaration_id' => $declarationId,
+                'kind' => $family,
                 'name' => $name,
                 'visibility' => class_visibility($node),
                 'visibility_intent' => visibility_intent($name, class_visibility($node)),
@@ -554,7 +555,7 @@ function collect_definitions(array $nodes, string $sourceId): array {
                 $abstractClasses[] = [
                     ...$base,
                     'abstract_methods' => $abstractMethods,
-                    'concrete_methods' => $concreteMethods,
+                    'methods' => $concreteMethods,
                 ];
                 $exports[] = source_export_entry($name, 'abstract_class');
             } else {
@@ -597,6 +598,7 @@ function collect_definitions(array $nodes, string $sourceId): array {
             }
             $interfaces[] = [
                 'declaration_id' => $declarationId,
+                'kind' => 'interface',
                 'name' => $name,
                 'visibility' => 'public',
                 'visibility_intent' => visibility_intent($name, 'public'),
@@ -633,14 +635,11 @@ function collect_definitions(array $nodes, string $sourceId): array {
     });
 
     return [
-        'classes' => $classes,
-        'interfaces' => $interfaces,
-        'types' => [],
-        'abstract_classes' => $abstractClasses,
+        'declarations' => [...$classes, ...$interfaces, ...$abstractClasses],
         'functions' => $functions,
         'exports' => $exports,
         'class_names' => $classNames,
-        'inheritance' => $inheritance,
+        'declaration_relations' => $inheritance,
     ];
 }
 
@@ -886,15 +885,13 @@ function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRo
     return [
         'imports' => collect_imports($nodes, $content),
         'exports' => $definitions['exports'],
-        'classes' => $definitions['classes'],
-        'interfaces' => $definitions['interfaces'],
-        'types' => $definitions['types'],
-        'abstract_classes' => $definitions['abstract_classes'],
+        'namespaces' => [],
+        'declarations' => $definitions['declarations'],
         'functions' => $definitions['functions'],
         'values' => $graph['values'],
         'callables' => $graph['callables'],
         'calls' => collect_calls($nodes, $resolvedSourceId, $graph['callables'], $graph['callable_ranges']),
-        'inheritance' => $definitions['inheritance'],
+        'declaration_relations' => $definitions['declaration_relations'],
         'line_count' => line_count_for_content($content),
         'code_line_count' => code_line_count_for_content($content),
         'public_symbol_count' => count($definitions['exports']),

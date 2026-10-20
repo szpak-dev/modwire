@@ -23,7 +23,7 @@ class TestExtractionRecovery(NativeExtractionTestCase):
         self.write_files({name: valid})
         result = self.extract_project(language)
         assert tuple(result.extraction.files) == (name,)
-        assert result.extraction.files[name].classes[0].name == "ExampleValue"
+        assert result.extraction.files[name].declarations[0].name == "ExampleValue"
 
     def test_removed_sources_disappear_on_the_next_request(self) -> None:
         self.write_files({"example_first.py": "", "example_second.py": ""})
@@ -33,6 +33,6 @@ class TestExtractionRecovery(NativeExtractionTestCase):
 
     def test_source_changes_are_visible_to_the_same_application(self) -> None:
         self.write_files({"example.py": "class ExampleFirst: pass\n"})
-        assert self.extract_project("python").extraction.files["example.py"].classes[0].name == "ExampleFirst"
+        assert self.extract_project("python").extraction.files["example.py"].declarations[0].name == "ExampleFirst"
         self.write_files({"example.py": "class ExampleSecond: pass\n"})
-        assert self.extract_project("python").extraction.files["example.py"].classes[0].name == "ExampleSecond"
+        assert self.extract_project("python").extraction.files["example.py"].declarations[0].name == "ExampleSecond"

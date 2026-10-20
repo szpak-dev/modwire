@@ -31,7 +31,7 @@ class TestDependencyInvariants(ExtractionTestCase):
         modules = [
             (identity, file_id)
             for file_id, source in extraction.files.items()
-            for module in (normalize(source.module_id),)
+            for module in (normalize(source.import_identity),)
             for identity in (
                 (module, module.rsplit("/", 1)[0])
                 if language == "python" and module.endswith("/__init__")
@@ -41,7 +41,7 @@ class TestDependencyInvariants(ExtractionTestCase):
         symbols = [
             (module.rsplit("/", 1)[0] if "/" in module else "", exported.name.casefold(), file_id)
             for file_id, source in extraction.files.items()
-            for module in (normalize(source.module_id),)
+            for module in (normalize(source.import_identity),)
             for exported in source.exports
         ]
         for file_id, source in extraction.files.items():

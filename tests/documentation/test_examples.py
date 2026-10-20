@@ -91,6 +91,9 @@ class TestDocumentationExamples(CliTestCase):
             "attributes",
             "assigned_values",
             "inheritance",
+            "namespaces",
+            "declaration_kinds",
+            "composition",
             "dependencies",
             "spans",
         }

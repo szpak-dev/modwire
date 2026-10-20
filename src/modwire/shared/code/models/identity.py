@@ -1,5 +1,5 @@
 from typing import NewType
 
 FileId = NewType("FileId", str)
-ModuleId = NewType("ModuleId", str)
+ImportIdentity = NewType("ImportIdentity", str)
 ImportSpecifier = NewType("ImportSpecifier", str)

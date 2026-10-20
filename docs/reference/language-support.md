@@ -8,9 +8,9 @@ completeness. This page states the runtime contract and the capability differenc
 
 | Language | Extractor identity | Source extensions | Required runtime | Repository CI coverage |
 | --- | --- | --- | --- | --- |
-| Python | `modwire.python.ast` version 1 | `.py` | Python 3.12 or newer | Python 3.12, 3.13, and 3.14 |
-| TypeScript | `modwire.typescript.ts-morph` version 1 | `.ts`, `.tsx`, `.js`, `.jsx` | Node.js 20 or 22 and newer | Node.js 20 for extractor-resource checks |
-| PHP | `modwire.php.php-parser` version 1 | `.php` | PHP 8.1 or newer | Runner-provided PHP; the workflow does not pin a version |
+| Python | `modwire.python.ast` version 2 | `.py` | Python 3.12 or newer | Python 3.12, 3.13, and 3.14 |
+| TypeScript | `modwire.typescript.ts-morph` version 2 | `.ts`, `.tsx`, `.js`, `.jsx` | Node.js 20 or 22 and newer | Node.js 20 for extractor-resource checks |
+| PHP | `modwire.php.php-parser` version 2 | `.php` | PHP 8.1 or newer | Runner-provided PHP; the workflow does not pin a version |
 
 The Python requirement comes from the Modwire package. The Node.js range comes from
 the bundled TypeScript extractor's package metadata. The PHP extractor uses PHP 8.1
@@ -35,6 +35,9 @@ subset. `Unsupported` means consumers must not infer that fact from an empty res
 | attributes | Supported | Supported | Supported |
 | assigned_values | Supported | Unsupported | Unsupported |
 | inheritance | Supported | Supported | Supported |
+| namespaces | Unsupported | Unsupported | Unsupported |
+| declaration_kinds | Supported | Supported | Supported |
+| composition | Partial | Partial | Partial |
 | dependencies | Supported | Supported | Supported |
 | spans | Partial | Partial | Partial |
 
@@ -48,6 +51,12 @@ The exact explanations travel with every public `CodeMap` in
 - Python assigned values distinguish calls, references, literals, unresolved
   expressions, and unassigned declarations; TypeScript and PHP do not yet extract
   assigned-value evidence;
+- namespace extraction is explicitly unsupported until a language extractor publishes
+  authored package, namespace, or module declarations;
+- declaration kinds distinguish the exact shared class, abstract-class, interface,
+  function, callable, and value categories currently emitted by each extractor;
+- composition currently records class extension and implementation evidence without
+  inferring language- or framework-specific mixin semantics;
 - callable spans are exact, while other symbols expose line counts.
 
 ## Deliberate boundaries

@@ -61,7 +61,7 @@ class CallableResolver(SymbolShapeResolverInterface, BaseShapeResolver):
             architecture_map, architecture_map.code_map.abstract_classes().all()
         ):
             abstract_class = abstract_class_result.item
-            for method in (*abstract_class.abstract_methods, *abstract_class.concrete_methods):
+            for method in (*abstract_class.abstract_methods, *abstract_class.methods):
                 violations.extend(
                     self.callable_violations(
                         source_id=abstract_class_result.source_id,

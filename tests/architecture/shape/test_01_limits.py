@@ -11,7 +11,7 @@ class TestShapeLimits(ShapeTestCase):
             (
                 "max_classes_per_file",
                 {
-                    "classes": [
+                    "declarations": [
                         CodeMapFactory().source_class("ExampleFirst", line_count=1, methods=(), properties=()),
                         CodeMapFactory().source_class("ExampleSecond", line_count=1, methods=(), properties=()),
                     ]
@@ -41,7 +41,7 @@ class TestShapeLimits(ShapeTestCase):
             (
                 "max_methods_per_class",
                 {
-                    "classes": [
+                    "declarations": [
                         CodeMapFactory().source_class(
                             "ExampleValue",
                             line_count=1,
@@ -80,7 +80,7 @@ class TestShapeLimits(ShapeTestCase):
             (
                 "max_method_lines",
                 {
-                    "classes": [
+                    "declarations": [
                         CodeMapFactory().source_class(
                             "ExampleValue",
                             line_count=1,
@@ -97,7 +97,11 @@ class TestShapeLimits(ShapeTestCase):
             ),
             (
                 "max_class_lines",
-                {"classes": [CodeMapFactory().source_class("ExampleValue", line_count=3, methods=(), properties=())]},
+                {
+                    "declarations": [
+                        CodeMapFactory().source_class("ExampleValue", line_count=3, methods=(), properties=())
+                    ]
+                },
                 3,
             ),
         ),
@@ -190,7 +194,7 @@ class TestShapeLimits(ShapeTestCase):
             (
                 "allow_optional_method_args",
                 {
-                    "classes": [
+                    "declarations": [
                         CodeMapFactory().source_class(
                             "ExampleValue",
                             line_count=1,
@@ -207,7 +211,7 @@ class TestShapeLimits(ShapeTestCase):
             (
                 "allow_optional_class_properties",
                 {
-                    "classes": [
+                    "declarations": [
                         CodeMapFactory().source_class(
                             "ExampleValue",
                             line_count=1,

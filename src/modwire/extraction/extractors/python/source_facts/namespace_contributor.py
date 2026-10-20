@@ -8,12 +8,12 @@ from .contribution import PythonSourceFactContribution
 from .reader import PythonSourceFactContributor
 
 
-@injectable(as_type=PythonSourceFactContributor, qualifier="10-class")
+@injectable(as_type=PythonSourceFactContributor, qualifier="05-namespace")
 @dataclass(frozen=True)
-class ClassFactContributor(PythonSourceFactContributor):
+class NamespaceFactContributor(PythonSourceFactContributor):
     @property
     def order(self) -> int:
-        return 10
+        return 5
 
     def contribute(self, catalog: PythonSemanticCatalog, context: PythonSourceContext) -> PythonSourceFactContribution:
-        return PythonSourceFactContribution(classes=catalog.classes, abstract_classes=catalog.abstract_classes)
+        return PythonSourceFactContribution(namespaces=catalog.namespaces)

@@ -2,13 +2,88 @@ import hashlib
 import json
 
 import pytest
+from pydantic import ValidationError
 
-from modwire.application import DigestAlgorithm, FactCapability, SourceMemberKind, SourceRelationKind
+from modwire.application import (
+    CodeMap,
+    DigestAlgorithm,
+    FactCapability,
+    SourceDeclarationRelationKind,
+    SourceDependencyKind,
+    SourceMemberKind,
+)
 
+from ..support.code_map import CodeMapFactory
 from .base_test import ApplicationTestCase
 
 
 class TestImplementationManifest(ApplicationTestCase):
+    def test_public_code_map_rejects_a_non_value_symbol_kind_without_changing_valid_input(self) -> None:
+        code_map = (
+            CodeMapFactory()
+            .queryable(
+                {
+                    "example.source": {
+                        "values": [
+                            CodeMapFactory().source_value(
+                                "example_value",
+                                declaration_kind="assignment",
+                                scope="module",
+                            )
+                        ]
+                    }
+                },
+                (),
+            )
+            .code_map
+        )
+        before = code_map.to_json()
+        invalid = before.replace('"value_kind": "value_literal"', '"value_kind": "class"', 1)
+
+        with pytest.raises(ValidationError, match="Source value kind and identity family must describe a value"):
+            CodeMap.model_validate_json(invalid)
+
+        assert code_map.to_json() == before
+        format = self.application.implementation_manifest_formats()[0]
+        manifest = self.application.read_implementation_manifest(
+            self.application.implementation_manifest(code_map, format)
+        )
+        assert tuple(item.kind for item in manifest.symbols) == ("value_literal",)
+
+    def test_public_manifest_uses_one_authored_namespace_across_multiple_sources(self) -> None:
+        namespace = {"kind": "namespace", "qualified_name": "Example.Shared"}
+        code_map = (
+            CodeMapFactory()
+            .queryable(
+                {
+                    "example_first.source": {
+                        "namespaces": [namespace],
+                        "declarations": [
+                            CodeMapFactory().source_class("ExampleFirst", line_count=1, methods=(), properties=())
+                        ],
+                    },
+                    "example_second.source": {
+                        "namespaces": [namespace],
+                        "declarations": [
+                            CodeMapFactory().source_class("ExampleSecond", line_count=1, methods=(), properties=())
+                        ],
+                    },
+                },
+                (),
+            )
+            .code_map
+        )
+        format = self.application.implementation_manifest_formats()[0]
+        manifest = self.application.read_implementation_manifest(
+            self.application.implementation_manifest(code_map, format)
+        )
+
+        assert tuple(item.qualified_name for item in manifest.namespaces) == ("Example.Shared",)
+        assert {item.qualified_name for item in manifest.symbols} == {
+            "Example.Shared.ExampleFirst",
+            "Example.Shared.ExampleSecond",
+        }
+
     def test_public_manifest_serializes_closed_vocabularies_as_exact_strings(self) -> None:
         root = self.project(
             {
@@ -69,7 +144,7 @@ class TestImplementationManifest(ApplicationTestCase):
             sort_keys=True,
         )
 
-        assert manifest.schema_version == 3
+        assert manifest.schema_version == 4
         assert manifest.producer.extractor.language == "python"
         assert manifest.producer.extractor.id == "modwire.python.ast"
         assert manifest.producer.modwire_version
@@ -79,7 +154,7 @@ class TestImplementationManifest(ApplicationTestCase):
         assert all(not item.relative_path.startswith("/") for item in manifest.source_manifest.sources)
         assert str(root) not in canonical
         assert "null" not in canonical
-        assert any(item.target_reference == "ExampleBase" for item in manifest.inheritance)
+        assert any(item.target_reference == "ExampleBase" for item in manifest.declaration_relations)
         assert any(item.expression == "int" for item in manifest.annotations)
         assert document.format == formats[0]
         assert document.payload == canonical
@@ -156,9 +231,9 @@ class TestImplementationManifest(ApplicationTestCase):
         }
         assert any(
             item.source_symbol_id == value_id
-            and item.kind is SourceRelationKind.EXTENDS
+            and item.kind is SourceDeclarationRelationKind.EXTENDS
             and item.target_reference == "ExampleAbstract"
-            for item in manifest.inheritance
+            for item in manifest.declaration_relations
         )
         assert tuple(item.specifier for item in manifest.dependencies) == ("abc", "dataclasses", "typing")
 
@@ -377,7 +452,7 @@ class TestImplementationManifest(ApplicationTestCase):
         )
 
         assert tuple((item.specifier, item.kind) for item in manifest.dependencies) == (
-            (specifier, SourceRelationKind.IMPORTS),
+            (specifier, SourceDependencyKind.IMPORTS),
         )
 
     def test_source_edit_changes_both_source_and_implementation_identity(self) -> None:
@@ -436,7 +511,8 @@ class TestImplementationManifest(ApplicationTestCase):
         assert len(vocabularies) == 1
         for language, manifest in manifests.items():
             assert manifest.producer.extractor.language == language
+            assert manifest.producer.extractor.version == "2"
             assert manifest.symbols
             assert manifest.callables
-            assert manifest.inheritance
+            assert manifest.declaration_relations
             assert {item.capability for item in manifest.producer.capabilities} == set(FactCapability)

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from ....shared.code.models.declaration_family import DeclarationFamily
 from ....shared.code.models.identity import FileId
 from ....shared.code.models.source_value_declaration_kind import SourceValueDeclarationKind
 from ....shared.code.models.source_value_scope import SourceValueScope
@@ -35,7 +36,10 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
                     self.limit_violation(
                         source_id=source_id,
                         rule_name="max_classes_per_file",
-                        actual=len(source_file.classes),
+                        actual=sum(
+                            source_file.declaration_family(item.kind) is DeclarationFamily.CLASS
+                            for item in source_file.declarations
+                        ),
                         limit=config.max_classes_per_file,
                         symbol_kind="file",
                         symbol_name="",
@@ -43,7 +47,10 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
                     self.limit_violation(
                         source_id=source_id,
                         rule_name="max_interfaces_per_file",
-                        actual=len(source_file.interfaces),
+                        actual=sum(
+                            source_file.declaration_family(item.kind) is DeclarationFamily.INTERFACE
+                            for item in source_file.declarations
+                        ),
                         limit=config.max_interfaces_per_file,
                         symbol_kind="file",
                         symbol_name="",
@@ -51,7 +58,10 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
                     self.limit_violation(
                         source_id=source_id,
                         rule_name="max_types_per_file",
-                        actual=len(source_file.types),
+                        actual=sum(
+                            source_file.declaration_family(item.kind) is DeclarationFamily.TYPE
+                            for item in source_file.declarations
+                        ),
                         limit=config.max_types_per_file,
                         symbol_kind="file",
                         symbol_name="",
@@ -59,7 +69,10 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
                     self.limit_violation(
                         source_id=source_id,
                         rule_name="max_abstract_classes_per_file",
-                        actual=len(source_file.abstract_classes),
+                        actual=sum(
+                            source_file.declaration_family(item.kind) is DeclarationFamily.ABSTRACT_CLASS
+                            for item in source_file.declarations
+                        ),
                         limit=config.max_abstract_classes_per_file,
                         symbol_kind="file",
                         symbol_name="",

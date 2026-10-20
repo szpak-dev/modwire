@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ..domain import IdentityResolver
-from ..models.identity import FileId, ModuleId
+from ..models.identity import FileId, ImportIdentity
 
 
 @injectable(as_type=IdentityResolver)
@@ -22,9 +22,9 @@ class SourceIdentityResolver(IdentityResolver):
     def file_id(self, root: str, path: str) -> FileId:
         return FileId("/".join(self.relative(root, path)))
 
-    def module_id(self, root: str, path: str) -> ModuleId:
+    def import_identity(self, root: str, path: str) -> ImportIdentity:
         relative = list(self.relative(root, path))
         name, separator, _ = relative[-1].rpartition(".")
         if separator:
             relative[-1] = name
-        return ModuleId("/".join(relative))
+        return ImportIdentity("/".join(relative))

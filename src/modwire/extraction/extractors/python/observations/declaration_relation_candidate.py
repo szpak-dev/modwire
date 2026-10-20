@@ -5,6 +5,6 @@ from .class_candidate import PythonClassCandidate
 
 
 @dataclass(frozen=True)
-class PythonInheritanceCandidate:
+class PythonDeclarationRelationCandidate:
     source: PythonClassCandidate
     base: ast.expr

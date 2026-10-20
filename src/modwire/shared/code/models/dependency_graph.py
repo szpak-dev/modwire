@@ -5,8 +5,8 @@ from .edge import Edge
 from .identity import FileId, ImportSpecifier
 from .node import Node
 from .node_kind import NodeKind
+from .source_dependency_kind import SourceDependencyKind
 from .source_dependency_resolution import SourceDependencyResolution
-from .source_relation_kind import SourceRelationKind
 
 
 class DependencyGraph(ValueModel):
@@ -38,7 +38,7 @@ class DependencyGraph(ValueModel):
         *,
         specifier: ImportSpecifier,
         resolution: SourceDependencyResolution,
-        kind: SourceRelationKind = SourceRelationKind.IMPORTS,
+        kind: SourceDependencyKind = SourceDependencyKind.IMPORTS,
     ) -> None:
         self.add_node(from_id)
         if to_id is not None:

@@ -6,9 +6,9 @@ from wireup import injectable
 
 from ......shared.code.models.declaration_family import DeclarationFamily
 from ......shared.code.models.source_callable import SourceCallable
+from ......shared.code.models.source_symbol_kind import SourceSymbolKind
 from ......shared.code.models.source_value import SourceValue
 from ......shared.code.models.source_value_declaration_kind import SourceValueDeclarationKind
-from ......shared.code.models.source_value_kind import SourceValueKind
 from ......shared.code.models.source_value_scope import SourceValueScope
 from ......shared.code.models.source_visibility import SourceVisibility
 from ...observations.source_context import PythonSourceContext
@@ -102,47 +102,47 @@ class ValueSemanticContributor(PythonSemanticContributor):
         return ast.unparse(statement.annotation).rsplit(".", 1)[-1] == "Final"
 
     @singledispatchmethod
-    def value_kind(self, statement: ast.stmt) -> SourceValueKind:
-        return SourceValueKind.UNKNOWN
+    def value_kind(self, statement: ast.stmt) -> SourceSymbolKind:
+        return SourceSymbolKind.VALUE_UNKNOWN
 
     @value_kind.register
-    def assigned_value_kind(self, statement: ast.Assign) -> SourceValueKind:
+    def assigned_value_kind(self, statement: ast.Assign) -> SourceSymbolKind:
         return self.expression_kind(statement.value)
 
     @value_kind.register
-    def annotated_value_kind(self, statement: ast.AnnAssign) -> SourceValueKind:
+    def annotated_value_kind(self, statement: ast.AnnAssign) -> SourceSymbolKind:
         if statement.value is None:
-            return SourceValueKind.UNKNOWN
+            return SourceSymbolKind.VALUE_UNKNOWN
         return self.expression_kind(statement.value)
 
     @singledispatchmethod
-    def expression_kind(self, expression: ast.expr) -> SourceValueKind:
-        return SourceValueKind.UNKNOWN
+    def expression_kind(self, expression: ast.expr) -> SourceSymbolKind:
+        return SourceSymbolKind.VALUE_UNKNOWN
 
     @expression_kind.register
-    def lambda_expression_kind(self, expression: ast.Lambda) -> SourceValueKind:
-        return SourceValueKind.CALLABLE
+    def lambda_expression_kind(self, expression: ast.Lambda) -> SourceSymbolKind:
+        return SourceSymbolKind.VALUE_CALLABLE
 
     @expression_kind.register
-    def constant_expression_kind(self, expression: ast.Constant) -> SourceValueKind:
-        return SourceValueKind.LITERAL
+    def constant_expression_kind(self, expression: ast.Constant) -> SourceSymbolKind:
+        return SourceSymbolKind.VALUE_LITERAL
 
     @expression_kind.register
-    def list_expression_kind(self, expression: ast.List) -> SourceValueKind:
-        return SourceValueKind.OBJECT
+    def list_expression_kind(self, expression: ast.List) -> SourceSymbolKind:
+        return SourceSymbolKind.VALUE_OBJECT
 
     @expression_kind.register
-    def tuple_expression_kind(self, expression: ast.Tuple) -> SourceValueKind:
-        return SourceValueKind.OBJECT
+    def tuple_expression_kind(self, expression: ast.Tuple) -> SourceSymbolKind:
+        return SourceSymbolKind.VALUE_OBJECT
 
     @expression_kind.register
-    def set_expression_kind(self, expression: ast.Set) -> SourceValueKind:
-        return SourceValueKind.OBJECT
+    def set_expression_kind(self, expression: ast.Set) -> SourceSymbolKind:
+        return SourceSymbolKind.VALUE_OBJECT
 
     @expression_kind.register
-    def dict_expression_kind(self, expression: ast.Dict) -> SourceValueKind:
-        return SourceValueKind.OBJECT
+    def dict_expression_kind(self, expression: ast.Dict) -> SourceSymbolKind:
+        return SourceSymbolKind.VALUE_OBJECT
 
     @expression_kind.register
-    def call_expression_kind(self, expression: ast.Call) -> SourceValueKind:
-        return SourceValueKind.OBJECT
+    def call_expression_kind(self, expression: ast.Call) -> SourceSymbolKind:
+        return SourceSymbolKind.VALUE_OBJECT

@@ -10,7 +10,7 @@ from ...architecture.report.models.report_node import ReportNode
 from ...extraction.extractors.models.duplicate_identity_error import DuplicateIdentityError
 from ...extraction.extractors.models.extraction_request import ExtractionRequest
 from ...shared.code.models.code_map import CodeMap
-from ...shared.code.models.identity import FileId, ModuleId
+from ...shared.code.models.identity import FileId, ImportIdentity
 from ...shared.code.models.identity_kind import IdentityKind
 from ...shared.code.models.scan_policy import ScanPolicy
 from ...shared.code.models.source_extraction import SourceExtraction
@@ -99,16 +99,16 @@ class CacheApplication:
         self.storage.write_many(options, tuple(writes))
 
         ordered_files = {source.entry.source_id: files[source.entry.source_id] for source in plan.sources}
-        modules: dict[ModuleId, FileId] = {}
+        import_identities: dict[ImportIdentity, FileId] = {}
         for file_id, source_file in ordered_files.items():
-            existing = modules.get(source_file.module_id)
+            existing = import_identities.get(source_file.import_identity)
             if existing is not None:
-                raise DuplicateIdentityError(IdentityKind.MODULE, source_file.module_id, existing, file_id)
-            modules[source_file.module_id] = file_id
+                raise DuplicateIdentityError(IdentityKind.IMPORT, source_file.import_identity, existing, file_id)
+            import_identities[source_file.import_identity] = file_id
 
         extraction = SourceExtraction(
             files=ordered_files,
-            modules=modules,
+            import_identities=import_identities,
             manifest=observation.manifest,
             files_found=observation.files_found,
             files_excluded=observation.files_excluded,

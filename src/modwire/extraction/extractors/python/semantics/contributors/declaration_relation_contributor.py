@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ......shared.code.models.source_inheritance import SourceInheritance
-from ......shared.code.models.source_relation_kind import SourceRelationKind
+from ......shared.code.models.source_declaration_relation import SourceDeclarationRelation
+from ......shared.code.models.source_declaration_relation_kind import SourceDeclarationRelationKind
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
 from ..catalog import PythonSemanticCatalog
@@ -14,9 +14,9 @@ from ..policies.expression_reference_reader import PythonExpressionReferenceRead
 from ..reader import PythonSemanticContributor
 
 
-@injectable(as_type=PythonSemanticContributor, qualifier="80-inheritance")
+@injectable(as_type=PythonSemanticContributor, qualifier="80-declaration-relation")
 @dataclass(frozen=True)
-class InheritanceSemanticContributor(PythonSemanticContributor):
+class DeclarationRelationSemanticContributor(PythonSemanticContributor):
     classes: PythonClassClassifier
     references: PythonExpressionReferenceReader
     identities: PythonDeclarationIdentityFactory
@@ -32,8 +32,8 @@ class InheritanceSemanticContributor(PythonSemanticContributor):
         context: PythonSourceContext,
     ) -> PythonSemanticContribution:
         return PythonSemanticContribution(
-            inheritance=tuple(
-                SourceInheritance(
+            declaration_relations=tuple(
+                SourceDeclarationRelation(
                     source_declaration_id=self.identities.create(
                         context.source_id,
                         self.classes.classify(candidate.source),
@@ -41,9 +41,9 @@ class InheritanceSemanticContributor(PythonSemanticContributor):
                         candidate.source.node.lineno,
                         candidate.source.node.col_offset,
                     ),
-                    kind=SourceRelationKind.EXTENDS,
+                    kind=SourceDeclarationRelationKind.EXTENDS,
                     target_reference=self.references.read(candidate),
                 )
-                for candidate in observation.inheritance
+                for candidate in observation.declaration_relations
             )
         )

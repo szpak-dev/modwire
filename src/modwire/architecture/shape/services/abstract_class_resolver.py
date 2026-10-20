@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.source_abstract_class import SourceAbstractClass
+from ....shared.code.models.source_declaration import SourceDeclaration
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, SymbolShapeResolverInterface
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
@@ -33,9 +33,9 @@ class AbstractClassResolver(SymbolShapeResolverInterface, BaseShapeResolver):
         return tuple(violations)
 
     def abstract_class_violations(
-        self, *, source_id: str, abstract_class: SourceAbstractClass, config: ShapeRules
+        self, *, source_id: str, abstract_class: SourceDeclaration, config: ShapeRules
     ) -> tuple[ShapeViolation, ...]:
-        method_count = len(abstract_class.abstract_methods) + len(abstract_class.concrete_methods)
+        method_count = len(abstract_class.abstract_methods) + len(abstract_class.methods)
         violations = [
             self.limit_violation(
                 source_id=source_id,
