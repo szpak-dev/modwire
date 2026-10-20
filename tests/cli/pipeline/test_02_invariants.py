@@ -105,7 +105,7 @@ class TestNativeExtractionInvariants(NativeExtractionTestCase):
             }
         )
         result = self.extract_project("php")
-        assert result.extraction.files["example.php"].classes[0].name == "ExampleFactory"
+        assert result.extraction.files["example.php"].declarations[0].name == "ExampleFactory"
         assert result.extraction.files["example.php"].calls == []
 
     def test_large_source_input_keeps_every_file_and_identity(self) -> None:

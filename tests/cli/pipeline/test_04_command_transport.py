@@ -16,7 +16,7 @@ class TestExtractorCommandTransport(CliTestCase):
         assert completed.returncode == 0, completed.stderr
         result = json.loads(completed.stdout)
         assert tuple(result) == ("example_identity",)
-        assert result["example_identity"]["classes"][0]["name"] == "ExampleValue"
+        assert result["example_identity"]["declarations"][0]["name"] == "ExampleValue"
 
     def test_single_source_command_returns_one_source_document(self) -> None:
         self.write_files({"example.py": "class ExampleValue: pass\n"})
@@ -24,7 +24,7 @@ class TestExtractorCommandTransport(CliTestCase):
 
         assert completed.returncode == 0, completed.stderr
         result = json.loads(completed.stdout)
-        assert result["classes"][0]["name"] == "ExampleValue"
+        assert result["declarations"][0]["name"] == "ExampleValue"
         assert "example.py" not in result
 
     @pytest.mark.parametrize("payload", ([], {"example_identity": 42}, None))

@@ -24,7 +24,7 @@ class TypeScriptExtractor(SourceExtractor):
             order=1,
             descriptor=ExtractorDescriptor(
                 id="modwire.typescript.ts-morph",
-                version="1",
+                version="2",
                 language="typescript",
                 runtime="node",
             ),

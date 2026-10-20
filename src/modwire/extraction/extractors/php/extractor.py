@@ -24,7 +24,7 @@ class PhpExtractor(SourceExtractor):
             order=2,
             descriptor=ExtractorDescriptor(
                 id="modwire.php.php-parser",
-                version="1",
+                version="2",
                 language="php",
                 runtime="php",
             ),

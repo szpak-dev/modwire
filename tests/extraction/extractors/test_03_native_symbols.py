@@ -10,7 +10,7 @@ class TestNativeSymbols(ExtractionTestCase):
         result = self.application.generate_queryable_map(language, root, self.scan_policy())
         abstract = result.abstract_classes().first().item
         assert tuple(item.name for item in abstract.abstract_methods) == ("example_required",)
-        assert tuple(item.name for item in abstract.concrete_methods) == ("example_concrete",)
+        assert tuple(item.name for item in abstract.methods) == ("example_concrete",)
         concrete = result.classes().where_equal(lambda item: item.item.name, "ExampleImplementation").first().item
         assert tuple(item.name for item in concrete.methods) == ("example_required",)
         assert concrete.properties[0].name == "example_optional"

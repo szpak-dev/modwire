@@ -34,13 +34,13 @@ class CodeMapManifestCompiler(ManifestCompiler):
     def symbol(
         self,
         declaration_id: DeclarationIdentity,
-        import_identity: str,
+        namespace: str,
         kind: SourceSymbolKind,
         visibility: SourceVisibility,
     ) -> ManifestSymbol:
         return ManifestSymbol(
             id=declaration_id,
-            qualified_name=f"{import_identity}.{declaration_id.qualified_name}",
+            qualified_name=f"{namespace}.{declaration_id.qualified_name}",
             kind=kind,
             visibility=visibility,
         )
@@ -49,7 +49,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
         return f"{owner_symbol_id.canonical()}::attribute:{name}"
 
     def compile(self, code_map: CodeMap) -> ImplementationManifest:
-        namespaces: list[ManifestNamespace] = []
+        namespaces: set[ManifestNamespace] = set()
         symbols: list[ManifestSymbol] = []
         symbol_ids: set[str] = set()
         callables: list[ManifestCallable] = []
@@ -63,14 +63,21 @@ class CodeMapManifestCompiler(ManifestCompiler):
 
         for _, source_file in sorted(code_map.extraction.files.items(), key=lambda item: str(item[0])):
             import_identity = str(source_file.import_identity)
-            namespaces.extend(
+            namespaces.update(
                 ManifestNamespace(kind=item.kind, qualified_name=item.qualified_name) for item in source_file.namespaces
+            )
+            namespace = (
+                max(
+                    source_file.namespaces, key=lambda item: (len(item.qualified_name), item.qualified_name)
+                ).qualified_name
+                if source_file.namespaces
+                else import_identity
             )
             for declaration in source_file.declarations:
                 symbols.append(
                     self.symbol(
                         declaration.declaration_id,
-                        import_identity,
+                        namespace,
                         declaration.kind,
                         declaration.visibility,
                     )
@@ -82,14 +89,14 @@ class CodeMapManifestCompiler(ManifestCompiler):
                 symbols.append(
                     self.symbol(
                         function.declaration_id,
-                        import_identity,
+                        namespace,
                         SourceSymbolKind.FUNCTION,
                         function.visibility,
                     )
                 )
                 symbol_ids.add(function.declaration_id.canonical())
             for value in source_file.values:
-                symbols.append(self.symbol(value.declaration_id, import_identity, value.value_kind, value.visibility))
+                symbols.append(self.symbol(value.declaration_id, namespace, value.value_kind, value.visibility))
                 symbol_ids.add(value.declaration_id.canonical())
             for callable_value in source_file.callables:
                 callable_id = callable_value.declaration_id
@@ -98,7 +105,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
                     symbols.append(
                         self.symbol(
                             callable_id,
-                            import_identity,
+                            namespace,
                             SourceSymbolKind.CALLABLE,
                             callable_value.visibility,
                         )

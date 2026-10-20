@@ -28,7 +28,7 @@ class PythonExtractor(SourceExtractor):
             order=0,
             descriptor=ExtractorDescriptor(
                 id="modwire.python.ast",
-                version="1",
+                version="2",
                 language="python",
                 runtime="python",
             ),
@@ -134,4 +134,4 @@ class PythonExtractor(SourceExtractor):
         )
 
     def import_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:
-        return self.identities.identities(files)
+        return self.identities.import_identities(files)

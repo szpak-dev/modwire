@@ -15,4 +15,4 @@ class TestBatchFailure(NativeExtractionTestCase):
         self.write_files({"example_1000.py": "class ExampleRecovered: pass\n"})
         result = self.extract_project("python")
         assert tuple(result.extraction.files) == tuple(sources)
-        assert result.extraction.files["example_1000.py"].classes[0].name == "ExampleRecovered"
+        assert result.extraction.files["example_1000.py"].declarations[0].name == "ExampleRecovered"

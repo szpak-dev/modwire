@@ -9,14 +9,14 @@ from ......shared.code.models.source_file import SourceFile
 
 class PythonImportIdentityPolicy(ABC):
     @abstractmethod
-    def identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:
+    def import_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:
         raise NotImplementedError
 
 
 @injectable(as_type=PythonImportIdentityPolicy)
 @dataclass(frozen=True)
 class PackageImportIdentityPolicy(PythonImportIdentityPolicy):
-    def identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:
+    def import_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:
         package_modules = {
             str(source_file.import_identity).removesuffix("/__init__")
             for source_file in files.values()
