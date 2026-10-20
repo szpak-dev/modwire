@@ -7,15 +7,15 @@ from ......shared.code.models.identity import FileId, ImportIdentity
 from ......shared.code.models.source_file import SourceFile
 
 
-class PythonModuleIdentityPolicy(ABC):
+class PythonImportIdentityPolicy(ABC):
     @abstractmethod
     def identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:
         raise NotImplementedError
 
 
-@injectable(as_type=PythonModuleIdentityPolicy)
+@injectable(as_type=PythonImportIdentityPolicy)
 @dataclass(frozen=True)
-class PackageModuleIdentityPolicy(PythonModuleIdentityPolicy):
+class PackageImportIdentityPolicy(PythonImportIdentityPolicy):
     def identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:
         package_modules = {
             str(source_file.import_identity).removesuffix("/__init__")

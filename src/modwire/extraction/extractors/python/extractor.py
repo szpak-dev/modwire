@@ -14,13 +14,13 @@ from ..models.batch_config import BatchConfig
 from ..models.batch_output_format import BatchOutputFormat
 from ..models.extractor_resource import ExtractorResource
 from ..models.extractor_runtime import ExtractorRuntime
-from .semantics.policies.module_identity_policy import PythonModuleIdentityPolicy
+from .semantics.policies.import_identity_policy import PythonImportIdentityPolicy
 
 
 @injectable(as_type=SourceExtractor, qualifier="python")
 @dataclass(frozen=True)
 class PythonExtractor(SourceExtractor):
-    identities: PythonModuleIdentityPolicy
+    identities: PythonImportIdentityPolicy
 
     @property
     def runtime(self) -> ExtractorRuntime:

@@ -5,12 +5,12 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ...observations.inheritance_candidate import PythonInheritanceCandidate
+from ...observations.declaration_relation_candidate import PythonDeclarationRelationCandidate
 
 
 class PythonExpressionReferenceReader(ABC):
     @abstractmethod
-    def read(self, candidate: PythonInheritanceCandidate) -> str:
+    def read(self, candidate: PythonDeclarationRelationCandidate) -> str:
         raise NotImplementedError
 
     @abstractmethod
@@ -21,7 +21,7 @@ class PythonExpressionReferenceReader(ABC):
 @injectable(as_type=PythonExpressionReferenceReader)
 @dataclass(frozen=True)
 class SyntaxExpressionReferenceReader(PythonExpressionReferenceReader):
-    def read(self, candidate: PythonInheritanceCandidate) -> str:
+    def read(self, candidate: PythonDeclarationRelationCandidate) -> str:
         return ast.unparse(candidate.base)
 
     def read_expression(self, node: ast.expr) -> str:

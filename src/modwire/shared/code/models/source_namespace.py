@@ -5,5 +5,5 @@ from .source_namespace_kind import SourceNamespaceKind
 
 
 class SourceNamespace(ValueModel):
-    name: str = Field(min_length=1)
     kind: SourceNamespaceKind
+    qualified_name: str = Field(min_length=1)

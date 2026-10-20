@@ -22,8 +22,8 @@ class SourceFile(ValueModel):
     import_identity: ImportIdentity
     imports: list[SourceImport]
     exports: list[SourceExport] = Field(default_factory=list[SourceExport])
-    namespaces: list[SourceNamespace] = Field(default_factory=list[SourceNamespace])
-    declarations: list[SourceDeclaration] = Field(default_factory=list[SourceDeclaration])
+    namespaces: tuple[SourceNamespace, ...] = Field(default_factory=tuple)
+    declarations: tuple[SourceDeclaration, ...] = Field(default_factory=tuple)
     functions: list[SourceFunction]
     values: list[SourceValue] = Field(default_factory=list[SourceValue])
     callables: list[SourceCallable] = Field(default_factory=list[SourceCallable])

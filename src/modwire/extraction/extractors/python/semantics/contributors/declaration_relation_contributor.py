@@ -14,9 +14,9 @@ from ..policies.expression_reference_reader import PythonExpressionReferenceRead
 from ..reader import PythonSemanticContributor
 
 
-@injectable(as_type=PythonSemanticContributor, qualifier="80-inheritance")
+@injectable(as_type=PythonSemanticContributor, qualifier="80-declaration-relation")
 @dataclass(frozen=True)
-class InheritanceSemanticContributor(PythonSemanticContributor):
+class DeclarationRelationSemanticContributor(PythonSemanticContributor):
     classes: PythonClassClassifier
     references: PythonExpressionReferenceReader
     identities: PythonDeclarationIdentityFactory
@@ -44,6 +44,6 @@ class InheritanceSemanticContributor(PythonSemanticContributor):
                     kind=SourceDeclarationRelationKind.EXTENDS,
                     target_reference=self.references.read(candidate),
                 )
-                for candidate in observation.inheritance
+                for candidate in observation.declaration_relations
             )
         )

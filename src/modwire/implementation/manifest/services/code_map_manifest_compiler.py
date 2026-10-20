@@ -64,8 +64,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
         for _, source_file in sorted(code_map.extraction.files.items(), key=lambda item: str(item[0])):
             import_identity = str(source_file.import_identity)
             namespaces.extend(
-                ManifestNamespace(source_id=str(source_file.file_id), name=item.name, kind=item.kind)
-                for item in source_file.namespaces
+                ManifestNamespace(kind=item.kind, qualified_name=item.qualified_name) for item in source_file.namespaces
             )
             for declaration in source_file.declarations:
                 symbols.append(
@@ -90,9 +89,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
                 )
                 symbol_ids.add(function.declaration_id.canonical())
             for value in source_file.values:
-                symbols.append(
-                    self.symbol(value.declaration_id, import_identity, value.value_kind, value.visibility)
-                )
+                symbols.append(self.symbol(value.declaration_id, import_identity, value.value_kind, value.visibility))
                 symbol_ids.add(value.declaration_id.canonical())
             for callable_value in source_file.callables:
                 callable_id = callable_value.declaration_id

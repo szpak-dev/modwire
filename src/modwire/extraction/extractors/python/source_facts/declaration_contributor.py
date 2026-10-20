@@ -8,9 +8,9 @@ from .contribution import PythonSourceFactContribution
 from .reader import PythonSourceFactContributor
 
 
-@injectable(as_type=PythonSourceFactContributor, qualifier="10-class")
+@injectable(as_type=PythonSourceFactContributor, qualifier="10-declaration")
 @dataclass(frozen=True)
-class ClassFactContributor(PythonSourceFactContributor):
+class DeclarationFactContributor(PythonSourceFactContributor):
     @property
     def order(self) -> int:
         return 10

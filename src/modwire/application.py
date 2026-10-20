@@ -41,6 +41,10 @@ from .implementation.facade import ImplementationFacade
 from .implementation.manifest.models.implementation_manifest import ImplementationManifest
 from .implementation.manifest.models.implementation_manifest_document import ImplementationManifestDocument
 from .implementation.manifest.models.implementation_manifest_error import ImplementationManifestError
+from .implementation.manifest.models.implementation_manifest_validation_error import (
+    ImplementationManifestValidationError,
+)
+from .implementation.manifest.models.implementation_manifest_violation import ImplementationManifestViolation
 from .implementation.manifest.models.invalid_implementation_manifest_error import InvalidImplementationManifestError
 from .implementation.manifest.models.manifest_format import ManifestFormat
 from .implementation.manifest.models.unsupported_manifest_format_error import UnsupportedManifestFormatError
@@ -90,6 +94,8 @@ __all__ = [
     "ImplementationManifest",
     "ImplementationManifestDocument",
     "ImplementationManifestError",
+    "ImplementationManifestValidationError",
+    "ImplementationManifestViolation",
     "InitializationError",
     "InvalidImplementationManifestError",
     "InvalidInitializationTargetError",

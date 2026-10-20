@@ -9,6 +9,7 @@ from ....shared.code.models.digest_algorithm import DigestAlgorithm
 from ..contracts.manifest_serializer import ManifestSerializer
 from ..models.implementation_manifest import ImplementationManifest
 from ..models.implementation_manifest_document import ImplementationManifestDocument
+from ..models.implementation_manifest_validation_error import ImplementationManifestValidationError
 from ..models.invalid_implementation_manifest_error import InvalidImplementationManifestError
 from ..models.manifest_format import ManifestFormat
 
@@ -39,7 +40,7 @@ class CanonicalJsonManifestSerializer(ManifestSerializer):
             )
         try:
             manifest = ImplementationManifest.model_validate_json(document.payload)
-        except ValidationError as error:
+        except (ImplementationManifestValidationError, ValidationError) as error:
             raise InvalidImplementationManifestError(
                 document.format.id,
                 "document payload does not satisfy the implementation manifest schema",
