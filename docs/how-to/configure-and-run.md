@@ -41,10 +41,12 @@ Select the source language explicitly:
 modwire report --language python
 modwire report --language typescript
 modwire report --language php
+modwire report --language java
 ```
 
 Python ships with its extractor runtime. TypeScript requires Node.js on `PATH`; PHP
-requires PHP on `PATH`. See [Language support and limits](../reference/language-support.md)
+requires PHP on `PATH`; Java requires Java 17 or newer on `PATH`. See
+[Language support and limits](../reference/language-support.md)
 for exact runtime, extension, and capability coverage.
 
 Use `--summary` to omit individual files from a successful architecture map:

@@ -5,4 +5,7 @@ recursive-include tests *.py *.json *.ts *.tsx *.js *.jsx *.php
 recursive-include scripts *.py
 prune verification
 prune .dev
+prune src/modwire/extraction/extractors/resources/typescript/node_modules
+prune src/modwire/extraction/extractors/resources/php/vendor
+prune src/modwire/extraction/extractors/resources/java/target
 global-exclude __pycache__ *.py[cod]

@@ -1,6 +1,6 @@
-# One model across three languages
+# One model across four languages
 
-Python, PHP, and TypeScript disagree about syntax, runtime, and type systems. An
+Python, PHP, TypeScript, and Java disagree about syntax, runtime, and type systems. An
 architecture rule should not need three unrelated meanings of “module dependency”
 because of that.
 
@@ -29,7 +29,8 @@ unsupported syntax remains explicit rather than being guessed into a convenient
 shape.
 
 External runtimes remain operational dependencies. Python extraction runs with
-Modwire, while TypeScript needs Node.js and PHP needs PHP. A missing runtime is an
+Modwire, while TypeScript needs Node.js, PHP needs PHP, and Java needs a Java 17 or
+newer runtime. A missing runtime is an
 extractor failure, not an empty code map.
 
 This separation keeps architecture rules portable without hiding the evidence they

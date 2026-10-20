@@ -10,5 +10,6 @@ class ExtractorRuntime(ValueModel):
     capabilities: tuple[CapabilityCoverage, ...]
     file_extensions: tuple[str, ...]
     command: tuple[str, ...]
+    entrypoint_arguments: tuple[str, ...]
     version_arguments: tuple[str, ...]
     entrypoint: ExtractorResource

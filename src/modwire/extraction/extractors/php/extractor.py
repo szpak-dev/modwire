@@ -108,6 +108,7 @@ class PhpExtractor(SourceExtractor):
             ),
             file_extensions=(".php",),
             command=("php",),
+            entrypoint_arguments=(),
             version_arguments=("--version",),
             entrypoint=ExtractorResource(
                 package="modwire.extraction.extractors.resources",

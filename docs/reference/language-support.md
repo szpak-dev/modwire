@@ -11,11 +11,14 @@ completeness. This page states the runtime contract and the capability differenc
 | Python | `modwire.python.ast` version 2 | `.py` | Python 3.12 or newer | Python 3.12, 3.13, and 3.14 |
 | TypeScript | `modwire.typescript.ts-morph` version 2 | `.ts`, `.tsx`, `.js`, `.jsx` | Node.js 20 or 22 and newer | Node.js 20 for extractor-resource checks |
 | PHP | `modwire.php.php-parser` version 2 | `.php` | PHP 8.1 or newer | Runner-provided PHP; the workflow does not pin a version |
+| Java | `modwire.java.javaparser` version 1 | `.java` | Java 17 or newer | Temurin 17 for extractor-resource checks |
 
 The Python requirement comes from the Modwire package. The Node.js range comes from
 the bundled TypeScript extractor's package metadata. The PHP extractor uses PHP 8.1
 syntax; its bundled `nikic/php-parser` library has a lower PHP 7.4 floor, which does
 not lower the executable extractor requirement. Node.js and PHP must be available
+on `PATH`. The Java extractor uses JavaParser Core in Java 25 syntax mode without
+JavaSymbolSolver and runs as a bundled executable JAR. Java must also be available
 on `PATH`; Modwire reports an unavailable runtime as a public failure.
 
 ## Fact-capability coverage
@@ -24,22 +27,22 @@ on `PATH`; Modwire reports an unavailable runtime as a public failure.
 publishes. `Partial` means the extractor deliberately publishes only the stated
 subset. `Unsupported` means consumers must not infer that fact from an empty result.
 
-| Capability | Python | TypeScript | PHP |
-| --- | --- | --- | --- |
-| sources | Supported | Supported | Supported |
-| symbols | Supported | Supported | Supported |
-| callables | Supported | Supported | Supported |
-| parameters | Supported | Supported | Supported |
-| annotations | Partial | Partial | Partial |
-| modifiers | Partial | Partial | Partial |
-| attributes | Supported | Supported | Supported |
-| assigned_values | Supported | Unsupported | Unsupported |
-| inheritance | Supported | Supported | Supported |
-| namespaces | Unsupported | Unsupported | Unsupported |
-| declaration_kinds | Supported | Supported | Supported |
-| composition | Partial | Partial | Partial |
-| dependencies | Supported | Supported | Supported |
-| spans | Partial | Partial | Partial |
+| Capability | Python | TypeScript | PHP | Java |
+| --- | --- | --- | --- | --- |
+| sources | Supported | Supported | Supported | Supported |
+| symbols | Supported | Supported | Supported | Supported |
+| callables | Supported | Supported | Supported | Supported |
+| parameters | Supported | Supported | Supported | Supported |
+| annotations | Partial | Partial | Partial | Partial |
+| modifiers | Partial | Partial | Partial | Partial |
+| attributes | Supported | Supported | Supported | Supported |
+| assigned_values | Supported | Unsupported | Unsupported | Unsupported |
+| inheritance | Supported | Supported | Supported | Supported |
+| namespaces | Unsupported | Unsupported | Unsupported | Supported |
+| declaration_kinds | Supported | Supported | Supported | Supported |
+| composition | Partial | Partial | Partial | Partial |
+| dependencies | Supported | Supported | Supported | Partial |
+| spans | Partial | Partial | Partial | Partial |
 
 The exact explanations travel with every public `CodeMap` in
 `code_map.producer.capabilities`. In particular:
@@ -49,15 +52,23 @@ The exact explanations travel with every public `CodeMap` in
 - modifiers normalize visibility and member or callable kind rather than preserving
   every language keyword;
 - Python assigned values distinguish calls, references, literals, unresolved
-  expressions, and unassigned declarations; TypeScript and PHP do not yet extract
+  expressions, and unassigned declarations; TypeScript, PHP, and Java do not yet extract
   assigned-value evidence;
-- namespace extraction is explicitly unsupported until a language extractor publishes
-  authored package, namespace, or module declarations;
+- Java publishes authored package declarations; namespace extraction remains
+  unsupported for Python, TypeScript, and PHP;
 - declaration kinds distinguish the exact shared class, abstract-class, interface,
   function, callable, and value categories currently emitted by each extractor;
 - composition currently records class extension and implementation evidence without
   inferring language- or framework-specific mixin semantics;
 - callable spans are exact, while other symbols expose line counts.
+
+Java exact imports resolve when the target declaration is present in the same source
+set. Wildcard imports, implicit same-package dependencies, classpath or framework
+inference, generated code, and annotation-processor effects remain unresolved. Local
+calls resolve only when one same-file target is unambiguous; overloads, arbitrary
+receivers, inherited calls, and cross-file calls remain unresolved. Sealed declarations
+retain their underlying class or interface kind, but `permits` relations are not yet
+published.
 
 ## Deliberate boundaries
 
