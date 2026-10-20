@@ -62,6 +62,31 @@ The exact explanations travel with every public `CodeMap` in
   inferring language- or framework-specific mixin semantics;
 - callable spans are exact, while other symbols expose line counts.
 
+## Relationship-capability coverage
+
+Relationship coverage separates semantic understanding from inventory completeness.
+`Supported` inventory means an empty result is trustworthy inside the stated static
+family boundary. Semantic support can remain partial when Modwire preserves every
+authored fact but cannot resolve its complete runtime meaning.
+
+| Family | Required fact evidence | Python | TypeScript | PHP | Java |
+| --- | --- | --- | --- | --- | --- |
+| declaration | symbols, inheritance, declaration kinds, composition | Partial / Supported | Partial / Supported | Partial / Partial | Partial / Partial |
+| member | symbols, callables, parameters, annotations, modifiers, attributes, assigned values, declaration kinds | Partial / Supported | Partial / Partial | Partial / Partial | Partial / Partial |
+| dependency | sources, dependencies | Supported / Supported | Supported / Supported | Supported / Supported | Partial / Partial |
+
+Each language cell is `semantics / inventory`. The exact statuses, evidence
+requirements, and explanations travel in
+`code_map.producer.relationship_capabilities`. Every extractor classifies every
+family through the same shared contract.
+
+The inventory boundary contains authored declaration relations, static member and
+callable references, assigned values when supported, and authored source
+dependencies. It does not contain runtime calls, reflection, dynamic loading,
+dependency-injection wiring, generated behavior, or framework conventions. An empty
+relationship family is not evidence of absence unless its inventory status is
+`Supported`.
+
 Java exact imports resolve when the target declaration is present in the same source
 set. Wildcard imports, implicit same-package dependencies, classpath or framework
 inference, generated code, and annotation-processor effects remain unresolved. Local

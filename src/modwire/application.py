@@ -56,6 +56,8 @@ from .shared.code.models.declaration_identity import DeclarationIdentity
 from .shared.code.models.digest_algorithm import DigestAlgorithm
 from .shared.code.models.fact_capability import FactCapability
 from .shared.code.models.queryable_code_map import QueryableCodeMap
+from .shared.code.models.relationship_coverage import RelationshipCoverage
+from .shared.code.models.relationship_family import RelationshipFamily
 from .shared.code.models.scan_policy import ScanPolicy
 from .shared.code.models.source_assigned_value import SourceAssignedValue
 from .shared.code.models.source_assigned_value_kind import SourceAssignedValueKind
@@ -104,6 +106,8 @@ __all__ = [
     "ModwireError",
     "ModwireApplication",
     "QueryableCodeMap",
+    "RelationshipCoverage",
+    "RelationshipFamily",
     "ScanPolicy",
     "SourceAssignedValue",
     "SourceAssignedValueKind",

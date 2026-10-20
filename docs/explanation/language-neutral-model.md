@@ -21,12 +21,19 @@ facts with their source and extractor provenance in deterministic canonical JSON
 It can tell another system what Modwire observed. It cannot decide what the
 architecture was intended to be.
 
+The producer also declares relationship coverage through one language-neutral
+contract. Declaration, member, and dependency families each state their required
+fact evidence, semantic support, and inventory support. Complete inventory makes an
+empty family trustworthy only inside its documented static boundary; it does not
+turn runtime or framework inference into source evidence.
+
 ## Where language differences remain
 
 A common model does not pretend the languages are identical. Extractor capability
-coverage records which fact families a language can publish. Unresolved or
-unsupported syntax remains explicit rather than being guessed into a convenient
-shape.
+coverage records which fact families a language can publish, while relationship
+coverage independently records semantic and inventory support. Every extractor uses
+the same contracts and declares its own truthful statuses. Unresolved or unsupported
+syntax remains explicit rather than being guessed into a convenient shape.
 
 External runtimes remain operational dependencies. Python extraction runs with
 Modwire, while TypeScript needs Node.js, PHP needs PHP, and Java needs a Java 17 or
