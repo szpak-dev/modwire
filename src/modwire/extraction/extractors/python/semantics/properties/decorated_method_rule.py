@@ -6,6 +6,8 @@ from wireup import injectable
 
 from ......shared.code.models.source_class_property import SourceClassProperty
 from ......shared.code.models.source_member_kind import SourceMemberKind
+from ....models.extractor_invariant_error import ExtractorInvariantError
+from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.property_candidate import PythonPropertyCandidate
 from ...observations.property_scope import PythonPropertyScope
 from ..policies.assigned_value_reader import PythonAssignedValueReader
@@ -43,7 +45,9 @@ class DecoratedMethodPropertyRule(PythonPropertyRule):
 
     @singledispatchmethod
     def read(self, statement: ast.stmt, candidate: PythonPropertyCandidate) -> SourceClassProperty:
-        raise ValueError("Decorated method property requires a function declaration.")
+        raise ExtractorInvariantError(
+            ExtractorInvariantViolation.DECORATED_METHOD_PROPERTY_REQUIRES_FUNCTION, candidate.name
+        )
 
     @read.register
     def read_function(

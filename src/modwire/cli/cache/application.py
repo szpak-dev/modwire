@@ -23,6 +23,8 @@ from .models.cache_options import CacheOptions
 from .models.cache_outcome import CacheOutcome
 from .models.cache_plan import CachePlan
 from .models.cache_stage import CacheStage
+from .models.cache_validation_error import CacheValidationError
+from .models.cache_violation import CacheViolation
 from .models.cached_result import CachedResult
 from .models.source_cache_entry import SourceCacheEntry
 from .services.cache_codec import CacheCodec
@@ -77,10 +79,10 @@ class CacheApplication:
             try:
                 source_file = SourceFile.model_validate(cached_value)
                 if source_file.file_id != source.entry.source_id:
-                    raise ValueError("Cached source identity does not match its key.")
+                    raise CacheValidationError(CacheViolation.SOURCE_IDENTITY_MISMATCH, str(source.key))
                 files[source.entry.source_id] = source_file
                 hits += 1
-            except (TypeError, ValueError, ValidationError):
+            except (CacheValidationError, TypeError, ValueError, ValidationError):
                 if payload is not None:
                     invalid_keys.append(source.key)
                 invalidated += int(cached_invalidated or cached_value is not None)
@@ -142,9 +144,9 @@ class CacheApplication:
         try:
             value = CodeMap.model_validate(cached_value)
             if value.extraction.manifest != plan.observation.manifest:
-                raise ValueError("Cached code map provenance does not match the current source manifest.")
+                raise CacheValidationError(CacheViolation.CODE_MAP_PROVENANCE_MISMATCH, str(key))
             outcome = CacheOutcome(stage=CacheStage.CODE_MAP, namespace=options.namespace, hits=1)
-        except (TypeError, ValueError, ValidationError):
+        except (CacheValidationError, TypeError, ValueError, ValidationError):
             if cached_value is not None and not cached_invalidated:
                 self.storage.delete(options, key)
             value = None
@@ -171,11 +173,11 @@ class CacheApplication:
         invalidated = cached_invalidated or cached_value is not None
         try:
             if not isinstance(cached_value, list):
-                raise ValueError("Cached reports must be a list.")
+                raise CacheValidationError(CacheViolation.REPORT_COLLECTION_INVALID, str(key))
             reports = tuple(self._report(item) for item in cast(list[object], cached_value))
             value = tuple(sorted(reports, key=lambda item: (item.metadata.order, item.metadata.id)))
             outcome = CacheOutcome(stage=CacheStage.REPORTS, namespace=options.namespace, hits=1)
-        except (AttributeError, ImportError, KeyError, TypeError, ValueError, ValidationError):
+        except (AttributeError, CacheValidationError, ImportError, KeyError, TypeError, ValueError, ValidationError):
             if cached_value is not None and not cached_invalidated:
                 self.storage.delete(options, key)
             value = None
@@ -224,14 +226,14 @@ class CacheApplication:
 
     def _report(self, value: object) -> ReportNode:
         if not isinstance(value, dict):
-            raise ValueError("Cached report entry must be an object.")
+            raise CacheValidationError(CacheViolation.REPORT_ENTRY_INVALID, type(value).__name__)
         entry = cast(dict[str, object], value)
         model_name = entry["model"]
         payload = entry["payload"]
         if not isinstance(model_name, str) or not model_name.startswith("modwire.architecture."):
-            raise ValueError("Cached report model is outside the architecture package.")
+            raise CacheValidationError(CacheViolation.REPORT_MODEL_OUTSIDE_ARCHITECTURE, str(model_name))
         module_name, _, class_name = model_name.rpartition(".")
         model: Any = getattr(importlib.import_module(module_name), class_name)
         if not isinstance(model, type) or not issubclass(model, BaseModel) or not issubclass(model, ReportNode):
-            raise ValueError("Cached report model is not a report node.")
+            raise CacheValidationError(CacheViolation.REPORT_MODEL_NOT_NODE, model_name)
         return model.model_validate(payload)

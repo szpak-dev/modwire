@@ -32,10 +32,7 @@ different moments.
 
 ## Expected failures are typed
 
-All supported operational failures derive from `ModwireError`. More focused families
-separate architecture configuration, extraction, cache access and ownership,
-extractor execution and contracts, initialization, and implementation manifest
-validation.
+All supported operational failures derive from `ModwireError`.
 
 Modwire does not convert a missing runtime, unreadable source, invalid configuration,
 corrupt manifest, or changed observation into an empty success. CLI commands render

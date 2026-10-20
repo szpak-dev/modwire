@@ -7,6 +7,8 @@ from ....shared.code.models.source_assigned_value import SourceAssignedValue
 from ....shared.code.models.source_member_kind import SourceMemberKind
 from ....shared.code.models.source_visibility import SourceVisibility
 from ....shared.values.models.value_model import ValueModel
+from .implementation_manifest_validation_error import ImplementationManifestValidationError
+from .implementation_manifest_violation import ImplementationManifestViolation
 
 
 class ManifestAttribute(ValueModel):
@@ -22,5 +24,7 @@ class ManifestAttribute(ValueModel):
     @model_validator(mode="after")
     def validate_identity(self) -> Self:
         if self.id != f"{self.owner_symbol_id.canonical()}::attribute:{self.name}":
-            raise ValueError("Manifest attribute identity must match its owner and name.")
+            raise ImplementationManifestValidationError(
+                ImplementationManifestViolation.INCONSISTENT_ATTRIBUTE_IDENTITY, self.id
+            )
         return self

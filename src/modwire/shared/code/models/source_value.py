@@ -3,6 +3,8 @@ from typing import Self
 from pydantic import model_validator
 
 from ...values.models.value_model import ValueModel
+from .code_validation_error import CodeValidationError
+from .code_violation import CodeViolation
 from .declaration_family import DeclarationFamily
 from .declaration_identity import DeclarationIdentity
 from .source_symbol_kind import SourceSymbolKind
@@ -33,5 +35,5 @@ class SourceValue(ValueModel):
             SourceSymbolKind.VALUE_UNKNOWN,
         }
         if self.declaration_id.family is not DeclarationFamily.VALUE or self.value_kind not in value_kinds:
-            raise ValueError("Source value kind and identity family must describe a value.")
+            raise CodeValidationError(CodeViolation.INCONSISTENT_VALUE_IDENTITY_FAMILY, self.name)
         return self

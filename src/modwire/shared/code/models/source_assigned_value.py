@@ -3,6 +3,8 @@ from typing import Self
 from pydantic import model_validator
 
 from ...values.models.value_model import ValueModel
+from .code_validation_error import CodeValidationError
+from .code_violation import CodeViolation
 from .source_assigned_value_kind import SourceAssignedValueKind
 
 
@@ -19,10 +21,10 @@ class SourceAssignedValue(ValueModel):
 
         if self.kind in (SourceAssignedValueKind.UNASSIGNED, SourceAssignedValueKind.UNSUPPORTED):
             if self.expression or self.reference:
-                raise ValueError("Unassigned and unsupported values cannot contain expression evidence.")
+                raise CodeValidationError(CodeViolation.UNSUPPORTED_ASSIGNED_VALUE_EVIDENCE, self.kind)
         elif self.kind in (SourceAssignedValueKind.CALL, SourceAssignedValueKind.REFERENCE):
             if not self.expression or not self.reference:
-                raise ValueError("Call and reference values require an expression and exact reference.")
+                raise CodeValidationError(CodeViolation.INCOMPLETE_REFERENCE_VALUE_EVIDENCE, self.kind)
         elif not self.expression or self.reference:
-            raise ValueError("Literal and unresolved values require an expression without a reference.")
+            raise CodeValidationError(CodeViolation.INCONSISTENT_NON_REFERENCE_VALUE_EVIDENCE, self.kind)
         return self

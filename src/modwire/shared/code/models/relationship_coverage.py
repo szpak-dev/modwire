@@ -4,6 +4,8 @@ from pydantic import Field, model_validator
 
 from ...values.models.value_model import ValueModel
 from .capability_status import CapabilityStatus
+from .code_validation_error import CodeValidationError
+from .code_violation import CodeViolation
 from .fact_capability import FactCapability
 from .relationship_family import RelationshipFamily
 
@@ -21,5 +23,5 @@ class RelationshipCoverage(ValueModel):
     @model_validator(mode="after")
     def validate_evidence_requirements(self) -> Self:
         if self.evidence_requirements != self.family.evidence_requirements:
-            raise ValueError("Relationship coverage must declare the canonical evidence requirements.")
+            raise CodeValidationError(CodeViolation.NON_CANONICAL_RELATIONSHIP_EVIDENCE, self.family)
         return self

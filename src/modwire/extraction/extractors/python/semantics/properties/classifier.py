@@ -10,6 +10,8 @@ from ......shared.code.models.source_assigned_value import SourceAssignedValue
 from ......shared.code.models.source_class_property import SourceClassProperty
 from ......shared.code.models.source_member_kind import SourceMemberKind
 from ......shared.code.models.source_visibility import SourceVisibility
+from ....models.extractor_invariant_error import ExtractorInvariantError
+from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.property_candidate import PythonPropertyCandidate
 
 
@@ -150,4 +152,4 @@ class OrderedPythonPropertyClassifier(PythonPropertyClassifier):
         for rule in sorted(self.rules.values(), key=lambda item: item.order):
             if rule.applies(candidate):
                 return rule.classify(candidate)
-        raise ValueError("No Python property rule accepted the candidate.")
+        raise ExtractorInvariantError(ExtractorInvariantViolation.UNCLASSIFIED_PROPERTY, candidate.name)

@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ..domain import IdentityResolver
+from ..models.code_validation_error import CodeValidationError
+from ..models.code_violation import CodeViolation
 from ..models.identity import FileId, ImportIdentity
 
 
@@ -16,7 +18,7 @@ class SourceIdentityResolver(IdentityResolver):
         root_parts = self.parts(root)
         path_parts = self.parts(path)
         if path_parts[: len(root_parts)] != root_parts:
-            raise ValueError(f"Source path is outside its root: {path}")
+            raise CodeValidationError(CodeViolation.SOURCE_OUTSIDE_ROOT, path)
         return path_parts[len(root_parts) :]
 
     def file_id(self, root: str, path: str) -> FileId:

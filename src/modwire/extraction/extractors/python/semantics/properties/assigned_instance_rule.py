@@ -6,6 +6,8 @@ from wireup import injectable
 
 from ......shared.code.models.source_class_property import SourceClassProperty
 from ......shared.code.models.source_member_kind import SourceMemberKind
+from ....models.extractor_invariant_error import ExtractorInvariantError
+from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.property_candidate import PythonPropertyCandidate
 from ...observations.property_scope import PythonPropertyScope
 from ..policies.assigned_value_reader import PythonAssignedValueReader
@@ -39,7 +41,9 @@ class AssignedInstancePropertyRule(PythonPropertyRule):
 
     @singledispatchmethod
     def read(self, statement: ast.stmt, candidate: PythonPropertyCandidate) -> SourceClassProperty:
-        raise ValueError("Assigned instance property requires an assignment.")
+        raise ExtractorInvariantError(
+            ExtractorInvariantViolation.ASSIGNED_INSTANCE_PROPERTY_REQUIRES_ASSIGNMENT, candidate.name
+        )
 
     @read.register
     def read_assignment(self, statement: ast.Assign, candidate: PythonPropertyCandidate) -> SourceClassProperty:

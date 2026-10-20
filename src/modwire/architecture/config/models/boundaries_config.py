@@ -1,5 +1,7 @@
 from pydantic import Field, model_validator
 
+from .architecture_config_validation_error import ArchitectureConfigValidationError
+from .architecture_config_violation import ArchitectureConfigViolation
 from .boundary_rule import BoundaryRule
 from .configuration_value import ConfigurationValue
 from .flow_rules import FlowRules
@@ -16,7 +18,9 @@ class BoundariesConfig(ConfigurationValue):
         names = tuple(tag.name for tag in self.tags)
         duplicates = sorted({name for name in names if names.count(name) > 1})
         if duplicates:
-            raise ValueError("Architecture tag names must be unique: " + ", ".join(duplicates))
+            raise ArchitectureConfigValidationError(
+                ArchitectureConfigViolation.DUPLICATE_ARCHITECTURE_TAG, ", ".join(duplicates)
+            )
         return self
 
     @model_validator(mode="after")
@@ -24,5 +28,7 @@ class BoundariesConfig(ConfigurationValue):
         realms = {realm.name for realm in self.flow.realms}
         unknown = sorted({rule.realm for rule in self.rules if rule.realm and rule.realm not in realms})
         if unknown:
-            raise ValueError("Unknown boundary rule realms: " + ", ".join(unknown))
+            raise ArchitectureConfigValidationError(
+                ArchitectureConfigViolation.UNKNOWN_BOUNDARY_REALM, ", ".join(unknown)
+            )
         return self

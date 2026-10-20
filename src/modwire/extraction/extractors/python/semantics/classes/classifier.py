@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ......shared.code.models.declaration_family import DeclarationFamily
+from ....models.extractor_invariant_error import ExtractorInvariantError
+from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.class_candidate import PythonClassCandidate
 
 
@@ -38,4 +40,4 @@ class OrderedPythonClassClassifier(PythonClassClassifier):
         for rule in sorted(self.rules.values(), key=lambda item: item.order):
             if rule.applies(candidate):
                 return rule.classify(candidate)
-        raise ValueError("No Python class rule accepted the candidate.")
+        raise ExtractorInvariantError(ExtractorInvariantViolation.UNCLASSIFIED_CLASS, candidate.name)

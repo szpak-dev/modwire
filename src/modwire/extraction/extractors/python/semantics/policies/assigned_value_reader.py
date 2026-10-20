@@ -7,6 +7,8 @@ from wireup import injectable
 
 from ......shared.code.models.source_assigned_value import SourceAssignedValue
 from ......shared.code.models.source_assigned_value_kind import SourceAssignedValueKind
+from ....models.extractor_invariant_error import ExtractorInvariantError
+from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.value_candidate import PythonValueCandidate
 from .expression_reference_reader import PythonExpressionReferenceReader
 
@@ -35,7 +37,7 @@ class SyntaxAssignedValueReader(PythonAssignedValueReader):
 
     @singledispatchmethod
     def read_statement(self, statement: ast.stmt) -> SourceAssignedValue:
-        raise ValueError("Unsupported Python value statement.")
+        raise ExtractorInvariantError(ExtractorInvariantViolation.UNSUPPORTED_VALUE_STATEMENT, type(statement).__name__)
 
     @read_statement.register
     def read_assignment(self, statement: ast.Assign) -> SourceAssignedValue:

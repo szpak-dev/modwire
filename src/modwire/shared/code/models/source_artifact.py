@@ -4,6 +4,8 @@ from typing import Self
 from pydantic import Field, model_validator
 
 from ...values.models.value_model import ValueModel
+from .code_validation_error import CodeValidationError
+from .code_violation import CodeViolation
 
 
 class SourceArtifact(ValueModel):
@@ -15,5 +17,5 @@ class SourceArtifact(ValueModel):
     def validate_relative_path(self) -> Self:
         path = PurePosixPath(self.relative_path)
         if path.is_absolute() or ".." in path.parts:
-            raise ValueError("Source artifact paths must be normalized relative paths.")
+            raise CodeValidationError(CodeViolation.NON_NORMALIZED_SOURCE_ARTIFACT_PATH, self.relative_path)
         return self

@@ -5,6 +5,8 @@ from pydantic import Field, model_validator
 
 from ....shared.code.models.digest_algorithm import DigestAlgorithm
 from ....shared.values.models.value_model import ValueModel
+from .implementation_manifest_validation_error import ImplementationManifestValidationError
+from .implementation_manifest_violation import ImplementationManifestViolation
 from .manifest_format import ManifestFormat
 
 
@@ -24,5 +26,7 @@ class ImplementationManifestDocument(ValueModel):
         """Validate that the document digest covers its exact serialized payload."""
 
         if not self.verify_digest():
-            raise ValueError("Implementation manifest document digest does not match its payload.")
+            raise ImplementationManifestValidationError(
+                ImplementationManifestViolation.INVALID_DOCUMENT_DIGEST, self.digest
+            )
         return self

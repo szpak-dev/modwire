@@ -4,12 +4,18 @@ import subprocess
 import sys
 from pathlib import Path
 
+from modwire.extraction.extractors.models.extractor_invariant_error import ExtractorInvariantError
+from modwire.extraction.extractors.models.extractor_invariant_violation import ExtractorInvariantViolation
+
 
 class BuildAdapter:
     def execute(self, arguments: list[str]) -> int:
         if len(arguments) != 3:
-            raise RuntimeError("Usage: build.py SOURCE WORK")
-        self.check(Path(arguments[1]), Path(arguments[2]))
+            raise ExtractorInvariantError(ExtractorInvariantViolation.INVALID_BUILD_ARGUMENTS, "java")
+        try:
+            self.check(Path(arguments[1]), Path(arguments[2]))
+        except OSError as error:
+            raise ExtractorInvariantError(ExtractorInvariantViolation.BUILD_RESOURCE_ACCESS_FAILED, "java") from error
         return 0
 
     def check(self, source: Path, work: Path) -> None:
@@ -33,10 +39,15 @@ class BuildAdapter:
         generated = work / "target/script.jar"
         committed = source / "script.jar"
         if generated.read_bytes() != committed.read_bytes():
-            raise RuntimeError(f"Generated extractor resource is stale: {committed}")
+            raise ExtractorInvariantError(ExtractorInvariantViolation.STALE_GENERATED_RESOURCE, str(committed))
 
     def run(self, command: tuple[str, ...], *, cwd: Path, environment: dict[str, str]) -> None:
-        subprocess.run(command, cwd=cwd, env=environment, check=True)
+        try:
+            subprocess.run(command, cwd=cwd, env=environment, check=True)
+        except subprocess.CalledProcessError as error:
+            raise ExtractorInvariantError(
+                ExtractorInvariantViolation.BUILD_COMMAND_FAILED, " ".join(command)
+            ) from error
 
 
 if __name__ == "__main__":

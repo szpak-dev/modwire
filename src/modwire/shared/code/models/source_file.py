@@ -3,6 +3,8 @@ from typing import Self
 from pydantic import Field, model_validator
 
 from ...values.models.value_model import ValueModel
+from .code_validation_error import CodeValidationError
+from .code_violation import CodeViolation
 from .declaration_family import DeclarationFamily
 from .identity import FileId, ImportIdentity
 from .source_call import SourceCall
@@ -43,26 +45,26 @@ class SourceFile(ValueModel):
         for declarations, family in declarations_by_family:
             identities = tuple(item.declaration_id.canonical() for item in declarations)
             if len(identities) != len(set(identities)):
-                raise ValueError("Source declaration identities must be unique within each fact collection.")
+                raise CodeValidationError(CodeViolation.DUPLICATE_DECLARATION_IDENTITY, str(self.file_id))
             if any(item.declaration_id.source_id != self.file_id for item in declarations):
-                raise ValueError("Source declaration identities must reference their owning source file.")
+                raise CodeValidationError(CodeViolation.FOREIGN_DECLARATION_IDENTITY, str(self.file_id))
             if family is not None and any(item.declaration_id.family is not family for item in declarations):
-                raise ValueError("Source declaration identity family must match its fact collection.")
+                raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_FAMILY, str(self.file_id))
             if any(item.declaration_id.qualified_name != item.name for item in declarations):
-                raise ValueError("Source declaration identity must match its declaration name.")
+                raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_NAME, str(self.file_id))
         if any(self.declaration_family(item.kind) is not item.declaration_id.family for item in self.declarations):
-            raise ValueError("Source declaration kind must match its identity family.")
+            raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_KIND, str(self.file_id))
         callable_identities = tuple(item.declaration_id.canonical() for item in self.callables)
         if len(callable_identities) != len(set(callable_identities)):
-            raise ValueError("Source callable declaration identities must be unique.")
+            raise CodeValidationError(CodeViolation.DUPLICATE_CALLABLE_IDENTITY, str(self.file_id))
         if any(item.declaration_id.source_id != self.file_id for item in self.callables):
-            raise ValueError("Source callable declaration identities must reference their owning source file.")
+            raise CodeValidationError(CodeViolation.FOREIGN_CALLABLE_IDENTITY, str(self.file_id))
         declaration_identities = {item.declaration_id.canonical() for item in self.declarations}
         if any(
             relation.source_declaration_id.canonical() not in declaration_identities
             for relation in self.declaration_relations
         ):
-            raise ValueError("Source declaration relations must reference an extracted declaration.")
+            raise CodeValidationError(CodeViolation.UNKNOWN_DECLARATION_RELATION_SOURCE, str(self.file_id))
         return self
 
     def declaration_family(self, kind: SourceSymbolKind) -> DeclarationFamily:

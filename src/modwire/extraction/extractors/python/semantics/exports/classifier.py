@@ -6,6 +6,8 @@ from wireup import injectable
 
 from ......shared.code.models.import_crossing_type import ImportCrossingType
 from ......shared.code.models.source_export import SourceExport
+from ....models.extractor_invariant_error import ExtractorInvariantError
+from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.export_candidate import PythonExportCandidate
 
 
@@ -53,4 +55,4 @@ class OrderedPythonExportClassifier(PythonExportClassifier):
         for rule in sorted(self.rules.values(), key=lambda item: item.order):
             if rule.applies(candidate):
                 return rule.classify(candidate)
-        raise ValueError("No Python export rule accepted the candidate.")
+        raise ExtractorInvariantError(ExtractorInvariantViolation.UNCLASSIFIED_EXPORT, candidate.name)

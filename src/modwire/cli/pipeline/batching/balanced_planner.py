@@ -4,6 +4,8 @@ from pathlib import Path
 from wireup import injectable
 
 from ....extraction.extractors.models.batch_config import BatchConfig
+from ..models.pipeline_validation_error import PipelineValidationError
+from ..models.pipeline_violation import PipelineViolation
 from .plan import SourceBatchPlan
 from .planner import SourceBatchPlanner
 
@@ -21,7 +23,7 @@ class BalancedSourceBatchPlanner(SourceBatchPlanner):
                 batches=tuple(sources[start : start + config.size] for start in range(0, len(sources), config.size)),
             )
         if config.parallel_size <= 0:
-            raise ValueError("Balanced source batching requires a positive parallel size.")
+            raise PipelineValidationError(PipelineViolation.INVALID_PARALLEL_SIZE, str(config.parallel_size))
         worker_count = min(config.max_workers, len(sources))
         minimum_batch_count = (len(sources) + config.parallel_size - 1) // config.parallel_size
         batch_count = max(worker_count, minimum_batch_count)

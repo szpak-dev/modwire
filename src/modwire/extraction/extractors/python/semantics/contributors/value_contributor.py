@@ -11,6 +11,8 @@ from ......shared.code.models.source_value import SourceValue
 from ......shared.code.models.source_value_declaration_kind import SourceValueDeclarationKind
 from ......shared.code.models.source_value_scope import SourceValueScope
 from ......shared.code.models.source_visibility import SourceVisibility
+from ....models.extractor_invariant_error import ExtractorInvariantError
+from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
 from ...observations.value_candidate import PythonValueCandidate
@@ -66,7 +68,7 @@ class ValueSemanticContributor(PythonSemanticContributor):
             optional_args = source_callable.optional_args
         line_end = candidate.statement.end_lineno
         if line_end is None:
-            raise ValueError("Python value statement requires an end line.")
+            raise ExtractorInvariantError(ExtractorInvariantViolation.MISSING_VALUE_END_LINE, candidate.target.id)
         return SourceValue(
             declaration_id=self.identities.create(
                 context.source_id,

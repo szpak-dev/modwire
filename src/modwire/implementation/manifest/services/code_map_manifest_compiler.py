@@ -12,6 +12,8 @@ from ....shared.code.models.source_visibility import SourceVisibility
 from ....shared.values.models.value_model import ValueModel
 from ..contracts.manifest_compiler import ManifestCompiler
 from ..models.implementation_manifest import ImplementationManifest
+from ..models.implementation_manifest_validation_error import ImplementationManifestValidationError
+from ..models.implementation_manifest_violation import ImplementationManifestViolation
 from ..models.manifest_annotation import ManifestAnnotation
 from ..models.manifest_annotation_role import ManifestAnnotationRole
 from ..models.manifest_attribute import ManifestAttribute
@@ -167,7 +169,9 @@ class CodeMapManifestCompiler(ManifestCompiler):
         for edge in code_map.dependency_graph.edges:
             if edge.resolution is SourceDependencyResolution.RESOLVED:
                 if edge.to_id is None:
-                    raise ValueError("Resolved dependency edges must identify their target source.")
+                    raise ImplementationManifestValidationError(
+                        ImplementationManifestViolation.MISSING_DEPENDENCY_TARGET_SOURCE, str(edge.from_id)
+                    )
                 target_kind = ManifestDependencyTargetKind.SOURCE
                 target = str(edge.to_id)
             elif edge.resolution is SourceDependencyResolution.EXTERNAL:

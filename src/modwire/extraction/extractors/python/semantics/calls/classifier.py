@@ -6,6 +6,8 @@ from wireup import injectable
 
 from ......shared.code.models.source_call import SourceCall
 from ......shared.code.models.source_call_resolution import SourceCallResolution
+from ....models.extractor_invariant_error import ExtractorInvariantError
+from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.call_candidate import PythonCallCandidate
 
 
@@ -60,5 +62,7 @@ class OrderedPythonCallTargetClassifier(PythonCallTargetClassifier):
                     calls.append(rule.classify(candidate))
                     break
             else:
-                raise ValueError("No Python call-target rule accepted the candidate.")
+                raise ExtractorInvariantError(
+                    ExtractorInvariantViolation.UNCLASSIFIED_CALL_TARGET, candidate.reference.expression
+                )
         return tuple(calls)

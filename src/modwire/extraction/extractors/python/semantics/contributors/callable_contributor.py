@@ -8,6 +8,8 @@ from ......shared.code.models.declaration_family import DeclarationFamily
 from ......shared.code.models.source_callable import SourceCallable
 from ......shared.code.models.source_callable_kind import SourceCallableKind
 from ......shared.code.models.source_visibility import SourceVisibility
+from ....models.extractor_invariant_error import ExtractorInvariantError
+from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.callable_candidate import PythonCallableCandidate
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
@@ -49,7 +51,9 @@ class CallableSemanticContributor(PythonSemanticContributor):
         parameters = self.parameters.read(candidate)
         line_end = candidate.node.end_lineno
         if line_end is None:
-            raise ValueError("Python callable requires an end line.")
+            raise ExtractorInvariantError(
+                ExtractorInvariantViolation.MISSING_CALLABLE_END_LINE, candidate.qualified_name
+            )
         return SourceCallable(
             declaration_id=self.identities.create(
                 context.source_id,

@@ -8,6 +8,8 @@ from ....shared.code.models.source_value_declaration_kind import SourceValueDecl
 from ....shared.code.models.source_value_scope import SourceValueScope
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, ShapeResolverInterface
+from ..models.architecture_shape_validation_error import ArchitectureShapeValidationError
+from ..models.architecture_shape_violation import ArchitectureShapeViolation
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
 from ..models.shape_violation import ShapeViolation
 
@@ -29,7 +31,7 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
         for source_id in self.realm_source_ids(architecture_map):
             source_result = code_map.source_file(FileId(source_id))
             if source_result is None:
-                raise RuntimeError(f"Shape realm references missing source: {source_id}")
+                raise ArchitectureShapeValidationError(ArchitectureShapeViolation.MISSING_REALM_SOURCE, source_id)
             source_file = source_result.file
             violations.extend(
                 [
