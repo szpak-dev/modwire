@@ -119,7 +119,7 @@ class JavaExtractor(SourceExtractor):
             size=500,
             parallel_threshold=500,
             parallel_size=500,
-            max_workers=16,
+            max_workers=8,
             output_format=BatchOutputFormat.JSON_LINES,
         )
 
