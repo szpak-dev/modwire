@@ -256,7 +256,7 @@ class BatchSourceReader(SourceReader):
         paths_by_source_id = {
             self.code.file_id(str(root), str(source_path)): str(source_path) for source_path in source_paths
         }
-        command = [*runtime.command, str(script_path), "--batch", str(root)]
+        command = [*runtime.command, *runtime.entrypoint_arguments, str(script_path), "--batch", str(root)]
         if request.batch_config.output_format is BatchOutputFormat.JSON_LINES:
             command.append("--jsonl")
         try:

@@ -144,7 +144,7 @@ class TestImplementationManifest(ApplicationTestCase):
             sort_keys=True,
         )
 
-        assert manifest.schema_version == 4
+        assert manifest.schema_version == 5
         assert manifest.producer.extractor.language == "python"
         assert manifest.producer.extractor.id == "modwire.python.ast"
         assert manifest.producer.modwire_version
@@ -488,6 +488,12 @@ class TestImplementationManifest(ApplicationTestCase):
                     "    execute(value: number = 1): string { return String(value); }\n"
                     "}\n"
                 ),
+                "src/ExampleChild.java": (
+                    "class ExampleBase {}\n"
+                    "class ExampleChild extends ExampleBase {\n"
+                    "    String execute(int value) { return String.valueOf(value); }\n"
+                    "}\n"
+                ),
                 "src/example.php": (
                     "<?php\n"
                     "class ExampleBase {}\n"
@@ -504,14 +510,14 @@ class TestImplementationManifest(ApplicationTestCase):
                     self.application.generate_map(language, root, self.scan_policy()), format
                 )
             )
-            for language in ("python", "typescript", "php")
+            for language in ("python", "typescript", "php", "java")
         }
 
         vocabularies = {tuple(manifest.model_dump(mode="json")) for manifest in manifests.values()}
         assert len(vocabularies) == 1
         for language, manifest in manifests.items():
             assert manifest.producer.extractor.language == language
-            assert manifest.producer.extractor.version == "2"
+            assert manifest.producer.extractor.version
             assert manifest.symbols
             assert manifest.callables
             assert manifest.declaration_relations

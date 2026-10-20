@@ -115,6 +115,7 @@ class PythonExtractor(SourceExtractor):
             ),
             file_extensions=(".py",),
             command=(sys.executable,),
+            entrypoint_arguments=(),
             version_arguments=("--version",),
             entrypoint=ExtractorResource(
                 package="modwire.extraction.extractors.resources",

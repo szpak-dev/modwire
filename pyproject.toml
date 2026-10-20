@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "modwire"
 dynamic = ["version"]
-description = "Architecture rules for Python, PHP, and TypeScript source."
+description = "Architecture rules for Python, PHP, TypeScript, and Java source."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
@@ -39,7 +39,16 @@ include-package-data = true
 [tool.setuptools.packages.find]
 where = ["src"]
 namespaces = true
-exclude = ["*.__pycache__", "*.__pycache__.*"]
+exclude = [
+    "*.__pycache__",
+    "*.__pycache__.*",
+    "modwire.extraction.extractors.resources.typescript.node_modules",
+    "modwire.extraction.extractors.resources.typescript.node_modules.*",
+    "modwire.extraction.extractors.resources.php.vendor",
+    "modwire.extraction.extractors.resources.php.vendor.*",
+    "modwire.extraction.extractors.resources.java.target",
+    "modwire.extraction.extractors.resources.java.target.*",
+]
 
 [tool.setuptools.package-data]
 "modwire" = ["py.typed"]
@@ -47,7 +56,15 @@ exclude = ["*.__pycache__", "*.__pycache__.*"]
 "modwire.extraction.extractors.resources" = ["**/*"]
 
 [tool.setuptools.exclude-package-data]
-"*" = ["**/__pycache__/*", "**/*.pyc"]
+"*" = [
+    "**/__pycache__/*",
+    "**/*.pyc",
+]
+"modwire.extraction.extractors.resources" = [
+    "typescript/node_modules/**",
+    "php/vendor/**",
+    "java/target/**",
+]
 
 [tool.setuptools_scm]
 tag_regex = '^v(?P<version>\d+\.\d+\.\d+)$'

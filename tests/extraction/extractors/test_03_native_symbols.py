@@ -4,8 +4,8 @@ from ..base_test import ExtractionTestCase
 
 
 class TestNativeSymbols(ExtractionTestCase):
-    @pytest.mark.parametrize("language", ("python", "typescript", "php"))
-    def test_native_extractors_preserve_abstract_and_concrete_class_members(self, language: str) -> None:
+    @pytest.mark.parametrize("language", ("python", "typescript", "php", "java"))
+    def test_native_extractors_preserve_abstract_and_concrete_class_methods(self, language: str) -> None:
         root = self.repository / "tests/fixtures/syntax" / language
         result = self.application.generate_queryable_map(language, root, self.scan_policy())
         abstract = result.abstract_classes().first().item
@@ -13,10 +13,16 @@ class TestNativeSymbols(ExtractionTestCase):
         assert tuple(item.name for item in abstract.methods) == ("example_concrete",)
         concrete = result.classes().where_equal(lambda item: item.item.name, "ExampleImplementation").first().item
         assert tuple(item.name for item in concrete.methods) == ("example_required",)
+
+    @pytest.mark.parametrize("language", ("python", "typescript", "php"))
+    def test_nullable_class_members_remain_optional(self, language: str) -> None:
+        root = self.repository / "tests/fixtures/syntax" / language
+        result = self.application.generate_queryable_map(language, root, self.scan_policy())
+        concrete = result.classes().where_equal(lambda item: item.item.name, "ExampleImplementation").first().item
         assert concrete.properties[0].name == "example_optional"
         assert concrete.properties[0].is_optional
 
-    @pytest.mark.parametrize("language", ("typescript", "php"))
+    @pytest.mark.parametrize("language", ("typescript", "php", "java"))
     def test_interfaces_expose_method_signatures(self, language: str) -> None:
         root = self.repository / "tests/fixtures/syntax" / language
         result = self.application.generate_queryable_map(language, root, self.scan_policy())
@@ -24,6 +30,19 @@ class TestNativeSymbols(ExtractionTestCase):
         assert interface.name == "ExampleContract"
         assert interface.methods[0].name == "example_required"
         assert interface.methods[0].declared_args == 1
+
+    def test_java_declaration_forms_use_shared_symbol_families(self) -> None:
+        root = self.repository / "tests/fixtures/syntax/java"
+        result = self.application.generate_queryable_map("java", root, self.scan_policy())
+        declarations = {item.item.name: item.item.kind for item in result.declarations().all()}
+        assert declarations == {
+            "ExampleAbstract": "abstract_class",
+            "ExampleAnnotation": "annotation",
+            "ExampleContract": "interface",
+            "ExampleImplementation": "class",
+            "ExampleRecord": "record",
+            "ExampleStatus": "enum",
+        }
 
     def test_typescript_callable_object_keeps_optional_signature_arguments(self) -> None:
         root = self.repository / "tests/fixtures/syntax/typescript"

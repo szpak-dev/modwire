@@ -108,6 +108,7 @@ class TypeScriptExtractor(SourceExtractor):
             ),
             file_extensions=(".ts", ".tsx", ".js", ".jsx"),
             command=("node",),
+            entrypoint_arguments=(),
             version_arguments=("--version",),
             entrypoint=ExtractorResource(
                 package="modwire.extraction.extractors.resources",

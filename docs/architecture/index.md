@@ -40,8 +40,8 @@ those boundaries.
 5. Optional caches reuse extraction, code map, and report results only when their
    source and configuration identities still match.
 
-Each extraction and report operation selects one language. Python, PHP, and
-TypeScript therefore retain exact extractor provenance while publishing the same
+Each extraction and report operation selects one language. Python, PHP, TypeScript,
+and Java therefore retain exact extractor provenance while publishing the same
 shared code contracts.
 
 ## Internal component boundaries

@@ -85,15 +85,24 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
 
         assert raised.value.root == str(missing)
 
-    def test_unavailable_extractor_reports_the_runtime_contract(self) -> None:
-        root = self.project({"src/example.ts": "export const exampleValue = 1;\n"})
+    @pytest.mark.parametrize(
+        ("language", "path", "source", "executable"),
+        (
+            ("typescript", "src/example.ts", "export const exampleValue = 1;\n", "node"),
+            ("java", "src/ExampleValue.java", "public class ExampleValue {}\n", "java"),
+        ),
+    )
+    def test_unavailable_extractor_reports_the_runtime_contract(
+        self, language: str, path: str, source: str, executable: str
+    ) -> None:
+        root = self.project({path: source})
 
-        result = self.failure_consumer(root, "typescript", {**os.environ, "PATH": ""})
+        result = self.failure_consumer(root, language, {**os.environ, "PATH": ""})
 
         assert result.returncode == 0, result.stderr
         assert json.loads(result.stdout) == {
-            "executable": "node",
-            "language": "typescript",
+            "executable": executable,
+            "language": language,
             "type": "ExtractorUnavailableError",
         }
 

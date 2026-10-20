@@ -12,6 +12,7 @@ class TestExtractionRecovery(NativeExtractionTestCase):
             ("python", "example.py", "class 1example:\n", "class ExampleValue: pass\n"),
             ("typescript", "example.ts", "export class {", "export class ExampleValue {}\n"),
             ("php", "example.php", "<?php class {", "<?php class ExampleValue {}\n"),
+            ("java", "ExampleValue.java", "class ExampleValue { void example_invalid( }", "class ExampleValue {}\n"),
         ),
     )
     def test_failed_extraction_does_not_poison_the_application(

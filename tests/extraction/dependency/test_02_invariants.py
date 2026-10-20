@@ -6,7 +6,7 @@ from ..base_test import ExtractionTestCase
 
 
 class TestDependencyInvariants(ExtractionTestCase):
-    @pytest.mark.parametrize("language", ("python", "typescript", "php"))
+    @pytest.mark.parametrize("language", ("python", "typescript", "php", "java"))
     def test_indexed_resolution_matches_complete_scans_for_every_language(self, language: str) -> None:
         def normalize(value: str) -> str:
             parts = str(value).replace("\\", "/").strip("/").split("/")
