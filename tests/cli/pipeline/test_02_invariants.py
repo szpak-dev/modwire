@@ -9,7 +9,8 @@ from .base_test import NativeExtractionTestCase
 
 class TestNativeExtractionInvariants(NativeExtractionTestCase):
     @pytest.mark.parametrize(
-        ("language", "resolved", "external"), (("python", 7, 3), ("typescript", 5, 2), ("php", 6, 2))
+        ("language", "resolved", "external"),
+        (("python", 7, 3), ("typescript", 5, 2), ("php", 6, 2), ("java", 5, 2)),
     )
     def test_native_languages_preserve_dependency_resolution(self, language: str, resolved: int, external: int) -> None:
         result = self.fixture_map(language)
@@ -19,7 +20,7 @@ class TestNativeExtractionInvariants(NativeExtractionTestCase):
         assert result.code_map.extraction.directories_pruned == 1
         assert result.code_map.extraction.files_found == len(result.source_ids())
 
-    @pytest.mark.parametrize("language", ("python", "typescript", "php"))
+    @pytest.mark.parametrize("language", ("python", "typescript", "php", "java"))
     def test_discovers_each_fixture_language(self, language: str) -> None:
         assert self.application.discover(self.fixture_root(language), self.scan_policy()) == (language,)
 

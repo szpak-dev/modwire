@@ -27,6 +27,11 @@
       {"id": "laravel", "owner": "laravel", "repo": "framework", "revision": "66844c430d1e5b38c21e1a96e2b3b37e39683666", "source_root": "src"},
       {"id": "symfony", "owner": "symfony", "repo": "symfony", "revision": "1f6b2d5d6ee434984d37b086a4b4f82acebaf397", "source_root": "src/Symfony/Component/Console"},
       {"id": "composer", "owner": "composer", "repo": "composer", "revision": "8c3eba87d24bbdcdaaf8f5c42391de20fd8ed6b1", "source_root": "src"}
+    ],
+    "java": [
+      {"id": "spring-boot", "owner": "spring-projects", "repo": "spring-boot", "revision": "57a1ca37c36f3cf355211aa8dea8c500b2dd3a09", "source_root": "core/spring-boot/src/main/java"},
+      {"id": "elasticsearch", "owner": "elastic", "repo": "elasticsearch", "revision": "d1764a18013fa42406668a024b3490c65e035547", "source_root": "server/src/main/java"},
+      {"id": "ghidra", "owner": "NationalSecurityAgency", "repo": "ghidra", "revision": "55144ec1ff28396a04d5c327fc375b90b149b944", "source_root": "Ghidra/Framework/Docking/src/main/java"}
     ]
   }
 }

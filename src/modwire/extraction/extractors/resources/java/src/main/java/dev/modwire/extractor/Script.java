@@ -303,8 +303,9 @@ final class JavaSourceExtractor {
         JsonArray abstractMethods,
         JsonArray callables
     ) {
-        String methodFallback = declaration.isClassOrInterfaceDeclaration()
-            && declaration.asClassOrInterfaceDeclaration().isInterface() ? "public" : "internal";
+        boolean interfaceDeclaration = declaration.isClassOrInterfaceDeclaration()
+            && declaration.asClassOrInterfaceDeclaration().isInterface();
+        String methodFallback = interfaceDeclaration ? "public" : "internal";
         String constructorFallback = declaration.isEnumDeclaration() ? "private" : methodFallback;
         for (ConstructorDeclaration constructor : declaration.getConstructors()) {
             JsonObject summary = methodSummary(
@@ -337,7 +338,7 @@ final class JavaSourceExtractor {
         for (MethodDeclaration method : declaration.getMethods()) {
             String methodVisibility = visibility(method, methodFallback);
             JsonObject summary = methodSummary(method, method.getNameAsString(), methodVisibility);
-            if (method.isAbstract() || method.getBody().isEmpty()) {
+            if (!interfaceDeclaration && (method.isAbstract() || method.getBody().isEmpty())) {
                 abstractMethods.add(summary);
             } else {
                 methods.add(summary);

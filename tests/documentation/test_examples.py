@@ -46,6 +46,7 @@ class TestDocumentationExamples(CliTestCase):
             "python": ("src/example.py", "class Example:\n    pass\n"),
             "typescript": ("src/example.ts", "export class Example {}\n"),
             "php": ("src/example.php", "<?php\nfinal class Example {}\n"),
+            "java": ("src/Example.java", "public final class Example {}\n"),
         }
 
         for language, (path, content) in sources.items():
@@ -97,10 +98,10 @@ class TestDocumentationExamples(CliTestCase):
             "dependencies",
             "spans",
         }
-        result = {"python": {}, "typescript": {}, "php": {}}
+        result = {"python": {}, "typescript": {}, "php": {}, "java": {}}
         for line in page.splitlines():
             cells = tuple(cell.strip() for cell in line.strip().strip("|").split("|"))
-            if len(cells) != 4 or cells[0] not in capabilities:
+            if len(cells) != 5 or cells[0] not in capabilities:
                 continue
             for language, value in zip(result, cells[1:], strict=True):
                 result[language][cells[0]] = value.lower()

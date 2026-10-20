@@ -92,7 +92,7 @@ class BigProjectBenchmark:
 
     def measure_extraction(self, project: Project, project_root: Path, sync_seconds: float, started: float) -> None:
         generate_map_durations: list[float] = []
-        measurements: list[tuple[int, int, int, int, int]] = []
+        measurements: list[tuple[int, int, int, int]] = []
         reference_code_map = None
         for _ in range(self.repetitions):
             extract_started = time.perf_counter()
@@ -109,12 +109,11 @@ class BigProjectBenchmark:
                     extraction.files_excluded,
                     extraction.directories_pruned,
                     len(extraction.files),
-                    len(extraction.modules),
                 )
             )
         if len(set(measurements)) != 1:
             raise RuntimeError(f"Extraction metrics changed between runs: {measurements}")
-        files_found, files_excluded, directories_pruned, files_built, modules_built = measurements[0]
+        files_found, files_excluded, directories_pruned, files_built = measurements[0]
         generate_map_runs = ",".join(f"{duration:.3f}" for duration in generate_map_durations)
         print(
             "  "
@@ -125,7 +124,6 @@ class BigProjectBenchmark:
             f"total={time.perf_counter() - started:.2f}s "
             f"files_found={files_found} "
             f"files_built={files_built} "
-            f"modules_built={modules_built} "
             f"excluded_files={files_excluded} "
             f"pruned_directories={directories_pruned}"
         )

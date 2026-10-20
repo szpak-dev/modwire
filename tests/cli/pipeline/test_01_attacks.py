@@ -14,6 +14,7 @@ class TestNativeExtractionAttacks(NativeExtractionTestCase):
             ("python", "example_invalid.py", "1example_invalid\n"),
             ("typescript", "example_invalid.ts", "export const = ;\n"),
             ("php", "example_invalid.php", "<?php\nfunction example_invalid(\n"),
+            ("java", "ExampleInvalid.java", "class ExampleInvalid { void example_invalid( }\n"),
         ),
     )
     def test_reports_native_parser_failure(self, language: str, name: str, source: str) -> None:
@@ -36,7 +37,7 @@ class TestNativeExtractionAttacks(NativeExtractionTestCase):
         with pytest.raises(UnsupportedLanguageError) as raised:
             self.extract_project("example_unknown")
         assert raised.value.language == "example_unknown"
-        assert raised.value.supported_languages == ("python", "typescript", "php")
+        assert raised.value.supported_languages == ("python", "typescript", "php", "java")
 
     def test_reports_duplicate_module_identities(self) -> None:
         self.write_files(
