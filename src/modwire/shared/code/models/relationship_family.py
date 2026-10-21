@@ -23,6 +23,7 @@ class RelationshipFamily(StrEnum):
             return (
                 FactCapability.SYMBOLS,
                 FactCapability.CALLABLES,
+                FactCapability.CALLS,
                 FactCapability.PARAMETERS,
                 FactCapability.ANNOTATIONS,
                 FactCapability.MODIFIERS,

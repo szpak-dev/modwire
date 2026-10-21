@@ -48,6 +48,14 @@ class JavaExtractor(SourceExtractor):
                     explanation="Constructors, methods, and annotation elements are extracted.",
                 ),
                 CapabilityCoverage(
+                    capability=FactCapability.CALLS,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation=(
+                        "Static method and constructor calls owned by extracted callables are emitted with explicit "
+                        "resolved, external, unresolved, or dynamic state."
+                    ),
+                ),
+                CapabilityCoverage(
                     capability=FactCapability.PARAMETERS,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Callable parameter order, kind, and exact declared type are extracted.",
@@ -124,12 +132,13 @@ class JavaExtractor(SourceExtractor):
                     evidence_requirements=RelationshipFamily.MEMBER.evidence_requirements,
                     semantics=CapabilityStatus.PARTIAL,
                     semantics_explanation=(
-                        "Declared member and callable types are preserved without classpath, generated-code, "
-                        "or framework inference."
+                        "Declared member and callable types and static calls are preserved without classpath, "
+                        "generated-code, or framework inference."
                     ),
                     inventory=CapabilityStatus.PARTIAL,
                     inventory_explanation=(
-                        "Declared type evidence is emitted, but assigned-value relationship evidence is not available."
+                        "Declared type and static-call evidence is emitted, but assigned-value relationship "
+                        "evidence is not available."
                     ),
                 ),
                 RelationshipCoverage(

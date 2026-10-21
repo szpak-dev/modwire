@@ -7,6 +7,7 @@ class FactCapability(StrEnum):
     SOURCES = "sources"
     SYMBOLS = "symbols"
     CALLABLES = "callables"
+    CALLS = "calls"
     PARAMETERS = "parameters"
     ANNOTATIONS = "annotations"
     MODIFIERS = "modifiers"

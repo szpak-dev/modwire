@@ -72,7 +72,7 @@ authored fact but cannot resolve its complete runtime meaning.
 | Family | Required fact evidence | Python | TypeScript | PHP | Java |
 | --- | --- | --- | --- | --- | --- |
 | declaration | symbols, inheritance, declaration kinds, composition | Partial / Supported | Partial / Supported | Partial / Partial | Partial / Partial |
-| member | symbols, callables, parameters, annotations, modifiers, attributes, assigned values, declaration kinds | Partial / Supported | Partial / Partial | Partial / Partial | Partial / Partial |
+| member | symbols, callables, calls, parameters, annotations, modifiers, attributes, assigned values, declaration kinds | Partial / Supported | Partial / Partial | Partial / Partial | Partial / Partial |
 | dependency | sources, dependencies | Supported / Supported | Supported / Supported | Supported / Supported | Partial / Partial |
 
 Each language cell is `semantics / inventory`. The exact statuses, evidence

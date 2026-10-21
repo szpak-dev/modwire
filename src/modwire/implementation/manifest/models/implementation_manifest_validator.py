@@ -1,6 +1,8 @@
 import json
 from dataclasses import dataclass
 
+from ....shared.code.models.source_call import SourceCall
+from ....shared.code.models.source_call_resolution import SourceCallResolution
 from ....shared.code.models.source_dependency_resolution import SourceDependencyResolution
 from ....shared.code.models.source_manifest import SourceManifest
 from .implementation_manifest_validation_error import ImplementationManifestValidationError
@@ -26,6 +28,7 @@ class ImplementationManifestValidator:
     parameters: tuple[ManifestParameter, ...]
     attributes: tuple[ManifestAttribute, ...]
     annotations: tuple[ManifestAnnotation, ...]
+    calls: tuple[SourceCall, ...]
     declaration_relations: tuple[ManifestDeclarationRelation, ...]
     dependencies: tuple[ManifestDependency, ...]
     spans: tuple[ManifestSpan, ...]
@@ -38,6 +41,7 @@ class ImplementationManifestValidator:
         attribute_ids = {item.id for item in self.attributes}
         self.validate_identities(symbol_ids, callable_ids, parameter_ids, attribute_ids)
         self.validate_references(symbol_ids, callable_ids, parameter_ids, attribute_ids)
+        self.validate_calls()
         self.validate_dependencies()
 
     def validate_collections(self) -> None:
@@ -48,6 +52,7 @@ class ImplementationManifestValidator:
             ("parameters", self.parameters),
             ("attributes", self.attributes),
             ("annotations", self.annotations),
+            ("calls", self.calls),
             ("declaration relations", self.declaration_relations),
             ("dependencies", self.dependencies),
             ("spans", self.spans),
@@ -153,6 +158,24 @@ class ImplementationManifestValidator:
             "span symbols",
         )
         self.require(
+            all(str(item.source_id) in source_ids for item in self.calls),
+            ImplementationManifestViolation.UNKNOWN_REFERENCE,
+            "call sources",
+        )
+        self.require(
+            all(item.source_callable_id in callable_ids for item in self.calls),
+            ImplementationManifestViolation.UNKNOWN_REFERENCE,
+            "call source callables",
+        )
+        self.require(
+            all(
+                item.resolution is not SourceCallResolution.RESOLVED or item.target_callable_id in callable_ids
+                for item in self.calls
+            ),
+            ImplementationManifestViolation.UNKNOWN_REFERENCE,
+            "call target callables",
+        )
+        self.require(
             all(item.source_id in source_ids for item in self.dependencies),
             ImplementationManifestViolation.UNKNOWN_REFERENCE,
             "dependency sources",
@@ -164,6 +187,17 @@ class ImplementationManifestValidator:
             ),
             ImplementationManifestViolation.UNKNOWN_REFERENCE,
             "dependency source targets",
+        )
+
+    def validate_calls(self) -> None:
+        self.require(
+            all(
+                (item.resolution is SourceCallResolution.RESOLVED and bool(item.target_callable_id))
+                or (item.resolution is not SourceCallResolution.RESOLVED and not item.target_callable_id)
+                for item in self.calls
+            ),
+            ImplementationManifestViolation.INCONSISTENT_CALL,
+            "call target resolutions",
         )
 
     def validate_dependencies(self) -> None:

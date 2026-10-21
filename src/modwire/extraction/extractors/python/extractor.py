@@ -51,6 +51,14 @@ class PythonExtractor(SourceExtractor):
                     explanation="Functions, methods, constructors, and lambdas are extracted.",
                 ),
                 CapabilityCoverage(
+                    capability=FactCapability.CALLS,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation=(
+                        "Static calls owned by extracted callables are emitted with explicit resolved, external, "
+                        "unresolved, or dynamic state."
+                    ),
+                ),
+                CapabilityCoverage(
                     capability=FactCapability.PARAMETERS,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Callable parameter order, kind, annotation, and default presence are extracted.",
@@ -134,12 +142,12 @@ class PythonExtractor(SourceExtractor):
                     evidence_requirements=RelationshipFamily.MEMBER.evidence_requirements,
                     semantics=CapabilityStatus.PARTIAL,
                     semantics_explanation=(
-                        "Declared member and callable types and assigned values are preserved without "
-                        "resolving dynamic types or runtime mutation."
+                        "Declared member and callable types, static calls, and assigned values are preserved "
+                        "without resolving dynamic types or runtime mutation."
                     ),
                     inventory=CapabilityStatus.SUPPORTED,
                     inventory_explanation=(
-                        "Every supported static member, callable type, and assigned-value fact in included "
+                        "Every supported static member, callable type, call, and assigned-value fact in included "
                         "Python sources is emitted deterministically."
                     ),
                 ),

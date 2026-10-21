@@ -35,9 +35,8 @@ different moments.
 All supported operational failures derive from `ModwireError`.
 
 Modwire does not convert a missing runtime, unreadable source, invalid configuration,
-corrupt manifest, or changed observation into an empty success. CLI commands render
-the failure and return a nonzero status. Python callers can catch the narrow public
-failure type that matches the operation.
+corrupt manifest, or changed observation into an empty success. Callers can catch the
+narrow public failure type that matches the operation.
 
 Cache corruption is different from source ambiguity. A corrupt owned cache entry can
 be invalidated and recomputed because the source remains authoritative. Invalid or

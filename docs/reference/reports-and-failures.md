@@ -37,11 +37,13 @@ not become violations merely because they are present.
 | `ExtractorExecutionError` | The external extractor process exits unsuccessfully. |
 | `ExtractorContractError` | Extractor output violates the runtime contract. |
 | `ExtractorInvariantError` | An extractor reaches an impossible or unsupported owned state. |
+| `SourceParseError` | An extractor parser rejects source text. |
 | `CacheValidationError` | Cache values or options violate the cache contract. |
 | `CacheOwnershipError` | The requested path is not recognised as Modwire-owned cache state. |
 | `CacheAccessError` | The operating system rejects cache access. |
 | `InitializationError` | Project initialization cannot complete. |
 | `InvalidInitializationTargetError` | A generated target escapes its accepted project boundary. |
+| `ConfigurationLoadError` | Architecture configuration cannot be read or parsed. |
 | `PipelineValidationError` | CLI pipeline state violates a typed pipeline invariant. |
 | `UnsupportedManifestFormatError` | No serializer owns the requested manifest format. |
 | `InvalidImplementationManifestError` | Manifest content violates its canonical contract. |

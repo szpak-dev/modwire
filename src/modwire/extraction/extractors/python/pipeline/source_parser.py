@@ -6,6 +6,7 @@ from wireup import injectable
 from .....shared.code.models.identity import FileId
 from ...domain import SourceParser
 from ...models.parsed_source_file import ParsedSourceFile
+from ...models.source_parse_error import SourceParseError
 from ..observations.source_context import PythonSourceContext
 from ..semantics.reader import PythonSemanticReader
 from ..source_facts.reader import PythonSourceFactReader
@@ -26,6 +27,16 @@ class PythonSyntaxParser(SourceParser):
             sources_root=sources_root,
             content=content,
         )
-        observation = self.observations.read(ast.parse(content, filename=path))
+        try:
+            tree = ast.parse(content, filename=path)
+        except SyntaxError as error:
+            raise SourceParseError(
+                language="python",
+                path=path,
+                line=error.lineno or 0,
+                column=error.offset or 0,
+                diagnostic=error.msg,
+            ) from error
+        observation = self.observations.read(tree)
         catalog = self.semantics.read(observation, context)
         return self.facts.read(catalog, context)

@@ -30,6 +30,7 @@ from .cli.cache.models.cached_result import CachedResult
 from .cli.facade import CliFacade
 from .cli.initialization.models.initialization_error import InitializationError
 from .cli.initialization.models.invalid_initialization_target_error import InvalidInitializationTargetError
+from .cli.pipeline.models.configuration_load_error import ConfigurationLoadError
 from .cli.pipeline.models.extractor_contract_error import ExtractorContractError
 from .cli.pipeline.models.extractor_contract_violation import ExtractorContractViolation
 from .cli.pipeline.models.extractor_execution_error import ExtractorExecutionError
@@ -47,6 +48,7 @@ from .extraction.extractors.models.extraction_error import ExtractionError
 from .extraction.extractors.models.extractor_error import ExtractorError
 from .extraction.extractors.models.extractor_invariant_error import ExtractorInvariantError
 from .extraction.extractors.models.extractor_invariant_violation import ExtractorInvariantViolation
+from .extraction.extractors.models.source_parse_error import SourceParseError
 from .extraction.extractors.models.unsupported_language_error import UnsupportedLanguageError
 from .extraction.extractors.models.unsupported_parser_error import UnsupportedParserError
 from .extraction.facade import ExtractionFacade
@@ -106,6 +108,7 @@ __all__ = [
     "CodeError",
     "CodeValidationError",
     "CodeViolation",
+    "ConfigurationLoadError",
     "CapabilityCoverage",
     "CapabilityStatus",
     "DeclarationFamily",
@@ -148,6 +151,7 @@ __all__ = [
     "SourceManifestIdentity",
     "SourceObservation",
     "SourceObservationInvalidatedError",
+    "SourceParseError",
     "SourceDeclarationRelationKind",
     "SourceDependencyKind",
     "SourceNamespaceKind",

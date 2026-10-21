@@ -47,6 +47,14 @@ class TypeScriptExtractor(SourceExtractor):
                     explanation="Functions, methods, constructors, and callable values are extracted.",
                 ),
                 CapabilityCoverage(
+                    capability=FactCapability.CALLS,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation=(
+                        "Static calls owned by extracted callables are emitted with explicit resolved, external, "
+                        "unresolved, or dynamic state."
+                    ),
+                ),
+                CapabilityCoverage(
                     capability=FactCapability.PARAMETERS,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Callable parameter order, kind, annotation, and default presence are extracted.",
@@ -128,12 +136,13 @@ class TypeScriptExtractor(SourceExtractor):
                     evidence_requirements=RelationshipFamily.MEMBER.evidence_requirements,
                     semantics=CapabilityStatus.PARTIAL,
                     semantics_explanation=(
-                        "Declared member and callable types are preserved without resolving runtime types "
-                        "or framework ownership."
+                        "Declared member and callable types and static calls are preserved without resolving "
+                        "runtime types or framework ownership."
                     ),
                     inventory=CapabilityStatus.PARTIAL,
                     inventory_explanation=(
-                        "Declared type evidence is emitted, but assigned-value relationship evidence is not available."
+                        "Declared type and static-call evidence is emitted, but assigned-value relationship "
+                        "evidence is not available."
                     ),
                 ),
                 RelationshipCoverage(

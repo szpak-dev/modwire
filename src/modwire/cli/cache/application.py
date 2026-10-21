@@ -9,6 +9,7 @@ from ...architecture.config.models.architecture_config import ArchitectureConfig
 from ...architecture.report.models.report_node import ReportNode
 from ...extraction.extractors.models.duplicate_identity_error import DuplicateIdentityError
 from ...extraction.extractors.models.extraction_request import ExtractionRequest
+from ...shared.code.models.code_error import CodeError
 from ...shared.code.models.code_map import CodeMap
 from ...shared.code.models.identity import FileId, ImportIdentity
 from ...shared.code.models.identity_kind import IdentityKind
@@ -82,7 +83,7 @@ class CacheApplication:
                     raise CacheValidationError(CacheViolation.SOURCE_IDENTITY_MISMATCH, str(source.key))
                 files[source.entry.source_id] = source_file
                 hits += 1
-            except (CacheValidationError, TypeError, ValueError, ValidationError):
+            except (CacheValidationError, CodeError, TypeError, ValueError, ValidationError):
                 if payload is not None:
                     invalid_keys.append(source.key)
                 invalidated += int(cached_invalidated or cached_value is not None)
@@ -146,7 +147,7 @@ class CacheApplication:
             if value.extraction.manifest != plan.observation.manifest:
                 raise CacheValidationError(CacheViolation.CODE_MAP_PROVENANCE_MISMATCH, str(key))
             outcome = CacheOutcome(stage=CacheStage.CODE_MAP, namespace=options.namespace, hits=1)
-        except (CacheValidationError, TypeError, ValueError, ValidationError):
+        except (CacheValidationError, CodeError, TypeError, ValueError, ValidationError):
             if cached_value is not None and not cached_invalidated:
                 self.storage.delete(options, key)
             value = None

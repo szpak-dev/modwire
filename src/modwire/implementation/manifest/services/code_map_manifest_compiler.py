@@ -5,6 +5,7 @@ from wireup import injectable
 
 from ....shared.code.models.code_map import CodeMap
 from ....shared.code.models.declaration_identity import DeclarationIdentity
+from ....shared.code.models.source_call import SourceCall
 from ....shared.code.models.source_declaration import SourceDeclaration
 from ....shared.code.models.source_dependency_resolution import SourceDependencyResolution
 from ....shared.code.models.source_symbol_kind import SourceSymbolKind
@@ -58,6 +59,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
         parameters: list[ManifestParameter] = []
         attributes: list[ManifestAttribute] = []
         annotations: list[ManifestAnnotation] = []
+        calls: set[SourceCall] = set()
         declaration_relations: list[ManifestDeclarationRelation] = []
         dependencies: list[ManifestDependency] = []
         dependency_set: set[ManifestDependency] = set()
@@ -157,6 +159,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
                                 expression=parameter.annotation,
                             )
                         )
+            calls.update(source_file.calls)
             declaration_relations.extend(
                 ManifestDeclarationRelation(
                     source_symbol_id=relation.source_declaration_id,
@@ -201,6 +204,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
             parameters=tuple(sorted(parameters, key=self.canonical_key)),
             attributes=tuple(sorted(attributes, key=self.canonical_key)),
             annotations=tuple(sorted(annotations, key=self.canonical_key)),
+            calls=tuple(sorted(calls, key=self.canonical_key)),
             declaration_relations=tuple(sorted(declaration_relations, key=self.canonical_key)),
             dependencies=tuple(sorted(dependencies, key=self.canonical_key)),
             spans=tuple(sorted(spans, key=self.canonical_key)),

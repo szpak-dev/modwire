@@ -9,6 +9,7 @@ class ImplementationManifestViolation(StrEnum):
     DUPLICATE_IDENTITY = "duplicate_identity"
     UNKNOWN_REFERENCE = "unknown_reference"
     INCONSISTENT_DEPENDENCY = "inconsistent_dependency"
+    INCONSISTENT_CALL = "inconsistent_call"
     MISSING_DEPENDENCY_TARGET_SOURCE = "missing_dependency_target_source"
     NON_IMPORT_MANIFEST_DEPENDENCY = "non_import_manifest_dependency"
     INCONSISTENT_ATTRIBUTE_IDENTITY = "inconsistent_attribute_identity"
