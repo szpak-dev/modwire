@@ -154,6 +154,30 @@ class CodeMapFactory:
             }
             for ordinal, declaration in enumerate(source_file["declarations"], start=1)
         ]
+        source_file["callables"] = [
+            {
+                **callable_definition,
+                "declaration_id": {
+                    "source_id": source_id,
+                    "family": "function",
+                    "qualified_name": callable_definition["qualified_name"],
+                    "ordinal": ordinal,
+                },
+            }
+            for ordinal, callable_definition in enumerate(source_file["callables"], start=1)
+        ]
+        callable_ids = {
+            callable_definition["qualified_name"]: callable_definition["declaration_id"]
+            for callable_definition in source_file["callables"]
+        }
+        source_file["calls"] = [
+            {
+                **call,
+                "source_callable_id": callable_ids[call["source_callable_id"]],
+                "target_callable_id": callable_ids[call["target_callable_id"]],
+            }
+            for call in source_file["calls"]
+        ]
         return source_file
 
     def symbol(self, name: str, *, line_count: int, declared_args: int, optional_args: int) -> dict[str, Any]:
@@ -250,13 +274,6 @@ class CodeMapFactory:
     def source_callable(self, source_id: str, name: str) -> dict[str, object]:
         return {
             **self.symbol(name, line_count=1, declared_args=0, optional_args=0),
-            "declaration_id": {
-                "source_id": source_id,
-                "family": "function",
-                "qualified_name": name,
-                "ordinal": 1,
-            },
-            "id": f"{source_id}::{name}",
             "source_id": source_id,
             "qualified_name": name,
             "owner_name": "",
@@ -271,8 +288,8 @@ class CodeMapFactory:
 
     def source_call(self, source_id: str, source_name: str, target_name: str) -> dict[str, object]:
         return {
-            "source_callable_id": f"{source_id}::{source_name}",
-            "target_callable_id": f"{source_id}::{target_name}",
+            "source_callable_id": source_name,
+            "target_callable_id": target_name,
             "source_id": source_id,
             "line": 1,
             "expression": target_name,

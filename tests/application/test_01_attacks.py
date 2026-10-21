@@ -187,7 +187,20 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
         assert failure["violation"] == ExtractorContractViolation.INVALID_OUTPUT
         assert failure["cause"] == ValidationError.__name__
 
-    def test_malformed_typed_extractor_failure_reports_a_contract_violation(self) -> None:
+    @pytest.mark.parametrize(
+        "document",
+        (
+            "{}",
+            '["source_parse"]',
+            '{"language":"typescript","path":"example.ts","line":1,"column":1,"diagnostic":"invalid"}',
+            '{"code":"source_parse","language":"typescript","path":"example.ts","line":"1","column":1,"diagnostic":"invalid"}',
+            '{"code":"source_parse","language":"typescript","path":"example.ts","line":true,"column":1,"diagnostic":"invalid"}',
+            '{"code":"source_parse","language":"typescript","path":"example.ts","line":null,"column":1,"diagnostic":"invalid"}',
+            '{"code":"source_parse","language":"typescript","path":"example.ts","line":0,"column":1,"diagnostic":"invalid"}',
+            '{"code":"source_parse","language":"typescript","path":"example.ts","line":1,"column":1,"diagnostic":"invalid","extra":"forbidden"}',
+        ),
+    )
+    def test_malformed_typed_extractor_failure_reports_a_contract_violation(self, document: str) -> None:
         root = self.project({"src/example.ts": "export const exampleValue = 1;\n"})
         runtime_directory = self.workspace / "example-malformed-failure-runtime"
         runtime_directory.mkdir()
@@ -198,7 +211,7 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
             "if '--version' in sys.argv:\n"
             "    print('example 1')\n"
             "else:\n"
-            "    print('modwire-error:{}', file=sys.stderr)\n"
+            f"    print('modwire-error:' + {document!r}, file=sys.stderr)\n"
             "    raise SystemExit(1)\n",
             encoding="utf-8",
         )
@@ -212,6 +225,60 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
         assert raised.value.language == "typescript"
         assert raised.value.violation is ExtractorContractViolation.INVALID_OUTPUT
         assert isinstance(raised.value.__cause__, ValidationError)
+
+    def test_extractor_failure_language_must_match_its_runtime(self) -> None:
+        root = self.project({"src/example.ts": "export const exampleValue = 1;\n"})
+        runtime_directory = self.workspace / "example-wrong-language-runtime"
+        runtime_directory.mkdir()
+        runtime = runtime_directory / "node"
+        document = (
+            '{"code":"source_parse","language":"python","path":"example.ts","line":1,"column":1,"diagnostic":"invalid"}'
+        )
+        runtime.write_text(
+            f"#!{sys.executable}\n"
+            "import sys\n"
+            "if '--version' in sys.argv:\n"
+            "    print('example 1')\n"
+            "else:\n"
+            f"    print('modwire-error:' + {document!r}, file=sys.stderr)\n"
+            "    raise SystemExit(1)\n",
+            encoding="utf-8",
+        )
+        runtime.chmod(0o755)
+
+        with pytest.MonkeyPatch.context() as environment:
+            environment.setenv("PATH", str(runtime_directory))
+            with pytest.raises(ExtractorContractError) as raised:
+                self.application.generate_map("typescript", root, self.scan_policy())
+
+        assert raised.value.violation is ExtractorContractViolation.INVALID_OUTPUT
+        assert raised.value.diagnostic == "extractor failure document language does not match its runtime"
+        assert isinstance(raised.value.__cause__, ExtractorExecutionError)
+
+    def test_unmarked_extractor_failure_remains_an_execution_failure(self) -> None:
+        root = self.project({"src/example.ts": "export const exampleValue = 1;\n"})
+        runtime_directory = self.workspace / "example-unmarked-failure-runtime"
+        runtime_directory.mkdir()
+        runtime = runtime_directory / "node"
+        runtime.write_text(
+            f"#!{sys.executable}\n"
+            "import sys\n"
+            "if '--version' in sys.argv:\n"
+            "    print('example 1')\n"
+            "else:\n"
+            "    print('unmarked failure', file=sys.stderr)\n"
+            "    raise SystemExit(1)\n",
+            encoding="utf-8",
+        )
+        runtime.chmod(0o755)
+
+        with pytest.MonkeyPatch.context() as environment:
+            environment.setenv("PATH", str(runtime_directory))
+            with pytest.raises(ExtractorExecutionError) as raised:
+                self.application.generate_map("typescript", root, self.scan_policy())
+
+        assert raised.value.language == "typescript"
+        assert raised.value.exit_code == 1
 
     def test_multiple_typed_extractor_failures_report_a_contract_violation(self) -> None:
         root = self.project({"src/example.ts": "export const exampleValue = 1;\n"})
@@ -362,16 +429,18 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
         assert raised.value.format_id == format.id
 
     @pytest.mark.parametrize(
-        ("field", "value", "subject"),
+        ("field", "subject"),
         (
-            ("source_id", "src/example-missing.py", "call sources"),
-            ("source_callable_id", "example-missing-callable", "call source callables"),
-            ("target_callable_id", "example-missing-callable", "call target callables"),
+            ("source_callable_id", "call source callables"),
+            ("target_callable_id", "call target callables"),
         ),
     )
-    def test_manifest_rejects_calls_with_unknown_references(self, field: str, value: str, subject: str) -> None:
+    def test_manifest_rejects_calls_with_unknown_callable_references(self, field: str, subject: str) -> None:
         document = self.call_manifest_document(two_calls=False)
-        invalid = self.tampered_document(document, lambda payload: payload["calls"][0].__setitem__(field, value))
+        invalid = self.tampered_document(
+            document,
+            lambda payload: payload["calls"][0][field].__setitem__("qualified_name", "example_missing_callable"),
+        )
 
         with pytest.raises(InvalidImplementationManifestError) as raised:
             self.application.read_implementation_manifest(invalid)
@@ -380,6 +449,21 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
         assert isinstance(cause, ImplementationManifestValidationError)
         assert cause.violation is ImplementationManifestViolation.UNKNOWN_REFERENCE
         assert cause.subject == subject
+
+    def test_manifest_rejects_a_call_from_an_unknown_source(self) -> None:
+        document = self.call_manifest_document(two_calls=False)
+        invalid = self.tampered_document(
+            document,
+            lambda payload: payload["calls"][0].__setitem__("source_id", "src/example-missing.py"),
+        )
+
+        with pytest.raises(InvalidImplementationManifestError) as raised:
+            self.application.read_implementation_manifest(invalid)
+
+        cause = raised.value.__cause__
+        assert isinstance(cause, ImplementationManifestValidationError)
+        assert cause.violation is ImplementationManifestViolation.UNKNOWN_REFERENCE
+        assert cause.subject == "call sources"
 
     def test_manifest_rejects_a_call_target_that_contradicts_its_resolution(self) -> None:
         document = self.call_manifest_document(two_calls=False)
@@ -395,6 +479,40 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
         assert isinstance(cause, ImplementationManifestValidationError)
         assert cause.violation is ImplementationManifestViolation.INCONSISTENT_CALL
         assert cause.subject == "call target resolutions"
+
+    def test_manifest_rejects_a_call_owned_by_another_source_callable(self) -> None:
+        root = self.project(
+            {
+                "src/example.py": (
+                    "def example_target():\n    return 1\n\ndef example_caller():\n    return example_target()\n"
+                ),
+                "src/other.py": "def other_callable():\n    return 2\n",
+            }
+        )
+        format = self.application.implementation_manifest_formats()[0]
+        document = self.application.implementation_manifest(
+            self.application.generate_map("python", root, self.scan_policy()),
+            format,
+        )
+        invalid = self.tampered_document(
+            document,
+            lambda payload: payload["calls"][0].__setitem__(
+                "source_callable_id",
+                next(
+                    item["symbol_id"]
+                    for item in payload["callables"]
+                    if item["symbol_id"]["qualified_name"] == "other_callable"
+                ),
+            ),
+        )
+
+        with pytest.raises(InvalidImplementationManifestError) as raised:
+            self.application.read_implementation_manifest(invalid)
+
+        cause = raised.value.__cause__
+        assert isinstance(cause, ImplementationManifestValidationError)
+        assert cause.violation is ImplementationManifestViolation.INCONSISTENT_CALL_SOURCE
+        assert cause.subject == "call source ownership"
 
     def test_manifest_rejects_non_canonical_call_order(self) -> None:
         document = self.call_manifest_document(two_calls=True)

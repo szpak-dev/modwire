@@ -5,6 +5,8 @@ from wireup import injectable
 
 from .....shared.code.models.identity import FileId
 from ...domain import SourceParser
+from ...models.extractor_invariant_error import ExtractorInvariantError
+from ...models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...models.parsed_source_file import ParsedSourceFile
 from ...models.source_parse_error import SourceParseError
 from ..observations.source_context import PythonSourceContext
@@ -30,11 +32,16 @@ class PythonSyntaxParser(SourceParser):
         try:
             tree = ast.parse(content, filename=path)
         except SyntaxError as error:
+            if error.lineno is None or error.offset is None:
+                raise ExtractorInvariantError(
+                    ExtractorInvariantViolation.MISSING_SOURCE_PARSE_LOCATION,
+                    path,
+                ) from error
             raise SourceParseError(
                 language="python",
                 path=path,
-                line=error.lineno or 0,
-                column=error.offset or 0,
+                line=error.lineno,
+                column=error.offset,
                 diagnostic=error.msg,
             ) from error
         observation = self.observations.read(tree)

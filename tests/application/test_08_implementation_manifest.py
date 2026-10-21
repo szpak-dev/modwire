@@ -148,7 +148,7 @@ class TestImplementationManifest(ApplicationTestCase):
             sort_keys=True,
         )
 
-        assert manifest.schema_version == 7
+        assert manifest.schema_version == 8
         assert manifest.producer.extractor.language == "python"
         assert manifest.producer.extractor.id == "modwire.python.ast"
         assert manifest.producer.modwire_version
@@ -157,7 +157,6 @@ class TestImplementationManifest(ApplicationTestCase):
         assert tuple(item.relative_path for item in manifest.source_manifest.sources) == ("src/example.py",)
         assert all(not item.relative_path.startswith("/") for item in manifest.source_manifest.sources)
         assert str(root) not in canonical
-        assert "null" not in canonical
         assert any(item.target_reference == "ExampleBase" for item in manifest.declaration_relations)
         assert any(item.expression == "int" for item in manifest.annotations)
         assert document.format == formats[0]
@@ -190,8 +189,9 @@ class TestImplementationManifest(ApplicationTestCase):
         assert manifest.calls[0].target_name == calls[0].target_name == "example_target"
         assert manifest.calls[0].resolution is calls[0].resolution is SourceCallResolution.RESOLVED
         callable_ids = {item.symbol_id.canonical() for item in manifest.callables}
-        assert manifest.calls[0].source_callable_id in callable_ids
-        assert manifest.calls[0].target_callable_id in callable_ids
+        assert manifest.calls[0].source_callable_id.canonical() in callable_ids
+        assert manifest.calls[0].target_callable_id is not None
+        assert manifest.calls[0].target_callable_id.canonical() in callable_ids
 
     def test_supported_member_inventory_truthfully_publishes_no_observed_calls(self) -> None:
         root = self.project({"src/example.py": "def example_value():\n    return 1\n"})

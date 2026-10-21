@@ -59,6 +59,15 @@ class SourceFile(ValueModel):
             raise CodeValidationError(CodeViolation.DUPLICATE_CALLABLE_IDENTITY, str(self.file_id))
         if any(item.declaration_id.source_id != self.file_id for item in self.callables):
             raise CodeValidationError(CodeViolation.FOREIGN_CALLABLE_IDENTITY, str(self.file_id))
+        call_facts = tuple(item.model_dump_json() for item in self.calls)
+        if len(call_facts) != len(set(call_facts)):
+            raise CodeValidationError(CodeViolation.DUPLICATE_CALL, str(self.file_id))
+        if any(
+            item.source_id != self.file_id or item.source_callable_id.source_id != self.file_id for item in self.calls
+        ):
+            raise CodeValidationError(CodeViolation.FOREIGN_CALL_SOURCE, str(self.file_id))
+        if any(item.source_callable_id.canonical() not in callable_identities for item in self.calls):
+            raise CodeValidationError(CodeViolation.UNKNOWN_CALL_SOURCE_CALLABLE, str(self.file_id))
         declaration_identities = {item.declaration_id.canonical() for item in self.declarations}
         if any(
             relation.source_declaration_id.canonical() not in declaration_identities

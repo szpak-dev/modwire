@@ -5,7 +5,6 @@ import pytest
 from modwire.application import (
     DuplicateIdentityError,
     ExtractorError,
-    ExtractorExecutionError,
     SourceParseError,
     UnsupportedLanguageError,
 )
@@ -15,16 +14,15 @@ from .base_test import NativeExtractionTestCase
 
 class TestNativeExtractionAttacks(NativeExtractionTestCase):
     @pytest.mark.parametrize(
-        ("language", "name", "source", "failure_type"),
+        ("language", "name", "source"),
         (
-            ("python", "example_invalid.py", "1example_invalid\n", SourceParseError),
-            ("typescript", "example_invalid.ts", "export const = ;\n", ExtractorExecutionError),
-            ("php", "example_invalid.php", "<?php\nfunction example_invalid(\n", ExtractorExecutionError),
+            ("python", "example_invalid.py", "1example_invalid\n"),
+            ("typescript", "example_invalid.ts", "export const = ;\n"),
+            ("php", "example_invalid.php", "<?php\nfunction example_invalid(\n"),
             (
                 "java",
                 "ExampleInvalid.java",
                 "class ExampleInvalid { void example_invalid( }\n",
-                ExtractorExecutionError,
             ),
         ),
     )
@@ -33,19 +31,25 @@ class TestNativeExtractionAttacks(NativeExtractionTestCase):
         language: str,
         name: str,
         source: str,
-        failure_type: type[ExtractorError],
     ) -> None:
         self.write_files({name: source})
-        with pytest.raises(failure_type) as raised:
+        with pytest.raises(SourceParseError) as raised:
             self.extract_project(language)
         assert raised.value.language == language
-        if isinstance(raised.value, SourceParseError):
-            assert raised.value.path.endswith(name)
-            assert raised.value.line == 1
-            assert raised.value.column > 0
-            assert isinstance(raised.value.__cause__, ExtractorExecutionError)
-        else:
-            assert raised.value.exit_code != 0
+        assert raised.value.path.endswith(name)
+        assert raised.value.line > 0
+        assert raised.value.column > 0
+        assert isinstance(raised.value.__cause__, ExtractorError)
+
+    def test_extraction_recovers_after_a_source_parse_failure(self) -> None:
+        self.write_files({"example.py": "def example_invalid(:\n"})
+        with pytest.raises(SourceParseError):
+            self.extract_project("python")
+
+        self.write_files({"example.py": "def example_valid():\n    return 1\n"})
+        recovered = self.extract_project("python")
+
+        assert tuple(recovered.extraction.files) == ("example.py",)
 
     def test_reports_missing_runtime_from_process_environment(self) -> None:
         self.write_project(1)

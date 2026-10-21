@@ -1,10 +1,33 @@
 import json
 
+import pytest
+
+from modwire.application import CodeMap, CodeValidationError, CodeViolation
+
 from ...support.code_map import CodeMapFactory
 from ...support.service_test import ServiceTestCase
 
 
 class TestPublicCodeValues(ServiceTestCase):
+    def code_map_with_call(self) -> CodeMap:
+        source_id = "example.source"
+        return (
+            CodeMapFactory()
+            .queryable(
+                {
+                    source_id: {
+                        "callables": [
+                            CodeMapFactory().source_callable(source_id, "example_target"),
+                            CodeMapFactory().source_callable(source_id, "example_caller"),
+                        ],
+                        "calls": [CodeMapFactory().source_call(source_id, "example_caller", "example_target")],
+                    }
+                },
+                (),
+            )
+            .code_map
+        )
+
     def test_query_filters_are_composable_without_changing_the_original_query(self) -> None:
         result = CodeMapFactory().queryable(
             {
@@ -46,13 +69,77 @@ class TestPublicCodeValues(ServiceTestCase):
         original = CodeMapFactory().queryable({"src/example.source": {}}, ()).code_map
         restored = type(original).model_validate_json(original.to_json())
         assert restored.to_dict() == original.to_dict()
-        assert original.schema_version == 10
+        assert original.schema_version == 11
         assert set(json.loads(original.to_json())) == {
             "language",
             "producer",
             "extraction",
             "dependency_graph",
         }
+
+    def test_source_file_rejects_duplicate_call_facts(self) -> None:
+        original = self.code_map_with_call()
+        source_file = original.extraction.files["example.source"]
+        tampered_file = source_file.model_copy(update={"calls": [*source_file.calls, source_file.calls[0]]})
+        tampered = original.model_copy(
+            update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}
+        )
+
+        with pytest.raises(CodeValidationError) as raised:
+            CodeMap.model_validate_json(tampered.model_dump_json())
+
+        assert raised.value.violation is CodeViolation.DUPLICATE_CALL
+
+    def test_source_file_rejects_an_unknown_call_source_callable(self) -> None:
+        original = self.code_map_with_call()
+        source_file = original.extraction.files["example.source"]
+        call = source_file.calls[0]
+        unknown = call.source_callable_id.model_copy(update={"qualified_name": "example_missing"})
+        tampered_file = source_file.model_copy(
+            update={"calls": [call.model_copy(update={"source_callable_id": unknown})]}
+        )
+        tampered = original.model_copy(
+            update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}
+        )
+
+        with pytest.raises(CodeValidationError) as raised:
+            CodeMap.model_validate_json(tampered.model_dump_json())
+
+        assert raised.value.violation is CodeViolation.UNKNOWN_CALL_SOURCE_CALLABLE
+
+    def test_source_file_rejects_foreign_call_ownership(self) -> None:
+        original = self.code_map_with_call()
+        source_file = original.extraction.files["example.source"]
+        call = source_file.calls[0]
+        tampered_file = source_file.model_copy(
+            update={"calls": [call.model_copy(update={"source_id": "example_foreign.source"})]}
+        )
+        tampered = original.model_copy(
+            update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}
+        )
+
+        with pytest.raises(CodeValidationError) as raised:
+            CodeMap.model_validate_json(tampered.model_dump_json())
+
+        assert raised.value.violation is CodeViolation.FOREIGN_CALL_SOURCE
+
+    def test_code_map_rejects_an_unknown_resolved_call_target(self) -> None:
+        original = self.code_map_with_call()
+        source_file = original.extraction.files["example.source"]
+        call = source_file.calls[0]
+        assert call.target_callable_id is not None
+        unknown = call.target_callable_id.model_copy(update={"qualified_name": "example_missing"})
+        tampered_file = source_file.model_copy(
+            update={"calls": [call.model_copy(update={"target_callable_id": unknown})]}
+        )
+        tampered = original.model_copy(
+            update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}
+        )
+
+        with pytest.raises(CodeValidationError) as raised:
+            CodeMap.model_validate_json(tampered.model_dump_json())
+
+        assert raised.value.violation is CodeViolation.UNKNOWN_RESOLVED_CALL_TARGET
 
     def test_query_surfaces_keep_external_and_tracked_edges_distinct(self) -> None:
         result = CodeMapFactory().queryable(

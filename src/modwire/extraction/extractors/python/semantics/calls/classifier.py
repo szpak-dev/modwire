@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from ......shared.code.models.declaration_identity import DeclarationIdentity
 from ......shared.code.models.source_call import SourceCall
 from ......shared.code.models.source_call_resolution import SourceCallResolution
 from ....models.extractor_invariant_error import ExtractorInvariantError
@@ -28,7 +29,7 @@ class PythonCallTargetRule(ABC):
     def source_call(
         self,
         candidate: PythonCallCandidate,
-        target_callable_id: str,
+        target_callable_id: DeclarationIdentity | None,
         resolution: SourceCallResolution,
     ) -> SourceCall:
         return SourceCall(

@@ -14,7 +14,6 @@ from .source_parameter import SourceParameter
 
 class SourceCallable(SourceCallableSymbol):
     declaration_id: DeclarationIdentity
-    id: str
     source_id: FileId
     qualified_name: str
     owner_name: str = ""

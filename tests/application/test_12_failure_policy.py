@@ -30,18 +30,42 @@ class TestFailurePolicy(ApplicationTestCase):
             for raised in (node for node in ast.walk(document) if isinstance(node, ast.Raise)):
                 if raised.exc is None:
                     continue
-                name = self.name(raised.exc.func if isinstance(raised.exc, ast.Call) else raised.exc)
+                name = self.raised_exception_name(raised, document)
                 if name == "SystemExit" and path in entrypoints:
                     continue
                 if name == "NotImplementedError" and self.in_abstract_method(raised, parents):
-                    continue
-                if name[:1].islower():
                     continue
                 if name in inheritance and self.inherits(name, "ModwireError", inheritance):
                     continue
                 violations.append(f"{path.relative_to(self.repository)}:{raised.lineno}:{name}")
 
         assert violations == []
+
+    def test_resolves_an_exception_assigned_before_raise(self) -> None:
+        document = ast.parse("error = ValueError('invalid')\nraise error\n")
+        raised = next(node for node in ast.walk(document) if isinstance(node, ast.Raise))
+
+        assert self.raised_exception_name(raised, document) == "ValueError"
+
+    def raised_exception_name(self, raised: ast.Raise, document: ast.Module) -> str:
+        exception = raised.exc
+        if exception is None:
+            return ""
+        if isinstance(exception, ast.Call):
+            return self.name(exception.func)
+        if not isinstance(exception, ast.Name):
+            return self.name(exception)
+        assignments = tuple(
+            node
+            for node in ast.walk(document)
+            if isinstance(node, ast.Assign)
+            and node.lineno < raised.lineno
+            and any(isinstance(target, ast.Name) and target.id == exception.id for target in node.targets)
+        )
+        if not assignments:
+            return exception.id
+        value = max(assignments, key=lambda node: node.lineno).value
+        return self.name(value.func if isinstance(value, ast.Call) else value)
 
     def name(self, node: ast.expr) -> str:
         if isinstance(node, ast.Name):

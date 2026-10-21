@@ -3,6 +3,23 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Node, Project, ScriptKind, SyntaxKind, VariableDeclarationKind, ts } from 'ts-morph';
 
+class SourceParseFailure extends Error {
+    language;
+    sourcePath;
+    line;
+    column;
+    diagnostic;
+
+    constructor(language, sourcePath, line, column, diagnostic) {
+        super(diagnostic);
+        this.language = language;
+        this.sourcePath = sourcePath;
+        this.line = line;
+        this.column = column;
+        this.diagnostic = diagnostic;
+    }
+}
+
 function scriptKindForPath(filePath) {
     switch (path.extname(filePath).toLowerCase()) {
         case '.js':
@@ -40,7 +57,8 @@ function parseSourceFile(filePath, content) {
     const diagnostic = parseDiagnostics[0];
     if (diagnostic !== undefined) {
         const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-        throw new Error(`TypeScript syntax error in ${filePath}: ${message}`);
+        const location = sourceFile.compilerNode.getLineAndCharacterOfPosition(diagnostic.start);
+        throw new SourceParseFailure('typescript', filePath, location.line + 1, location.character + 1, message);
     }
 
     return sourceFile;
@@ -164,10 +182,6 @@ function codeLineCount(content) {
     }).length;
 }
 
-function callableId(sourceId, qualifiedName) {
-    return `${sourceId}::${qualifiedName}`;
-}
-
 function bindingNamesFromCompilerName(nameNode) {
     if (ts.isIdentifier(nameNode)) {
         return [nameNode.text];
@@ -289,7 +303,6 @@ function sourceCallable(options) {
             qualified_name: options.qualifiedName,
             ordinal: options.startIndex + 1,
         },
-        id: callableId(options.sourceId, options.qualifiedName),
         source_id: options.sourceId,
         name: options.name,
         qualified_name: options.qualifiedName,
@@ -336,23 +349,11 @@ function callableBodyInfo(functionLike) {
     };
 }
 
-function addUniqueCallable(callables, callableRanges, seenIds, callable, bodyInfo, functionNode) {
-    const baseQualifiedName = callable.qualified_name;
-    let transportName = baseQualifiedName;
-    let suffix = 2;
-    while (seenIds.has(callableId(callable.source_id, transportName))) {
-        transportName = `${baseQualifiedName}#${suffix}`;
-        suffix += 1;
-    }
-    const normalized = {
-        ...callable,
-        id: callableId(callable.source_id, transportName),
-    };
-    seenIds.add(normalized.id);
-    callables.push(normalized);
+function addCallable(callables, callableRanges, callable, bodyInfo, functionNode) {
+    callables.push(callable);
     callableRanges.push({
-        id: normalized.id,
-        ownerName: normalized.owner_name,
+        declarationId: callable.declaration_id,
+        ownerName: callable.owner_name,
         bodyNode: bodyInfo.bodyNode,
         functionNode,
         bodyStart: bodyInfo.bodyStart,
@@ -966,11 +967,10 @@ function callableNameForExpression(expression, lineStarts) {
 function collectCallables(sourceFile, lineStarts, sourceId) {
     const callables = [];
     const callableRanges = [];
-    const seenIds = new Set();
 
     function addFunctionLike(node, nameInfo, kind, startNode = node) {
         const bodyInfo = callableBodyInfo(node);
-        addUniqueCallable(callables, callableRanges, seenIds, sourceCallable({
+        addCallable(callables, callableRanges, sourceCallable({
             sourceId,
             name: nameInfo.name,
             qualifiedName: nameInfo.qualifiedName,
@@ -1069,12 +1069,18 @@ function collectCalls(sourceFile, lineStarts, sourceId, callableRanges, callable
     const byQualifiedName = new Map();
     const constructorsByName = new Map();
     for (const callable of callables) {
-        byQualifiedName.set(callable.qualified_name, callable.id);
+        byQualifiedName.set(
+            callable.qualified_name,
+            [...(byQualifiedName.get(callable.qualified_name) || []), callable.declaration_id],
+        );
         if (['function', 'callable_value'].includes(callable.kind)) {
-            byName.set(callable.name, callable.id);
+            byName.set(callable.name, [...(byName.get(callable.name) || []), callable.declaration_id]);
         }
         if (callable.kind === 'constructor') {
-            constructorsByName.set(callable.owner_name, callable.id);
+            constructorsByName.set(
+                callable.owner_name,
+                [...(constructorsByName.get(callable.owner_name) || []), callable.declaration_id],
+            );
         }
     }
 
@@ -1092,26 +1098,26 @@ function collectCalls(sourceFile, lineStarts, sourceId, callableRanges, callable
         }
         const expressionText = expression.getText();
         const targetName = expressionName(expression);
-        let targetCallableId = '';
+        let targetCallableId = null;
         let resolution = 'unresolved';
-        if (isConstructor && constructorsByName.has(expressionText)) {
-            targetCallableId = constructorsByName.get(expressionText);
+        if (isConstructor && constructorsByName.get(expressionText)?.length === 1) {
+            [targetCallableId] = constructorsByName.get(expressionText);
             resolution = 'resolved';
-        } else if (byQualifiedName.has(expressionText)) {
-            targetCallableId = byQualifiedName.get(expressionText);
+        } else if (byQualifiedName.get(expressionText)?.length === 1) {
+            [targetCallableId] = byQualifiedName.get(expressionText);
             resolution = 'resolved';
         } else if (expressionText.startsWith('this.') && range.ownerName) {
             const qualifiedName = `${range.ownerName}.${expressionText.slice('this.'.length)}`;
-            if (byQualifiedName.has(qualifiedName)) {
-                targetCallableId = byQualifiedName.get(qualifiedName);
+            if (byQualifiedName.get(qualifiedName)?.length === 1) {
+                [targetCallableId] = byQualifiedName.get(qualifiedName);
                 resolution = 'resolved';
             }
-        } else if (byName.has(expressionText)) {
-            targetCallableId = byName.get(expressionText);
+        } else if (byName.get(expressionText)?.length === 1) {
+            [targetCallableId] = byName.get(expressionText);
             resolution = 'resolved';
         }
         calls.push({
-            source_callable_id: range.id,
+            source_callable_id: range.declarationId,
             target_callable_id: targetCallableId,
             source_id: sourceId,
             line: lineNumberAt(lineStarts, node.getStart()),
@@ -1260,16 +1266,36 @@ function writeBatchJsonlFromStdin(sourcesRoot) {
     }
 }
 
-if (process.argv[2] === '--batch') {
-    const sourcesRoot = process.argv[3] ? path.resolve(process.argv[3]) : process.cwd();
-    if (process.argv.includes('--jsonl')) {
-        writeBatchJsonlFromStdin(sourcesRoot);
+function main() {
+    if (process.argv[2] === '--batch') {
+        const sourcesRoot = process.argv[3] ? path.resolve(process.argv[3]) : process.cwd();
+        if (process.argv.includes('--jsonl')) {
+            writeBatchJsonlFromStdin(sourcesRoot);
+        } else {
+            console.log(JSON.stringify(extractBatchFromStdin(sourcesRoot)));
+        }
     } else {
-        console.log(JSON.stringify(extractBatchFromStdin(sourcesRoot)));
+        console.log(JSON.stringify(extractFile(
+            path.resolve(process.argv[2]),
+            process.argv[3] ? path.resolve(process.argv[3]) : process.cwd(),
+        )));
     }
-} else {
-    console.log(JSON.stringify(extractFile(
-        path.resolve(process.argv[2]),
-        process.argv[3] ? path.resolve(process.argv[3]) : process.cwd(),
-    )));
+}
+
+try {
+    main();
+} catch (error) {
+    if (error instanceof SourceParseFailure) {
+        console.error(`modwire-error:${JSON.stringify({
+            code: 'source_parse',
+            language: error.language,
+            path: error.sourcePath,
+            line: error.line,
+            column: error.column,
+            diagnostic: error.diagnostic,
+        })}`);
+        process.exitCode = 1;
+    } else {
+        throw error;
+    }
 }

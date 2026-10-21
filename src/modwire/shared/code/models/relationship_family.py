@@ -1,5 +1,7 @@
 from enum import StrEnum
 
+from .code_validation_error import CodeValidationError
+from .code_violation import CodeViolation
 from .fact_capability import FactCapability
 
 
@@ -31,4 +33,6 @@ class RelationshipFamily(StrEnum):
                 FactCapability.ASSIGNED_VALUES,
                 FactCapability.DECLARATION_KINDS,
             )
-        return (FactCapability.SOURCES, FactCapability.DEPENDENCIES)
+        if self is RelationshipFamily.DEPENDENCY:
+            return (FactCapability.SOURCES, FactCapability.DEPENDENCIES)
+        raise CodeValidationError(CodeViolation.UNOWNED_RELATIONSHIP_FAMILY, self.value)

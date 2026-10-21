@@ -11,13 +11,14 @@ from itertools import repeat
 from pathlib import Path
 from typing import Never
 
-from pydantic import TypeAdapter, ValidationError
+from pydantic import ValidationError
 from wireup import injectable
 
 from ....extraction.extractors.models.batch_output_format import BatchOutputFormat
 from ....extraction.extractors.models.duplicate_identity_error import DuplicateIdentityError
 from ....extraction.extractors.models.extraction_request import ExtractionRequest
 from ....extraction.extractors.models.extractor_error import ExtractorError
+from ....extraction.extractors.models.extractor_failure_document import ExtractorFailureDocument
 from ....extraction.extractors.models.extractor_runtime import ExtractorRuntime
 from ....extraction.extractors.models.source_parse_error import SourceParseError
 from ....shared.code.application import CodeApplication
@@ -39,7 +40,6 @@ from ..models.source_access_error import SourceAccessError
 from ..models.source_entry import SourceEntry
 from ..models.source_observation import SourceObservation
 from ..models.source_observation_invalidated_error import SourceObservationInvalidatedError
-from ..models.source_parse_failure_payload import SourceParseFailurePayload
 from ..transport.output_reader import ExtractorBatchOutputReader
 from ..transport.source_file_factory import SourceFileFactory
 from .source_manifest_builder import SourceManifestBuilder
@@ -285,7 +285,7 @@ class BatchSourceReader(SourceReader):
                         (),
                         "extractor emitted multiple failure documents",
                     ) from execution_error
-                self._raise_extractor_failure(failure_documents[0], execution_error)
+                self.raise_extractor_failure(failure_documents[0], execution_error)
             raise execution_error
         try:
             extracted = self.outputs[request.batch_config.output_format].read(completed.stdout)
@@ -350,9 +350,9 @@ class BatchSourceReader(SourceReader):
             ) from error
         return extracted_files
 
-    def _raise_extractor_failure(self, document: str, execution_error: ExtractorExecutionError) -> Never:
+    def raise_extractor_failure(self, document: str, execution_error: ExtractorExecutionError) -> Never:
         try:
-            failure = TypeAdapter(SourceParseFailurePayload).validate_json(document)
+            failure = ExtractorFailureDocument.model_validate_json(document)
         except ValidationError as error:
             raise ExtractorContractError(
                 execution_error.language,
@@ -362,12 +362,21 @@ class BatchSourceReader(SourceReader):
                 (),
                 str(error),
             ) from error
+        if failure.language != execution_error.language:
+            raise ExtractorContractError(
+                execution_error.language,
+                ExtractorContractViolation.INVALID_OUTPUT,
+                (),
+                (),
+                (),
+                "extractor failure document language does not match its runtime",
+            ) from execution_error
         raise SourceParseError(
-            failure["language"],
-            failure["path"],
-            failure["line"],
-            failure["column"],
-            failure["diagnostic"],
+            failure.language,
+            failure.path,
+            failure.line,
+            failure.column,
+            failure.diagnostic,
         ) from execution_error
 
     def _merge_files(self, files: dict[FileId, SourceFile], extracted: dict[FileId, SourceFile]) -> None:

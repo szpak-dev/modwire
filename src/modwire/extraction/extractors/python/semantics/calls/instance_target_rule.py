@@ -17,8 +17,16 @@ class InstanceCallTargetRule(PythonCallTargetRule):
 
     def applies(self, candidate: PythonCallCandidate) -> bool:
         qualified_name = candidate.reference.instance_qualified_name
-        return bool(qualified_name) and qualified_name in candidate.by_qualified_name
+        return (
+            bool(qualified_name)
+            and qualified_name in candidate.by_qualified_name
+            and len(candidate.by_qualified_name[qualified_name]) == 1
+        )
 
     def classify(self, candidate: PythonCallCandidate) -> SourceCall:
         qualified_name = candidate.reference.instance_qualified_name
-        return self.source_call(candidate, candidate.by_qualified_name[qualified_name], SourceCallResolution.RESOLVED)
+        return self.source_call(
+            candidate,
+            candidate.by_qualified_name[qualified_name][0],
+            SourceCallResolution.RESOLVED,
+        )

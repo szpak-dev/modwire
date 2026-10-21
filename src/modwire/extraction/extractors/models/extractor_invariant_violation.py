@@ -24,3 +24,4 @@ class ExtractorInvariantViolation(StrEnum):
     MISSING_VALUE_END_LINE = "missing_value_end_line"
     MISSING_CLASS_END_LINE = "missing_class_end_line"
     MISSING_FUNCTION_END_LINE = "missing_function_end_line"
+    MISSING_SOURCE_PARSE_LOCATION = "missing_source_parse_location"

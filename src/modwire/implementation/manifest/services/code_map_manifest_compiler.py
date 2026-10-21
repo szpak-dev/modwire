@@ -60,7 +60,6 @@ class CodeMapManifestCompiler(ManifestCompiler):
         attributes: list[ManifestAttribute] = []
         annotations: list[ManifestAnnotation] = []
         source_calls: list[SourceCall] = []
-        callable_manifest_ids: dict[str, str] = {}
         declaration_relations: list[ManifestDeclarationRelation] = []
         dependencies: list[ManifestDependency] = []
         dependency_set: set[ManifestDependency] = set()
@@ -106,7 +105,6 @@ class CodeMapManifestCompiler(ManifestCompiler):
             for callable_value in source_file.callables:
                 callable_id = callable_value.declaration_id
                 canonical_id = callable_id.canonical()
-                callable_manifest_ids[callable_value.id] = canonical_id
                 if canonical_id not in symbol_ids:
                     symbols.append(
                         self.symbol(
@@ -197,23 +195,6 @@ class CodeMapManifestCompiler(ManifestCompiler):
                 dependencies.append(dependency)
                 dependency_set.add(dependency)
 
-        calls_by_fact: dict[str, SourceCall] = {}
-        for call in source_calls:
-            projected = call.model_copy(
-                update={
-                    "source_callable_id": callable_manifest_ids.get(
-                        call.source_callable_id,
-                        call.source_callable_id,
-                    ),
-                    "target_callable_id": callable_manifest_ids.get(
-                        call.target_callable_id,
-                        call.target_callable_id,
-                    ),
-                }
-            )
-            calls_by_fact[self.canonical_key(projected)] = projected
-        calls = tuple(calls_by_fact.values())
-
         return ImplementationManifest(
             producer=code_map.producer,
             source_manifest=code_map.extraction.manifest,
@@ -223,7 +204,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
             parameters=tuple(sorted(parameters, key=self.canonical_key)),
             attributes=tuple(sorted(attributes, key=self.canonical_key)),
             annotations=tuple(sorted(annotations, key=self.canonical_key)),
-            calls=tuple(sorted(calls, key=self.canonical_key)),
+            calls=tuple(sorted(source_calls, key=self.canonical_key)),
             declaration_relations=tuple(sorted(declaration_relations, key=self.canonical_key)),
             dependencies=tuple(sorted(dependencies, key=self.canonical_key)),
             spans=tuple(sorted(spans, key=self.canonical_key)),

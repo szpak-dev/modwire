@@ -1,29 +1,27 @@
 import pytest
 
-from modwire.application import ExtractorError, ExtractorExecutionError, SourceParseError
+from modwire.application import SourceParseError
 
 from .base_test import NativeExtractionTestCase
 
 
 class TestExtractionRecovery(NativeExtractionTestCase):
     @pytest.mark.parametrize(
-        ("language", "name", "invalid", "valid", "failure_type"),
+        ("language", "name", "invalid", "valid"),
         (
-            ("python", "example.py", "class 1example:\n", "class ExampleValue: pass\n", SourceParseError),
+            ("python", "example.py", "class 1example:\n", "class ExampleValue: pass\n"),
             (
                 "typescript",
                 "example.ts",
                 "export class {",
                 "export class ExampleValue {}\n",
-                ExtractorExecutionError,
             ),
-            ("php", "example.php", "<?php class {", "<?php class ExampleValue {}\n", ExtractorExecutionError),
+            ("php", "example.php", "<?php class {", "<?php class ExampleValue {}\n"),
             (
                 "java",
                 "ExampleValue.java",
                 "class ExampleValue { void example_invalid( }",
                 "class ExampleValue {}\n",
-                ExtractorExecutionError,
             ),
         ),
     )
@@ -33,10 +31,9 @@ class TestExtractionRecovery(NativeExtractionTestCase):
         name: str,
         invalid: str,
         valid: str,
-        failure_type: type[ExtractorError],
     ) -> None:
         self.write_files({name: invalid})
-        with pytest.raises(failure_type):
+        with pytest.raises(SourceParseError):
             self.extract_project(language)
         self.write_files({name: valid})
         result = self.extract_project(language)

@@ -16,8 +16,9 @@ class LocalCallTargetRule(PythonCallTargetRule):
         return 20
 
     def applies(self, candidate: PythonCallCandidate) -> bool:
-        return candidate.reference.local_name in candidate.by_name
+        name = candidate.reference.local_name
+        return name in candidate.by_name and len(candidate.by_name[name]) == 1
 
     def classify(self, candidate: PythonCallCandidate) -> SourceCall:
         name = candidate.reference.local_name
-        return self.source_call(candidate, candidate.by_name[name], SourceCallResolution.RESOLVED)
+        return self.source_call(candidate, candidate.by_name[name][0], SourceCallResolution.RESOLVED)

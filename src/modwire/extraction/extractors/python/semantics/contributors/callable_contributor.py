@@ -62,7 +62,6 @@ class CallableSemanticContributor(PythonSemanticContributor):
                 candidate.identity_node.lineno,
                 candidate.identity_node.col_offset,
             ),
-            id=f"{context.source_id}::{candidate.qualified_name}",
             source_id=context.source_id,
             name=candidate.name,
             qualified_name=candidate.qualified_name,
