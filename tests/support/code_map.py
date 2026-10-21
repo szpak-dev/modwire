@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from pathlib import PurePosixPath
 from typing import Any
 
-from modwire.application import CodeMap, FactCapability, QueryableCodeMap
+from modwire.application import CodeMap, FactCapability, QueryableCodeMap, RelationshipFamily
 
 
 class CodeMapFactory:
@@ -70,6 +70,17 @@ class CodeMapFactory:
                             "explanation": "Synthetic test maps do not claim extractor coverage.",
                         }
                         for capability in FactCapability
+                    ],
+                    "relationship_capabilities": [
+                        {
+                            "family": family.value,
+                            "evidence_requirements": [capability.value for capability in family.evidence_requirements],
+                            "semantics": "unsupported",
+                            "semantics_explanation": "Synthetic test maps do not claim relationship semantics.",
+                            "inventory": "unsupported",
+                            "inventory_explanation": "Synthetic test maps do not claim relationship inventory.",
+                        }
+                        for family in RelationshipFamily
                     ],
                 },
                 "extraction": {

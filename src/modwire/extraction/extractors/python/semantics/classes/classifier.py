@@ -40,4 +40,4 @@ class OrderedPythonClassClassifier(PythonClassClassifier):
         for rule in sorted(self.rules.values(), key=lambda item: item.order):
             if rule.applies(candidate):
                 return rule.classify(candidate)
-        raise ExtractorInvariantError(ExtractorInvariantViolation.UNCLASSIFIED_CLASS, candidate.name)
+        raise ExtractorInvariantError(ExtractorInvariantViolation.UNCLASSIFIED_CLASS, candidate.node.name)

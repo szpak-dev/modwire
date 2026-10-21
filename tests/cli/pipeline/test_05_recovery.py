@@ -1,25 +1,42 @@
 import pytest
 
-from modwire.application import ExtractorExecutionError
+from modwire.application import ExtractorError, ExtractorExecutionError, SourceParseError
 
 from .base_test import NativeExtractionTestCase
 
 
 class TestExtractionRecovery(NativeExtractionTestCase):
     @pytest.mark.parametrize(
-        ("language", "name", "invalid", "valid"),
+        ("language", "name", "invalid", "valid", "failure_type"),
         (
-            ("python", "example.py", "class 1example:\n", "class ExampleValue: pass\n"),
-            ("typescript", "example.ts", "export class {", "export class ExampleValue {}\n"),
-            ("php", "example.php", "<?php class {", "<?php class ExampleValue {}\n"),
-            ("java", "ExampleValue.java", "class ExampleValue { void example_invalid( }", "class ExampleValue {}\n"),
+            ("python", "example.py", "class 1example:\n", "class ExampleValue: pass\n", SourceParseError),
+            (
+                "typescript",
+                "example.ts",
+                "export class {",
+                "export class ExampleValue {}\n",
+                ExtractorExecutionError,
+            ),
+            ("php", "example.php", "<?php class {", "<?php class ExampleValue {}\n", ExtractorExecutionError),
+            (
+                "java",
+                "ExampleValue.java",
+                "class ExampleValue { void example_invalid( }",
+                "class ExampleValue {}\n",
+                ExtractorExecutionError,
+            ),
         ),
     )
     def test_failed_extraction_does_not_poison_the_application(
-        self, language: str, name: str, invalid: str, valid: str
+        self,
+        language: str,
+        name: str,
+        invalid: str,
+        valid: str,
+        failure_type: type[ExtractorError],
     ) -> None:
         self.write_files({name: invalid})
-        with pytest.raises(ExtractorExecutionError):
+        with pytest.raises(failure_type):
             self.extract_project(language)
         self.write_files({name: valid})
         result = self.extract_project(language)

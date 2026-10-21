@@ -5,9 +5,9 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ...observations.value_candidate import PythonValueCandidate
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
+from ...observations.value_candidate import PythonValueCandidate
 from .expression_reference_reader import PythonExpressionReferenceReader
 
 

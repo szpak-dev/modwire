@@ -2,16 +2,28 @@ import hashlib
 import json
 import os
 import sys
+from collections.abc import Callable
 from typing import Any
 
 import pytest
 from pydantic import ValidationError
+from ruamel.yaml.error import YAMLError
 
 from modwire.application import (
+    ArchitectureConfigError,
+    ArchitectureConfigValidationError,
+    ArchitectureConfigViolation,
     ArchitectureError,
+    ArchitectureShapeError,
+    ArchitectureShapeValidationError,
     CacheAccessError,
     CacheError,
     CacheOwnershipError,
+    CacheValidationError,
+    CodeError,
+    CodeValidationError,
+    CodeViolation,
+    ConfigurationLoadError,
     DigestAlgorithm,
     DuplicateIdentityError,
     ExtractionError,
@@ -23,14 +35,20 @@ from modwire.application import (
     ExtractorUnavailableError,
     ImplementationManifestDocument,
     ImplementationManifestError,
+    ImplementationManifestValidationError,
+    ImplementationManifestViolation,
     InitializationError,
     InvalidImplementationManifestError,
     InvalidInitializationTargetError,
     InvalidSourceRootError,
     ManifestFormat,
     ModwireError,
+    PipelineError,
+    PipelineValidationError,
+    PipelineViolation,
     SourceAccessError,
     SourceObservationInvalidatedError,
+    SourceParseError,
     UnknownFlowAnalyzerError,
     UnsupportedLanguageError,
     UnsupportedManifestFormatError,
@@ -41,14 +59,53 @@ from .base_test import ApplicationTestCase
 
 
 class TestModwireApplicationAttacks(ApplicationTestCase):
+    def call_manifest_document(self, *, two_calls: bool) -> ImplementationManifestDocument:
+        body = "return example_second(example_first())" if two_calls else "return example_target()"
+        declarations = (
+            "def example_first():\n    return 1\n\ndef example_second(example_value):\n    return example_value\n\n"
+            if two_calls
+            else "def example_target():\n    return 1\n\n"
+        )
+        root = self.project({"src/example.py": f"{declarations}def example_caller():\n    {body}\n"})
+        format = self.application.implementation_manifest_formats()[0]
+        return self.application.implementation_manifest(
+            self.application.generate_map("python", root, self.scan_policy()),
+            format,
+        )
+
+    def tampered_document(
+        self,
+        document: ImplementationManifestDocument,
+        mutate: Callable[[dict[str, Any]], None],
+    ) -> ImplementationManifestDocument:
+        payload = json.loads(document.payload)
+        mutate(payload)
+        serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+        return document.model_copy(
+            update={
+                "payload": serialized,
+                "digest": hashlib.sha256(serialized.encode("utf-8")).hexdigest(),
+            }
+        )
+
     @pytest.mark.parametrize(
         ("error_type", "family"),
         (
             (ArchitectureError, ModwireError),
             (UnknownFlowAnalyzerError, ArchitectureError),
+            (ArchitectureConfigError, ModwireError),
+            (ArchitectureConfigValidationError, ArchitectureConfigError),
+            (ArchitectureShapeError, ModwireError),
+            (ArchitectureShapeValidationError, ArchitectureShapeError),
             (CacheError, ModwireError),
             (CacheOwnershipError, CacheError),
             (CacheAccessError, CacheError),
+            (CacheValidationError, CacheError),
+            (CodeError, ModwireError),
+            (CodeValidationError, CodeError),
+            (PipelineError, ModwireError),
+            (PipelineValidationError, PipelineError),
+            (ConfigurationLoadError, PipelineError),
             (ExtractionError, ModwireError),
             (UnsupportedLanguageError, ExtractionError),
             (UnsupportedParserError, ExtractionError),
@@ -61,9 +118,11 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
             (ExtractorResourceError, ExtractorError),
             (ExtractorExecutionError, ExtractorError),
             (ExtractorContractError, ExtractorError),
+            (SourceParseError, ExtractorError),
             (ImplementationManifestError, ModwireError),
             (UnsupportedManifestFormatError, ImplementationManifestError),
             (InvalidImplementationManifestError, ImplementationManifestError),
+            (ImplementationManifestValidationError, ImplementationManifestError),
             (InitializationError, ModwireError),
             (InvalidInitializationTargetError, InitializationError),
         ),
@@ -127,6 +186,60 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
         assert failure["language"] == "typescript"
         assert failure["violation"] == ExtractorContractViolation.INVALID_OUTPUT
         assert failure["cause"] == ValidationError.__name__
+
+    def test_malformed_typed_extractor_failure_reports_a_contract_violation(self) -> None:
+        root = self.project({"src/example.ts": "export const exampleValue = 1;\n"})
+        runtime_directory = self.workspace / "example-malformed-failure-runtime"
+        runtime_directory.mkdir()
+        runtime = runtime_directory / "node"
+        runtime.write_text(
+            f"#!{sys.executable}\n"
+            "import sys\n"
+            "if '--version' in sys.argv:\n"
+            "    print('example 1')\n"
+            "else:\n"
+            "    print('modwire-error:{}', file=sys.stderr)\n"
+            "    raise SystemExit(1)\n",
+            encoding="utf-8",
+        )
+        runtime.chmod(0o755)
+
+        with pytest.MonkeyPatch.context() as environment:
+            environment.setenv("PATH", str(runtime_directory))
+            with pytest.raises(ExtractorContractError) as raised:
+                self.application.generate_map("typescript", root, self.scan_policy())
+
+        assert raised.value.language == "typescript"
+        assert raised.value.violation is ExtractorContractViolation.INVALID_OUTPUT
+        assert isinstance(raised.value.__cause__, ValidationError)
+
+    def test_multiple_typed_extractor_failures_report_a_contract_violation(self) -> None:
+        root = self.project({"src/example.ts": "export const exampleValue = 1;\n"})
+        runtime_directory = self.workspace / "example-multiple-failure-runtime"
+        runtime_directory.mkdir()
+        runtime = runtime_directory / "node"
+        runtime.write_text(
+            f"#!{sys.executable}\n"
+            "import sys\n"
+            "if '--version' in sys.argv:\n"
+            "    print('example 1')\n"
+            "else:\n"
+            "    print('modwire-error:{}', file=sys.stderr)\n"
+            "    print('modwire-error:{}', file=sys.stderr)\n"
+            "    raise SystemExit(1)\n",
+            encoding="utf-8",
+        )
+        runtime.chmod(0o755)
+
+        with pytest.MonkeyPatch.context() as environment:
+            environment.setenv("PATH", str(runtime_directory))
+            with pytest.raises(ExtractorContractError) as raised:
+                self.application.generate_map("typescript", root, self.scan_policy())
+
+        assert raised.value.language == "typescript"
+        assert raised.value.violation is ExtractorContractViolation.INVALID_OUTPUT
+        assert raised.value.diagnostic == "extractor emitted multiple failure documents"
+        assert isinstance(raised.value.__cause__, ExtractorExecutionError)
 
     def test_duplicate_extractor_output_identities_report_a_contract_violation(self) -> None:
         root = self.project({"src/example.ts": "export const exampleValue = 1;\n"})
@@ -248,9 +361,143 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
             self.application.read_implementation_manifest(invalid_document)
         assert raised.value.format_id == format.id
 
+    @pytest.mark.parametrize(
+        ("field", "value", "subject"),
+        (
+            ("source_id", "src/example-missing.py", "call sources"),
+            ("source_callable_id", "example-missing-callable", "call source callables"),
+            ("target_callable_id", "example-missing-callable", "call target callables"),
+        ),
+    )
+    def test_manifest_rejects_calls_with_unknown_references(self, field: str, value: str, subject: str) -> None:
+        document = self.call_manifest_document(two_calls=False)
+        invalid = self.tampered_document(document, lambda payload: payload["calls"][0].__setitem__(field, value))
+
+        with pytest.raises(InvalidImplementationManifestError) as raised:
+            self.application.read_implementation_manifest(invalid)
+
+        cause = raised.value.__cause__
+        assert isinstance(cause, ImplementationManifestValidationError)
+        assert cause.violation is ImplementationManifestViolation.UNKNOWN_REFERENCE
+        assert cause.subject == subject
+
+    def test_manifest_rejects_a_call_target_that_contradicts_its_resolution(self) -> None:
+        document = self.call_manifest_document(two_calls=False)
+        invalid = self.tampered_document(
+            document,
+            lambda payload: payload["calls"][0].__setitem__("resolution", "external"),
+        )
+
+        with pytest.raises(InvalidImplementationManifestError) as raised:
+            self.application.read_implementation_manifest(invalid)
+
+        cause = raised.value.__cause__
+        assert isinstance(cause, ImplementationManifestValidationError)
+        assert cause.violation is ImplementationManifestViolation.INCONSISTENT_CALL
+        assert cause.subject == "call target resolutions"
+
+    def test_manifest_rejects_non_canonical_call_order(self) -> None:
+        document = self.call_manifest_document(two_calls=True)
+        invalid = self.tampered_document(document, lambda payload: payload["calls"].reverse())
+
+        with pytest.raises(InvalidImplementationManifestError) as raised:
+            self.application.read_implementation_manifest(invalid)
+
+        cause = raised.value.__cause__
+        assert isinstance(cause, ImplementationManifestValidationError)
+        assert cause.violation is ImplementationManifestViolation.NON_CANONICAL_ORDER
+        assert cause.subject == "calls"
+
+    def test_manifest_rejects_duplicate_call_facts(self) -> None:
+        document = self.call_manifest_document(two_calls=False)
+        invalid = self.tampered_document(document, lambda payload: payload["calls"].append(payload["calls"][0]))
+
+        with pytest.raises(InvalidImplementationManifestError) as raised:
+            self.application.read_implementation_manifest(invalid)
+
+        cause = raised.value.__cause__
+        assert isinstance(cause, ImplementationManifestValidationError)
+        assert cause.violation is ImplementationManifestViolation.DUPLICATE_FACT
+        assert cause.subject == "calls"
+
+    def test_manifest_translates_nested_code_contract_failures(self) -> None:
+        document = self.call_manifest_document(two_calls=False)
+
+        def remove_relationship_evidence(payload: dict[str, Any]) -> None:
+            member = next(
+                coverage
+                for coverage in payload["producer"]["relationship_capabilities"]
+                if coverage["family"] == "member"
+            )
+            member["evidence_requirements"] = []
+
+        invalid = self.tampered_document(document, remove_relationship_evidence)
+
+        with pytest.raises(InvalidImplementationManifestError) as raised:
+            self.application.read_implementation_manifest(invalid)
+
+        cause = raised.value.__cause__
+        assert isinstance(cause, CodeValidationError)
+        assert cause.violation is CodeViolation.NON_CANONICAL_RELATIONSHIP_EVIDENCE
+        assert cause.subject == "member"
+
+    def test_invalid_python_syntax_reports_the_source_location_and_parser_cause(self) -> None:
+        root = self.project({"src/example.py": "def example_value(\n"})
+
+        with pytest.raises(SourceParseError) as raised:
+            self.application.generate_map("python", root, self.scan_policy())
+
+        assert raised.value.language == "python"
+        assert raised.value.path.endswith("src/example.py")
+        assert raised.value.line == 1
+        assert raised.value.column > 0
+        assert raised.value.diagnostic
+        assert isinstance(raised.value.__cause__, ExtractorExecutionError)
+
+    def test_missing_configuration_reports_the_public_path_and_access_cause(self) -> None:
+        dot_dir = self.workspace / "example-missing-configuration"
+        dot_dir.mkdir()
+
+        with pytest.raises(ConfigurationLoadError) as raised:
+            self.application.load_configuration(str(dot_dir))
+
+        assert raised.value.violation is PipelineViolation.CONFIGURATION_ACCESS_FAILED
+        assert raised.value.subject == str(dot_dir / "architecture.yaml")
+        assert isinstance(raised.value.__cause__, OSError)
+
+    def test_malformed_configuration_reports_the_public_path_and_parser_cause(self) -> None:
+        dot_dir = self.workspace / "example-malformed-configuration"
+        dot_dir.mkdir()
+        configuration = dot_dir / "architecture.yaml"
+        configuration.write_text("shape: [\n", encoding="utf-8")
+
+        with pytest.raises(ConfigurationLoadError) as raised:
+            self.application.load_configuration(str(dot_dir))
+
+        assert raised.value.violation is PipelineViolation.CONFIGURATION_PARSE_FAILED
+        assert raised.value.subject == str(configuration)
+        assert isinstance(raised.value.__cause__, YAMLError)
+
+    def test_invalid_configuration_file_reports_a_domain_validation_failure(self) -> None:
+        dot_dir = self.workspace / "example-invalid-configuration"
+        dot_dir.mkdir()
+        configuration = dot_dir / "architecture.yaml"
+        configuration.write_text("shape:\n  realms: []\n", encoding="utf-8")
+
+        with pytest.raises(ArchitectureConfigValidationError) as raised:
+            self.application.load_configuration(str(dot_dir))
+
+        assert raised.value.violation is ArchitectureConfigViolation.INVALID_CONFIGURATION
+        assert raised.value.subject == str(configuration)
+        assert isinstance(raised.value.__cause__, ValidationError)
+
     def test_invalid_configuration_is_rejected(self) -> None:
-        with pytest.raises(ValidationError):
+        with pytest.raises(ArchitectureConfigValidationError) as raised:
             self.application.configure({"shape": {"realms": [{"name": "", "match": "src"}]}})
+
+        assert raised.value.violation is ArchitectureConfigViolation.INVALID_CONFIGURATION
+        assert raised.value.subject == "architecture configuration"
+        assert isinstance(raised.value.__cause__, ValidationError)
 
     def test_configuration_does_not_leak_between_calls(self) -> None:
         code_map = self.application.generate_queryable_map(

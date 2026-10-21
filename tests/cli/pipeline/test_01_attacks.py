@@ -2,27 +2,50 @@ import os
 
 import pytest
 
-from modwire.application import DuplicateIdentityError, ExtractorExecutionError, UnsupportedLanguageError
+from modwire.application import (
+    DuplicateIdentityError,
+    ExtractorError,
+    ExtractorExecutionError,
+    SourceParseError,
+    UnsupportedLanguageError,
+)
 
 from .base_test import NativeExtractionTestCase
 
 
 class TestNativeExtractionAttacks(NativeExtractionTestCase):
     @pytest.mark.parametrize(
-        ("language", "name", "source"),
+        ("language", "name", "source", "failure_type"),
         (
-            ("python", "example_invalid.py", "1example_invalid\n"),
-            ("typescript", "example_invalid.ts", "export const = ;\n"),
-            ("php", "example_invalid.php", "<?php\nfunction example_invalid(\n"),
-            ("java", "ExampleInvalid.java", "class ExampleInvalid { void example_invalid( }\n"),
+            ("python", "example_invalid.py", "1example_invalid\n", SourceParseError),
+            ("typescript", "example_invalid.ts", "export const = ;\n", ExtractorExecutionError),
+            ("php", "example_invalid.php", "<?php\nfunction example_invalid(\n", ExtractorExecutionError),
+            (
+                "java",
+                "ExampleInvalid.java",
+                "class ExampleInvalid { void example_invalid( }\n",
+                ExtractorExecutionError,
+            ),
         ),
     )
-    def test_reports_native_parser_failure(self, language: str, name: str, source: str) -> None:
+    def test_reports_native_parser_failure(
+        self,
+        language: str,
+        name: str,
+        source: str,
+        failure_type: type[ExtractorError],
+    ) -> None:
         self.write_files({name: source})
-        with pytest.raises(ExtractorExecutionError) as raised:
+        with pytest.raises(failure_type) as raised:
             self.extract_project(language)
         assert raised.value.language == language
-        assert raised.value.exit_code != 0
+        if isinstance(raised.value, SourceParseError):
+            assert raised.value.path.endswith(name)
+            assert raised.value.line == 1
+            assert raised.value.column > 0
+            assert isinstance(raised.value.__cause__, ExtractorExecutionError)
+        else:
+            assert raised.value.exit_code != 0
 
     def test_reports_missing_runtime_from_process_environment(self) -> None:
         self.write_project(1)

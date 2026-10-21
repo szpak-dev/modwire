@@ -86,6 +86,7 @@ class TestDocumentationExamples(CliTestCase):
             "sources",
             "symbols",
             "callables",
+            "calls",
             "parameters",
             "annotations",
             "modifiers",

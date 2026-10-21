@@ -12,12 +12,12 @@ from .architecture.config.models.architecture_config import ArchitectureConfig
 from .architecture.config.models.architecture_config_error import ArchitectureConfigError
 from .architecture.config.models.architecture_config_validation_error import ArchitectureConfigValidationError
 from .architecture.config.models.architecture_config_violation import ArchitectureConfigViolation
-from .architecture.shape.models.architecture_shape_error import ArchitectureShapeError
-from .architecture.shape.models.architecture_shape_validation_error import ArchitectureShapeValidationError
-from .architecture.shape.models.architecture_shape_violation import ArchitectureShapeViolation
 from .architecture.facade import ArchitectureFacade
 from .architecture.report.models.report_catalog import ReportCatalog
 from .architecture.report.models.report_node import ReportNode
+from .architecture.shape.models.architecture_shape_error import ArchitectureShapeError
+from .architecture.shape.models.architecture_shape_validation_error import ArchitectureShapeValidationError
+from .architecture.shape.models.architecture_shape_violation import ArchitectureShapeViolation
 from .cli.cache.models.cache_access_error import CacheAccessError
 from .cli.cache.models.cache_error import CacheError
 from .cli.cache.models.cache_options import CacheOptions
@@ -79,6 +79,8 @@ from .shared.code.models.relationship_family import RelationshipFamily
 from .shared.code.models.scan_policy import ScanPolicy
 from .shared.code.models.source_assigned_value import SourceAssignedValue
 from .shared.code.models.source_assigned_value_kind import SourceAssignedValueKind
+from .shared.code.models.source_call import SourceCall
+from .shared.code.models.source_call_resolution import SourceCallResolution
 from .shared.code.models.source_declaration_relation_kind import SourceDeclarationRelationKind
 from .shared.code.models.source_dependency_kind import SourceDependencyKind
 from .shared.code.models.source_manifest_identity import SourceManifestIdentity
@@ -146,6 +148,8 @@ __all__ = [
     "ScanPolicy",
     "SourceAssignedValue",
     "SourceAssignedValueKind",
+    "SourceCall",
+    "SourceCallResolution",
     "SourceAccessError",
     "SourceMemberKind",
     "SourceManifestIdentity",

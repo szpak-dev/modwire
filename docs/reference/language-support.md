@@ -32,6 +32,7 @@ subset. `Unsupported` means consumers must not infer that fact from an empty res
 | sources | Supported | Supported | Supported | Supported |
 | symbols | Supported | Supported | Supported | Supported |
 | callables | Supported | Supported | Supported | Supported |
+| calls | Supported | Supported | Supported | Supported |
 | parameters | Supported | Supported | Supported | Supported |
 | annotations | Partial | Partial | Partial | Partial |
 | modifiers | Partial | Partial | Partial | Partial |

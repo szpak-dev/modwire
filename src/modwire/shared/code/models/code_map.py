@@ -3,9 +3,9 @@ from typing import ClassVar, Self
 from pydantic import ConfigDict, model_validator
 
 from ...values.models.value_model import ValueModel
+from .code_map_producer import CodeMapProducer
 from .code_validation_error import CodeValidationError
 from .code_violation import CodeViolation
-from .code_map_producer import CodeMapProducer
 from .dependency_graph import DependencyGraph
 from .source_extraction import SourceExtraction
 
