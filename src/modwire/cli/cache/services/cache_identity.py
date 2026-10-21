@@ -100,6 +100,9 @@ class CacheIdentity:
         return {
             "descriptor": request.runtime.descriptor.model_dump(mode="json"),
             "capabilities": [item.model_dump(mode="json") for item in request.runtime.capabilities],
+            "relationship_capabilities": [
+                item.model_dump(mode="json") for item in request.runtime.relationship_capabilities
+            ],
             "file_extensions": list(request.runtime.file_extensions),
             "batch": request.batch_config.model_dump(mode="json"),
             "observation": observation.model_dump(mode="json"),

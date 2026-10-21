@@ -51,6 +51,7 @@ class ExtractorsApplication:
             modwire_version=self.version.version(),
             extractor=request.runtime.descriptor,
             capabilities=request.runtime.capabilities,
+            relationship_capabilities=request.runtime.relationship_capabilities,
         )
         return CodeMap(
             language=language,

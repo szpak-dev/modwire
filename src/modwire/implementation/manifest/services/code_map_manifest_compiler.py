@@ -5,6 +5,7 @@ from wireup import injectable
 
 from ....shared.code.models.code_map import CodeMap
 from ....shared.code.models.declaration_identity import DeclarationIdentity
+from ....shared.code.models.source_call import SourceCall
 from ....shared.code.models.source_declaration import SourceDeclaration
 from ....shared.code.models.source_dependency_resolution import SourceDependencyResolution
 from ....shared.code.models.source_symbol_kind import SourceSymbolKind
@@ -12,6 +13,8 @@ from ....shared.code.models.source_visibility import SourceVisibility
 from ....shared.values.models.value_model import ValueModel
 from ..contracts.manifest_compiler import ManifestCompiler
 from ..models.implementation_manifest import ImplementationManifest
+from ..models.implementation_manifest_validation_error import ImplementationManifestValidationError
+from ..models.implementation_manifest_violation import ImplementationManifestViolation
 from ..models.manifest_annotation import ManifestAnnotation
 from ..models.manifest_annotation_role import ManifestAnnotationRole
 from ..models.manifest_attribute import ManifestAttribute
@@ -56,6 +59,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
         parameters: list[ManifestParameter] = []
         attributes: list[ManifestAttribute] = []
         annotations: list[ManifestAnnotation] = []
+        source_calls: list[SourceCall] = []
         declaration_relations: list[ManifestDeclarationRelation] = []
         dependencies: list[ManifestDependency] = []
         dependency_set: set[ManifestDependency] = set()
@@ -155,6 +159,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
                                 expression=parameter.annotation,
                             )
                         )
+            source_calls.extend(source_file.calls)
             declaration_relations.extend(
                 ManifestDeclarationRelation(
                     source_symbol_id=relation.source_declaration_id,
@@ -167,7 +172,9 @@ class CodeMapManifestCompiler(ManifestCompiler):
         for edge in code_map.dependency_graph.edges:
             if edge.resolution is SourceDependencyResolution.RESOLVED:
                 if edge.to_id is None:
-                    raise ValueError("Resolved dependency edges must identify their target source.")
+                    raise ImplementationManifestValidationError(
+                        ImplementationManifestViolation.MISSING_DEPENDENCY_TARGET_SOURCE, str(edge.from_id)
+                    )
                 target_kind = ManifestDependencyTargetKind.SOURCE
                 target = str(edge.to_id)
             elif edge.resolution is SourceDependencyResolution.EXTERNAL:
@@ -197,6 +204,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
             parameters=tuple(sorted(parameters, key=self.canonical_key)),
             attributes=tuple(sorted(attributes, key=self.canonical_key)),
             annotations=tuple(sorted(annotations, key=self.canonical_key)),
+            calls=tuple(sorted(source_calls, key=self.canonical_key)),
             declaration_relations=tuple(sorted(declaration_relations, key=self.canonical_key)),
             dependencies=tuple(sorted(dependencies, key=self.canonical_key)),
             spans=tuple(sorted(spans, key=self.canonical_key)),

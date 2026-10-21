@@ -1,6 +1,10 @@
+import hashlib
 import json
 import os
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+from typing import Any
 
 from modwire.application import CacheOptions, CacheStage
 
@@ -8,6 +12,21 @@ from .base_test import ApplicationTestCase
 
 
 class TestPersistentCache(ApplicationTestCase):
+    def tamper_cache_payload(self, path: Path, mutate: Callable[[dict[str, Any]], None]) -> None:
+        envelope: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+        mutate(envelope["payload"])
+        payload = json.dumps(
+            envelope["payload"],
+            ensure_ascii=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+        envelope["payload_digest"] = hashlib.sha256(payload).hexdigest()
+        path.write_text(
+            json.dumps(envelope, ensure_ascii=False, separators=(",", ":"), sort_keys=True),
+            encoding="utf-8",
+        )
+
     def test_public_map_diagnostics_distinguish_cold_and_warm_cache_stages(self) -> None:
         root = self.project({"src/example.py": "def example_function():\n    return 1\n"})
         options = self.cache_options("example-diagnostics")
@@ -74,6 +93,60 @@ class TestPersistentCache(ApplicationTestCase):
         assert recovered.outcome(CacheStage.EXTRACTION).misses == 1
         assert recovered.outcome(CacheStage.CODE_MAP).invalidated == 1
         assert recovered.outcome(CacheStage.CODE_MAP).misses == 1
+
+    def test_semantically_invalid_source_cache_recovers_without_changing_source(self) -> None:
+        root = self.project({"src/example.py": "def example_value():\n    return 1\n"})
+        source = root / "src/example.py"
+        options = self.cache_options("example-semantic-source-corruption")
+        expected = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+        source_cache = next((self.workspace / "cache").rglob("source/*.cache"))
+        code_map_cache = next((self.workspace / "cache").rglob("code-map/*.cache"))
+        original_source = source.read_bytes()
+        self.tamper_cache_payload(
+            source_cache,
+            lambda payload: payload["callables"].append(payload["callables"][0]),
+        )
+        code_map_cache.unlink()
+
+        recovered = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+        reused = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+
+        assert source.read_bytes() == original_source
+        assert recovered.value == expected.value
+        assert recovered.outcome(CacheStage.EXTRACTION).invalidated == 1
+        assert recovered.outcome(CacheStage.EXTRACTION).misses == 1
+        assert recovered.outcome(CacheStage.CODE_MAP).misses == 1
+        assert reused.outcome(CacheStage.EXTRACTION).hits == 1
+        assert reused.outcome(CacheStage.CODE_MAP).hits == 1
+
+    def test_semantically_invalid_code_map_cache_recovers_without_changing_source(self) -> None:
+        root = self.project({"src/example.py": "def example_value():\n    return 1\n"})
+        source = root / "src/example.py"
+        options = self.cache_options("example-semantic-map-corruption")
+        expected = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+        code_map_cache = next((self.workspace / "cache").rglob("code-map/*.cache"))
+        original_source = source.read_bytes()
+
+        def remove_member_evidence(payload: dict[str, Any]) -> None:
+            member = next(
+                coverage
+                for coverage in payload["producer"]["relationship_capabilities"]
+                if coverage["family"] == "member"
+            )
+            member["evidence_requirements"] = []
+
+        self.tamper_cache_payload(code_map_cache, remove_member_evidence)
+
+        recovered = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+        reused = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+
+        assert source.read_bytes() == original_source
+        assert recovered.value == expected.value
+        assert recovered.outcome(CacheStage.EXTRACTION).hits == 1
+        assert recovered.outcome(CacheStage.CODE_MAP).invalidated == 1
+        assert recovered.outcome(CacheStage.CODE_MAP).misses == 1
+        assert reused.outcome(CacheStage.EXTRACTION).hits == 1
+        assert reused.outcome(CacheStage.CODE_MAP).hits == 1
 
     def test_public_report_diagnostics_distinguish_cold_and_warm_results(self) -> None:
         root = self.project({"src/example.py": "def example_function():\n    return 1\n"})

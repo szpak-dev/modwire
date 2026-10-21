@@ -6,4 +6,5 @@ from dataclasses import dataclass
 class PythonCallObservation:
     node: ast.Call
     source_qualified_name: str
+    source_ordinal: int
     owner_name: str

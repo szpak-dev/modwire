@@ -2,12 +2,15 @@ import hashlib
 import json
 
 import pytest
-from pydantic import ValidationError
 
 from modwire.application import (
+    CapabilityStatus,
     CodeMap,
+    CodeValidationError,
     DigestAlgorithm,
     FactCapability,
+    RelationshipFamily,
+    SourceCallResolution,
     SourceDeclarationRelationKind,
     SourceDependencyKind,
     SourceMemberKind,
@@ -40,9 +43,10 @@ class TestImplementationManifest(ApplicationTestCase):
         before = code_map.to_json()
         invalid = before.replace('"value_kind": "value_literal"', '"value_kind": "class"', 1)
 
-        with pytest.raises(ValidationError, match="Source value kind and identity family must describe a value"):
+        with pytest.raises(CodeValidationError) as raised:
             CodeMap.model_validate_json(invalid)
 
+        assert raised.value.subject == "example_value"
         assert code_map.to_json() == before
         format = self.application.implementation_manifest_formats()[0]
         manifest = self.application.read_implementation_manifest(
@@ -144,7 +148,7 @@ class TestImplementationManifest(ApplicationTestCase):
             sort_keys=True,
         )
 
-        assert manifest.schema_version == 5
+        assert manifest.schema_version == 8
         assert manifest.producer.extractor.language == "python"
         assert manifest.producer.extractor.id == "modwire.python.ast"
         assert manifest.producer.modwire_version
@@ -153,7 +157,6 @@ class TestImplementationManifest(ApplicationTestCase):
         assert tuple(item.relative_path for item in manifest.source_manifest.sources) == ("src/example.py",)
         assert all(not item.relative_path.startswith("/") for item in manifest.source_manifest.sources)
         assert str(root) not in canonical
-        assert "null" not in canonical
         assert any(item.target_reference == "ExampleBase" for item in manifest.declaration_relations)
         assert any(item.expression == "int" for item in manifest.annotations)
         assert document.format == formats[0]
@@ -162,6 +165,51 @@ class TestImplementationManifest(ApplicationTestCase):
         assert document.digest == hashlib.sha256(canonical.encode("utf-8")).hexdigest()
         assert document.verify_digest()
         assert self.application.implementation_manifest(code_map, formats[0]) == document
+
+    def test_public_map_and_manifest_publish_the_same_observed_call(self) -> None:
+        root = self.project(
+            {
+                "src/example.py": (
+                    "def example_target():\n    return 1\n\ndef example_caller():\n    return example_target()\n"
+                )
+            }
+        )
+        code_map = self.application.generate_queryable_map("python", root, self.scan_policy())
+        format = self.application.implementation_manifest_formats()[0]
+        manifest = self.application.read_implementation_manifest(
+            self.application.implementation_manifest(code_map.code_map, format)
+        )
+
+        calls = tuple(result.item for result in code_map.calls().all())
+        assert len(calls) == 1
+        assert len(manifest.calls) == 1
+        assert manifest.calls[0].source_id == calls[0].source_id
+        assert manifest.calls[0].line == calls[0].line
+        assert manifest.calls[0].expression == calls[0].expression
+        assert manifest.calls[0].target_name == calls[0].target_name == "example_target"
+        assert manifest.calls[0].resolution is calls[0].resolution is SourceCallResolution.RESOLVED
+        callable_ids = {item.symbol_id.canonical() for item in manifest.callables}
+        assert manifest.calls[0].source_callable_id.canonical() in callable_ids
+        assert manifest.calls[0].target_callable_id is not None
+        assert manifest.calls[0].target_callable_id.canonical() in callable_ids
+
+    def test_supported_member_inventory_truthfully_publishes_no_observed_calls(self) -> None:
+        root = self.project({"src/example.py": "def example_value():\n    return 1\n"})
+        code_map = self.application.generate_queryable_map("python", root, self.scan_policy())
+        member = next(
+            coverage
+            for coverage in code_map.code_map.producer.relationship_capabilities
+            if coverage.family is RelationshipFamily.MEMBER
+        )
+        format = self.application.implementation_manifest_formats()[0]
+        manifest = self.application.read_implementation_manifest(
+            self.application.implementation_manifest(code_map.code_map, format)
+        )
+
+        assert member.inventory is CapabilityStatus.SUPPORTED
+        assert FactCapability.CALLS in member.evidence_requirements
+        assert code_map.calls().all() == ()
+        assert manifest.calls == ()
 
     def test_python_manifest_publishes_complete_class_facts(self) -> None:
         root = self.project(
@@ -522,3 +570,10 @@ class TestImplementationManifest(ApplicationTestCase):
             assert manifest.callables
             assert manifest.declaration_relations
             assert {item.capability for item in manifest.producer.capabilities} == set(FactCapability)
+            assert {item.family for item in manifest.producer.relationship_capabilities} == set(RelationshipFamily)
+            member = next(
+                coverage
+                for coverage in manifest.producer.relationship_capabilities
+                if coverage.family is RelationshipFamily.MEMBER
+            )
+            assert FactCapability.CALLS in member.evidence_requirements

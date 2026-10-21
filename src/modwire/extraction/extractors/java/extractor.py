@@ -7,6 +7,8 @@ from ....shared.code.models.capability_status import CapabilityStatus
 from ....shared.code.models.extractor_descriptor import ExtractorDescriptor
 from ....shared.code.models.fact_capability import FactCapability
 from ....shared.code.models.identity import FileId, ImportIdentity
+from ....shared.code.models.relationship_coverage import RelationshipCoverage
+from ....shared.code.models.relationship_family import RelationshipFamily
 from ....shared.code.models.source_file import SourceFile
 from ....shared.code.models.source_namespace_kind import SourceNamespaceKind
 from ..domain import SourceExtractor
@@ -44,6 +46,14 @@ class JavaExtractor(SourceExtractor):
                     capability=FactCapability.CALLABLES,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Constructors, methods, and annotation elements are extracted.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.CALLS,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation=(
+                        "Static method and constructor calls owned by extracted callables are emitted with explicit "
+                        "resolved, external, unresolved, or dynamic state."
+                    ),
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.PARAMETERS,
@@ -101,6 +111,49 @@ class JavaExtractor(SourceExtractor):
                     capability=FactCapability.SPANS,
                     status=CapabilityStatus.PARTIAL,
                     explanation="Callable spans are exact; other declarations expose line counts.",
+                ),
+            ),
+            relationship_capabilities=(
+                RelationshipCoverage(
+                    family=RelationshipFamily.DECLARATION,
+                    evidence_requirements=RelationshipFamily.DECLARATION.evidence_requirements,
+                    semantics=CapabilityStatus.PARTIAL,
+                    semantics_explanation=(
+                        "Authored extension and implementation relations are preserved without permits, "
+                        "annotation-processor, or framework inference."
+                    ),
+                    inventory=CapabilityStatus.PARTIAL,
+                    inventory_explanation=(
+                        "Extension and implementation clauses are emitted, but permits relationships are not available."
+                    ),
+                ),
+                RelationshipCoverage(
+                    family=RelationshipFamily.MEMBER,
+                    evidence_requirements=RelationshipFamily.MEMBER.evidence_requirements,
+                    semantics=CapabilityStatus.PARTIAL,
+                    semantics_explanation=(
+                        "Declared member and callable types and static calls are preserved without classpath, "
+                        "generated-code, or framework inference."
+                    ),
+                    inventory=CapabilityStatus.PARTIAL,
+                    inventory_explanation=(
+                        "Declared type and static-call evidence is emitted, but assigned-value relationship "
+                        "evidence is not available."
+                    ),
+                ),
+                RelationshipCoverage(
+                    family=RelationshipFamily.DEPENDENCY,
+                    evidence_requirements=RelationshipFamily.DEPENDENCY.evidence_requirements,
+                    semantics=CapabilityStatus.PARTIAL,
+                    semantics_explanation=(
+                        "Exact imports are normalized, while wildcard, implicit same-package, classpath, and "
+                        "generated dependencies remain unresolved."
+                    ),
+                    inventory=CapabilityStatus.PARTIAL,
+                    inventory_explanation=(
+                        "Authored exact imports are emitted, but wildcard and implicit dependency inventory "
+                        "is incomplete."
+                    ),
                 ),
             ),
             file_extensions=(".java",),

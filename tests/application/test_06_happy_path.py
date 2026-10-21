@@ -1,3 +1,5 @@
+import json
+
 from modwire.application import ModwireApplication
 
 from .base_test import ApplicationTestCase
@@ -23,3 +25,16 @@ class TestModwireApplication(ApplicationTestCase):
         project = self.project({"src/example.py": "def example_function():\n    return 1\n"})
         result = self.installed_consumer(project, "python")
         assert result.returncode == 0, result.stderr
+
+    def test_installed_distribution_reports_non_python_parse_failure(self) -> None:
+        project = self.project({"src/example.ts": "export const = ;\n"})
+        result = self.installed_failure_consumer(project, "typescript")
+
+        assert result.returncode == 0, result.stderr
+        failure = json.loads(result.stdout)
+        assert failure["type"] == "SourceParseError"
+        assert failure["language"] == "typescript"
+        assert failure["path"].endswith("src/example.ts")
+        assert failure["line"] > 0
+        assert failure["column"] > 0
+        assert failure["diagnostic"]

@@ -16,8 +16,9 @@ class QualifiedCallTargetRule(PythonCallTargetRule):
         return 10
 
     def applies(self, candidate: PythonCallCandidate) -> bool:
-        return candidate.reference.expression in candidate.by_qualified_name
+        expression = candidate.reference.expression
+        return expression in candidate.by_qualified_name and len(candidate.by_qualified_name[expression]) == 1
 
     def classify(self, candidate: PythonCallCandidate) -> SourceCall:
         expression = candidate.reference.expression
-        return self.source_call(candidate, candidate.by_qualified_name[expression], SourceCallResolution.RESOLVED)
+        return self.source_call(candidate, candidate.by_qualified_name[expression][0], SourceCallResolution.RESOLVED)

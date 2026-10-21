@@ -8,6 +8,8 @@ from ....shared.code.models.capability_status import CapabilityStatus
 from ....shared.code.models.extractor_descriptor import ExtractorDescriptor
 from ....shared.code.models.fact_capability import FactCapability
 from ....shared.code.models.identity import FileId, ImportIdentity
+from ....shared.code.models.relationship_coverage import RelationshipCoverage
+from ....shared.code.models.relationship_family import RelationshipFamily
 from ....shared.code.models.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
@@ -47,6 +49,14 @@ class PythonExtractor(SourceExtractor):
                     capability=FactCapability.CALLABLES,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Functions, methods, constructors, and lambdas are extracted.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.CALLS,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation=(
+                        "Static calls owned by extracted callables are emitted with explicit resolved, external, "
+                        "unresolved, or dynamic state."
+                    ),
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.PARAMETERS,
@@ -111,6 +121,48 @@ class PythonExtractor(SourceExtractor):
                     capability=FactCapability.SPANS,
                     status=CapabilityStatus.PARTIAL,
                     explanation="Callable spans are exact; other symbol facts expose line counts.",
+                ),
+            ),
+            relationship_capabilities=(
+                RelationshipCoverage(
+                    family=RelationshipFamily.DECLARATION,
+                    evidence_requirements=RelationshipFamily.DECLARATION.evidence_requirements,
+                    semantics=CapabilityStatus.PARTIAL,
+                    semantics_explanation=(
+                        "Authored base expressions are preserved without interpreting runtime rebinding, "
+                        "metaclasses, or framework conventions."
+                    ),
+                    inventory=CapabilityStatus.SUPPORTED,
+                    inventory_explanation=(
+                        "Every authored class base expression in included Python sources is emitted deterministically."
+                    ),
+                ),
+                RelationshipCoverage(
+                    family=RelationshipFamily.MEMBER,
+                    evidence_requirements=RelationshipFamily.MEMBER.evidence_requirements,
+                    semantics=CapabilityStatus.PARTIAL,
+                    semantics_explanation=(
+                        "Declared member and callable types, static calls, and assigned values are preserved "
+                        "without resolving dynamic types or runtime mutation."
+                    ),
+                    inventory=CapabilityStatus.SUPPORTED,
+                    inventory_explanation=(
+                        "Every supported static member, callable type, call, and assigned-value fact in included "
+                        "Python sources is emitted deterministically."
+                    ),
+                ),
+                RelationshipCoverage(
+                    family=RelationshipFamily.DEPENDENCY,
+                    evidence_requirements=RelationshipFamily.DEPENDENCY.evidence_requirements,
+                    semantics=CapabilityStatus.SUPPORTED,
+                    semantics_explanation=(
+                        "Authored import dependencies are normalized with explicit resolved, external, or "
+                        "unresolved state; dynamic loading is excluded."
+                    ),
+                    inventory=CapabilityStatus.SUPPORTED,
+                    inventory_explanation=(
+                        "Every authored import declaration in included Python sources is emitted deterministically."
+                    ),
                 ),
             ),
             file_extensions=(".py",),

@@ -16,8 +16,9 @@ class ConstructorCallTargetRule(PythonCallTargetRule):
         return 40
 
     def applies(self, candidate: PythonCallCandidate) -> bool:
-        return candidate.reference.constructor_name in candidate.constructors_by_name
+        name = candidate.reference.constructor_name
+        return name in candidate.constructors_by_name and len(candidate.constructors_by_name[name]) == 1
 
     def classify(self, candidate: PythonCallCandidate) -> SourceCall:
         name = candidate.reference.constructor_name
-        return self.source_call(candidate, candidate.constructors_by_name[name], SourceCallResolution.RESOLVED)
+        return self.source_call(candidate, candidate.constructors_by_name[name][0], SourceCallResolution.RESOLVED)

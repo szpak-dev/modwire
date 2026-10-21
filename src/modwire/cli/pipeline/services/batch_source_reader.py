@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from importlib import resources
 from itertools import repeat
 from pathlib import Path
+from typing import Never
 
 from pydantic import ValidationError
 from wireup import injectable
@@ -17,7 +18,9 @@ from ....extraction.extractors.models.batch_output_format import BatchOutputForm
 from ....extraction.extractors.models.duplicate_identity_error import DuplicateIdentityError
 from ....extraction.extractors.models.extraction_request import ExtractionRequest
 from ....extraction.extractors.models.extractor_error import ExtractorError
+from ....extraction.extractors.models.extractor_failure_document import ExtractorFailureDocument
 from ....extraction.extractors.models.extractor_runtime import ExtractorRuntime
+from ....extraction.extractors.models.source_parse_error import SourceParseError
 from ....shared.code.application import CodeApplication
 from ....shared.code.domain import PathMatcher
 from ....shared.code.models.identity import FileId, ImportIdentity
@@ -267,7 +270,23 @@ class BatchSourceReader(SourceReader):
             raise ExtractorExecutionError(runtime.descriptor.language, -1, str(error)) from error
         if completed.returncode != 0:
             message = completed.stderr.strip() or completed.stdout.strip()
-            raise ExtractorExecutionError(runtime.descriptor.language, completed.returncode, message)
+            execution_error = ExtractorExecutionError(runtime.descriptor.language, completed.returncode, message)
+            marker = "modwire-error:"
+            failure_documents = tuple(
+                line.removeprefix(marker) for line in message.splitlines() if line.startswith(marker)
+            )
+            if failure_documents:
+                if len(failure_documents) != 1:
+                    raise ExtractorContractError(
+                        runtime.descriptor.language,
+                        ExtractorContractViolation.INVALID_OUTPUT,
+                        (),
+                        (),
+                        (),
+                        "extractor emitted multiple failure documents",
+                    ) from execution_error
+                self.raise_extractor_failure(failure_documents[0], execution_error)
+            raise execution_error
         try:
             extracted = self.outputs[request.batch_config.output_format].read(completed.stdout)
         except ValidationError as error:
@@ -330,6 +349,35 @@ class BatchSourceReader(SourceReader):
                 str(error),
             ) from error
         return extracted_files
+
+    def raise_extractor_failure(self, document: str, execution_error: ExtractorExecutionError) -> Never:
+        try:
+            failure = ExtractorFailureDocument.model_validate_json(document)
+        except ValidationError as error:
+            raise ExtractorContractError(
+                execution_error.language,
+                ExtractorContractViolation.INVALID_OUTPUT,
+                (),
+                (),
+                (),
+                str(error),
+            ) from error
+        if failure.language != execution_error.language:
+            raise ExtractorContractError(
+                execution_error.language,
+                ExtractorContractViolation.INVALID_OUTPUT,
+                (),
+                (),
+                (),
+                "extractor failure document language does not match its runtime",
+            ) from execution_error
+        raise SourceParseError(
+            failure.language,
+            failure.path,
+            failure.line,
+            failure.column,
+            failure.diagnostic,
+        ) from execution_error
 
     def _merge_files(self, files: dict[FileId, SourceFile], extracted: dict[FileId, SourceFile]) -> None:
         for file_id, source_file in extracted.items():

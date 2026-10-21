@@ -5,6 +5,8 @@ from pydantic import model_validator
 from ....shared.code.models.source_dependency_kind import SourceDependencyKind
 from ....shared.code.models.source_dependency_resolution import SourceDependencyResolution
 from ....shared.values.models.value_model import ValueModel
+from .implementation_manifest_validation_error import ImplementationManifestValidationError
+from .implementation_manifest_violation import ImplementationManifestViolation
 from .manifest_dependency_target_kind import ManifestDependencyTargetKind
 
 
@@ -19,5 +21,7 @@ class ManifestDependency(ValueModel):
     @model_validator(mode="after")
     def validate_relation_kind(self) -> Self:
         if self.kind is not SourceDependencyKind.IMPORTS:
-            raise ValueError("Manifest dependencies must use imports.")
+            raise ImplementationManifestValidationError(
+                ImplementationManifestViolation.NON_IMPORT_MANIFEST_DEPENDENCY, self.source_id
+            )
         return self

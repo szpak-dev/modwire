@@ -19,4 +19,4 @@ class UnresolvedCallTargetRule(PythonCallTargetRule):
         return candidate.reference.is_reference
 
     def classify(self, candidate: PythonCallCandidate) -> SourceCall:
-        return self.source_call(candidate, "", SourceCallResolution.UNRESOLVED)
+        return self.source_call(candidate, None, SourceCallResolution.UNRESOLVED)

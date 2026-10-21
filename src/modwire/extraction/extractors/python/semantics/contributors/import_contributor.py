@@ -8,6 +8,8 @@ from ......shared.code.models.identity import ImportSpecifier
 from ......shared.code.models.import_crossing_type import ImportCrossingType
 from ......shared.code.models.source_import import SourceImport
 from ......shared.code.models.source_imported_symbol import SourceImportedSymbol
+from ....models.extractor_invariant_error import ExtractorInvariantError
+from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.import_candidate import PythonImportCandidate
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
@@ -46,7 +48,9 @@ class ImportSemanticContributor(PythonSemanticContributor):
         candidate: PythonImportCandidate,
         context: PythonSourceContext,
     ) -> SourceImport:
-        raise ValueError("Unsupported Python import candidate.")
+        raise ExtractorInvariantError(
+            ExtractorInvariantViolation.UNSUPPORTED_IMPORT_CANDIDATE, type(candidate.node).__name__
+        )
 
     @read_node.register
     def read_import(

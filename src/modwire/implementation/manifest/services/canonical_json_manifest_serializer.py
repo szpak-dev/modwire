@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pydantic import ValidationError
 from wireup import injectable
 
+from ....shared.code.models.code_error import CodeError
 from ....shared.code.models.digest_algorithm import DigestAlgorithm
 from ..contracts.manifest_serializer import ManifestSerializer
 from ..models.implementation_manifest import ImplementationManifest
@@ -40,7 +41,7 @@ class CanonicalJsonManifestSerializer(ManifestSerializer):
             )
         try:
             manifest = ImplementationManifest.model_validate_json(document.payload)
-        except (ImplementationManifestValidationError, ValidationError) as error:
+        except (CodeError, ImplementationManifestValidationError, ValidationError) as error:
             raise InvalidImplementationManifestError(
                 document.format.id,
                 "document payload does not satisfy the implementation manifest schema",

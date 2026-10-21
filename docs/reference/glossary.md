@@ -106,6 +106,13 @@ A named dependency analysis scope under `boundaries.flow.realms`. A realm select
 frontend conventions, for example. A realm is not a bounded context, feature, module,
 or layer and does not define their hierarchy.
 
+## Relationship inventory
+
+The extractor-declared completeness of authored static declaration, member, or
+dependency relationship evidence. Complete inventory makes absence trustworthy only
+inside that family boundary. It does not include runtime calls, reflection,
+framework wiring, or other unobserved behavior.
+
 ## Report
 
 A typed architecture analysis result. Modwire returns the architecture map, flow

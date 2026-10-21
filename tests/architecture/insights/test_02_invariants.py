@@ -55,7 +55,7 @@ class TestInsightInvariants(InsightTestCase):
             ("example_values.source", "ExampleUnused"),
         )
 
-    def test_callable_report_links_local_calls_and_deduplicates_repeated_calls(self) -> None:
+    def test_callable_report_links_local_calls(self) -> None:
         source_id = "example.source"
         result = self.insight(
             {
@@ -65,7 +65,6 @@ class TestInsightInvariants(InsightTestCase):
                         CodeMapFactory().source_callable(source_id, "example_caller"),
                     ],
                     "calls": [
-                        CodeMapFactory().source_call(source_id, "example_caller", "example_target"),
                         CodeMapFactory().source_call(source_id, "example_caller", "example_target"),
                     ],
                 }

@@ -1,6 +1,9 @@
 package dev.modwire.extractor;
 
 import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.Problem;
+import com.github.javaparser.Range;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
@@ -26,8 +29,10 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithModifiers;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -43,11 +48,14 @@ import java.util.Map;
 import java.util.Optional;
 
 public final class Script {
-    private final Gson gson = new Gson();
+    private final Gson gson = new GsonBuilder().serializeNulls().create();
 
     public static void main(String[] arguments) {
         try {
             new Script().run(arguments);
+        } catch (SourceParseFailure error) {
+            System.err.println("modwire-error:" + new Gson().toJson(error.document()));
+            System.exit(1);
         } catch (Exception error) {
             System.err.println(error.getMessage());
             System.exit(1);
@@ -110,7 +118,25 @@ final class JavaSourceExtractor {
         constructorsByOwner.clear();
 
         String content = Files.readString(path, StandardCharsets.UTF_8);
-        CompilationUnit unit = StaticJavaParser.parse(content);
+        CompilationUnit unit;
+        try {
+            unit = StaticJavaParser.parse(content);
+        } catch (ParseProblemException error) {
+            Problem problem = error.getProblems().get(0);
+            Range location = problem.getLocation()
+                .flatMap(tokenRange -> tokenRange.getBegin().getRange())
+                .orElseThrow(() -> new ExtractorInvariantFailure(
+                    "Java parser omitted the source parse location for " + path + ".",
+                    error
+                ));
+            throw new SourceParseFailure(
+                path.toString(),
+                location.begin.line,
+                location.begin.column,
+                problem.getMessage(),
+                error
+            );
+        }
         JsonArray declarations = new JsonArray();
         JsonArray callables = new JsonArray();
         JsonArray relations = new JsonArray();
@@ -495,7 +521,6 @@ final class JavaSourceExtractor {
     ) {
         JsonObject callable = new JsonObject();
         callable.add("declaration_id", declarationIdentity("method", qualifiedName, ordinal));
-        callable.addProperty("id", sourceId + "::" + qualifiedName + "#" + ordinal);
         callable.addProperty("source_id", sourceId);
         callable.addProperty("name", name);
         callable.addProperty("qualified_name", qualifiedName);
@@ -615,10 +640,12 @@ final class JavaSourceExtractor {
         List<CallableFact> candidates
     ) {
         JsonObject call = new JsonObject();
-        call.addProperty("source_callable_id", source.json().get("id").getAsString());
-        call.addProperty(
+        call.add("source_callable_id", source.json().getAsJsonObject("declaration_id").deepCopy());
+        call.add(
             "target_callable_id",
-            candidates.size() == 1 ? candidates.get(0).json().get("id").getAsString() : ""
+            candidates.size() == 1
+                ? candidates.get(0).json().getAsJsonObject("declaration_id").deepCopy()
+                : JsonNull.INSTANCE
         );
         call.addProperty("source_id", sourceId);
         call.addProperty("line", beginLine(expression));
@@ -791,4 +818,36 @@ final class JavaSourceExtractor {
         String qualifiedName,
         boolean constructor
     ) {}
+}
+
+final class SourceParseFailure extends RuntimeException {
+    private final String path;
+    private final int line;
+    private final int column;
+    private final String diagnostic;
+
+    SourceParseFailure(String path, int line, int column, String diagnostic, Throwable cause) {
+        super(diagnostic, cause);
+        this.path = path;
+        this.line = line;
+        this.column = column;
+        this.diagnostic = diagnostic;
+    }
+
+    JsonObject document() {
+        JsonObject document = new JsonObject();
+        document.addProperty("code", "source_parse");
+        document.addProperty("language", "java");
+        document.addProperty("path", path);
+        document.addProperty("line", line);
+        document.addProperty("column", column);
+        document.addProperty("diagnostic", diagnostic);
+        return document;
+    }
+}
+
+final class ExtractorInvariantFailure extends RuntimeException {
+    ExtractorInvariantFailure(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

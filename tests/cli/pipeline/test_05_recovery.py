@@ -1,6 +1,6 @@
 import pytest
 
-from modwire.application import ExtractorExecutionError
+from modwire.application import SourceParseError
 
 from .base_test import NativeExtractionTestCase
 
@@ -10,16 +10,30 @@ class TestExtractionRecovery(NativeExtractionTestCase):
         ("language", "name", "invalid", "valid"),
         (
             ("python", "example.py", "class 1example:\n", "class ExampleValue: pass\n"),
-            ("typescript", "example.ts", "export class {", "export class ExampleValue {}\n"),
+            (
+                "typescript",
+                "example.ts",
+                "export class {",
+                "export class ExampleValue {}\n",
+            ),
             ("php", "example.php", "<?php class {", "<?php class ExampleValue {}\n"),
-            ("java", "ExampleValue.java", "class ExampleValue { void example_invalid( }", "class ExampleValue {}\n"),
+            (
+                "java",
+                "ExampleValue.java",
+                "class ExampleValue { void example_invalid( }",
+                "class ExampleValue {}\n",
+            ),
         ),
     )
     def test_failed_extraction_does_not_poison_the_application(
-        self, language: str, name: str, invalid: str, valid: str
+        self,
+        language: str,
+        name: str,
+        invalid: str,
+        valid: str,
     ) -> None:
         self.write_files({name: invalid})
-        with pytest.raises(ExtractorExecutionError):
+        with pytest.raises(SourceParseError):
             self.extract_project(language)
         self.write_files({name: valid})
         result = self.extract_project(language)

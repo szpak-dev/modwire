@@ -1,3 +1,4 @@
+import os
 import shutil
 import subprocess
 import sys
@@ -20,7 +21,17 @@ class ExtractorBuildChecks:
 
     def check(self, path: Path, work: Path) -> None:
         shutil.rmtree(work, ignore_errors=True)
-        subprocess.run((sys.executable, str(path), str(path.parent), str(work)), check=True)
+        environment = dict(os.environ)
+        source_root = str(self.repository / "src")
+        configured_paths = environment.get("PYTHONPATH")
+        environment["PYTHONPATH"] = (
+            os.pathsep.join((source_root, configured_paths)) if configured_paths else source_root
+        )
+        subprocess.run(
+            (sys.executable, str(path), str(path.parent), str(work)),
+            check=True,
+            env=environment,
+        )
 
 
 if __name__ == "__main__":

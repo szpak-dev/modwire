@@ -10,6 +10,8 @@ from ......shared.code.models.source_class_method import SourceClassMethod
 from ......shared.code.models.source_declaration import SourceDeclaration
 from ......shared.code.models.source_symbol_kind import SourceSymbolKind
 from ......shared.code.models.source_visibility import SourceVisibility
+from ....models.extractor_invariant_error import ExtractorInvariantError
+from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.class_candidate import PythonClassCandidate
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
@@ -165,11 +167,11 @@ class ClassSemanticContributor(PythonSemanticContributor):
     def line_count(self, node: ast.ClassDef) -> int:
         line_end = node.end_lineno
         if line_end is None:
-            raise ValueError("Python class requires an end line.")
+            raise ExtractorInvariantError(ExtractorInvariantViolation.MISSING_CLASS_END_LINE, node.name)
         return line_end - node.lineno + 1
 
     def function_line_count(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> int:
         line_end = node.end_lineno
         if line_end is None:
-            raise ValueError("Python function requires an end line.")
+            raise ExtractorInvariantError(ExtractorInvariantViolation.MISSING_FUNCTION_END_LINE, node.name)
         return line_end - node.lineno + 1

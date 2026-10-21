@@ -2,6 +2,8 @@ from typing import Self
 
 from pydantic import Field, model_validator
 
+from .code_validation_error import CodeValidationError
+from .code_violation import CodeViolation
 from .declaration_family import DeclarationFamily
 from .declaration_identity import DeclarationIdentity
 from .identity import FileId
@@ -12,7 +14,6 @@ from .source_parameter import SourceParameter
 
 class SourceCallable(SourceCallableSymbol):
     declaration_id: DeclarationIdentity
-    id: str
     source_id: FileId
     qualified_name: str
     owner_name: str = ""
@@ -29,9 +30,9 @@ class SourceCallable(SourceCallableSymbol):
     @model_validator(mode="after")
     def validate_declaration_identity(self) -> Self:
         if self.declaration_id.source_id != self.source_id:
-            raise ValueError("Callable declaration identity must reference its owning source file.")
+            raise CodeValidationError(CodeViolation.FOREIGN_CALLABLE_DECLARATION, self.qualified_name)
         if self.declaration_id.qualified_name != self.qualified_name:
-            raise ValueError("Callable declaration identity must match its qualified name.")
+            raise CodeValidationError(CodeViolation.INCONSISTENT_CALLABLE_NAME, self.qualified_name)
         families = {
             SourceCallableKind.FUNCTION: DeclarationFamily.FUNCTION,
             SourceCallableKind.INSTANCE_METHOD: DeclarationFamily.METHOD,
@@ -42,5 +43,5 @@ class SourceCallable(SourceCallableSymbol):
             SourceCallableKind.ANONYMOUS: DeclarationFamily.CALLABLE,
         }
         if self.declaration_id.family is not families[self.kind]:
-            raise ValueError("Callable declaration identity family must match its callable kind.")
+            raise CodeValidationError(CodeViolation.INCONSISTENT_CALLABLE_FAMILY, self.qualified_name)
         return self

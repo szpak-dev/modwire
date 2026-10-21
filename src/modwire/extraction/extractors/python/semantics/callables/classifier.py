@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ......shared.code.models.source_callable_kind import SourceCallableKind
+from ....models.extractor_invariant_error import ExtractorInvariantError
+from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.callable_candidate import PythonCallableCandidate
 
 
@@ -38,4 +40,4 @@ class OrderedPythonCallableClassifier(PythonCallableClassifier):
         for rule in sorted(self.rules.values(), key=lambda item: item.order):
             if rule.applies(candidate):
                 return rule.classify(candidate)
-        raise ValueError("No Python callable rule accepted the candidate.")
+        raise ExtractorInvariantError(ExtractorInvariantViolation.UNCLASSIFIED_CALLABLE, candidate.name)

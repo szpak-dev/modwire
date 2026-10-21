@@ -19,4 +19,4 @@ class DynamicCallTargetRule(PythonCallTargetRule):
         return True
 
     def classify(self, candidate: PythonCallCandidate) -> SourceCall:
-        return self.source_call(candidate, "", SourceCallResolution.DYNAMIC)
+        return self.source_call(candidate, None, SourceCallResolution.DYNAMIC)

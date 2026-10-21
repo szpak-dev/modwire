@@ -9,31 +9,46 @@ import modwire
 from .architecture.boundaries.models.architecture_error import ArchitectureError
 from .architecture.boundaries.models.unknown_flow_analyzer_error import UnknownFlowAnalyzerError
 from .architecture.config.models.architecture_config import ArchitectureConfig
+from .architecture.config.models.architecture_config_error import ArchitectureConfigError
+from .architecture.config.models.architecture_config_validation_error import ArchitectureConfigValidationError
+from .architecture.config.models.architecture_config_violation import ArchitectureConfigViolation
 from .architecture.facade import ArchitectureFacade
 from .architecture.report.models.report_catalog import ReportCatalog
 from .architecture.report.models.report_node import ReportNode
+from .architecture.shape.models.architecture_shape_error import ArchitectureShapeError
+from .architecture.shape.models.architecture_shape_validation_error import ArchitectureShapeValidationError
+from .architecture.shape.models.architecture_shape_violation import ArchitectureShapeViolation
 from .cli.cache.models.cache_access_error import CacheAccessError
 from .cli.cache.models.cache_error import CacheError
 from .cli.cache.models.cache_options import CacheOptions
 from .cli.cache.models.cache_outcome import CacheOutcome
 from .cli.cache.models.cache_ownership_error import CacheOwnershipError
 from .cli.cache.models.cache_stage import CacheStage
+from .cli.cache.models.cache_validation_error import CacheValidationError
+from .cli.cache.models.cache_violation import CacheViolation
 from .cli.cache.models.cached_result import CachedResult
 from .cli.facade import CliFacade
 from .cli.initialization.models.initialization_error import InitializationError
 from .cli.initialization.models.invalid_initialization_target_error import InvalidInitializationTargetError
+from .cli.pipeline.models.configuration_load_error import ConfigurationLoadError
 from .cli.pipeline.models.extractor_contract_error import ExtractorContractError
 from .cli.pipeline.models.extractor_contract_violation import ExtractorContractViolation
 from .cli.pipeline.models.extractor_execution_error import ExtractorExecutionError
 from .cli.pipeline.models.extractor_resource_error import ExtractorResourceError
 from .cli.pipeline.models.extractor_unavailable_error import ExtractorUnavailableError
 from .cli.pipeline.models.invalid_source_root_error import InvalidSourceRootError
+from .cli.pipeline.models.pipeline_error import PipelineError
+from .cli.pipeline.models.pipeline_validation_error import PipelineValidationError
+from .cli.pipeline.models.pipeline_violation import PipelineViolation
 from .cli.pipeline.models.source_access_error import SourceAccessError
 from .cli.pipeline.models.source_observation import SourceObservation
 from .cli.pipeline.models.source_observation_invalidated_error import SourceObservationInvalidatedError
 from .extraction.extractors.models.duplicate_identity_error import DuplicateIdentityError
 from .extraction.extractors.models.extraction_error import ExtractionError
 from .extraction.extractors.models.extractor_error import ExtractorError
+from .extraction.extractors.models.extractor_invariant_error import ExtractorInvariantError
+from .extraction.extractors.models.extractor_invariant_violation import ExtractorInvariantViolation
+from .extraction.extractors.models.source_parse_error import SourceParseError
 from .extraction.extractors.models.unsupported_language_error import UnsupportedLanguageError
 from .extraction.extractors.models.unsupported_parser_error import UnsupportedParserError
 from .extraction.facade import ExtractionFacade
@@ -50,15 +65,22 @@ from .implementation.manifest.models.manifest_format import ManifestFormat
 from .implementation.manifest.models.unsupported_manifest_format_error import UnsupportedManifestFormatError
 from .shared.code.models.capability_coverage import CapabilityCoverage
 from .shared.code.models.capability_status import CapabilityStatus
+from .shared.code.models.code_error import CodeError
 from .shared.code.models.code_map import CodeMap
+from .shared.code.models.code_validation_error import CodeValidationError
+from .shared.code.models.code_violation import CodeViolation
 from .shared.code.models.declaration_family import DeclarationFamily
 from .shared.code.models.declaration_identity import DeclarationIdentity
 from .shared.code.models.digest_algorithm import DigestAlgorithm
 from .shared.code.models.fact_capability import FactCapability
 from .shared.code.models.queryable_code_map import QueryableCodeMap
+from .shared.code.models.relationship_coverage import RelationshipCoverage
+from .shared.code.models.relationship_family import RelationshipFamily
 from .shared.code.models.scan_policy import ScanPolicy
 from .shared.code.models.source_assigned_value import SourceAssignedValue
 from .shared.code.models.source_assigned_value_kind import SourceAssignedValueKind
+from .shared.code.models.source_call import SourceCall
+from .shared.code.models.source_call_resolution import SourceCallResolution
 from .shared.code.models.source_declaration_relation_kind import SourceDeclarationRelationKind
 from .shared.code.models.source_dependency_kind import SourceDependencyKind
 from .shared.code.models.source_manifest_identity import SourceManifestIdentity
@@ -68,15 +90,27 @@ from .shared.code.models.source_symbol_kind import SourceSymbolKind
 from .shared.failures.models.modwire_error import ModwireError
 
 __all__ = [
+    "ArchitectureConfigError",
+    "ArchitectureConfigValidationError",
+    "ArchitectureConfigViolation",
     "ArchitectureError",
+    "ArchitectureShapeError",
+    "ArchitectureShapeValidationError",
+    "ArchitectureShapeViolation",
     "CacheAccessError",
     "CacheError",
     "CacheOptions",
     "CacheOutcome",
     "CacheOwnershipError",
     "CacheStage",
+    "CacheValidationError",
+    "CacheViolation",
     "CachedResult",
     "CodeMap",
+    "CodeError",
+    "CodeValidationError",
+    "CodeViolation",
+    "ConfigurationLoadError",
     "CapabilityCoverage",
     "CapabilityStatus",
     "DeclarationFamily",
@@ -87,6 +121,8 @@ __all__ = [
     "ExtractorContractError",
     "ExtractorContractViolation",
     "ExtractorError",
+    "ExtractorInvariantError",
+    "ExtractorInvariantViolation",
     "ExtractorExecutionError",
     "ExtractorResourceError",
     "ExtractorUnavailableError",
@@ -103,15 +139,23 @@ __all__ = [
     "ManifestFormat",
     "ModwireError",
     "ModwireApplication",
+    "PipelineError",
+    "PipelineValidationError",
+    "PipelineViolation",
     "QueryableCodeMap",
+    "RelationshipCoverage",
+    "RelationshipFamily",
     "ScanPolicy",
     "SourceAssignedValue",
     "SourceAssignedValueKind",
+    "SourceCall",
+    "SourceCallResolution",
     "SourceAccessError",
     "SourceMemberKind",
     "SourceManifestIdentity",
     "SourceObservation",
     "SourceObservationInvalidatedError",
+    "SourceParseError",
     "SourceDeclarationRelationKind",
     "SourceDependencyKind",
     "SourceNamespaceKind",

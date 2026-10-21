@@ -57,13 +57,18 @@ claim that the implementation satisfies an intended architecture.
 code_map = application.generate_map("python", ".", policy)
 manifest_format = application.implementation_manifest_formats()[0]
 document = application.implementation_manifest(code_map, manifest_format)
+manifest = application.read_implementation_manifest(document)
 
+assert code_map.schema_version == 11
 assert manifest_format.id == "canonical-json"
+assert manifest.schema_version == 8
 assert document.verify_digest()
 
 with open("implementation-manifest.json", "w", encoding="utf-8") as target:
     target.write(document.payload)
 ```
 
-Read a received document with `read_implementation_manifest`. It validates canonical
-content and the declared digest before returning the typed manifest.
+`read_implementation_manifest` validates canonical content and the declared digest
+before returning the typed manifest. Inspect
+`manifest.producer.relationship_capabilities` before treating an empty relationship
+family as evidence of absence.

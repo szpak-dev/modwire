@@ -275,7 +275,6 @@ function source_callable_entry(
             'qualified_name' => $qualifiedName,
             'ordinal' => declaration_ordinal($node),
         ],
-        'id' => $sourceId . '::' . $qualifiedName,
         'source_id' => $sourceId,
         'name' => $name,
         'qualified_name' => $qualifiedName,
@@ -660,21 +659,11 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
     $values = [];
     $callables = [];
     $callableRanges = [];
-    $seenCallables = [];
 
-    $addCallable = function (array $entry, Node $node) use (&$callables, &$callableRanges, &$seenCallables): void {
-        $baseQualifiedName = $entry['qualified_name'];
-        $qualifiedName = $baseQualifiedName;
-        $suffix = 2;
-        while (isset($seenCallables[$entry['source_id'] . '::' . $qualifiedName])) {
-            $qualifiedName = $baseQualifiedName . '#' . $suffix;
-            $suffix++;
-        }
-        $entry['id'] = $entry['source_id'] . '::' . $qualifiedName;
-        $seenCallables[$entry['id']] = true;
+    $addCallable = function (array $entry, Node $node) use (&$callables, &$callableRanges): void {
         $callables[] = $entry;
         $callableRanges[spl_object_id($node)] = [
-            'id' => $entry['id'],
+            'declarationId' => $entry['declaration_id'],
             'ownerName' => $entry['owner_name'],
             'node' => $node,
         ];
@@ -794,12 +783,12 @@ function collect_calls(array $nodes, string $sourceId, array $callables, array $
     $constructorsByName = [];
 
     foreach ($callables as $callable) {
-        $byQualifiedName[$callable['qualified_name']] = $callable['id'];
+        $byQualifiedName[$callable['qualified_name']][] = $callable['declaration_id'];
         if (in_array($callable['kind'], ['function', 'callable_value'], true)) {
-            $byName[$callable['name']] = $callable['id'];
+            $byName[$callable['name']][] = $callable['declaration_id'];
         }
         if ($callable['kind'] === 'constructor' && $callable['owner_name'] !== '') {
-            $constructorsByName[$callable['owner_name']] = $callable['id'];
+            $constructorsByName[$callable['owner_name']][] = $callable['declaration_id'];
         }
     }
 
@@ -835,27 +824,27 @@ function collect_calls(array $nodes, string $sourceId, array $callables, array $
             return;
         }
 
-        $targetCallableId = '';
+        $targetCallableId = null;
         $resolution = 'unresolved';
-        if ($isConstructor && isset($constructorsByName[$expression])) {
-            $targetCallableId = $constructorsByName[$expression];
+        if ($isConstructor && count($constructorsByName[$expression] ?? []) === 1) {
+            $targetCallableId = $constructorsByName[$expression][0];
             $resolution = 'resolved';
-        } elseif (isset($byQualifiedName[$expression])) {
-            $targetCallableId = $byQualifiedName[$expression];
+        } elseif (count($byQualifiedName[$expression] ?? []) === 1) {
+            $targetCallableId = $byQualifiedName[$expression][0];
             $resolution = 'resolved';
         } elseif (str_starts_with($expression, '$this->') && $range['ownerName'] !== '') {
             $qualifiedName = $range['ownerName'] . '.' . substr($expression, strlen('$this->'));
-            if (isset($byQualifiedName[$qualifiedName])) {
-                $targetCallableId = $byQualifiedName[$qualifiedName];
+            if (count($byQualifiedName[$qualifiedName] ?? []) === 1) {
+                $targetCallableId = $byQualifiedName[$qualifiedName][0];
                 $resolution = 'resolved';
             }
-        } elseif (isset($byName[$expression])) {
-            $targetCallableId = $byName[$expression];
+        } elseif (count($byName[$expression] ?? []) === 1) {
+            $targetCallableId = $byName[$expression][0];
             $resolution = 'resolved';
         }
 
         $calls[] = [
-            'source_callable_id' => $range['id'],
+            'source_callable_id' => $range['declarationId'],
             'target_callable_id' => $targetCallableId,
             'source_id' => $sourceId,
             'line' => $node->getStartLine(),
@@ -875,7 +864,23 @@ function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRo
         exit(1);
     }
 
-    $nodes = (new ParserFactory())->createForHostVersion()->parse($content) ?? [];
+    try {
+        $nodes = (new ParserFactory())->createForHostVersion()->parse($content) ?? [];
+    } catch (Error $error) {
+        if ($error->getStartLine() < 1 || !$error->hasColumnInfo()) {
+            throw new LogicException("PHP parser omitted the source parse location for {$path}.", previous: $error);
+        }
+        $failure = [
+            'code' => 'source_parse',
+            'language' => 'php',
+            'path' => $path,
+            'line' => $error->getStartLine(),
+            'column' => $error->getStartColumn($content),
+            'diagnostic' => $error->getRawMessage(),
+        ];
+        fwrite(STDERR, 'modwire-error:' . json_encode($failure, JSON_THROW_ON_ERROR) . "\n");
+        exit(1);
+    }
 
     $root = $sourcesRoot ?? dirname($path);
     $resolvedSourceId = $sourceId ?? source_id_for_path($path, $root);

@@ -2,6 +2,8 @@ from typing import cast
 
 from ....architecture.report.models.report_node import ReportNode
 from ....shared.values.models.value_model import ValueModel
+from .pipeline_validation_error import PipelineValidationError
+from .pipeline_violation import PipelineViolation
 
 
 class ReportPipelineContext(ValueModel):
@@ -16,7 +18,7 @@ class ReportPipelineContext(ValueModel):
         for report in self.reports:
             if type(report) is report_type:
                 return cast(ReportType, report)
-        raise LookupError(f"Missing report: {report_type.__name__}")
+        raise PipelineValidationError(PipelineViolation.MISSING_REPORT, report_type.__name__)
 
     def fail(self) -> "ReportPipelineContext":
         return self.model_copy(update={"failed": True})

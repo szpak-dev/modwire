@@ -3,6 +3,8 @@ from typing import Self
 from pydantic import model_validator
 
 from ...values.models.value_model import ValueModel
+from .code_validation_error import CodeValidationError
+from .code_violation import CodeViolation
 
 
 class CodePackage(ValueModel):
@@ -22,23 +24,23 @@ class CodePackage(ValueModel):
         try:
             return self.files[path]
         except KeyError as error:
-            raise KeyError(f"Code package has no file {path!r}") from error
+            raise CodeValidationError(CodeViolation.MISSING_PACKAGE_FILE, path) from error
 
     def merged(self, other: "CodePackage") -> "CodePackage":
         overlap = sorted(set(self.files).intersection(other.files))
         if overlap:
-            raise ValueError("Code packages contain duplicate paths: " + ", ".join(overlap))
+            raise CodeValidationError(CodeViolation.DUPLICATE_PACKAGE_PATH, ", ".join(overlap))
         return type(self)(files={**self.files, **other.files})
 
     def _validate_file_path(self, path: str) -> None:
         if not path:
-            raise ValueError("Code package file path cannot be empty.")
+            raise CodeValidationError(CodeViolation.EMPTY_PACKAGE_PATH, "empty path")
         if "\\" in path:
-            raise ValueError("Code package file path must use POSIX separators.")
+            raise CodeValidationError(CodeViolation.NON_POSIX_PACKAGE_PATH, path)
         if path.startswith("/"):
-            raise ValueError("Code package file path must be relative.")
+            raise CodeValidationError(CodeViolation.ABSOLUTE_PACKAGE_PATH, path)
         if path.endswith("/"):
-            raise ValueError("Code package file path must point to a file.")
+            raise CodeValidationError(CodeViolation.DIRECTORY_PACKAGE_PATH, path)
         parts = path.split("/")
         if any(part in {"", ".", ".."} for part in parts):
-            raise ValueError("Code package file path cannot contain empty, current, or parent segments.")
+            raise CodeValidationError(CodeViolation.NON_NORMALIZED_PACKAGE_PATH, path)
