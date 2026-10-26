@@ -42,15 +42,12 @@ class TestDocumentationExamples(CliTestCase):
 
     def test_language_capability_table_matches_public_producer_contracts(self) -> None:
         documented = self.capability_table()
-        sources = {
-            "python": ("src/example.py", "class Example:\n    pass\n"),
-            "typescript": ("src/example.ts", "export class Example {}\n"),
-            "php": ("src/example.php", "<?php\nfinal class Example {}\n"),
-            "java": ("src/Example.java", "public final class Example {}\n"),
-        }
+        languages = self.application.extraction.supported_languages()
+        fixtures = self.repository / "tests/fixtures/code_map/language_extensions"
 
-        for language, (path, content) in sources.items():
-            code_map = self.application.generate_map(language, self.project({path: content}), self.scan_policy())
+        assert tuple(documented) == languages
+        for language in languages:
+            code_map = self.application.generate_map(language, fixtures / language, self.scan_policy())
             actual = {item.capability.value: item.status.value for item in code_map.producer.capabilities}
             assert documented[language] == actual
 
@@ -99,10 +96,13 @@ class TestDocumentationExamples(CliTestCase):
             "dependencies",
             "spans",
         }
-        result = {"python": {}, "typescript": {}, "php": {}, "java": {}}
-        for line in page.splitlines():
+        lines = page.splitlines()
+        header = next(line for line in lines if line.startswith("| Capability |"))
+        languages = tuple(cell.strip().casefold() for cell in header.strip().strip("|").split("|")[1:])
+        result = {language: {} for language in languages}
+        for line in lines:
             cells = tuple(cell.strip() for cell in line.strip().strip("|").split("|"))
-            if len(cells) != 5 or cells[0] not in capabilities:
+            if len(cells) != len(languages) + 1 or cells[0] not in capabilities:
                 continue
             for language, value in zip(result, cells[1:], strict=True):
                 result[language][cells[0]] = value.lower()

@@ -532,44 +532,15 @@ class TestImplementationManifest(ApplicationTestCase):
         assert before_document.digest != after_document.digest
 
     def test_supported_languages_publish_one_manifest_vocabulary(self) -> None:
-        root = self.project(
-            {
-                "src/example.py": (
-                    "class ExampleBase:\n"
-                    "    pass\n\n"
-                    "class ExampleChild(ExampleBase):\n"
-                    "    def execute(self, value: int = 1) -> str:\n"
-                    "        return str(value)\n"
-                ),
-                "src/example.ts": (
-                    "class ExampleBase {}\n"
-                    "class ExampleChild extends ExampleBase {\n"
-                    "    execute(value: number = 1): string { return String(value); }\n"
-                    "}\n"
-                ),
-                "src/ExampleChild.java": (
-                    "class ExampleBase {}\n"
-                    "class ExampleChild extends ExampleBase {\n"
-                    "    String execute(int value) { return String.valueOf(value); }\n"
-                    "}\n"
-                ),
-                "src/example.php": (
-                    "<?php\n"
-                    "class ExampleBase {}\n"
-                    "class ExampleChild extends ExampleBase {\n"
-                    "    public function execute(int $value = 1): string { return (string) $value; }\n"
-                    "}\n"
-                ),
-            }
-        )
+        fixtures = self.repository / "tests/fixtures/code_map/language_extensions"
         format = self.application.implementation_manifest_formats()[0]
         manifests = {
             language: self.application.read_implementation_manifest(
                 self.application.implementation_manifest(
-                    self.application.generate_map(language, root, self.scan_policy()), format
+                    self.application.generate_map(language, fixtures / language, self.scan_policy()), format
                 )
             )
-            for language in ("python", "typescript", "php", "java")
+            for language in self.application.extraction.supported_languages()
         }
 
         vocabularies = {tuple(manifest.model_dump(mode="json")) for manifest in manifests.values()}

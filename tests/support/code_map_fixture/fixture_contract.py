@@ -10,6 +10,9 @@ class PolyglotFixtureContract:
     def source_paths(self, root: Path) -> tuple[str, ...]:
         return tuple(sorted(path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file()))
 
+    def source_layout(self, root: Path) -> tuple[str, ...]:
+        return tuple(sorted(path.parent.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file()))
+
     def projected_model_fields(self, code_map: CodeMap) -> dict[str, frozenset[str]]:
         source_file = next(iter(code_map.extraction.files.values()))
         declaration = source_file.declarations[0]

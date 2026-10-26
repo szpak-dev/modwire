@@ -1,13 +1,14 @@
 import re
 
-import pytest
-
 from ..base_test import ExtractionTestCase
 
 
 class TestDependencyInvariants(ExtractionTestCase):
-    @pytest.mark.parametrize("language", ("python", "typescript", "php", "java"))
-    def test_indexed_resolution_matches_complete_scans_for_every_language(self, language: str) -> None:
+    def test_indexed_resolution_matches_complete_scans_for_every_language(self) -> None:
+        for language in self.application.extraction.supported_languages():
+            self.assert_indexed_resolution_matches_complete_scan(language)
+
+    def assert_indexed_resolution_matches_complete_scan(self, language: str) -> None:
         def normalize(value: str) -> str:
             parts = str(value).replace("\\", "/").strip("/").split("/")
             return "/".join(re.sub("[^a-z0-9]", "", part.casefold()) for part in parts)
@@ -32,11 +33,7 @@ class TestDependencyInvariants(ExtractionTestCase):
             (identity, file_id)
             for file_id, source in extraction.files.items()
             for module in (normalize(source.import_identity),)
-            for identity in (
-                (module, module.rsplit("/", 1)[0])
-                if language == "python" and module.endswith("/__init__")
-                else (module,)
-            )
+            for identity in ((module, module.rsplit("/", 1)[0]) if module.endswith("/__init__") else (module,))
         ]
         symbols = [
             (module.rsplit("/", 1)[0] if "/" in module else "", exported.name.casefold(), file_id)

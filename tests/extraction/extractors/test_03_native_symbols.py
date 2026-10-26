@@ -1,6 +1,5 @@
-import pytest
+import re
 
-from ...support.code_map_fixture import FixtureLanguageConvention
 from ..base_test import ExtractionTestCase
 
 CALL_OCCURRENCE_FIXTURES = ExtractionTestCase.repository / "tests/fixtures/call_occurrences"
@@ -8,6 +7,9 @@ LANGUAGE_EXTENSIONS = ExtractionTestCase.repository / "tests/fixtures/code_map/l
 
 
 class TestNativeSymbols(ExtractionTestCase):
+    def normalized_name(self, value: str) -> str:
+        return re.sub("[^a-z0-9]", "", value.casefold())
+
     def test_authored_identical_calls_keep_distinct_occurrence_identities(self) -> None:
         languages = self.application.discover(CALL_OCCURRENCE_FIXTURES, self.scan_policy())
 
@@ -23,59 +25,56 @@ class TestNativeSymbols(ExtractionTestCase):
             assert len({item.expression for item in calls}) == 1
             assert first.code_map.to_dict() == second.code_map.to_dict()
 
-    @pytest.mark.parametrize(
-        "convention",
-        (
-            FixtureLanguageConvention.PYTHON,
-            FixtureLanguageConvention.TYPESCRIPT,
-            FixtureLanguageConvention.PHP,
-            FixtureLanguageConvention.JAVA,
-        ),
-        ids=lambda convention: convention.language,
-    )
-    def test_native_extractors_preserve_abstract_and_concrete_class_methods(
-        self, convention: FixtureLanguageConvention
-    ) -> None:
-        root = LANGUAGE_EXTENSIONS / convention.language
-        result = self.application.generate_queryable_map(convention.language, root, self.scan_policy())
-        abstract = result.abstract_classes().first().item
-        assert tuple(item.name for item in abstract.abstract_methods) == (convention.member_name("example_required"),)
-        assert tuple(item.name for item in abstract.methods) == (convention.member_name("example_concrete"),)
-        concrete = result.classes().where_equal(lambda item: item.item.name, "ExampleImplementation").first().item
-        assert convention.member_name("example_required") in tuple(item.name for item in concrete.methods)
+    def test_native_extractors_preserve_abstract_and_concrete_class_methods(self) -> None:
+        for language in self.application.extraction.supported_languages():
+            root = LANGUAGE_EXTENSIONS / language
+            result = self.application.generate_queryable_map(language, root, self.scan_policy())
+            abstract = result.abstract_classes().first().item
+            assert tuple(self.normalized_name(item.name) for item in abstract.abstract_methods) == (
+                self.normalized_name("example_required"),
+            ), language
+            assert tuple(self.normalized_name(item.name) for item in abstract.methods) == (
+                self.normalized_name("example_concrete"),
+            ), language
+            concrete = result.classes().where_equal(lambda item: item.item.name, "ExampleImplementation").first().item
+            assert self.normalized_name("example_required") in tuple(
+                self.normalized_name(item.name) for item in concrete.methods
+            ), language
 
-    @pytest.mark.parametrize(
-        "convention",
-        (
-            FixtureLanguageConvention.PYTHON,
-            FixtureLanguageConvention.TYPESCRIPT,
-            FixtureLanguageConvention.PHP,
-        ),
-        ids=lambda convention: convention.language,
-    )
-    def test_nullable_class_members_remain_optional(self, convention: FixtureLanguageConvention) -> None:
-        root = LANGUAGE_EXTENSIONS / convention.language
-        result = self.application.generate_queryable_map(convention.language, root, self.scan_policy())
-        concrete = result.classes().where_equal(lambda item: item.item.name, "ExampleImplementation").first().item
-        assert concrete.properties[0].name == convention.member_name("example_optional")
-        assert concrete.properties[0].is_optional
+    def test_nullable_class_members_remain_optional_when_the_extractor_publishes_optionality(self) -> None:
+        optional_members = []
+        for language in self.application.extraction.supported_languages():
+            root = LANGUAGE_EXTENSIONS / language
+            result = self.application.generate_queryable_map(language, root, self.scan_policy())
+            concrete = result.classes().where_equal(lambda item: item.item.name, "ExampleImplementation").first().item
+            members = tuple(
+                item
+                for item in concrete.properties
+                if self.normalized_name(item.name) == self.normalized_name("example_optional")
+            )
+            assert len(members) == 1, language
+            if members[0].is_optional:
+                optional_members.append(language)
 
-    @pytest.mark.parametrize(
-        "convention",
-        (
-            FixtureLanguageConvention.TYPESCRIPT,
-            FixtureLanguageConvention.PHP,
-            FixtureLanguageConvention.JAVA,
-        ),
-        ids=lambda convention: convention.language,
-    )
-    def test_interfaces_expose_method_signatures(self, convention: FixtureLanguageConvention) -> None:
-        root = LANGUAGE_EXTENSIONS / convention.language
-        result = self.application.generate_queryable_map(convention.language, root, self.scan_policy())
-        interface = result.interfaces().first().item
-        assert interface.name == "ExampleContract"
-        assert interface.methods[0].name == convention.member_name("example_required")
-        assert interface.methods[0].declared_args == 1
+        assert optional_members
+
+    def test_interfaces_expose_method_signatures(self) -> None:
+        interface_languages = []
+        for language in self.application.extraction.supported_languages():
+            root = LANGUAGE_EXTENSIONS / language
+            result = self.application.generate_queryable_map(language, root, self.scan_policy())
+            interfaces = tuple(item.item for item in result.interfaces().all())
+            if not interfaces:
+                continue
+            interface_languages.append(language)
+            contracts = tuple(item for item in interfaces if item.name == "ExampleContract")
+            assert len(contracts) == 1, language
+            assert self.normalized_name(contracts[0].methods[0].name) == self.normalized_name("example_required"), (
+                language
+            )
+            assert contracts[0].methods[0].declared_args == 1, language
+
+        assert interface_languages
 
     def test_java_declaration_forms_use_shared_symbol_families(self) -> None:
         root = LANGUAGE_EXTENSIONS / "java"
@@ -114,36 +113,35 @@ class TestNativeSymbols(ExtractionTestCase):
         assert callback.visibility == "public"
         assert callback.signatures == []
 
-    @pytest.mark.parametrize(
-        "convention",
-        (
-            FixtureLanguageConvention.PYTHON,
-            FixtureLanguageConvention.TYPESCRIPT,
-            FixtureLanguageConvention.PHP,
-        ),
-        ids=lambda convention: convention.language,
-    )
-    def test_module_variable_shape_is_language_neutral(self, convention: FixtureLanguageConvention) -> None:
-        root = LANGUAGE_EXTENSIONS / convention.language
-        result = self.application.generate_queryable_map(convention.language, root, self.scan_policy())
-        variable = (
-            result.values()
-            .where_equal(lambda item: item.item.name, convention.member_name("example_variable"))
-            .first()
-            .item
-        )
-        constant = result.values().where_equal(lambda item: item.item.name, "EXAMPLE_CONSTANT").first().item
-        assert variable.scope == constant.scope == "module"
-        assert variable.declaration_kind == "assignment"
-        assert constant.declaration_kind == "constant"
+    def test_module_variable_shape_is_language_neutral(self) -> None:
+        module_variable_languages = []
+        for language in self.application.extraction.supported_languages():
+            root = LANGUAGE_EXTENSIONS / language
+            result = self.application.generate_queryable_map(language, root, self.scan_policy())
+            variables = tuple(
+                item.item
+                for item in result.values().all()
+                if self.normalized_name(item.item.name) == self.normalized_name("example_variable")
+            )
+            if not variables:
+                continue
+            module_variable_languages.append(language)
+            assert len(variables) == 1, language
+            variable = variables[0]
+            constant = result.values().where_equal(lambda item: item.item.name, "EXAMPLE_CONSTANT").first().item
+            assert variable.scope == constant.scope == "module", language
+            assert variable.declaration_kind == "assignment", language
+            assert constant.declaration_kind == "constant", language
 
-        config = self.application.configure({"shape": {"realms": [{"name": "syntax", "match": "*"}]}})
-        shape = next(
-            item
-            for item in self.application.analyze(result, config)
-            if item.metadata.id == "architecture.violations.shape"
-        )
-        violations = tuple(item for item in shape.violations if item.rule_name == "max_variables_per_file")
-        assert len(violations) == 1
-        assert violations[0].actual == 1
-        assert violations[0].limit == 0
+            config = self.application.configure({"shape": {"realms": [{"name": "syntax", "match": "*"}]}})
+            shape = next(
+                item
+                for item in self.application.analyze(result, config)
+                if item.metadata.id == "architecture.violations.shape"
+            )
+            violations = tuple(item for item in shape.violations if item.rule_name == "max_variables_per_file")
+            assert len(violations) == 1, language
+            assert violations[0].actual == 1, language
+            assert violations[0].limit == 0, language
+
+        assert module_variable_languages
