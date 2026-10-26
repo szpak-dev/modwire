@@ -286,9 +286,17 @@ class CodeMapFactory:
             "docstring": "",
         }
 
-    def source_call(self, source_id: str, source_name: str, target_name: str) -> dict[str, object]:
+    def source_call(
+        self,
+        source_id: str,
+        source_name: str,
+        target_name: str,
+        *,
+        ordinal: int,
+    ) -> dict[str, object]:
         return {
             "source_callable_id": source_name,
+            "ordinal": ordinal,
             "target_callable_id": target_name,
             "source_id": source_id,
             "line": 1,

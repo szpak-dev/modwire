@@ -106,6 +106,12 @@ class ImplementationManifestValidator:
             ImplementationManifestViolation.DUPLICATE_IDENTITY,
             "attributes",
         )
+        call_ids = {item.identity() for item in self.calls}
+        self.require(
+            len(call_ids) == len(self.calls),
+            ImplementationManifestViolation.DUPLICATE_IDENTITY,
+            "calls",
+        )
         span_targets = {item.target_id for item in self.spans}
         self.require(
             len(span_targets) == len(self.spans),

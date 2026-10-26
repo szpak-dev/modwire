@@ -10,6 +10,7 @@ from .call_reference import PythonCallReference
 class PythonCallCandidate:
     node: ast.Call
     reference: PythonCallReference
+    ordinal: int
     source_qualified_name: str
     owner_name: str
     source_id: FileId

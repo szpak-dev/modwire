@@ -778,6 +778,7 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
 
 function collect_calls(array $nodes, string $sourceId, array $callables, array $callableRanges): array {
     $calls = [];
+    $nextOrdinalByOwner = array_fill_keys(array_keys($callableRanges), 1);
     $byName = [];
     $byQualifiedName = [];
     $constructorsByName = [];
@@ -794,6 +795,7 @@ function collect_calls(array $nodes, string $sourceId, array $callables, array $
 
     walk_nodes($nodes, function (Node $node, array $parents) use (
         &$calls,
+        &$nextOrdinalByOwner,
         $sourceId,
         $callableRanges,
         $byName,
@@ -824,6 +826,10 @@ function collect_calls(array $nodes, string $sourceId, array $callables, array $
             return;
         }
 
+        $ownerId = spl_object_id($owner);
+        $ordinal = $nextOrdinalByOwner[$ownerId];
+        $nextOrdinalByOwner[$ownerId] = $ordinal + 1;
+
         $targetCallableId = null;
         $resolution = 'unresolved';
         if ($isConstructor && count($constructorsByName[$expression] ?? []) === 1) {
@@ -845,6 +851,7 @@ function collect_calls(array $nodes, string $sourceId, array $callables, array $
 
         $calls[] = [
             'source_callable_id' => $range['declarationId'],
+            'ordinal' => $ordinal,
             'target_callable_id' => $targetCallableId,
             'source_id' => $sourceId,
             'line' => $node->getStartLine(),

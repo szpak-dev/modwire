@@ -2,8 +2,24 @@ import pytest
 
 from ..base_test import ExtractionTestCase
 
+CALL_OCCURRENCE_FIXTURES = ExtractionTestCase.repository / "tests/fixtures/call_occurrences"
+CALL_OCCURRENCE_LANGUAGES = tuple(path.name for path in sorted(CALL_OCCURRENCE_FIXTURES.iterdir()) if path.is_dir())
+
 
 class TestNativeSymbols(ExtractionTestCase):
+    @pytest.mark.parametrize("language", CALL_OCCURRENCE_LANGUAGES)
+    def test_authored_identical_calls_keep_distinct_occurrence_identities(self, language: str) -> None:
+        root = CALL_OCCURRENCE_FIXTURES / language
+        first = self.application.generate_queryable_map(language, root, self.scan_policy())
+        second = self.application.generate_queryable_map(language, root, self.scan_policy())
+
+        calls = tuple(item.item for item in first.calls().all())
+        assert tuple(item.ordinal for item in calls) == (1, 2)
+        assert len({item.identity() for item in calls}) == 2
+        assert len({item.source_callable_id.canonical() for item in calls}) == 1
+        assert len({item.expression for item in calls}) == 1
+        assert first.code_map.to_dict() == second.code_map.to_dict()
+
     @pytest.mark.parametrize("language", ("python", "typescript", "php", "java"))
     def test_native_extractors_preserve_abstract_and_concrete_class_methods(self, language: str) -> None:
         root = self.repository / "tests/fixtures/syntax" / language
