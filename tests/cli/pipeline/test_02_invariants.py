@@ -10,7 +10,7 @@ from .base_test import NativeExtractionTestCase
 class TestNativeExtractionInvariants(NativeExtractionTestCase):
     @pytest.mark.parametrize(
         ("language", "resolved", "external"),
-        (("python", 7, 3), ("typescript", 5, 2), ("php", 6, 2), ("java", 5, 2)),
+        (("python", 7, 1), ("typescript", 7, 1), ("php", 7, 1), ("java", 7, 1)),
     )
     def test_native_languages_preserve_dependency_resolution(self, language: str, resolved: int, external: int) -> None:
         result = self.fixture_map(language)

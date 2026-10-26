@@ -1,0 +1,28 @@
+boundaries:
+  tags:
+    - {name: context, match: "src/*"}
+    - {name: module, match: "src/*/*"}
+    - {name: interfaces, match: "src/*/*/interfaces"}
+    - {name: application, match: "src/*/*/application"}
+    - {name: infrastructure, match: "src/*/*/infrastructure"}
+    - {name: domain, match: "src/*/*/domain"}
+  rules:
+    - source: module
+      disallow: [module]
+      allow_same_match: true
+  flow:
+    module_tag: module
+    layers: [interfaces, application, infrastructure, domain]
+    analyzers: [module-boundaries, backward-flow, no-cycles, no-reentry]
+shape:
+  realms:
+    - name: reference-shop
+      match: src
+      shape:
+        max_classes_per_file: 1
+        max_methods_per_class: 4
+        max_declared_args: 3
+        max_method_lines: 12
+        max_class_lines: 40
+        allow_import_aliases: true
+        require_joined_imports: false

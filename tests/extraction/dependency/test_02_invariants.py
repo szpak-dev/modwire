@@ -24,7 +24,7 @@ class TestDependencyInvariants(ExtractionTestCase):
                 shared += 1
             return shared == min(len(left_parts), len(right_parts)) or shared >= 2
 
-        root = self.repository / "tests/fixtures/syntax" / language
+        root = self.repository / "tests/fixtures/code_map/language_extensions" / language
         request = self.application.extraction.request(language, str(root))
         extraction = self.application.cli.extract(request, self.scan_policy())
         result = self.application.extraction.generate_map(request, extraction)
