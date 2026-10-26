@@ -21,7 +21,7 @@ from .manifest_symbol import ManifestSymbol
 class ImplementationManifest(ValueModel):
     """A versioned, language-neutral statement of observed implementation facts and provenance."""
 
-    schema_version: Literal[8] = 8
+    schema_version: Literal[9] = 9
     producer: CodeMapProducer
     source_manifest: SourceManifest
     namespaces: tuple[ManifestNamespace, ...]

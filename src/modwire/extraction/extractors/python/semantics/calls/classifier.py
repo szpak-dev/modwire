@@ -34,6 +34,7 @@ class PythonCallTargetRule(ABC):
     ) -> SourceCall:
         return SourceCall(
             source_callable_id=candidate.source_callable_id,
+            ordinal=candidate.ordinal,
             target_callable_id=target_callable_id,
             source_id=candidate.source_id,
             line=candidate.node.lineno,

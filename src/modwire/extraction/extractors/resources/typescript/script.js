@@ -228047,8 +228047,10 @@ function collectCalls(sourceFile, lineStarts, sourceId, callableRanges, callable
         }
     }
     const rangesByFunction = new Map();
+    const nextOrdinalByFunction = new Map();
     for (const range of callableRanges) {
         rangesByFunction.set(range.functionNode, range);
+        nextOrdinalByFunction.set(range.functionNode, 1);
     }
     const calls = [];
     function addCall(node, expression, isConstructor) {
@@ -228057,6 +228059,8 @@ function collectCalls(sourceFile, lineStarts, sourceId, callableRanges, callable
         if (range === undefined) {
             return;
         }
+        const ordinal = nextOrdinalByFunction.get(nearest);
+        nextOrdinalByFunction.set(nearest, ordinal + 1);
         const expressionText = expression.getText();
         const targetName = expressionName(expression);
         let targetCallableId = null;
@@ -228082,6 +228086,7 @@ function collectCalls(sourceFile, lineStarts, sourceId, callableRanges, callable
         }
         calls.push({
             source_callable_id: range.declarationId,
+            ordinal,
             target_callable_id: targetCallableId,
             source_id: sourceId,
             line: lineNumberAt(lineStarts, node.getStart()),
@@ -228090,14 +228095,20 @@ function collectCalls(sourceFile, lineStarts, sourceId, callableRanges, callable
             target_name: targetName,
         });
     }
-    for (const callExpression of sourceFile.getDescendantsOfKind(ts_morph_1.SyntaxKind.CallExpression)) {
-        addCall(callExpression, callExpression.getExpression(), false);
-    }
+    const occurrences = sourceFile.getDescendantsOfKind(ts_morph_1.SyntaxKind.CallExpression).map(node => ({
+        node,
+        expression: node.getExpression(),
+        isConstructor: false,
+    }));
     for (const newExpression of sourceFile.getDescendantsOfKind(ts_morph_1.SyntaxKind.NewExpression)) {
         const expression = newExpression.getExpression();
         if (expression !== undefined) {
-            addCall(newExpression, expression, true);
+            occurrences.push({ node: newExpression, expression, isConstructor: true });
         }
+    }
+    occurrences.sort((left, right) => left.node.getStart() - right.node.getStart() || right.node.getEnd() - left.node.getEnd());
+    for (const occurrence of occurrences) {
+        addCall(occurrence.node, occurrence.expression, occurrence.isConstructor);
     }
     return calls;
 }

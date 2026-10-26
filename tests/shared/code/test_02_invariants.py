@@ -20,7 +20,14 @@ class TestPublicCodeValues(ServiceTestCase):
                             CodeMapFactory().source_callable(source_id, "example_target"),
                             CodeMapFactory().source_callable(source_id, "example_caller"),
                         ],
-                        "calls": [CodeMapFactory().source_call(source_id, "example_caller", "example_target")],
+                        "calls": [
+                            CodeMapFactory().source_call(
+                                source_id,
+                                "example_caller",
+                                "example_target",
+                                ordinal=1,
+                            )
+                        ],
                     }
                 },
                 (),
@@ -69,7 +76,7 @@ class TestPublicCodeValues(ServiceTestCase):
         original = CodeMapFactory().queryable({"src/example.source": {}}, ()).code_map
         restored = type(original).model_validate_json(original.to_json())
         assert restored.to_dict() == original.to_dict()
-        assert original.schema_version == 11
+        assert original.schema_version == 12
         assert set(json.loads(original.to_json())) == {
             "language",
             "producer",
@@ -77,10 +84,11 @@ class TestPublicCodeValues(ServiceTestCase):
             "dependency_graph",
         }
 
-    def test_source_file_rejects_duplicate_call_facts(self) -> None:
+    def test_source_file_rejects_duplicate_call_occurrence_identities(self) -> None:
         original = self.code_map_with_call()
         source_file = original.extraction.files["example.source"]
-        tampered_file = source_file.model_copy(update={"calls": [*source_file.calls, source_file.calls[0]]})
+        repeated_identity = source_file.calls[0].model_copy(update={"line": source_file.calls[0].line + 1})
+        tampered_file = source_file.model_copy(update={"calls": [*source_file.calls, repeated_identity]})
         tampered = original.model_copy(
             update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}
         )

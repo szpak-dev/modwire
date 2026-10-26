@@ -47,6 +47,7 @@ from modwire.application import (
     PipelineValidationError,
     PipelineViolation,
     SourceAccessError,
+    SourceCall,
     SourceObservationInvalidatedError,
     SourceParseError,
     UnknownFlowAnalyzerError,
@@ -87,6 +88,20 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
                 "digest": hashlib.sha256(serialized.encode("utf-8")).hexdigest(),
             }
         )
+
+    @pytest.mark.parametrize("ordinal", (None, 0, True, "1", 1.0))
+    def test_source_call_rejects_an_invalid_occurrence_ordinal(self, ordinal: bool | str | float | int | None) -> None:
+        document = self.call_manifest_document(two_calls=False)
+        call = json.loads(document.payload)["calls"][0]
+        if ordinal is None:
+            del call["ordinal"]
+        else:
+            call["ordinal"] = ordinal
+
+        with pytest.raises(ValidationError) as raised:
+            SourceCall.model_validate(call)
+
+        assert raised.value.errors()[0]["loc"] == ("ordinal",)
 
     @pytest.mark.parametrize(
         ("error_type", "family"),
@@ -536,6 +551,23 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
         cause = raised.value.__cause__
         assert isinstance(cause, ImplementationManifestValidationError)
         assert cause.violation is ImplementationManifestViolation.DUPLICATE_FACT
+        assert cause.subject == "calls"
+
+    def test_manifest_rejects_duplicate_call_occurrence_identities(self) -> None:
+        document = self.call_manifest_document(two_calls=False)
+
+        def repeat_identity_with_different_evidence(payload: dict[str, Any]) -> None:
+            repeated = {**payload["calls"][0], "line": payload["calls"][0]["line"] + 1}
+            payload["calls"].append(repeated)
+
+        invalid = self.tampered_document(document, repeat_identity_with_different_evidence)
+
+        with pytest.raises(InvalidImplementationManifestError) as raised:
+            self.application.read_implementation_manifest(invalid)
+
+        cause = raised.value.__cause__
+        assert isinstance(cause, ImplementationManifestValidationError)
+        assert cause.violation is ImplementationManifestViolation.DUPLICATE_IDENTITY
         assert cause.subject == "calls"
 
     def test_manifest_translates_nested_code_contract_failures(self) -> None:

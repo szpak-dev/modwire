@@ -59,9 +59,9 @@ manifest_format = application.implementation_manifest_formats()[0]
 document = application.implementation_manifest(code_map, manifest_format)
 manifest = application.read_implementation_manifest(document)
 
-assert code_map.schema_version == 11
+assert code_map.schema_version == 12
 assert manifest_format.id == "canonical-json"
-assert manifest.schema_version == 8
+assert manifest.schema_version == 9
 assert document.verify_digest()
 
 with open("implementation-manifest.json", "w", encoding="utf-8") as target:

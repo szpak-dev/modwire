@@ -64,7 +64,7 @@ class TestNativeExtractionAttacks(NativeExtractionTestCase):
         with pytest.raises(UnsupportedLanguageError) as raised:
             self.extract_project("example_unknown")
         assert raised.value.language == "example_unknown"
-        assert raised.value.supported_languages == ("python", "typescript", "php", "java")
+        assert raised.value.supported_languages == self.application.extraction.supported_languages()
 
     def test_reports_duplicate_module_identities(self) -> None:
         self.write_files(

@@ -371,12 +371,16 @@ class OrderedObservationVisitor:
         calls = tuple(
             PythonCallObservation(
                 node=node,
+                ordinal=ordinal,
                 source_qualified_name=candidate.qualified_name,
                 source_ordinal=self.declaration_ordinal(candidate.identity_node),
                 owner_name=candidate.owner_name,
             )
             for candidate in callables
-            for node in (self.calls[candidate.node] if candidate.node in self.calls else ())
+            for ordinal, node in enumerate(
+                self.calls[candidate.node] if candidate.node in self.calls else (),
+                start=1,
+            )
         )
         imports = tuple(
             PythonImportCandidate(

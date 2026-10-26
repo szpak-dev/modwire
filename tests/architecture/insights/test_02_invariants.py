@@ -65,7 +65,12 @@ class TestInsightInvariants(InsightTestCase):
                         CodeMapFactory().source_callable(source_id, "example_caller"),
                     ],
                     "calls": [
-                        CodeMapFactory().source_call(source_id, "example_caller", "example_target"),
+                        CodeMapFactory().source_call(
+                            source_id,
+                            "example_caller",
+                            "example_target",
+                            ordinal=1,
+                        ),
                     ],
                 }
             },

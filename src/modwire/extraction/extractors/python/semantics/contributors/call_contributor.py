@@ -51,6 +51,7 @@ class CallSemanticContributor(PythonSemanticContributor):
             PythonCallCandidate(
                 node=call.node,
                 reference=self.references.read(call),
+                ordinal=call.ordinal,
                 source_qualified_name=call.source_qualified_name,
                 owner_name=call.owner_name,
                 source_id=context.source_id,

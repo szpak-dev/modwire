@@ -2,27 +2,22 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from .base_test import NativeExtractionTestCase
 
 
 class TestNativeExtractionInvariants(NativeExtractionTestCase):
-    @pytest.mark.parametrize(
-        ("language", "resolved", "external"),
-        (("python", 7, 3), ("typescript", 5, 2), ("php", 6, 2), ("java", 5, 2)),
-    )
-    def test_native_languages_preserve_dependency_resolution(self, language: str, resolved: int, external: int) -> None:
-        result = self.fixture_map(language)
-        assert result.tracked_dependency_edges().count() == resolved
-        assert result.external_dependency_edges().count() == external
-        assert result.code_map.extraction.files_excluded == 0
-        assert result.code_map.extraction.directories_pruned == 1
-        assert result.code_map.extraction.files_found == len(result.source_ids())
+    def test_native_languages_preserve_dependency_resolution(self) -> None:
+        for language in self.application.extraction.supported_languages():
+            result = self.fixture_map(language)
+            assert result.tracked_dependency_edges().count() == 7, language
+            assert result.external_dependency_edges().count() == 1, language
+            assert result.code_map.extraction.files_excluded == 0, language
+            assert result.code_map.extraction.directories_pruned == 1, language
+            assert result.code_map.extraction.files_found == len(result.source_ids()), language
 
-    @pytest.mark.parametrize("language", ("python", "typescript", "php", "java"))
-    def test_discovers_each_fixture_language(self, language: str) -> None:
-        assert self.application.discover(self.fixture_root(language), self.scan_policy()) == (language,)
+    def test_discovers_each_fixture_language(self) -> None:
+        for language in self.application.extraction.supported_languages():
+            assert self.application.discover(self.fixture_root(language), self.scan_policy()) == (language,)
 
     def test_configured_exclusions_remove_files_from_the_map(self) -> None:
         self.write_files(

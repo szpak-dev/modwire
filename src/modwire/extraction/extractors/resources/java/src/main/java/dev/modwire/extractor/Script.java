@@ -598,21 +598,34 @@ final class JavaSourceExtractor {
     private JsonArray calls() {
         JsonArray calls = new JsonArray();
         for (CallableFact source : callableFacts) {
+            List<Node> expressions = new ArrayList<>();
             for (MethodCallExpr expression : source.node().findAll(MethodCallExpr.class)) {
                 if (belongsTo(expression, source.node())) {
-                    calls.add(methodCall(source, expression));
+                    expressions.add(expression);
                 }
             }
             for (ObjectCreationExpr expression : source.node().findAll(ObjectCreationExpr.class)) {
                 if (belongsTo(expression, source.node())) {
-                    calls.add(constructorCall(source, expression));
+                    expressions.add(expression);
                 }
+            }
+            expressions.sort((left, right) -> {
+                int start = left.getBegin().orElseThrow().compareTo(right.getBegin().orElseThrow());
+                return start != 0 ? start : right.getEnd().orElseThrow().compareTo(left.getEnd().orElseThrow());
+            });
+            int ordinal = 1;
+            for (Node expression : expressions) {
+                JsonObject call = expression instanceof MethodCallExpr method
+                    ? methodCall(source, method, ordinal)
+                    : constructorCall(source, (ObjectCreationExpr) expression, ordinal);
+                calls.add(call);
+                ordinal++;
             }
         }
         return calls;
     }
 
-    private JsonObject methodCall(CallableFact source, MethodCallExpr expression) {
+    private JsonObject methodCall(CallableFact source, MethodCallExpr expression, int ordinal) {
         String name = expression.getNameAsString();
         String rendered = expression.getScope().map(scope -> scope + "." + name).orElse(name);
         List<CallableFact> candidates;
@@ -623,17 +636,18 @@ final class JavaSourceExtractor {
             String qualifiedName = ("this".equals(scope) ? source.owner() : scope) + "." + name;
             candidates = callablesByQualifiedName.getOrDefault(qualifiedName, List.of());
         }
-        return call(source, expression, rendered, name, candidates);
+        return call(source, ordinal, expression, rendered, name, candidates);
     }
 
-    private JsonObject constructorCall(CallableFact source, ObjectCreationExpr expression) {
+    private JsonObject constructorCall(CallableFact source, ObjectCreationExpr expression, int ordinal) {
         String target = expression.getType().toString();
         List<CallableFact> candidates = constructorsByOwner.getOrDefault(target, List.of());
-        return call(source, expression, target, lastPart(target), candidates);
+        return call(source, ordinal, expression, target, lastPart(target), candidates);
     }
 
     private JsonObject call(
         CallableFact source,
+        int ordinal,
         Node expression,
         String rendered,
         String targetName,
@@ -641,6 +655,7 @@ final class JavaSourceExtractor {
     ) {
         JsonObject call = new JsonObject();
         call.add("source_callable_id", source.json().getAsJsonObject("declaration_id").deepCopy());
+        call.addProperty("ordinal", ordinal);
         call.add(
             "target_callable_id",
             candidates.size() == 1

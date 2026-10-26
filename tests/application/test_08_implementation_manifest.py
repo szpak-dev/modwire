@@ -148,7 +148,7 @@ class TestImplementationManifest(ApplicationTestCase):
             sort_keys=True,
         )
 
-        assert manifest.schema_version == 8
+        assert manifest.schema_version == 9
         assert manifest.producer.extractor.language == "python"
         assert manifest.producer.extractor.id == "modwire.python.ast"
         assert manifest.producer.modwire_version
@@ -170,7 +170,11 @@ class TestImplementationManifest(ApplicationTestCase):
         root = self.project(
             {
                 "src/example.py": (
-                    "def example_target():\n    return 1\n\ndef example_caller():\n    return example_target()\n"
+                    "def example_target():\n"
+                    "    return 1\n\n"
+                    "def example_caller():\n"
+                    "    example_target()\n"
+                    "    return example_target()\n"
                 )
             }
         )
@@ -181,17 +185,24 @@ class TestImplementationManifest(ApplicationTestCase):
         )
 
         calls = tuple(result.item for result in code_map.calls().all())
-        assert len(calls) == 1
-        assert len(manifest.calls) == 1
-        assert manifest.calls[0].source_id == calls[0].source_id
-        assert manifest.calls[0].line == calls[0].line
-        assert manifest.calls[0].expression == calls[0].expression
-        assert manifest.calls[0].target_name == calls[0].target_name == "example_target"
-        assert manifest.calls[0].resolution is calls[0].resolution is SourceCallResolution.RESOLVED
+        assert tuple(item.ordinal for item in calls) == (1, 2)
+        assert tuple(item.ordinal for item in manifest.calls) == (1, 2)
+        assert len({item.identity() for item in calls}) == 2
+        assert tuple(item.source_id for item in manifest.calls) == tuple(item.source_id for item in calls)
+        assert tuple(item.line for item in manifest.calls) == tuple(item.line for item in calls)
+        assert tuple(item.expression for item in manifest.calls) == tuple(item.expression for item in calls)
+        assert (
+            {item.target_name for item in manifest.calls} == {item.target_name for item in calls} == {"example_target"}
+        )
+        assert all(item.resolution is SourceCallResolution.RESOLVED for item in (*manifest.calls, *calls))
         callable_ids = {item.symbol_id.canonical() for item in manifest.callables}
-        assert manifest.calls[0].source_callable_id.canonical() in callable_ids
-        assert manifest.calls[0].target_callable_id is not None
-        assert manifest.calls[0].target_callable_id.canonical() in callable_ids
+        assert all(item.source_callable_id.canonical() in callable_ids for item in manifest.calls)
+        assert all(item.target_callable_id is not None for item in manifest.calls)
+        assert all(
+            item.target_callable_id.canonical() in callable_ids
+            for item in manifest.calls
+            if item.target_callable_id is not None
+        )
 
     def test_supported_member_inventory_truthfully_publishes_no_observed_calls(self) -> None:
         root = self.project({"src/example.py": "def example_value():\n    return 1\n"})
@@ -521,44 +532,15 @@ class TestImplementationManifest(ApplicationTestCase):
         assert before_document.digest != after_document.digest
 
     def test_supported_languages_publish_one_manifest_vocabulary(self) -> None:
-        root = self.project(
-            {
-                "src/example.py": (
-                    "class ExampleBase:\n"
-                    "    pass\n\n"
-                    "class ExampleChild(ExampleBase):\n"
-                    "    def execute(self, value: int = 1) -> str:\n"
-                    "        return str(value)\n"
-                ),
-                "src/example.ts": (
-                    "class ExampleBase {}\n"
-                    "class ExampleChild extends ExampleBase {\n"
-                    "    execute(value: number = 1): string { return String(value); }\n"
-                    "}\n"
-                ),
-                "src/ExampleChild.java": (
-                    "class ExampleBase {}\n"
-                    "class ExampleChild extends ExampleBase {\n"
-                    "    String execute(int value) { return String.valueOf(value); }\n"
-                    "}\n"
-                ),
-                "src/example.php": (
-                    "<?php\n"
-                    "class ExampleBase {}\n"
-                    "class ExampleChild extends ExampleBase {\n"
-                    "    public function execute(int $value = 1): string { return (string) $value; }\n"
-                    "}\n"
-                ),
-            }
-        )
+        fixtures = self.repository / "tests/fixtures/code_map/language_extensions"
         format = self.application.implementation_manifest_formats()[0]
         manifests = {
             language: self.application.read_implementation_manifest(
                 self.application.implementation_manifest(
-                    self.application.generate_map(language, root, self.scan_policy()), format
+                    self.application.generate_map(language, fixtures / language, self.scan_policy()), format
                 )
             )
-            for language in ("python", "typescript", "php", "java")
+            for language in self.application.extraction.supported_languages()
         }
 
         vocabularies = {tuple(manifest.model_dump(mode="json")) for manifest in manifests.values()}

@@ -5,7 +5,7 @@ from ..base_test import CliTestCase
 
 class NativeExtractionTestCase(CliTestCase):
     def fixture_root(self, language: str) -> Path:
-        return self.repository / "tests/fixtures/languages" / language
+        return self.repository / "tests/fixtures/code_map/reference_shop/languages" / language
 
     def extract_project(self, language: str):
         return self.application.generate_map(language, self.workspace, self.scan_policy())

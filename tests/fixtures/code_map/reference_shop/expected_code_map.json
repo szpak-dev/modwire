@@ -1,0 +1,614 @@
+{
+  "language": "fixture",
+  "producer": {
+    "modwire_version": "fixture",
+    "extractor": {
+      "id": "fixture.extractor",
+      "version": "1",
+      "language": "fixture",
+      "runtime": "fixture"
+    },
+    "capabilities": [
+      {
+        "capability": "sources",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
+        "capability": "symbols",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
+        "capability": "callables",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
+        "capability": "calls",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
+        "capability": "parameters",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
+        "capability": "annotations",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
+        "capability": "modifiers",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
+        "capability": "attributes",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
+        "capability": "assigned_values",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
+        "capability": "inheritance",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
+        "capability": "namespaces",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
+        "capability": "declaration_kinds",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
+        "capability": "composition",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
+        "capability": "dependencies",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
+        "capability": "spans",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      }
+    ],
+    "relationship_capabilities": [
+      {
+        "family": "declaration",
+        "evidence_requirements": [
+          "symbols",
+          "inheritance",
+          "declaration_kinds",
+          "composition"
+        ],
+        "semantics": "unsupported",
+        "semantics_explanation": "The common fixture projection does not publish relationship semantics claims.",
+        "inventory": "unsupported",
+        "inventory_explanation": "The common fixture projection does not publish relationship inventory claims."
+      },
+      {
+        "family": "member",
+        "evidence_requirements": [
+          "symbols",
+          "callables",
+          "calls",
+          "parameters",
+          "annotations",
+          "modifiers",
+          "attributes",
+          "assigned_values",
+          "declaration_kinds"
+        ],
+        "semantics": "unsupported",
+        "semantics_explanation": "The common fixture projection does not publish relationship semantics claims.",
+        "inventory": "unsupported",
+        "inventory_explanation": "The common fixture projection does not publish relationship inventory claims."
+      },
+      {
+        "family": "dependency",
+        "evidence_requirements": [
+          "sources",
+          "dependencies"
+        ],
+        "semantics": "unsupported",
+        "semantics_explanation": "The common fixture projection does not publish relationship semantics claims.",
+        "inventory": "unsupported",
+        "inventory_explanation": "The common fixture projection does not publish relationship inventory claims."
+      }
+    ]
+  },
+  "extraction": {
+    "files": {
+      "src/commerce/orders/application/actions/place_order": {
+        "file_id": "src/commerce/orders/application/actions/place_order",
+        "import_identity": "src/commerce/orders/application/actions/place_order",
+        "imports": [],
+        "exports": [],
+        "namespaces": [],
+        "declarations": [
+          {
+            "name": "PlaceOrder",
+            "visibility": "public",
+            "visibility_intent": "public",
+            "line_count": 0,
+            "declaration_annotations": [],
+            "declaration_id": {
+              "source_id": "src/commerce/orders/application/actions/place_order",
+              "family": "class",
+              "qualified_name": "PlaceOrder",
+              "ordinal": 1
+            },
+            "kind": "class",
+            "methods": [
+              {
+                "name": "place",
+                "visibility": "public",
+                "visibility_intent": "public",
+                "line_count": 0,
+                "declaration_annotations": [],
+                "declared_args": 1,
+                "optional_args": 0
+              }
+            ],
+            "abstract_methods": [],
+            "properties": [],
+            "signatures": []
+          }
+        ],
+        "functions": [],
+        "values": [],
+        "callables": [],
+        "calls": [],
+        "declaration_relations": [],
+        "line_count": 0,
+        "code_line_count": 0,
+        "public_symbol_count": 1
+      },
+      "src/commerce/orders/domain/model/order": {
+        "file_id": "src/commerce/orders/domain/model/order",
+        "import_identity": "src/commerce/orders/domain/model/order",
+        "imports": [],
+        "exports": [],
+        "namespaces": [],
+        "declarations": [
+          {
+            "name": "Order",
+            "visibility": "public",
+            "visibility_intent": "public",
+            "line_count": 0,
+            "declaration_annotations": [],
+            "declaration_id": {
+              "source_id": "src/commerce/orders/domain/model/order",
+              "family": "class",
+              "qualified_name": "Order",
+              "ordinal": 1
+            },
+            "kind": "class",
+            "methods": [
+              {
+                "name": "is_placed",
+                "visibility": "public",
+                "visibility_intent": "public",
+                "line_count": 0,
+                "declaration_annotations": [],
+                "declared_args": 0,
+                "optional_args": 0
+              },
+              {
+                "name": "mark_placed",
+                "visibility": "public",
+                "visibility_intent": "public",
+                "line_count": 0,
+                "declaration_annotations": [],
+                "declared_args": 0,
+                "optional_args": 0
+              }
+            ],
+            "abstract_methods": [],
+            "properties": [],
+            "signatures": []
+          }
+        ],
+        "functions": [],
+        "values": [],
+        "callables": [],
+        "calls": [],
+        "declaration_relations": [],
+        "line_count": 0,
+        "code_line_count": 0,
+        "public_symbol_count": 1
+      },
+      "src/commerce/orders/domain/services/order_policy": {
+        "file_id": "src/commerce/orders/domain/services/order_policy",
+        "import_identity": "src/commerce/orders/domain/services/order_policy",
+        "imports": [],
+        "exports": [],
+        "namespaces": [],
+        "declarations": [
+          {
+            "name": "OrderPolicy",
+            "visibility": "public",
+            "visibility_intent": "public",
+            "line_count": 0,
+            "declaration_annotations": [],
+            "declaration_id": {
+              "source_id": "src/commerce/orders/domain/services/order_policy",
+              "family": "class",
+              "qualified_name": "OrderPolicy",
+              "ordinal": 1
+            },
+            "kind": "class",
+            "methods": [
+              {
+                "name": "allows",
+                "visibility": "public",
+                "visibility_intent": "public",
+                "line_count": 0,
+                "declaration_annotations": [],
+                "declared_args": 1,
+                "optional_args": 0
+              }
+            ],
+            "abstract_methods": [],
+            "properties": [],
+            "signatures": []
+          }
+        ],
+        "functions": [],
+        "values": [],
+        "callables": [],
+        "calls": [],
+        "declaration_relations": [],
+        "line_count": 0,
+        "code_line_count": 0,
+        "public_symbol_count": 1
+      },
+      "src/commerce/orders/infrastructure/repositories/order_repository": {
+        "file_id": "src/commerce/orders/infrastructure/repositories/order_repository",
+        "import_identity": "src/commerce/orders/infrastructure/repositories/order_repository",
+        "imports": [],
+        "exports": [],
+        "namespaces": [],
+        "declarations": [
+          {
+            "name": "OrderRepository",
+            "visibility": "public",
+            "visibility_intent": "public",
+            "line_count": 0,
+            "declaration_annotations": [],
+            "declaration_id": {
+              "source_id": "src/commerce/orders/infrastructure/repositories/order_repository",
+              "family": "class",
+              "qualified_name": "OrderRepository",
+              "ordinal": 1
+            },
+            "kind": "class",
+            "methods": [
+              {
+                "name": "save",
+                "visibility": "public",
+                "visibility_intent": "public",
+                "line_count": 0,
+                "declaration_annotations": [],
+                "declared_args": 1,
+                "optional_args": 0
+              }
+            ],
+            "abstract_methods": [],
+            "properties": [],
+            "signatures": []
+          }
+        ],
+        "functions": [],
+        "values": [],
+        "callables": [],
+        "calls": [],
+        "declaration_relations": [],
+        "line_count": 0,
+        "code_line_count": 0,
+        "public_symbol_count": 1
+      },
+      "src/commerce/orders/interfaces/http/order_controller": {
+        "file_id": "src/commerce/orders/interfaces/http/order_controller",
+        "import_identity": "src/commerce/orders/interfaces/http/order_controller",
+        "imports": [],
+        "exports": [],
+        "namespaces": [],
+        "declarations": [
+          {
+            "name": "OrderController",
+            "visibility": "public",
+            "visibility_intent": "public",
+            "line_count": 0,
+            "declaration_annotations": [],
+            "declaration_id": {
+              "source_id": "src/commerce/orders/interfaces/http/order_controller",
+              "family": "class",
+              "qualified_name": "OrderController",
+              "ordinal": 1
+            },
+            "kind": "class",
+            "methods": [
+              {
+                "name": "handle",
+                "visibility": "public",
+                "visibility_intent": "public",
+                "line_count": 0,
+                "declaration_annotations": [],
+                "declared_args": 1,
+                "optional_args": 0
+              }
+            ],
+            "abstract_methods": [],
+            "properties": [],
+            "signatures": []
+          }
+        ],
+        "functions": [],
+        "values": [],
+        "callables": [],
+        "calls": [],
+        "declaration_relations": [],
+        "line_count": 0,
+        "code_line_count": 0,
+        "public_symbol_count": 1
+      },
+      "src/commerce/payments/application/actions/capture_payment": {
+        "file_id": "src/commerce/payments/application/actions/capture_payment",
+        "import_identity": "src/commerce/payments/application/actions/capture_payment",
+        "imports": [],
+        "exports": [],
+        "namespaces": [],
+        "declarations": [
+          {
+            "name": "CapturePayment",
+            "visibility": "public",
+            "visibility_intent": "public",
+            "line_count": 0,
+            "declaration_annotations": [],
+            "declaration_id": {
+              "source_id": "src/commerce/payments/application/actions/capture_payment",
+              "family": "class",
+              "qualified_name": "CapturePayment",
+              "ordinal": 1
+            },
+            "kind": "class",
+            "methods": [
+              {
+                "name": "capture",
+                "visibility": "public",
+                "visibility_intent": "public",
+                "line_count": 0,
+                "declaration_annotations": [],
+                "declared_args": 1,
+                "optional_args": 0
+              }
+            ],
+            "abstract_methods": [],
+            "properties": [],
+            "signatures": []
+          }
+        ],
+        "functions": [],
+        "values": [],
+        "callables": [],
+        "calls": [],
+        "declaration_relations": [],
+        "line_count": 0,
+        "code_line_count": 0,
+        "public_symbol_count": 1
+      },
+      "src/commerce/payments/domain/model/payment": {
+        "file_id": "src/commerce/payments/domain/model/payment",
+        "import_identity": "src/commerce/payments/domain/model/payment",
+        "imports": [],
+        "exports": [],
+        "namespaces": [],
+        "declarations": [
+          {
+            "name": "Payment",
+            "visibility": "public",
+            "visibility_intent": "public",
+            "line_count": 0,
+            "declaration_annotations": [],
+            "declaration_id": {
+              "source_id": "src/commerce/payments/domain/model/payment",
+              "family": "class",
+              "qualified_name": "Payment",
+              "ordinal": 1
+            },
+            "kind": "class",
+            "methods": [
+              {
+                "name": "capture",
+                "visibility": "public",
+                "visibility_intent": "public",
+                "line_count": 0,
+                "declaration_annotations": [],
+                "declared_args": 0,
+                "optional_args": 0
+              }
+            ],
+            "abstract_methods": [],
+            "properties": [],
+            "signatures": []
+          }
+        ],
+        "functions": [],
+        "values": [],
+        "callables": [],
+        "calls": [],
+        "declaration_relations": [],
+        "line_count": 0,
+        "code_line_count": 0,
+        "public_symbol_count": 1
+      }
+    },
+    "import_identities": {
+      "src/commerce/orders/application/actions/place_order": "src/commerce/orders/application/actions/place_order",
+      "src/commerce/orders/domain/model/order": "src/commerce/orders/domain/model/order",
+      "src/commerce/orders/domain/services/order_policy": "src/commerce/orders/domain/services/order_policy",
+      "src/commerce/orders/infrastructure/repositories/order_repository": "src/commerce/orders/infrastructure/repositories/order_repository",
+      "src/commerce/orders/interfaces/http/order_controller": "src/commerce/orders/interfaces/http/order_controller",
+      "src/commerce/payments/application/actions/capture_payment": "src/commerce/payments/application/actions/capture_payment",
+      "src/commerce/payments/domain/model/payment": "src/commerce/payments/domain/model/payment"
+    },
+    "manifest": {
+      "policy": {
+        "excluded_patterns": [
+          "ignored/**"
+        ],
+        "follow_symlinks": false
+      },
+      "runtime": {
+        "version": "fixture 1",
+        "resource_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "sources": [
+        {
+          "source_id": "src/commerce/orders/application/actions/place_order",
+          "relative_path": "src/commerce/orders/application/actions/place_order",
+          "content_digest": "2cbefec70e40f100376fb791b7e3f74a3676a83fc179ddc4633750c8d354b97d"
+        },
+        {
+          "source_id": "src/commerce/orders/domain/model/order",
+          "relative_path": "src/commerce/orders/domain/model/order",
+          "content_digest": "bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c"
+        },
+        {
+          "source_id": "src/commerce/orders/domain/services/order_policy",
+          "relative_path": "src/commerce/orders/domain/services/order_policy",
+          "content_digest": "d82d07bd9dce9fc1c62477d072e3370ad6b8feed9f4eea2c551c3c63480c3fff"
+        },
+        {
+          "source_id": "src/commerce/orders/infrastructure/repositories/order_repository",
+          "relative_path": "src/commerce/orders/infrastructure/repositories/order_repository",
+          "content_digest": "8a9278a880c844bf505c547b0aaab46c65658407b2cc723b043f74d59380e5f9"
+        },
+        {
+          "source_id": "src/commerce/orders/interfaces/http/order_controller",
+          "relative_path": "src/commerce/orders/interfaces/http/order_controller",
+          "content_digest": "11f683815938f3033acfb9ff0b60fcf560beaecac99ca3c41f5ee109d88bf3a5"
+        },
+        {
+          "source_id": "src/commerce/payments/application/actions/capture_payment",
+          "relative_path": "src/commerce/payments/application/actions/capture_payment",
+          "content_digest": "523b46d792c6200f7ddd9aa36d4c398f63cdd56473d8dc74176abfc2b6b47362"
+        },
+        {
+          "source_id": "src/commerce/payments/domain/model/payment",
+          "relative_path": "src/commerce/payments/domain/model/payment",
+          "content_digest": "f227fd074780d6ef3477c80293f8cd4ac273984ea0564b71efee230a0c3fb44a"
+        }
+      ],
+      "digest_algorithm": "sha256",
+      "digest": "b00f8186f7af07d8047d5fcafed9b3aff7e2b654900e7da8b77e2174c968e7cf"
+    },
+    "files_found": 7,
+    "files_excluded": 0,
+    "directories_pruned": 1
+  },
+  "dependency_graph": {
+    "nodes": {
+      "src/commerce/orders/application/actions/place_order": {
+        "id": "src/commerce/orders/application/actions/place_order",
+        "kind": "file"
+      },
+      "src/commerce/orders/domain/model/order": {
+        "id": "src/commerce/orders/domain/model/order",
+        "kind": "file"
+      },
+      "src/commerce/orders/domain/services/order_policy": {
+        "id": "src/commerce/orders/domain/services/order_policy",
+        "kind": "file"
+      },
+      "src/commerce/orders/infrastructure/repositories/order_repository": {
+        "id": "src/commerce/orders/infrastructure/repositories/order_repository",
+        "kind": "file"
+      },
+      "src/commerce/orders/interfaces/http/order_controller": {
+        "id": "src/commerce/orders/interfaces/http/order_controller",
+        "kind": "file"
+      },
+      "src/commerce/payments/application/actions/capture_payment": {
+        "id": "src/commerce/payments/application/actions/capture_payment",
+        "kind": "file"
+      },
+      "src/commerce/payments/domain/model/payment": {
+        "id": "src/commerce/payments/domain/model/payment",
+        "kind": "file"
+      }
+    },
+    "edges": [
+      {
+        "from_id": "src/commerce/orders/application/actions/place_order",
+        "to_id": "src/commerce/orders/domain/model/order",
+        "specifier": "src/commerce/orders/domain/model/order",
+        "resolution": "resolved",
+        "kind": "imports"
+      },
+      {
+        "from_id": "src/commerce/orders/application/actions/place_order",
+        "to_id": "src/commerce/orders/domain/services/order_policy",
+        "specifier": "src/commerce/orders/domain/services/order_policy",
+        "resolution": "resolved",
+        "kind": "imports"
+      },
+      {
+        "from_id": "src/commerce/orders/domain/services/order_policy",
+        "to_id": "src/commerce/orders/domain/model/order",
+        "specifier": "src/commerce/orders/domain/model/order",
+        "resolution": "resolved",
+        "kind": "imports"
+      },
+      {
+        "from_id": "src/commerce/orders/infrastructure/repositories/order_repository",
+        "to_id": null,
+        "specifier": "external:src/commerce/orders/infrastructure/repositories/order_repository",
+        "resolution": "external",
+        "kind": "imports"
+      },
+      {
+        "from_id": "src/commerce/orders/infrastructure/repositories/order_repository",
+        "to_id": "src/commerce/orders/domain/model/order",
+        "specifier": "src/commerce/orders/domain/model/order",
+        "resolution": "resolved",
+        "kind": "imports"
+      },
+      {
+        "from_id": "src/commerce/orders/interfaces/http/order_controller",
+        "to_id": "src/commerce/orders/application/actions/place_order",
+        "specifier": "src/commerce/orders/application/actions/place_order",
+        "resolution": "resolved",
+        "kind": "imports"
+      },
+      {
+        "from_id": "src/commerce/orders/interfaces/http/order_controller",
+        "to_id": "src/commerce/orders/domain/model/order",
+        "specifier": "src/commerce/orders/domain/model/order",
+        "resolution": "resolved",
+        "kind": "imports"
+      },
+      {
+        "from_id": "src/commerce/payments/application/actions/capture_payment",
+        "to_id": "src/commerce/payments/domain/model/payment",
+        "specifier": "src/commerce/payments/domain/model/payment",
+        "resolution": "resolved",
+        "kind": "imports"
+      }
+    ]
+  }
+}
