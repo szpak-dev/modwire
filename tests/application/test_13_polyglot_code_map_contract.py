@@ -39,15 +39,21 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
 
         for language in self.application.extraction.supported_languages():
             extensions = self.application.extraction.request(language, str(fixture)).runtime.file_extensions
+            extension_fixture = fixture / "code_map/language_extensions" / language
             roots = (
                 fixture / "call_occurrences" / language,
                 fixture / "code_map/reference_shop/languages" / language,
-                fixture / "code_map/language_extensions" / language,
+                extension_fixture,
             )
             for root in roots:
                 paths = contract.source_paths(root)
                 assert paths
                 assert all(any(path.endswith(extension) for extension in extensions) for path in paths)
+            assert {
+                extension
+                for extension in extensions
+                if any(path.endswith(extension) for path in contract.source_paths(extension_fixture))
+            } == set(extensions)
 
     def test_reference_sources_follow_the_shared_scenario_inventory(self) -> None:
         fixture = self.repository / "tests/fixtures/code_map/reference_shop"

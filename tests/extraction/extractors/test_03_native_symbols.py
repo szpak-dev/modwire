@@ -12,18 +12,44 @@ class TestNativeSymbols(ExtractionTestCase):
 
     def test_authored_identical_calls_keep_distinct_occurrence_identities(self) -> None:
         languages = self.application.discover(CALL_OCCURRENCE_FIXTURES, self.scan_policy())
+        assert languages == self.application.extraction.supported_languages()
 
         for language in languages:
             root = CALL_OCCURRENCE_FIXTURES / language
             first = self.application.generate_queryable_map(language, root, self.scan_policy())
             second = self.application.generate_queryable_map(language, root, self.scan_policy())
 
-            calls = tuple(item.item for item in first.calls().all())
+            calls = tuple(
+                item.item
+                for item in first.calls().all()
+                if self.normalized_name(item.item.source_callable_id.qualified_name).endswith("examplecaller")
+            )
             assert tuple(item.ordinal for item in calls) == (1, 2)
             assert len({item.identity() for item in calls}) == 2
             assert len({item.source_callable_id.canonical() for item in calls}) == 1
             assert len({item.expression for item in calls}) == 1
             assert first.code_map.to_dict() == second.code_map.to_dict()
+
+    def test_nested_and_constructor_calls_keep_lexical_occurrence_order(self) -> None:
+        languages = self.application.discover(CALL_OCCURRENCE_FIXTURES, self.scan_policy())
+        assert languages == self.application.extraction.supported_languages()
+
+        for language in languages:
+            root = CALL_OCCURRENCE_FIXTURES / language
+            result = self.application.generate_queryable_map(language, root, self.scan_policy())
+            calls = tuple(
+                item.item
+                for item in result.calls().all()
+                if self.normalized_name(item.item.source_callable_id.qualified_name).endswith("examplemixedcaller")
+            )
+
+            assert tuple(item.ordinal for item in calls) == (1, 2, 3), language
+            assert tuple(self.normalized_name(item.target_name) for item in calls) == (
+                "exampleouter",
+                "exampleinner",
+                "examplevalue",
+            ), language
+            assert len({item.identity() for item in calls}) == 3, language
 
     def test_native_extractors_preserve_abstract_and_concrete_class_methods(self) -> None:
         for language in self.application.extraction.supported_languages():

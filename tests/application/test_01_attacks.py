@@ -89,8 +89,8 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
             }
         )
 
-    @pytest.mark.parametrize("ordinal", (None, 0))
-    def test_source_call_rejects_a_missing_or_non_positive_occurrence_ordinal(self, ordinal: int | None) -> None:
+    @pytest.mark.parametrize("ordinal", (None, 0, True, "1", 1.0))
+    def test_source_call_rejects_an_invalid_occurrence_ordinal(self, ordinal: bool | str | float | int | None) -> None:
         document = self.call_manifest_document(two_calls=False)
         call = json.loads(document.payload)["calls"][0]
         if ordinal is None:

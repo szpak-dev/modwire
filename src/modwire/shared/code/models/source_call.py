@@ -8,7 +8,7 @@ from .source_call_resolution import SourceCallResolution
 
 class SourceCall(ValueModel):
     source_callable_id: DeclarationIdentity
-    ordinal: int = Field(ge=1)
+    ordinal: int = Field(strict=True, ge=1)
     target_callable_id: DeclarationIdentity | None
     source_id: FileId
     line: int
