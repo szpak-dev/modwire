@@ -54,8 +54,8 @@ architectural classification.
 
 ## Extractor
 
-The language-specific boundary that translates Python, PHP, TypeScript, or Java source
-into the shared code model. Extractors retain explicit runtime and capability
+The language-specific boundary that translates Python, PHP, TypeScript, Java, or Ruby
+source into the shared code model. Extractors retain explicit runtime and capability
 identity.
 
 ## Feature
@@ -91,8 +91,8 @@ convention, a module usually corresponds to a feature inside a bounded context.
 ## Polyglot
 
 A source system containing more than one programming language. Modwire supports
-Python, PHP, TypeScript, and Java through the same code model and architecture vocabulary.
-Each extraction or CLI report still selects one language explicitly.
+Python, PHP, TypeScript, Java, and Ruby through the same code model and architecture
+vocabulary. Each extraction or CLI report still selects one language explicitly.
 
 ## Queryable code map
 

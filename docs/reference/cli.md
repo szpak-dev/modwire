@@ -17,7 +17,7 @@ Extract one language and render the configured architecture reports.
 
 | Option | Default | Meaning |
 | --- | --- | --- |
-| `--language` | required | `python`, `typescript`, or `php`. |
+| `--language` | required | `python`, `typescript`, `php`, `java`, or `ruby`. |
 | `--dot-dir` | `.modwire` | Directory containing `architecture.yaml`. |
 | `--architecture-root` | `.` | Source root governed by the configuration. |
 | `--summary` | off | Omit individual files from the architecture map. |

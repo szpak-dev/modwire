@@ -1,0 +1,2 @@
+class FixtureContractError(Exception):
+    pass

@@ -3,8 +3,8 @@
 > **Your architecture already has rules. Modwire makes them enforceable.**
 
 Modwire turns intended boundaries into executable checks across Python, PHP,
-TypeScript, and Java. When a dependency points backward, code crosses a boundary, a cycle
-appears, or the source layout drifts, Modwire reports the violation before the
+TypeScript, Java, and Ruby. When a dependency points backward, code crosses a boundary,
+a cycle appears, or the source layout drifts, Modwire reports the violation before the
 architecture becomes tribal knowledge.
 
 *Polyglot architecture checks, one model.*
@@ -33,10 +33,11 @@ modwire report --language python --summary
 modwire report --language typescript --summary
 modwire report --language php --summary
 modwire report --language java --summary
+modwire report --language ruby --summary
 ```
 
 Each report run selects one language. The architecture vocabulary and rules stay the
-same across all four.
+same across all five.
 
 The supported Python interface is exported by `modwire.application`:
 

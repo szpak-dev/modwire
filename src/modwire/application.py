@@ -196,6 +196,11 @@ class ModwireApplication:
 
         return self.architecture.configure(values)
 
+    def supported_languages(self) -> tuple[str, ...]:
+        """Return source languages with registered extractors in canonical order."""
+
+        return self.extraction.supported_languages()
+
     def catalog(self) -> ReportCatalog:
         """Return the available architecture reports."""
 
@@ -233,7 +238,7 @@ class ModwireApplication:
 
         return tuple(
             language
-            for language in self.extraction.supported_languages()
+            for language in self.supported_languages()
             if self.cli.has_source_files(self.extraction.request(language, str(root)), policy)
         )
 

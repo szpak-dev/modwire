@@ -23,6 +23,7 @@ export abstract class ExampleAbstract {
 }
 
 export class ExampleImplementation extends ExampleAbstract implements ExampleContract {
+    static exampleStatic = 'example_static';
     exampleOptional?: string;
 
     exampleRequired(exampleValue: string): string {

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "modwire"
 dynamic = ["version"]
-description = "Architecture rules for Python, PHP, TypeScript, and Java source."
+description = "Architecture rules for Python, PHP, TypeScript, Java, and Ruby source."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
@@ -76,6 +76,7 @@ cache_dir = ".dev/cache/pytest"
 testpaths = ["tests"]
 pythonpath = ["src"]
 addopts = ["-ra", "--strict-config", "--strict-markers", "--import-mode=importlib", "--basetemp=.dev/testing/tmp"]
+empty_parameter_set_mark = "fail_at_collect"
 
 [tool.ruff]
 cache-dir = ".dev/cache/ruff"

@@ -32,6 +32,10 @@ class ExampleAbstract
     example_block.call(@example_name) if example_block
   end
 
+  def example_concrete
+    "example_value"
+  end
+
   def self.example_type_method(example_value)
     example_value
   end
@@ -50,6 +54,10 @@ class ExampleAbstract
 end
 
 class ExampleImplementation < ExampleAbstract
+  def example_required(example_value, example_named: example_value)
+    super(example_value, example_named: example_named)
+  end
+
   def example_execute(example_value)
     example_required(example_value, example_named: example_value)
     example_missing(example_value)

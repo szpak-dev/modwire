@@ -42,10 +42,12 @@ modwire report --language python
 modwire report --language typescript
 modwire report --language php
 modwire report --language java
+modwire report --language ruby
 ```
 
 Python ships with its extractor runtime. TypeScript requires Node.js on `PATH`; PHP
-requires PHP on `PATH`; Java requires Java 17 or newer on `PATH`. See
+requires PHP on `PATH`; Java requires Java 17 or newer on `PATH`; Ruby requires Ruby
+4.0 and Prism 1.9. See
 [Language support and limits](../reference/language-support.md)
 for exact runtime, extension, and capability coverage.
 

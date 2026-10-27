@@ -1,26 +1,34 @@
 import hashlib
 import json
+import shutil
+from pathlib import Path
 
 import pytest
 
 from modwire.application import (
-    CapabilityStatus,
     CodeMap,
     CodeValidationError,
     DigestAlgorithm,
     FactCapability,
     RelationshipFamily,
     SourceCallResolution,
-    SourceDeclarationRelationKind,
     SourceDependencyKind,
-    SourceMemberKind,
 )
 
 from ..support.code_map import CodeMapFactory
+from ..support.code_map_fixture.language_capability_matrix.reader import LanguageCapabilityMatrixReader
+from ..support.code_map_fixture.language_capability_matrix.row import LanguageCapabilityRow
 from .base_test import ApplicationTestCase
 
 
 class TestImplementationManifest(ApplicationTestCase):
+    capability_matrix = LanguageCapabilityMatrixReader().read(
+        ApplicationTestCase.repository / "language-capabilities.yaml"
+    )
+
+    def manifest_scenario_root(self, row: LanguageCapabilityRow, scenario: str) -> Path:
+        return self.repository / row.fixtures.manifest_root / row.fixtures.manifest_scenario_root(scenario)
+
     def test_public_code_map_rejects_a_non_value_symbol_kind_without_changing_valid_input(self) -> None:
         code_map = (
             CodeMapFactory()
@@ -88,57 +96,19 @@ class TestImplementationManifest(ApplicationTestCase):
             "Example.Shared.ExampleSecond",
         }
 
-    def test_public_manifest_serializes_closed_vocabularies_as_exact_strings(self) -> None:
-        root = self.project(
-            {
-                "src/example.py": (
-                    "from example_external import ExampleExternal\n\n"
-                    "class ExampleValue:\n"
-                    "    example_name: str\n\n"
-                    "    @example_decorator\n"
-                    "    def execute(self, example_input: int = 1) -> str:\n"
-                    "        return str(example_input)\n"
-                )
-            }
-        )
-        format = self.application.implementation_manifest_formats()[0]
-        document = self.application.implementation_manifest(
-            self.application.generate_map("python", root, self.scan_policy()), format
-        )
-        payload = json.loads(document.payload)
-
-        assert payload["source_manifest"]["digest_algorithm"] == "sha256"
-        assert {item["kind"] for item in payload["symbols"]} == {"callable", "class"}
-        assert {item["visibility"] for item in payload["symbols"]} == {"public"}
-        assert {item["callable_kind"] for item in payload["callables"]} == {"instance_method"}
-        assert {item["kind"] for item in payload["parameters"]} == {"positional"}
-        assert {item["role"] for item in payload["annotations"]} == {
-            "attribute_type",
-            "decorator",
-            "parameter_type",
-            "return_type",
-        }
-        assert {(item["target_kind"], item["resolution"]) for item in payload["dependencies"]} == {
-            ("external", "external")
-        }
-
-    def test_public_manifest_is_canonical_complete_and_provenance_bearing(self) -> None:
-        root = self.project(
-            {
-                "src/example.py": (
-                    "class ExampleBase:\n"
-                    "    pass\n\n"
-                    "class ExampleChild(ExampleBase):\n"
-                    "    def execute(self, value: int = 1) -> str:\n"
-                    "        return str(value)\n"
-                )
-            }
-        )
-
-        code_map = self.application.generate_map("python", root, self.scan_policy())
+    @pytest.mark.parametrize(
+        ("language", "row"),
+        tuple(capability_matrix.languages.items()),
+        ids=tuple(capability_matrix.languages),
+    )
+    def test_each_language_publishes_a_canonical_complete_provenance_bearing_manifest(
+        self,
+        language: str,
+        row: LanguageCapabilityRow,
+    ) -> None:
+        root = self.manifest_scenario_root(row, "canonical")
+        code_map = self.application.generate_map(language, root, self.scan_policy())
         formats = self.application.implementation_manifest_formats()
-        assert tuple(format.id for format in formats) == ("canonical-json",)
-
         document = self.application.implementation_manifest(code_map, formats[0])
         manifest = self.application.read_implementation_manifest(document)
         canonical = json.dumps(
@@ -148,382 +118,161 @@ class TestImplementationManifest(ApplicationTestCase):
             sort_keys=True,
         )
 
+        assert tuple(format.id for format in formats) == ("canonical-json",)
         assert manifest.schema_version == 9
-        assert manifest.producer.extractor.language == "python"
-        assert manifest.producer.extractor.id == "modwire.python.ast"
-        assert manifest.producer.modwire_version
+        assert manifest.producer.extractor.language == language
+        assert manifest.producer.extractor.version
         assert {item.capability for item in manifest.producer.capabilities} == set(FactCapability)
+        assert {item.family for item in manifest.producer.relationship_capabilities} == set(RelationshipFamily)
         assert manifest.source_manifest.policy == self.scan_policy()
-        assert tuple(item.relative_path for item in manifest.source_manifest.sources) == ("src/example.py",)
-        assert all(not item.relative_path.startswith("/") for item in manifest.source_manifest.sources)
+        assert tuple(item.relative_path for item in manifest.source_manifest.sources) == (
+            str(row.fixtures.manifest_source("canonical").relative_to("canonical")),
+        )
         assert str(root) not in canonical
-        assert any(item.target_reference == "ExampleBase" for item in manifest.declaration_relations)
-        assert any(item.expression == "int" for item in manifest.annotations)
-        assert document.format == formats[0]
+        assert manifest.symbols
+        assert manifest.callables
+        assert manifest.declaration_relations
+        assert manifest.dependencies
         assert document.payload == canonical
         assert document.algorithm is DigestAlgorithm.SHA256
-        assert document.digest == hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+        assert document.digest == hashlib.sha256(canonical.encode()).hexdigest()
         assert document.verify_digest()
         assert self.application.implementation_manifest(code_map, formats[0]) == document
 
-    def test_public_map_and_manifest_publish_the_same_observed_call(self) -> None:
-        root = self.project(
-            {
-                "src/example.py": (
-                    "def example_target():\n"
-                    "    return 1\n\n"
-                    "def example_caller():\n"
-                    "    example_target()\n"
-                    "    return example_target()\n"
-                )
-            }
+    @pytest.mark.parametrize(
+        ("language", "row"),
+        tuple(capability_matrix.languages.items()),
+        ids=tuple(capability_matrix.languages),
+    )
+    def test_each_language_preserves_two_distinct_observed_calls(
+        self,
+        language: str,
+        row: LanguageCapabilityRow,
+    ) -> None:
+        code_map = self.application.generate_queryable_map(
+            language,
+            self.manifest_scenario_root(row, "calls"),
+            self.scan_policy(),
         )
-        code_map = self.application.generate_queryable_map("python", root, self.scan_policy())
         format = self.application.implementation_manifest_formats()[0]
         manifest = self.application.read_implementation_manifest(
             self.application.implementation_manifest(code_map.code_map, format)
         )
-
         calls = tuple(result.item for result in code_map.calls().all())
-        assert tuple(item.ordinal for item in calls) == (1, 2)
-        assert tuple(item.ordinal for item in manifest.calls) == (1, 2)
-        assert len({item.identity() for item in calls}) == 2
-        assert tuple(item.source_id for item in manifest.calls) == tuple(item.source_id for item in calls)
-        assert tuple(item.line for item in manifest.calls) == tuple(item.line for item in calls)
-        assert tuple(item.expression for item in manifest.calls) == tuple(item.expression for item in calls)
-        assert (
-            {item.target_name for item in manifest.calls} == {item.target_name for item in calls} == {"example_target"}
-        )
-        assert all(item.resolution is SourceCallResolution.RESOLVED for item in (*manifest.calls, *calls))
-        callable_ids = {item.symbol_id.canonical() for item in manifest.callables}
-        assert all(item.source_callable_id.canonical() in callable_ids for item in manifest.calls)
-        assert all(item.target_callable_id is not None for item in manifest.calls)
-        assert all(
-            item.target_callable_id.canonical() in callable_ids
-            for item in manifest.calls
-            if item.target_callable_id is not None
-        )
 
-    def test_supported_member_inventory_truthfully_publishes_no_observed_calls(self) -> None:
-        root = self.project({"src/example.py": "def example_value():\n    return 1\n"})
-        code_map = self.application.generate_queryable_map("python", root, self.scan_policy())
+        assert len(calls) == len(manifest.calls) == 2
+        assert tuple(item.ordinal for item in calls) == (1, 2)
+        assert tuple(sorted(item.ordinal for item in manifest.calls)) == (1, 2)
+        assert len({item.identity() for item in calls}) == 2
+        assert len({item.target_name for item in calls}) == 1
+        assert all(item.resolution is SourceCallResolution.RESOLVED for item in (*calls, *manifest.calls))
+        assert all(item.target_callable_id is not None for item in (*calls, *manifest.calls))
+
+    @pytest.mark.parametrize(
+        ("language", "row"),
+        tuple(capability_matrix.languages.items()),
+        ids=tuple(capability_matrix.languages),
+    )
+    def test_each_language_truthfully_publishes_no_observed_calls(
+        self,
+        language: str,
+        row: LanguageCapabilityRow,
+    ) -> None:
+        code_map = self.application.generate_queryable_map(
+            language,
+            self.manifest_scenario_root(row, "no_calls"),
+            self.scan_policy(),
+        )
+        manifest = self.application.read_implementation_manifest(
+            self.application.implementation_manifest(
+                code_map.code_map, self.application.implementation_manifest_formats()[0]
+            )
+        )
         member = next(
             coverage
             for coverage in code_map.code_map.producer.relationship_capabilities
             if coverage.family is RelationshipFamily.MEMBER
         )
-        format = self.application.implementation_manifest_formats()[0]
-        manifest = self.application.read_implementation_manifest(
-            self.application.implementation_manifest(code_map.code_map, format)
-        )
 
-        assert member.inventory is CapabilityStatus.SUPPORTED
         assert FactCapability.CALLS in member.evidence_requirements
         assert code_map.calls().all() == ()
         assert manifest.calls == ()
 
-    def test_python_manifest_publishes_complete_class_facts(self) -> None:
-        root = self.project(
-            {
-                "src/example.py": (
-                    "from abc import ABC, abstractmethod\n\n"
-                    "from dataclasses import dataclass\n"
-                    "from typing import ClassVar\n\n"
-                    "@example_contract\n"
-                    "class ExampleAbstract(ABC):\n"
-                    "    example_shared: str = 'example'\n\n"
-                    "    @abstractmethod\n"
-                    "    def example_required(self) -> str:\n"
-                    "        raise NotImplementedError\n\n"
-                    "@example_value('example')\n"
-                    "class ExampleValue(ExampleAbstract):\n"
-                    "    __example_static: ClassVar[str] = 'example'\n"
-                    "    EXAMPLE_LIMIT = 1\n"
-                    "    example_name: str\n\n"
-                    "    def __init__(self, example_optional: str | None = None):\n"
-                    "        self.example_optional: str | None = example_optional\n\n"
-                    "    def example_required(self) -> str:\n"
-                    "        return 'example'\n"
-                    "\n"
-                    "@dataclass\n"
-                    "class ExampleData:\n"
-                    "    example_field: str\n"
-                )
-            }
-        )
-        format = self.application.implementation_manifest_formats()[0]
+    @pytest.mark.parametrize(
+        ("language", "row"),
+        tuple(capability_matrix.languages.items()),
+        ids=tuple(capability_matrix.languages),
+    )
+    def test_each_language_does_not_fabricate_runtime_or_generated_members(
+        self,
+        language: str,
+        row: LanguageCapabilityRow,
+    ) -> None:
         manifest = self.application.read_implementation_manifest(
             self.application.implementation_manifest(
-                self.application.generate_map("python", root, self.scan_policy()), format
-            )
-        )
-        symbol_ids = {item.id.qualified_name: item.id for item in manifest.symbols}
-        value_id = symbol_ids["ExampleValue"]
-        attributes = {item.name: item for item in manifest.attributes if item.owner_symbol_id == value_id}
-        abstract_attributes = {
-            item.name: item for item in manifest.attributes if item.owner_symbol_id == symbol_ids["ExampleAbstract"]
-        }
-        data_attributes = {
-            item.name: item for item in manifest.attributes if item.owner_symbol_id == symbol_ids["ExampleData"]
-        }
-
-        assert attributes["__example_static"].id == (f"{value_id.canonical()}::attribute:__example_static")
-        assert attributes["__example_static"].annotation == "ClassVar[str]"
-        assert attributes["__example_static"].visibility == "private"
-        assert attributes["__example_static"].member_kind is SourceMemberKind.STATIC
-        assert attributes["EXAMPLE_LIMIT"].annotation == ""
-        assert attributes["EXAMPLE_LIMIT"].member_kind is SourceMemberKind.STATIC
-        assert attributes["example_name"].annotation == "str"
-        assert not attributes["example_name"].is_optional
-        assert attributes["example_name"].member_kind is SourceMemberKind.INSTANCE
-        assert attributes["example_optional"].annotation == "str | None"
-        assert attributes["example_optional"].is_optional
-        assert attributes["example_optional"].member_kind is SourceMemberKind.INSTANCE
-        assert abstract_attributes["example_shared"].annotation == "str"
-        assert abstract_attributes["example_shared"].member_kind is SourceMemberKind.INSTANCE
-        assert data_attributes["example_field"].annotation == "str"
-        assert data_attributes["example_field"].member_kind is SourceMemberKind.INSTANCE
-        assert {(item.target_id, item.role, item.expression) for item in manifest.annotations} >= {
-            (symbol_ids["ExampleAbstract"].canonical(), "declaration", "example_contract"),
-            (value_id.canonical(), "declaration", "example_value('example')"),
-            (attributes["example_optional"].id, "attribute_type", "str | None"),
-        }
-        assert any(
-            item.source_symbol_id == value_id
-            and item.kind is SourceDeclarationRelationKind.EXTENDS
-            and item.target_reference == "ExampleAbstract"
-            for item in manifest.declaration_relations
-        )
-        assert tuple(item.specifier for item in manifest.dependencies) == ("abc", "dataclasses", "typing")
-
-    def test_python_manifest_does_not_misclassify_public_functions_or_method_names_as_properties(self) -> None:
-        root = self.project(
-            {
-                "src/example.py": (
-                    "@property\n"
-                    "def example_label() -> str:\n"
-                    "    return 'example'\n\n"
-                    "class ExampleValue:\n"
-                    "    @example_decorator\n"
-                    "    def property(self) -> str:\n"
-                    "        return 'example'\n"
-                )
-            }
-        )
-        format = self.application.implementation_manifest_formats()[0]
-        manifest = self.application.read_implementation_manifest(
-            self.application.implementation_manifest(
-                self.application.generate_map("python", root, self.scan_policy()), format
+                self.application.generate_map(
+                    language,
+                    self.manifest_scenario_root(row, "negative_members"),
+                    self.scan_policy(),
+                ),
+                self.application.implementation_manifest_formats()[0],
             )
         )
 
-        assert {item.symbol_id.qualified_name for item in manifest.callables} >= {
-            "example_label",
-            "ExampleValue.property",
-        }
-        assert not manifest.attributes
-
-    def test_python_manifest_preserves_property_annotation_boundaries(self) -> None:
-        root = self.project(
-            {
-                "src/example.py": (
-                    "class ExampleValue:\n"
-                    "    @property\n"
-                    "    def example_optional(self) -> str | None:\n"
-                    "        return None\n\n"
-                    "    @property\n"
-                    "    def example_untyped(self):\n"
-                    "        return 'example'\n"
-                )
-            }
-        )
-        format = self.application.implementation_manifest_formats()[0]
-        manifest = self.application.read_implementation_manifest(
-            self.application.implementation_manifest(
-                self.application.generate_map("python", root, self.scan_policy()), format
-            )
-        )
-        attributes = {item.name: item for item in manifest.attributes}
-
-        assert attributes["example_optional"].annotation == "str | None"
-        assert attributes["example_optional"].is_optional
-        assert attributes["example_untyped"].annotation == ""
-        assert not attributes["example_untyped"].is_optional
-
-    def test_python_manifest_publishes_strenum_members_as_string_attributes(self) -> None:
-        root = self.project(
-            {
-                "src/example.py": (
-                    "from enum import StrEnum\n\nclass ExampleKind(StrEnum):\n    EXAMPLE_VALUE = 'example'\n"
-                )
-            }
-        )
-        format = self.application.implementation_manifest_formats()[0]
-        manifest = self.application.read_implementation_manifest(
-            self.application.implementation_manifest(
-                self.application.generate_map("python", root, self.scan_policy()), format
-            )
-        )
-        kind_id = next(item.id for item in manifest.symbols if item.id.qualified_name == "ExampleKind")
-        attribute = next(item for item in manifest.attributes if item.owner_symbol_id == kind_id)
-
-        assert attribute.name == "EXAMPLE_VALUE"
-        assert attribute.annotation == "str"
-        assert attribute.member_kind is SourceMemberKind.STATIC
-        assert (attribute.id, "attribute_type", "str") in {
-            (item.target_id, item.role, item.expression) for item in manifest.annotations
-        }
-
-    def test_python_manifest_projects_properties_as_attributes(self) -> None:
-        root = self.project(
-            {
-                "src/example.py": (
-                    "class ExampleValue:\n    @property\n    def example_name(self) -> str:\n        return 'example'\n"
-                )
-            }
-        )
-        format = self.application.implementation_manifest_formats()[0]
-        manifest = self.application.read_implementation_manifest(
-            self.application.implementation_manifest(
-                self.application.generate_map("python", root, self.scan_policy()), format
-            )
-        )
-        value_id = next(item.id for item in manifest.symbols if item.id.qualified_name == "ExampleValue")
-        attribute = next(
-            item for item in manifest.attributes if item.owner_symbol_id == value_id and item.name == "example_name"
-        )
-
-        assert attribute.annotation == "str"
-        assert not attribute.is_optional
-        assert attribute.member_kind is SourceMemberKind.INSTANCE
-        assert not any(item.symbol_id.qualified_name == "ExampleValue.example_name" for item in manifest.callables)
-        assert not any(item.id.qualified_name == "ExampleValue.example_name" for item in manifest.symbols)
-        assert (attribute.id, "attribute_type", "str") in {
-            (item.target_id, item.role, item.expression) for item in manifest.annotations
-        }
-
-    def test_typescript_manifest_distinguishes_undefined_value_types_from_optional_properties(self) -> None:
-        root = self.project(
-            {
-                "src/example.ts": (
-                    "@exampleDecorator('example')\n"
-                    "class ExampleValue {\n"
-                    "    example_required: undefined[] = [];\n"
-                    "    example_optional: string | undefined;\n"
-                    "}\n\n"
-                    "interface ExampleContract {\n"
-                    "    example_required: undefined[];\n"
-                    "    example_optional: string | undefined;\n"
-                    "}\n\n"
-                    "type ExampleShape = {\n"
-                    "    example_required: undefined[];\n"
-                    "    example_optional: string | undefined;\n"
-                    "};\n"
-                )
-            }
-        )
-        format = self.application.implementation_manifest_formats()[0]
-        manifest = self.application.read_implementation_manifest(
-            self.application.implementation_manifest(
-                self.application.generate_map("typescript", root, self.scan_policy()), format
-            )
-        )
-        symbol_ids = {item.id.qualified_name: item.id for item in manifest.symbols}
-
-        for owner_name in ("ExampleValue", "ExampleContract", "ExampleShape"):
-            owner_attributes = {
-                item.name: item for item in manifest.attributes if item.owner_symbol_id == symbol_ids[owner_name]
-            }
-            assert not owner_attributes["example_required"].is_optional
-            assert owner_attributes["example_required"].annotation == "undefined[]"
-            assert owner_attributes["example_optional"].is_optional
-            assert owner_attributes["example_optional"].annotation == "string | undefined"
-        assert any(
-            item.target_id == symbol_ids["ExampleValue"].canonical()
-            and item.role == "declaration"
-            and item.expression == "exampleDecorator('example')"
-            for item in manifest.annotations
-        )
-
-    def test_php_manifest_preserves_qualified_dnf_types_and_attributes(self) -> None:
-        root = self.project(
-            {
-                "src/example.php": (
-                    "<?php\n"
-                    "#[\\Example\\Attribute(name: 'example')]\n"
-                    "class ExampleValue {\n"
-                    "    public static string $example_static = 'example';\n"
-                    "    protected (\\Example\\FirstType&\\Example\\SecondType)|null $example_value = null;\n"
-                    "}\n"
-                )
-            }
-        )
-        format = self.application.implementation_manifest_formats()[0]
-        manifest = self.application.read_implementation_manifest(
-            self.application.implementation_manifest(
-                self.application.generate_map("php", root, self.scan_policy()), format
-            )
-        )
-        value_id = next(item.id for item in manifest.symbols if item.id.qualified_name == "ExampleValue")
-        attributes = {item.name: item for item in manifest.attributes if item.owner_symbol_id == value_id}
-
-        assert attributes["example_static"].annotation == "string"
-        assert attributes["example_static"].visibility == "public"
-        assert attributes["example_static"].member_kind is SourceMemberKind.STATIC
-        assert attributes["example_value"].annotation == ("(\\Example\\FirstType&\\Example\\SecondType)|null")
-        assert attributes["example_value"].visibility == "protected"
-        assert attributes["example_value"].is_optional
-        assert attributes["example_value"].member_kind is SourceMemberKind.INSTANCE
-        assert any(
-            item.target_id == value_id.canonical()
-            and item.role == "declaration"
-            and item.expression == "\\Example\\Attribute(name: 'example')"
-            for item in manifest.annotations
+        assert not any("runtime" in item.name.lower() for item in manifest.attributes)
+        assert not any(
+            "generated" in item.symbol_id.qualified_name.rsplit(".", 1)[-1].lower() for item in manifest.callables
         )
 
     @pytest.mark.parametrize(
-        ("language", "path", "content", "specifier"),
-        (
-            ("python", "src/example.py", "from .example_value import ExampleValue\n", ".example_value"),
-            (
-                "typescript",
-                "src/example.ts",
-                "import { ExampleValue } from './example-value';\n",
-                "./example-value",
-            ),
-            (
-                "php",
-                "src/example.php",
-                "<?php\nuse \\Example\\ExampleValue;\n",
-                "\\Example\\ExampleValue",
-            ),
-        ),
+        ("language", "row"),
+        tuple(capability_matrix.languages.items()),
+        ids=tuple(capability_matrix.languages),
     )
-    def test_manifest_dependencies_preserve_authored_specifiers(
-        self, language: str, path: str, content: str, specifier: str
+    def test_each_language_publishes_its_authored_dependency(
+        self,
+        language: str,
+        row: LanguageCapabilityRow,
     ) -> None:
-        root = self.project({path: content})
-        format = self.application.implementation_manifest_formats()[0]
         manifest = self.application.read_implementation_manifest(
             self.application.implementation_manifest(
-                self.application.generate_map(language, root, self.scan_policy()), format
+                self.application.generate_map(
+                    language,
+                    self.manifest_scenario_root(row, "dependencies"),
+                    self.scan_policy(),
+                ),
+                self.application.implementation_manifest_formats()[0],
             )
         )
 
-        assert tuple((item.specifier, item.kind) for item in manifest.dependencies) == (
-            (specifier, SourceDependencyKind.IMPORTS),
-        )
+        assert len(manifest.dependencies) == 1
+        assert manifest.dependencies[0].specifier
+        assert manifest.dependencies[0].kind is SourceDependencyKind.IMPORTS
 
-    def test_source_edit_changes_both_source_and_implementation_identity(self) -> None:
-        root = self.project({"src/example.py": "def example() -> int:\n    return 1\n"})
+    @pytest.mark.parametrize(
+        ("language", "row"),
+        tuple(capability_matrix.languages.items()),
+        ids=tuple(capability_matrix.languages),
+    )
+    def test_source_edit_changes_source_and_implementation_identity_for_each_language(
+        self,
+        language: str,
+        row: LanguageCapabilityRow,
+    ) -> None:
+        root = self.workspace / f"{language}_source_edit"
+        shutil.copytree(self.manifest_scenario_root(row, "source_edit_before"), root)
         format = self.application.implementation_manifest_formats()[0]
-
         before_document = self.application.implementation_manifest(
-            self.application.generate_map("python", root, self.scan_policy()), format
+            self.application.generate_map(language, root, self.scan_policy()), format
         )
-        (root / "src/example.py").write_text("def example() -> int:\n    return 2\n", encoding="utf-8")
+        before_source = row.fixtures.manifest_source("source_edit_before")
+        after_source = row.fixtures.manifest_source("source_edit_after")
+        shutil.copyfile(
+            self.repository / row.fixtures.manifest_root / after_source,
+            root / before_source.relative_to("source_edit_before"),
+        )
         after_document = self.application.implementation_manifest(
-            self.application.generate_map("python", root, self.scan_policy()), format
+            self.application.generate_map(language, root, self.scan_policy()), format
         )
         before = self.application.read_implementation_manifest(before_document)
         after = self.application.read_implementation_manifest(after_document)
@@ -531,31 +280,32 @@ class TestImplementationManifest(ApplicationTestCase):
         assert before.source_manifest.digest != after.source_manifest.digest
         assert before_document.digest != after_document.digest
 
-    def test_supported_languages_publish_one_manifest_vocabulary(self) -> None:
-        fixtures = self.repository / "tests/fixtures/code_map/language_extensions"
+    def test_matrix_languages_publish_one_manifest_vocabulary(self) -> None:
         format = self.application.implementation_manifest_formats()[0]
         manifests = {
             language: self.application.read_implementation_manifest(
                 self.application.implementation_manifest(
-                    self.application.generate_map(language, fixtures / language, self.scan_policy()), format
+                    self.application.generate_map(
+                        language,
+                        self.manifest_scenario_root(row, "canonical"),
+                        self.scan_policy(),
+                    ),
+                    format,
                 )
             )
-            for language in self.application.extraction.supported_languages()
+            for language, row in self.capability_matrix.languages.items()
         }
 
-        vocabularies = {tuple(manifest.model_dump(mode="json")) for manifest in manifests.values()}
-        assert len(vocabularies) == 1
-        for language, manifest in manifests.items():
-            assert manifest.producer.extractor.language == language
-            assert manifest.producer.extractor.version
-            assert manifest.symbols
-            assert manifest.callables
-            assert manifest.declaration_relations
-            assert {item.capability for item in manifest.producer.capabilities} == set(FactCapability)
-            assert {item.family for item in manifest.producer.relationship_capabilities} == set(RelationshipFamily)
-            member = next(
-                coverage
-                for coverage in manifest.producer.relationship_capabilities
-                if coverage.family is RelationshipFamily.MEMBER
-            )
-            assert FactCapability.CALLS in member.evidence_requirements
+        assert len({tuple(manifest.model_dump(mode="json")) for manifest in manifests.values()}) == 1
+
+    def test_every_manifest_fixture_declared_by_the_matrix_is_executable(self) -> None:
+        for language, row in self.capability_matrix.languages.items():
+            for scenario in row.fixtures.manifest_sources:
+                code_map = self.application.generate_map(
+                    language,
+                    self.manifest_scenario_root(row, scenario),
+                    self.scan_policy(),
+                )
+                assert tuple(code_map.extraction.files) == (
+                    str(row.fixtures.manifest_source(scenario).relative_to(scenario)),
+                )

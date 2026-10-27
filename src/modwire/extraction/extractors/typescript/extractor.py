@@ -122,8 +122,8 @@ class TypeScriptExtractor(SourceExtractor):
                     evidence_requirements=RelationshipFamily.DECLARATION.evidence_requirements,
                     semantics=CapabilityStatus.PARTIAL,
                     semantics_explanation=(
-                        "Authored extension and implementation heritage is preserved without evaluating "
-                        "mixins or framework conventions."
+                        "Authored extension and implementation heritage is preserved without resolving "
+                        "runtime base aliases."
                     ),
                     inventory=CapabilityStatus.SUPPORTED,
                     inventory_explanation=(

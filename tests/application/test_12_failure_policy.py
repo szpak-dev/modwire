@@ -21,6 +21,7 @@ class TestFailurePolicy(ApplicationTestCase):
             source_root / "extraction/extractors/resources/java/build.py",
             source_root / "extraction/extractors/resources/php/build.py",
             source_root / "extraction/extractors/resources/python/script.py",
+            source_root / "extraction/extractors/resources/ruby/build.py",
             source_root / "extraction/extractors/resources/typescript/build.py",
         }
         violations: list[str] = []
