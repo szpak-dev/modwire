@@ -109,8 +109,11 @@ class PythonExtractor(SourceExtractor):
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.COMPOSITION,
-                    status=CapabilityStatus.PARTIAL,
-                    explanation="Class extension is extracted; mixin semantics are not classified.",
+                    status=CapabilityStatus.UNSUPPORTED,
+                    explanation=(
+                        "Python base expressions are reported as inheritance; no distinct composition relation "
+                        "syntax is classified."
+                    ),
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.DEPENDENCIES,

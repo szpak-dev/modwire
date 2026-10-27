@@ -1,0 +1,1435 @@
+reference_projection: tests/fixtures/code_map/reference_shop/expected_code_map.json
+languages:
+  python:
+    convention:
+      suffix: ".py"
+      suffixes:
+      - ".py"
+      separator: _
+      class_named_file: false
+    fixtures:
+      reference_root: tests/fixtures/code_map/reference_shop/languages/python
+      capability_gap_root: tests/fixtures/code_map/capability_gaps/python
+      manifest_root: tests/fixtures/implementation_manifest/python
+      manifest_sources:
+        canonical: canonical/src/example.py
+        calls: calls/src/example.py
+        no_calls: no_calls/src/example.py
+        negative_members: negative_members/src/example.py
+        dependencies: dependencies/src/example.py
+        source_edit_before: source_edit_before/src/example.py
+        source_edit_after: source_edit_after/src/example.py
+    capabilities:
+      sources:
+        status: supported
+        explanation: Every included Python source is identified and hashed.
+        limitation_scenarios: []
+      symbols:
+        status: supported
+        explanation: Classes, abstract classes, functions, and values are extracted.
+        limitation_scenarios: []
+      callables:
+        status: supported
+        explanation: Functions, methods, constructors, and lambdas are extracted.
+        limitation_scenarios: []
+      calls:
+        status: supported
+        explanation: Static calls owned by extracted callables are emitted with explicit
+          resolved, external, unresolved, or dynamic state.
+        limitation_scenarios: []
+      parameters:
+        status: supported
+        explanation: Callable parameter order, kind, annotation, and default presence
+          are extracted.
+        limitation_scenarios: []
+      annotations:
+        status: partial
+        explanation: Class and callable decorators and declared type annotations are
+          extracted; arbitrary annotations are not evaluated.
+        limitation_scenarios:
+        - annotation-evaluation-boundary
+      modifiers:
+        status: partial
+        explanation: Visibility intent, callable kind, and class property member kind
+          are normalized.
+        limitation_scenarios:
+        - modifier-normalization-boundary
+      attributes:
+        status: supported
+        explanation: Class property identity, exact declared type, visibility, optionality,
+          and member kind are extracted.
+        limitation_scenarios: []
+      assigned_values:
+        status: supported
+        explanation: Ordered assignment evidence distinguishes calls, references,
+          literals, unresolved expressions, and declarations without an assigned value.
+        limitation_scenarios: []
+      inheritance:
+        status: supported
+        explanation: Every declared Python base expression is recorded.
+        limitation_scenarios: []
+      namespaces:
+        status: unsupported
+        explanation: Python namespace declarations are not extracted yet.
+        limitation_scenarios:
+        - package-namespace
+      declaration_kinds:
+        status: supported
+        explanation: Classes and abstract classes publish exact shared declaration
+          kinds.
+        limitation_scenarios: []
+      composition:
+        status: unsupported
+        explanation: Python base expressions are reported as inheritance; no distinct
+          composition relation syntax is classified.
+        limitation_scenarios:
+        - no-distinct-composition-syntax
+      dependencies:
+        status: supported
+        explanation: Imports are normalized and resolved when targets are present.
+        limitation_scenarios: []
+      spans:
+        status: partial
+        explanation: Callable spans are exact; other symbol facts expose line counts.
+        limitation_scenarios:
+        - non-callable-span-boundary
+    relationships:
+      declaration:
+        semantics: partial
+        semantics_explanation: Authored base expressions are preserved without interpreting
+          runtime rebinding, metaclasses, or framework conventions.
+        semantics_limitation_scenarios:
+        - declaration-runtime-semantics-boundary
+        inventory: supported
+        inventory_explanation: Every authored class base expression in included Python
+          sources is emitted deterministically.
+        inventory_limitation_scenarios: []
+      member:
+        semantics: partial
+        semantics_explanation: Declared member and callable types, static calls, and
+          assigned values are preserved without resolving dynamic types or runtime
+          mutation.
+        semantics_limitation_scenarios:
+        - member-runtime-semantics-boundary
+        inventory: supported
+        inventory_explanation: Every supported static member, callable type, call,
+          and assigned-value fact in included Python sources is emitted deterministically.
+        inventory_limitation_scenarios: []
+      dependency:
+        semantics: supported
+        semantics_explanation: Authored import dependencies are normalized with explicit
+          resolved, external, or unresolved state; dynamic loading is excluded.
+        semantics_limitation_scenarios: []
+        inventory: supported
+        inventory_explanation: Every authored import declaration in included Python
+          sources is emitted deterministically.
+        inventory_limitation_scenarios: []
+    scenarios:
+    - scenario: annotation-evaluation-boundary
+      rationale: Annotation syntax is preserved without executing its runtime mutation.
+      source: src/example_package/__init__.py
+      authored_syntax:
+      - "@example_annotation"
+      - example_runtime_annotation
+    - scenario: modifier-normalization-boundary
+      rationale: The final decorator is preserved without inventing a shared modifier
+        value.
+      source: src/example_package/__init__.py
+      authored_syntax:
+      - "@final"
+    - scenario: package-namespace
+      rationale: Package layout is scanned but no namespace fact is emitted.
+      source: src/example_package/__init__.py
+      authored_syntax:
+      - EXAMPLE_PACKAGE_VALUE
+    - scenario: no-distinct-composition-syntax
+      rationale: Python bases emit inheritance without a fabricated composition relation.
+      source: src/example_package/__init__.py
+      authored_syntax:
+      - class ExampleRuntime(ExampleAlias)
+    - scenario: non-callable-span-boundary
+      rationale: Callable spans are exact while class declarations have no exact-span
+        identity.
+      source: src/example_package/__init__.py
+      authored_syntax:
+      - class ExampleBase
+    - scenario: declaration-runtime-semantics-boundary
+      rationale: The authored alias is retained without interpreting its runtime target.
+      source: src/example_package/__init__.py
+      authored_syntax:
+      - ExampleAlias = ExampleBase
+    - scenario: member-runtime-semantics-boundary
+      rationale: Runtime member mutation does not fabricate a declared class attribute.
+      source: src/example_package/__init__.py
+      authored_syntax:
+      - ExampleBase.example_runtime_member
+    capability_limitations:
+      symbols: []
+      callables: []
+      calls: []
+      parameters: []
+      annotations:
+      - scenario: annotation-evaluation-boundary
+        present_annotations:
+        - example_annotation
+        absent_annotations: []
+        absent_attribute_names:
+        - example_runtime_annotation
+      modifiers:
+      - scenario: modifier-normalization-boundary
+        present_visibility_intents: []
+        present_callable_kinds: []
+        present_member_kinds: []
+        unrepresented_authored_modifiers:
+        - final
+      attributes: []
+      assigned_values: []
+      namespaces:
+      - scenario: package-namespace
+        absent_namespaces:
+        - example_package
+      composition:
+      - scenario: no-distinct-composition-syntax
+        present_relations:
+        - source_declaration_id:
+            source_id: src/example_package/__init__.py
+            family: class
+            qualified_name: ExampleRuntime
+            ordinal: 85899345921
+          relation: extends
+          target_reference: ExampleAlias
+        absent_endpoints: []
+      dependencies: []
+      spans:
+      - scenario: non-callable-span-boundary
+        present_exact_span_owners:
+        - source_id: src/example_package/__init__.py
+          family: function
+          qualified_name: example_annotation
+          ordinal: 25769803777
+        absent_exact_span_owners:
+        - source_id: src/example_package/__init__.py
+          family: class
+          qualified_name: ExampleBase
+          ordinal: 55834574849
+    relationship_limitations:
+      declaration_semantics:
+      - scenario: declaration-runtime-semantics-boundary
+        present_relations:
+        - source_declaration_id:
+            source_id: src/example_package/__init__.py
+            family: class
+            qualified_name: ExampleRuntime
+            ordinal: 85899345921
+          relation: extends
+          target_reference: ExampleAlias
+        present_endpoints:
+        - source_declaration_id:
+            source_id: src/example_package/__init__.py
+            family: class
+            qualified_name: ExampleRuntime
+            ordinal: 85899345921
+          target_reference: ExampleAlias
+        absent_endpoints:
+        - source_declaration_id:
+            source_id: src/example_package/__init__.py
+            family: class
+            qualified_name: ExampleRuntime
+            ordinal: 85899345921
+          target_reference: ExampleBase
+      declaration_inventory: []
+      member_semantics:
+      - scenario: member-runtime-semantics-boundary
+        present_attribute_names:
+        - example_value
+        absent_attribute_names:
+        - example_runtime_member
+        present_value_kinds: []
+        absent_value_kinds: []
+      member_inventory: []
+      dependency_semantics: []
+      dependency_inventory: []
+  typescript:
+    convention:
+      suffix: ".ts"
+      suffixes:
+      - ".ts"
+      - ".tsx"
+      - ".js"
+      - ".jsx"
+      separator: "-"
+      class_named_file: false
+    fixtures:
+      reference_root: tests/fixtures/code_map/reference_shop/languages/typescript
+      capability_gap_root: tests/fixtures/code_map/capability_gaps/typescript
+      manifest_root: tests/fixtures/implementation_manifest/typescript
+      manifest_sources:
+        canonical: canonical/src/example.ts
+        calls: calls/src/example.ts
+        no_calls: no_calls/src/example.ts
+        negative_members: negative_members/src/example.ts
+        dependencies: dependencies/src/example.ts
+        source_edit_before: source_edit_before/src/example.ts
+        source_edit_after: source_edit_after/src/example.ts
+    capabilities:
+      sources:
+        status: supported
+        explanation: Every included TypeScript or JavaScript source is identified
+          and hashed.
+        limitation_scenarios: []
+      symbols:
+        status: supported
+        explanation: Classes, interfaces, types, functions, and values are extracted.
+        limitation_scenarios: []
+      callables:
+        status: supported
+        explanation: Functions, methods, constructors, and callable values are extracted.
+        limitation_scenarios: []
+      calls:
+        status: supported
+        explanation: Static calls owned by extracted callables are emitted with explicit
+          resolved, external, unresolved, or dynamic state.
+        limitation_scenarios: []
+      parameters:
+        status: supported
+        explanation: Callable parameter order, kind, annotation, and default presence
+          are extracted.
+        limitation_scenarios: []
+      annotations:
+        status: partial
+        explanation: Class decorator expressions and declared type annotations are
+          extracted; decorators on other declarations are not yet emitted.
+        limitation_scenarios:
+        - non-class-decorator-boundary
+      modifiers:
+        status: partial
+        explanation: Visibility intent, callable kind, and property member kind are
+          normalized.
+        limitation_scenarios:
+        - modifier-normalization-boundary
+      attributes:
+        status: supported
+        explanation: Class and type property identity, exact declared type, visibility,
+          optionality, and member kind are extracted.
+        limitation_scenarios: []
+      assigned_values:
+        status: unsupported
+        explanation: TypeScript property assigned-value evidence is not extracted
+          yet.
+        limitation_scenarios:
+        - assigned-value
+      inheritance:
+        status: supported
+        explanation: Class and interface heritage clauses are recorded.
+        limitation_scenarios: []
+      namespaces:
+        status: unsupported
+        explanation: TypeScript namespace declarations are not extracted yet.
+        limitation_scenarios:
+        - namespace-declaration
+      declaration_kinds:
+        status: supported
+        explanation: Classes, interfaces, and type aliases publish exact shared declaration
+          kinds.
+        limitation_scenarios: []
+      composition:
+        status: partial
+        explanation: Extension and implementation heritage is extracted.
+        limitation_scenarios:
+        - heritage-only-composition-boundary
+      dependencies:
+        status: supported
+        explanation: Imports are normalized and resolved when targets are present.
+        limitation_scenarios: []
+      spans:
+        status: partial
+        explanation: Callable spans are exact; other symbol facts expose line counts.
+        limitation_scenarios:
+        - non-callable-span-boundary
+    relationships:
+      declaration:
+        semantics: partial
+        semantics_explanation: Authored extension and implementation heritage is preserved
+          without resolving runtime base aliases.
+        semantics_limitation_scenarios:
+        - declaration-runtime-semantics-boundary
+        inventory: supported
+        inventory_explanation: Every authored class and interface heritage clause
+          in included TypeScript sources is emitted deterministically.
+        inventory_limitation_scenarios: []
+      member:
+        semantics: partial
+        semantics_explanation: Declared member and callable types and static calls
+          are preserved without resolving runtime types or framework ownership.
+        semantics_limitation_scenarios:
+        - member-runtime-semantics-boundary
+        inventory: partial
+        inventory_explanation: Declared type and static-call evidence is emitted,
+          but assigned-value relationship evidence is not available.
+        inventory_limitation_scenarios:
+        - assigned-value
+      dependency:
+        semantics: supported
+        semantics_explanation: Authored import dependencies are normalized with explicit
+          resolution state; dynamic loading is excluded.
+        semantics_limitation_scenarios: []
+        inventory: supported
+        inventory_explanation: Every authored import declaration in included TypeScript
+          and JavaScript sources is emitted deterministically.
+        inventory_limitation_scenarios: []
+    scenarios:
+    - scenario: non-class-decorator-boundary
+      rationale: Class decorators are emitted while method decorators remain absent.
+      source: src/example-capability-gaps.ts
+      authored_syntax:
+      - "@ExampleClassDecorator"
+      - "@ExampleMethodDecorator"
+    - scenario: modifier-normalization-boundary
+      rationale: Readonly syntax is authored without a fabricated shared visibility
+        value.
+      source: src/example-capability-gaps.ts
+      authored_syntax:
+      - readonly exampleValue
+    - scenario: assigned-value
+      rationale: Authored property initializers emit attributes without assigned-value
+        evidence.
+      source: src/example-capability-gaps.ts
+      authored_syntax:
+      - exampleValue =
+    - scenario: namespace-declaration
+      rationale: Authored namespace syntax is scanned but no namespace fact is emitted.
+      source: src/example-capability-gaps.ts
+      authored_syntax:
+      - ExampleNamespace
+    - scenario: heritage-only-composition-boundary
+      rationale: Implementation heritage is emitted while type-intersection composition
+        is not.
+      source: src/example-capability-gaps.ts
+      authored_syntax:
+      - implements ExampleFirst
+      - ExampleFirst & ExampleSecond
+    - scenario: non-callable-span-boundary
+      rationale: Callable spans are exact while class declarations have no exact-span
+        identity.
+      source: src/example-capability-gaps.ts
+      authored_syntax:
+      - class ExampleAssignedValue
+    - scenario: declaration-runtime-semantics-boundary
+      rationale: The authored runtime-base alias is retained without resolving its
+        runtime target.
+      source: src/example-capability-gaps.ts
+      authored_syntax:
+      - ExampleRuntimeBase = ExampleAssignedValue
+    - scenario: member-runtime-semantics-boundary
+      rationale: Prototype mutation does not fabricate a declared class attribute.
+      source: src/example-capability-gaps.ts
+      authored_syntax:
+      - exampleRuntimeMember
+    capability_limitations:
+      symbols: []
+      callables: []
+      calls: []
+      parameters: []
+      annotations:
+      - scenario: non-class-decorator-boundary
+        present_annotations:
+        - ExampleClassDecorator
+        absent_annotations:
+        - ExampleMethodDecorator
+        absent_attribute_names: []
+      modifiers:
+      - scenario: modifier-normalization-boundary
+        present_visibility_intents:
+        - public
+        present_callable_kinds: []
+        present_member_kinds: []
+        unrepresented_authored_modifiers:
+        - readonly
+      attributes: []
+      assigned_values:
+      - scenario: assigned-value
+        present_attribute_names:
+        - exampleValue
+        absent_attribute_names: []
+        expected_value_kinds:
+          exampleValue:
+          - unsupported
+      namespaces:
+      - scenario: namespace-declaration
+        absent_namespaces:
+        - ExampleNamespace
+      composition:
+      - scenario: heritage-only-composition-boundary
+        present_relations:
+        - source_declaration_id:
+            source_id: src/example-capability-gaps.ts
+            family: class
+            qualified_name: ExampleAssignedValue
+            ordinal: 462
+          relation: implements
+          target_reference: ExampleFirst
+        absent_endpoints:
+        - source_declaration_id:
+            source_id: src/example-capability-gaps.ts
+            family: type
+            qualified_name: ExampleCombined
+            ordinal: 759
+          target_reference: ExampleFirst
+      dependencies: []
+      spans:
+      - scenario: non-callable-span-boundary
+        present_exact_span_owners:
+        - source_id: src/example-capability-gaps.ts
+          family: method
+          qualified_name: ExampleAssignedValue.exampleMethod
+          ordinal: 595
+        absent_exact_span_owners:
+        - source_id: src/example-capability-gaps.ts
+          family: class
+          qualified_name: ExampleAssignedValue
+          ordinal: 462
+    relationship_limitations:
+      declaration_semantics:
+      - scenario: declaration-runtime-semantics-boundary
+        present_relations:
+        - source_declaration_id:
+            source_id: src/example-capability-gaps.ts
+            family: class
+            qualified_name: ExampleRuntime
+            ordinal: 869
+          relation: extends
+          target_reference: ExampleRuntimeBase
+        present_endpoints:
+        - source_declaration_id:
+            source_id: src/example-capability-gaps.ts
+            family: class
+            qualified_name: ExampleRuntime
+            ordinal: 869
+          target_reference: ExampleRuntimeBase
+        absent_endpoints:
+        - source_declaration_id:
+            source_id: src/example-capability-gaps.ts
+            family: class
+            qualified_name: ExampleRuntime
+            ordinal: 869
+          target_reference: ExampleAssignedValue
+      declaration_inventory: []
+      member_semantics:
+      - scenario: member-runtime-semantics-boundary
+        present_attribute_names:
+        - exampleValue
+        absent_attribute_names:
+        - exampleRuntimeMember
+        present_value_kinds: []
+        absent_value_kinds: []
+      member_inventory:
+      - scenario: assigned-value
+        present_attribute_names:
+        - exampleValue
+        absent_attribute_names: []
+        present_value_kinds:
+        - unsupported
+        absent_value_kinds:
+        - literal
+      dependency_semantics: []
+      dependency_inventory: []
+  php:
+    convention:
+      suffix: ".php"
+      suffixes:
+      - ".php"
+      separator: _
+      class_named_file: true
+    fixtures:
+      reference_root: tests/fixtures/code_map/reference_shop/languages/php
+      capability_gap_root: tests/fixtures/code_map/capability_gaps/php
+      manifest_root: tests/fixtures/implementation_manifest/php
+      manifest_sources:
+        canonical: canonical/src/Example.php
+        calls: calls/src/Example.php
+        no_calls: no_calls/src/Example.php
+        negative_members: negative_members/src/Example.php
+        dependencies: dependencies/src/Example.php
+        source_edit_before: source_edit_before/src/Example.php
+        source_edit_after: source_edit_after/src/Example.php
+    capabilities:
+      sources:
+        status: supported
+        explanation: Every included PHP source is identified and hashed.
+        limitation_scenarios: []
+      symbols:
+        status: supported
+        explanation: Classes, interfaces, functions, and values are extracted.
+        limitation_scenarios: []
+      callables:
+        status: supported
+        explanation: Functions, methods, constructors, closures, and arrow functions
+          are extracted.
+        limitation_scenarios: []
+      calls:
+        status: supported
+        explanation: Static calls owned by extracted callables are emitted with explicit
+          resolved, external, unresolved, or dynamic state.
+        limitation_scenarios: []
+      parameters:
+        status: supported
+        explanation: Callable parameter order, kind, annotation, and default presence
+          are extracted.
+        limitation_scenarios: []
+      annotations:
+        status: partial
+        explanation: Class and interface attributes and declared type annotations
+          are extracted; attributes on other declarations are not yet emitted.
+        limitation_scenarios:
+        - non-type-attribute-boundary
+      modifiers:
+        status: partial
+        explanation: Visibility intent, callable kind, and property member kind are
+          normalized.
+        limitation_scenarios:
+        - modifier-normalization-boundary
+      attributes:
+        status: supported
+        explanation: Declared and promoted property identity, exact declared type,
+          visibility, optionality, and member kind are extracted.
+        limitation_scenarios: []
+      assigned_values:
+        status: unsupported
+        explanation: PHP property assigned-value evidence is not extracted yet.
+        limitation_scenarios:
+        - assigned-value
+      inheritance:
+        status: supported
+        explanation: Class and interface inheritance declarations are recorded.
+        limitation_scenarios: []
+      namespaces:
+        status: unsupported
+        explanation: PHP namespace declarations are not extracted yet.
+        limitation_scenarios:
+        - namespace-declaration
+      declaration_kinds:
+        status: supported
+        explanation: Classes, abstract classes, and interfaces publish exact shared
+          declaration kinds.
+        limitation_scenarios: []
+      composition:
+        status: partial
+        explanation: Extension and implementation are extracted; trait use is not
+          classified.
+        limitation_scenarios:
+        - trait-use
+      dependencies:
+        status: supported
+        explanation: Namespace imports are normalized and resolved when targets are
+          present.
+        limitation_scenarios: []
+      spans:
+        status: partial
+        explanation: Callable spans are exact; other symbol facts expose line counts.
+        limitation_scenarios:
+        - non-callable-span-boundary
+    relationships:
+      declaration:
+        semantics: partial
+        semantics_explanation: Authored extension and implementation relations are
+          preserved without classifying trait use or framework conventions.
+        semantics_limitation_scenarios:
+        - trait-use
+        inventory: partial
+        inventory_explanation: Class and interface heritage is emitted, but trait-use
+          relationships are not yet classified.
+        inventory_limitation_scenarios:
+        - trait-use
+      member:
+        semantics: partial
+        semantics_explanation: Declared property and callable types and static calls
+          are preserved without resolving runtime types or framework ownership.
+        semantics_limitation_scenarios:
+        - member-runtime-semantics-boundary
+        inventory: partial
+        inventory_explanation: Declared type and static-call evidence is emitted,
+          but assigned-value relationship evidence is not available.
+        inventory_limitation_scenarios:
+        - assigned-value
+      dependency:
+        semantics: supported
+        semantics_explanation: Authored namespace imports are normalized with explicit
+          resolution state; dynamic loading is excluded.
+        semantics_limitation_scenarios: []
+        inventory: supported
+        inventory_explanation: Every authored namespace import in included PHP sources
+          is emitted deterministically.
+        inventory_limitation_scenarios: []
+    scenarios:
+    - scenario: non-type-attribute-boundary
+      rationale: Type attributes are emitted while method attributes remain absent.
+      source: src/ExampleCapabilityGaps.php
+      authored_syntax:
+      - "#[ExampleTypeMarker]"
+      - "#[ExampleMethodMarker]"
+    - scenario: modifier-normalization-boundary
+      rationale: Final syntax is authored without a fabricated shared visibility value.
+      source: src/ExampleCapabilityGaps.php
+      authored_syntax:
+      - final class ExampleConsumer
+    - scenario: assigned-value
+      rationale: Authored property initializers emit attributes without assigned-value
+        evidence.
+      source: src/ExampleCapabilityGaps.php
+      authored_syntax:
+      - exampleValue =
+    - scenario: namespace-declaration
+      rationale: Authored namespace syntax is scanned but no namespace fact is emitted.
+      source: src/ExampleCapabilityGaps.php
+      authored_syntax:
+      - namespace ExampleCapabilityGaps
+    - scenario: trait-use
+      rationale: Authored trait use is scanned without a fabricated composition relation.
+      source: src/ExampleCapabilityGaps.php
+      authored_syntax:
+      - use ExampleTrait
+    - scenario: non-callable-span-boundary
+      rationale: Callable spans are exact while class declarations have no exact-span
+        identity.
+      source: src/ExampleCapabilityGaps.php
+      authored_syntax:
+      - class ExampleConsumer
+    - scenario: member-runtime-semantics-boundary
+      rationale: Runtime property mutation does not fabricate a declared class attribute.
+      source: src/ExampleCapabilityGaps.php
+      authored_syntax:
+      - exampleRuntimeMember
+    capability_limitations:
+      symbols: []
+      callables: []
+      calls: []
+      parameters: []
+      annotations:
+      - scenario: non-type-attribute-boundary
+        present_annotations:
+        - ExampleTypeMarker
+        absent_annotations:
+        - ExampleMethodMarker
+        absent_attribute_names: []
+      modifiers:
+      - scenario: modifier-normalization-boundary
+        present_visibility_intents:
+        - public
+        present_callable_kinds: []
+        present_member_kinds: []
+        unrepresented_authored_modifiers:
+        - final
+      attributes: []
+      assigned_values:
+      - scenario: assigned-value
+        present_attribute_names:
+        - exampleValue
+        absent_attribute_names: []
+        expected_value_kinds:
+          exampleValue:
+          - unsupported
+      namespaces:
+      - scenario: namespace-declaration
+        absent_namespaces:
+        - ExampleCapabilityGaps
+      composition:
+      - scenario: trait-use
+        present_relations: []
+        absent_endpoints:
+        - source_declaration_id:
+            source_id: src/ExampleCapabilityGaps.php
+            family: class
+            qualified_name: ExampleConsumer
+            ordinal: 282
+          target_reference: ExampleTrait
+      dependencies: []
+      spans:
+      - scenario: non-callable-span-boundary
+        present_exact_span_owners:
+        - source_id: src/ExampleCapabilityGaps.php
+          family: method
+          qualified_name: exampleTraitValue
+          ordinal: 164
+        absent_exact_span_owners:
+        - source_id: src/ExampleCapabilityGaps.php
+          family: class
+          qualified_name: ExampleConsumer
+          ordinal: 282
+    relationship_limitations:
+      declaration_semantics:
+      - scenario: trait-use
+        present_relations: []
+        present_endpoints: []
+        absent_endpoints:
+        - source_declaration_id:
+            source_id: src/ExampleCapabilityGaps.php
+            family: class
+            qualified_name: ExampleConsumer
+            ordinal: 282
+          target_reference: ExampleTrait
+      declaration_inventory:
+      - scenario: trait-use
+        present_relations: []
+        present_endpoints: []
+        absent_endpoints:
+        - source_declaration_id:
+            source_id: src/ExampleCapabilityGaps.php
+            family: class
+            qualified_name: ExampleConsumer
+            ordinal: 282
+          target_reference: ExampleTrait
+      member_semantics:
+      - scenario: member-runtime-semantics-boundary
+        present_attribute_names:
+        - exampleValue
+        absent_attribute_names:
+        - exampleRuntimeMember
+        present_value_kinds: []
+        absent_value_kinds: []
+      member_inventory:
+      - scenario: assigned-value
+        present_attribute_names:
+        - exampleValue
+        absent_attribute_names: []
+        present_value_kinds:
+        - unsupported
+        absent_value_kinds:
+        - literal
+      dependency_semantics: []
+      dependency_inventory: []
+  java:
+    convention:
+      suffix: ".java"
+      suffixes:
+      - ".java"
+      separator: _
+      class_named_file: true
+    fixtures:
+      reference_root: tests/fixtures/code_map/reference_shop/languages/java
+      capability_gap_root: tests/fixtures/code_map/capability_gaps/java
+      manifest_root: tests/fixtures/implementation_manifest/java
+      manifest_sources:
+        canonical: canonical/src/Example.java
+        calls: calls/src/Example.java
+        no_calls: no_calls/src/Example.java
+        negative_members: negative_members/src/Example.java
+        dependencies: dependencies/src/Example.java
+        source_edit_before: source_edit_before/src/Example.java
+        source_edit_after: source_edit_after/src/Example.java
+    capabilities:
+      sources:
+        status: supported
+        explanation: Every included Java source is identified and hashed.
+        limitation_scenarios: []
+      symbols:
+        status: supported
+        explanation: Classes, interfaces, records, enums, and annotation declarations
+          are extracted.
+        limitation_scenarios: []
+      callables:
+        status: supported
+        explanation: Constructors, methods, and annotation elements are extracted.
+        limitation_scenarios: []
+      calls:
+        status: supported
+        explanation: Static method and constructor calls owned by extracted callables
+          are emitted with explicit resolved, external, unresolved, or dynamic state.
+        limitation_scenarios: []
+      parameters:
+        status: supported
+        explanation: Callable parameter order, kind, and exact declared type are extracted.
+        limitation_scenarios: []
+      annotations:
+        status: partial
+        explanation: Declaration annotations and exact declared types are extracted
+          without evaluation.
+        limitation_scenarios:
+        - annotation-evaluation-boundary
+      modifiers:
+        status: partial
+        explanation: Visibility, callable kind, and property member kind are normalized.
+        limitation_scenarios:
+        - modifier-normalization-boundary
+      attributes:
+        status: supported
+        explanation: Fields, record components, enum constants, and annotation elements
+          are extracted.
+        limitation_scenarios: []
+      assigned_values:
+        status: unsupported
+        explanation: Java member assigned-value evidence is not extracted yet.
+        limitation_scenarios:
+        - assigned-value
+      inheritance:
+        status: supported
+        explanation: Declared extension and implementation relations are recorded.
+        limitation_scenarios: []
+      namespaces:
+        status: supported
+        explanation: Authored package declarations are extracted.
+        limitation_scenarios: []
+      declaration_kinds:
+        status: supported
+        explanation: Java declaration forms publish exact shared declaration kinds.
+        limitation_scenarios: []
+      composition:
+        status: partial
+        explanation: Extension and implementation are extracted; permits relations
+          are not yet emitted.
+        limitation_scenarios:
+        - permits-relation
+      dependencies:
+        status: partial
+        explanation: Exact imports resolve internally; wildcard and implicit dependencies
+          remain unresolved.
+        limitation_scenarios:
+        - dependency-resolution-boundary
+      spans:
+        status: partial
+        explanation: Callable spans are exact; other declarations expose line counts.
+        limitation_scenarios:
+        - non-callable-span-boundary
+    relationships:
+      declaration:
+        semantics: partial
+        semantics_explanation: Authored extension and implementation relations are
+          preserved without permits, annotation-processor, or framework inference.
+        semantics_limitation_scenarios:
+        - permits-relation
+        inventory: partial
+        inventory_explanation: Extension and implementation clauses are emitted, but
+          permits relationships are not available.
+        inventory_limitation_scenarios:
+        - permits-relation
+      member:
+        semantics: partial
+        semantics_explanation: Declared member and callable types and static calls
+          are preserved without classpath, generated-code, or framework inference.
+        semantics_limitation_scenarios:
+        - member-runtime-semantics-boundary
+        inventory: partial
+        inventory_explanation: Declared type and static-call evidence is emitted,
+          but assigned-value relationship evidence is not available.
+        inventory_limitation_scenarios:
+        - assigned-value
+      dependency:
+        semantics: partial
+        semantics_explanation: Exact imports are normalized, while wildcard, implicit
+          same-package, classpath, and generated dependencies remain unresolved.
+        semantics_limitation_scenarios:
+        - dependency-resolution-boundary
+        inventory: partial
+        inventory_explanation: Authored exact imports are emitted, but wildcard and
+          implicit dependency inventory is incomplete.
+        inventory_limitation_scenarios:
+        - dependency-resolution-boundary
+    scenarios:
+    - scenario: annotation-evaluation-boundary
+      rationale: Annotation syntax is preserved without generating a runtime class
+        attribute.
+      source: src/ExampleCapabilityGaps.java
+      authored_syntax:
+      - "@ExampleMarker"
+      - exampleRuntimeAnnotation
+    - scenario: modifier-normalization-boundary
+      rationale: Final syntax is authored without a fabricated shared visibility value.
+      source: src/ExampleCapabilityGaps.java
+      authored_syntax:
+      - static final String exampleValue
+    - scenario: assigned-value
+      rationale: Authored field initializers emit attributes without assigned-value
+        evidence.
+      source: src/ExampleCapabilityGaps.java
+      authored_syntax:
+      - exampleValue =
+    - scenario: permits-relation
+      rationale: Extension is emitted while authored permits syntax has no fabricated
+        relation.
+      source: src/ExampleCapabilityGaps.java
+      authored_syntax:
+      - permits ExampleChild
+    - scenario: dependency-resolution-boundary
+      rationale: The wildcard dependency is emitted without claiming an internal resolved
+        target.
+      source: src/ExampleCapabilityGaps.java
+      authored_syntax:
+      - import java.util.*
+    - scenario: non-callable-span-boundary
+      rationale: Callable spans are exact while class declarations have no exact-span
+        identity.
+      source: src/ExampleCapabilityGaps.java
+      authored_syntax:
+      - class ExampleBase
+    - scenario: member-runtime-semantics-boundary
+      rationale: Annotation processing does not fabricate a generated class attribute.
+      source: src/ExampleCapabilityGaps.java
+      authored_syntax:
+      - exampleRuntimeAnnotation
+    capability_limitations:
+      symbols: []
+      callables: []
+      calls: []
+      parameters: []
+      annotations:
+      - scenario: annotation-evaluation-boundary
+        present_annotations:
+        - '@ExampleMarker(exampleValue = "exampleRuntimeAnnotation")'
+        absent_annotations: []
+        absent_attribute_names:
+        - exampleRuntimeAnnotation
+      modifiers:
+      - scenario: modifier-normalization-boundary
+        present_visibility_intents:
+        - internal
+        present_callable_kinds: []
+        present_member_kinds:
+        - static
+        unrepresented_authored_modifiers:
+        - final
+      attributes: []
+      assigned_values:
+      - scenario: assigned-value
+        present_attribute_names:
+        - exampleValue
+        absent_attribute_names: []
+        expected_value_kinds:
+          exampleValue:
+          - unsupported
+      namespaces: []
+      composition:
+      - scenario: permits-relation
+        present_relations:
+        - source_declaration_id:
+            source_id: src/ExampleCapabilityGaps.java
+            family: class
+            qualified_name: ExampleChild
+            ordinal: 160001
+          relation: extends
+          target_reference: ExampleBase
+        absent_endpoints:
+        - source_declaration_id:
+            source_id: src/ExampleCapabilityGaps.java
+            family: class
+            qualified_name: ExampleBase
+            ordinal: 90001
+          target_reference: ExampleChild
+      dependencies:
+      - scenario: dependency-resolution-boundary
+        present_dependencies:
+        - path: java.util.*
+          resolution: external
+        absent_dependencies:
+        - path: java.util.*
+          resolution: resolved
+      spans:
+      - scenario: non-callable-span-boundary
+        present_exact_span_owners:
+        - source_id: src/ExampleCapabilityGaps.java
+          family: method
+          qualified_name: ExampleBase.exampleMethod
+          ordinal: 130005
+        absent_exact_span_owners:
+        - source_id: src/ExampleCapabilityGaps.java
+          family: class
+          qualified_name: ExampleBase
+          ordinal: 90001
+    relationship_limitations:
+      declaration_semantics:
+      - scenario: permits-relation
+        present_relations:
+        - source_declaration_id:
+            source_id: src/ExampleCapabilityGaps.java
+            family: class
+            qualified_name: ExampleChild
+            ordinal: 160001
+          relation: extends
+          target_reference: ExampleBase
+        present_endpoints: []
+        absent_endpoints:
+        - source_declaration_id:
+            source_id: src/ExampleCapabilityGaps.java
+            family: class
+            qualified_name: ExampleBase
+            ordinal: 90001
+          target_reference: ExampleChild
+      declaration_inventory:
+      - scenario: permits-relation
+        present_relations:
+        - source_declaration_id:
+            source_id: src/ExampleCapabilityGaps.java
+            family: class
+            qualified_name: ExampleChild
+            ordinal: 160001
+          relation: extends
+          target_reference: ExampleBase
+        present_endpoints: []
+        absent_endpoints:
+        - source_declaration_id:
+            source_id: src/ExampleCapabilityGaps.java
+            family: class
+            qualified_name: ExampleBase
+            ordinal: 90001
+          target_reference: ExampleChild
+      member_semantics:
+      - scenario: member-runtime-semantics-boundary
+        present_attribute_names:
+        - exampleValue
+        absent_attribute_names:
+        - exampleRuntimeAnnotation
+        present_value_kinds: []
+        absent_value_kinds: []
+      member_inventory:
+      - scenario: assigned-value
+        present_attribute_names:
+        - exampleValue
+        absent_attribute_names: []
+        present_value_kinds:
+        - unsupported
+        absent_value_kinds:
+        - literal
+      dependency_semantics:
+      - scenario: dependency-resolution-boundary
+        present_dependencies:
+        - path: java.util.*
+          resolution: external
+        absent_dependencies:
+        - path: java.util.*
+          resolution: resolved
+      dependency_inventory:
+      - scenario: dependency-resolution-boundary
+        present_dependencies:
+        - path: java.util.*
+          resolution: external
+        absent_dependencies:
+        - path: java.util.*
+          resolution: resolved
+  ruby:
+    convention:
+      suffix: ".rb"
+      suffixes:
+      - ".rb"
+      separator: _
+      class_named_file: false
+    fixtures:
+      reference_root: tests/fixtures/code_map/reference_shop/languages/ruby
+      capability_gap_root: tests/fixtures/code_map/capability_gaps/ruby
+      manifest_root: tests/fixtures/implementation_manifest/ruby
+      manifest_sources:
+        canonical: canonical/src/example.rb
+        calls: calls/src/example.rb
+        no_calls: no_calls/src/example.rb
+        negative_members: negative_members/src/example.rb
+        dependencies: dependencies/src/example.rb
+        source_edit_before: source_edit_before/src/example.rb
+        source_edit_after: source_edit_after/src/example.rb
+    capabilities:
+      sources:
+        status: supported
+        explanation: Every included Ruby source is identified and hashed.
+        limitation_scenarios: []
+      symbols:
+        status: partial
+        explanation: Classes, modules, and statically named constants are extracted.
+        limitation_scenarios:
+        - runtime-generated-symbol
+      callables:
+        status: partial
+        explanation: Instance methods, singleton methods, and constructors owned by statically named classes or modules are extracted; aliases and generated methods are not.
+        limitation_scenarios:
+        - generated-callable
+      calls:
+        status: partial
+        explanation: Calls owned by extracted methods are emitted; dynamic dispatch and runtime-generated targets remain unresolved.
+        limitation_scenarios:
+        - dynamic-call-resolution
+      parameters:
+        status: partial
+        explanation: Positional, keyword, rest, keyword-rest, block, and forwarding parameters are normalized.
+        limitation_scenarios:
+        - generated-callable-parameters
+      annotations:
+        status: unsupported
+        explanation: Ruby source annotations are not inferred.
+        limitation_scenarios:
+        - annotation-dsl
+      modifiers:
+        status: partial
+        explanation: Authored method visibility and callable kind are normalized.
+        limitation_scenarios:
+        - singleton-visibility
+      attributes:
+        status: unsupported
+        explanation: Ruby instance, class, and generated attributes are not extracted.
+        limitation_scenarios:
+        - generated-attributes
+      assigned_values:
+        status: unsupported
+        explanation: Ruby assigned-value relationship evidence is not extracted yet.
+        limitation_scenarios:
+        - generated-attributes
+      inheritance:
+        status: supported
+        explanation: Authored class superclass clauses are recorded.
+        limitation_scenarios: []
+      namespaces:
+        status: partial
+        explanation: Statically named module declarations are extracted as namespaces.
+        limitation_scenarios:
+        - dynamic-namespace
+      declaration_kinds:
+        status: supported
+        explanation: Ruby classes, modules, and constants publish exact shared declaration kinds.
+        limitation_scenarios: []
+      composition:
+        status: partial
+        explanation: Literal include, prepend, and extend composition is recorded.
+        limitation_scenarios:
+        - dynamic-composition
+      dependencies:
+        status: partial
+        explanation: Literal require and require_relative dependencies are normalized without load-path or framework inference.
+        limitation_scenarios:
+        - dynamic-dependency
+      spans:
+        status: partial
+        explanation: Callable spans are exact; other declarations expose line counts.
+        limitation_scenarios:
+        - non-callable-span-boundary
+    relationships:
+      declaration:
+        semantics: partial
+        semantics_explanation: Authored superclass and literal module-composition relations are preserved without refinements, metaprogramming, or framework inference.
+        semantics_limitation_scenarios:
+        - runtime-superclass-semantics
+        inventory: partial
+        inventory_explanation: Superclass, include, prepend, and extend sites are emitted, while dynamic composition and reopened-definition merging are not available.
+        inventory_limitation_scenarios:
+        - dynamic-composition
+      member:
+        semantics: partial
+        semantics_explanation: Authored methods and bounded same-file call targets are preserved without runtime dispatch or generated members.
+        semantics_limitation_scenarios:
+        - generated-attributes
+        inventory: partial
+        inventory_explanation: Declared method and static call evidence is emitted, but attributes and assigned-value relationship evidence are not available.
+        inventory_limitation_scenarios:
+        - generated-attributes
+      dependency:
+        semantics: partial
+        semantics_explanation: Literal require and require_relative calls are normalized without Ruby load-path, Rails, or Zeitwerk inference.
+        semantics_limitation_scenarios:
+        - dynamic-dependency
+        inventory: partial
+        inventory_explanation: Authored literal loads are emitted, but dynamic loads and framework-generated dependencies are not available.
+        inventory_limitation_scenarios:
+        - dynamic-dependency
+    scenarios:
+    - scenario: runtime-generated-symbol
+      rationale: Runtime class construction remains a constant value and does not fabricate a class declaration.
+      source: src/example_capability_gaps.rb
+      authored_syntax:
+      - ExampleGenerated = Class.new
+    - scenario: generated-callable
+      rationale: A generated method is not fabricated as a statically declared callable.
+      source: src/example_capability_gaps.rb
+      authored_syntax:
+      - define_method(:example_generated_method)
+    - scenario: dynamic-call-resolution
+      rationale: Static, missing, and receiver-driven calls retain distinct resolution evidence while calls inside a generated method remain absent.
+      source: src/example_capability_gaps.rb
+      authored_syntax:
+      - example_receiver.public_send
+      - example_generated_call
+    - scenario: generated-callable-parameters
+      rationale: Parameters of declared methods are normalized while a generated method parameter is not fabricated.
+      source: src/example_capability_gaps.rb
+      authored_syntax:
+      - example_generated_parameter
+    - scenario: annotation-dsl
+      rationale: Annotation DSL calls do not fabricate shared annotation facts.
+      source: src/example_capability_gaps.rb
+      authored_syntax:
+      - sig { params
+    - scenario: singleton-visibility
+      rationale: Declared callable kinds and ordinary visibility are normalized without interpreting singleton visibility mutation.
+      source: src/example_capability_gaps.rb
+      authored_syntax:
+      - private_class_method :example_hidden
+    - scenario: generated-attributes
+      rationale: Reader declarations and instance-variable assignments do not fabricate shared attribute or assigned-value facts.
+      source: src/example_capability_gaps.rb
+      authored_syntax:
+      - attr_reader :example_generated_attribute
+      - '@example_generated_attribute = example_value'
+    - scenario: dynamic-namespace
+      rationale: Runtime module construction does not fabricate a statically declared namespace.
+      source: src/example_capability_gaps.rb
+      authored_syntax:
+      - ExampleDynamicNamespace = Module.new
+    - scenario: dynamic-composition
+      rationale: Literal declaration-body composition is emitted while runtime composition is not fabricated.
+      source: src/example_capability_gaps.rb
+      authored_syntax:
+      - ExampleRuntime.include(ExampleIncluded)
+    - scenario: dynamic-dependency
+      rationale: A literal load is emitted while a runtime-computed load is not fabricated.
+      source: src/example_capability_gaps.rb
+      authored_syntax:
+      - require example_dependency
+    - scenario: non-callable-span-boundary
+      rationale: Callable spans are exact while class declarations have no exact-span identity.
+      source: src/example_capability_gaps.rb
+      authored_syntax:
+      - class ExampleBase
+    - scenario: runtime-superclass-semantics
+      rationale: The authored superclass alias is retained without resolving its runtime target.
+      source: src/example_capability_gaps.rb
+      authored_syntax:
+      - class ExampleRuntime < ExampleRuntimeBase
+    capability_limitations:
+      symbols:
+      - scenario: runtime-generated-symbol
+        present_declaration_names:
+        - ExampleBase
+        absent_declaration_names:
+        - ExampleGenerated
+      callables:
+      - scenario: generated-callable
+        present_callable_names:
+        - ExampleBase.example_local
+        absent_callable_names:
+        - ExampleBase.example_generated_method
+      calls:
+      - scenario: dynamic-call-resolution
+        present_resolutions:
+        - resolved
+        - unresolved
+        - dynamic
+        absent_target_names:
+        - example_generated_call
+      parameters:
+      - scenario: generated-callable-parameters
+        present_parameter_kinds:
+        - positional
+        - variadic_positional
+        - named_only
+        - variadic_named
+        unrepresented_authored_parameters:
+        - example_generated_parameter
+      annotations:
+      - scenario: annotation-dsl
+        present_annotations: []
+        absent_annotations:
+        - sig
+        absent_attribute_names: []
+      modifiers:
+      - scenario: singleton-visibility
+        present_visibility_intents:
+        - public
+        present_callable_kinds:
+        - type_method
+        present_member_kinds: []
+        unrepresented_authored_modifiers:
+        - private_class_method
+      attributes:
+      - scenario: generated-attributes
+        present_attribute_names: []
+        absent_attribute_names:
+        - example_generated_attribute
+      assigned_values:
+      - scenario: generated-attributes
+        present_attribute_names: []
+        absent_attribute_names:
+        - example_generated_attribute
+        expected_value_kinds: {}
+      namespaces:
+      - scenario: dynamic-namespace
+        absent_namespaces:
+        - ExampleDynamicNamespace
+      composition:
+      - scenario: dynamic-composition
+        present_relations:
+        - source_declaration_id: &ruby_example_base
+            source_id: src/example_capability_gaps.rb
+            family: class
+            qualified_name: ExampleBase
+            ordinal: 287
+          relation: includes
+          target_reference: ExampleIncluded
+        - source_declaration_id: *ruby_example_base
+          relation: prepends
+          target_reference: ExamplePrepended
+        - source_declaration_id: *ruby_example_base
+          relation: extends_singleton
+          target_reference: ExampleExtended
+        absent_endpoints:
+        - source_declaration_id: &ruby_example_runtime
+            source_id: src/example_capability_gaps.rb
+            family: class
+            qualified_name: ExampleRuntime
+            ordinal: 1333
+          target_reference: ExampleIncluded
+      dependencies:
+      - scenario: dynamic-dependency
+        present_dependencies:
+        - path: json
+          resolution: external
+        absent_dependencies:
+        - path: yaml
+          resolution: external
+      spans:
+      - scenario: non-callable-span-boundary
+        present_exact_span_owners:
+        - source_id: src/example_capability_gaps.rb
+          family: method
+          qualified_name: ExampleBase.example_local
+          ordinal: 730
+        absent_exact_span_owners:
+        - *ruby_example_base
+    relationship_limitations:
+      declaration_semantics:
+      - scenario: runtime-superclass-semantics
+        present_relations:
+        - source_declaration_id: *ruby_example_runtime
+          relation: extends
+          target_reference: ExampleRuntimeBase
+        present_endpoints:
+        - source_declaration_id: *ruby_example_runtime
+          target_reference: ExampleRuntimeBase
+        absent_endpoints:
+        - source_declaration_id: *ruby_example_runtime
+          target_reference: ExampleBase
+      declaration_inventory:
+      - scenario: dynamic-composition
+        present_relations:
+        - source_declaration_id: *ruby_example_base
+          relation: includes
+          target_reference: ExampleIncluded
+        present_endpoints:
+        - source_declaration_id: *ruby_example_base
+          target_reference: ExampleIncluded
+        absent_endpoints:
+        - source_declaration_id: *ruby_example_runtime
+          target_reference: ExampleIncluded
+      member_semantics:
+      - &ruby_generated_member_limit
+        scenario: generated-attributes
+        present_attribute_names: []
+        absent_attribute_names:
+        - example_generated_attribute
+        present_value_kinds: []
+        absent_value_kinds:
+        - literal
+      member_inventory:
+      - *ruby_generated_member_limit
+      dependency_semantics:
+      - &ruby_dynamic_dependency_limit
+        scenario: dynamic-dependency
+        present_dependencies:
+        - path: json
+          resolution: external
+        absent_dependencies:
+        - path: yaml
+          resolution: external
+      dependency_inventory:
+      - *ruby_dynamic_dependency_limit

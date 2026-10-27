@@ -15,8 +15,8 @@ coherent model and language. A feature or module owns a slice of behaviour insid
 that context. A layer describes the role code plays inside the feature.
 
 This convention is not hardcoded into Modwire. Glob patterns map it to the actual
-source tree, which keeps the rule explicit and lets Python, PHP, TypeScript, and Java share
-the same architecture vocabulary.
+source tree, which keeps the rule explicit and lets Python, PHP, TypeScript, Java, and
+Ruby share the same architecture vocabulary.
 
 The [glossary](../reference/glossary.md) distinguishes realms, bounded contexts, features,
 modules, layers, tags, and shape realms.

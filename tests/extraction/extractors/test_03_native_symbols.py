@@ -1,5 +1,8 @@
 import re
 
+from modwire.application import CapabilityStatus, FactCapability
+
+from ...support.code_map_fixture.language_capability_matrix.reader import LanguageCapabilityMatrixReader
 from ..base_test import ExtractionTestCase
 
 CALL_OCCURRENCE_FIXTURES = ExtractionTestCase.repository / "tests/fixtures/call_occurrences"
@@ -7,6 +10,10 @@ LANGUAGE_EXTENSIONS = ExtractionTestCase.repository / "tests/fixtures/code_map/l
 
 
 class TestNativeSymbols(ExtractionTestCase):
+    capability_matrix = LanguageCapabilityMatrixReader().read(
+        ExtractionTestCase.repository / "language-capabilities.yaml"
+    )
+
     def normalized_name(self, value: str) -> str:
         return re.sub("[^a-z0-9]", "", value.casefold())
 
@@ -55,13 +62,22 @@ class TestNativeSymbols(ExtractionTestCase):
         for language in self.application.extraction.supported_languages():
             root = LANGUAGE_EXTENSIONS / language
             result = self.application.generate_queryable_map(language, root, self.scan_policy())
-            abstract = result.abstract_classes().first().item
-            assert tuple(self.normalized_name(item.name) for item in abstract.abstract_methods) == (
-                self.normalized_name("example_required"),
-            ), language
-            assert tuple(self.normalized_name(item.name) for item in abstract.methods) == (
-                self.normalized_name("example_concrete"),
-            ), language
+            abstract = result.abstract_classes().first()
+            if abstract is not None:
+                declaration = abstract.item
+                assert tuple(self.normalized_name(item.name) for item in declaration.abstract_methods) == (
+                    self.normalized_name("example_required"),
+                ), language
+                assert tuple(self.normalized_name(item.name) for item in declaration.methods) == (
+                    self.normalized_name("example_concrete"),
+                ), language
+            else:
+                declaration = result.classes().where_equal(lambda item: item.item.name, "ExampleAbstract").first().item
+                assert declaration.kind is declaration.kind.CLASS, language
+                assert {self.normalized_name(item.name) for item in declaration.methods} >= {
+                    self.normalized_name("example_required"),
+                    self.normalized_name("example_concrete"),
+                }, language
             concrete = result.classes().where_equal(lambda item: item.item.name, "ExampleImplementation").first().item
             assert self.normalized_name("example_required") in tuple(
                 self.normalized_name(item.name) for item in concrete.methods
@@ -78,6 +94,12 @@ class TestNativeSymbols(ExtractionTestCase):
                 for item in concrete.properties
                 if self.normalized_name(item.name) == self.normalized_name("example_optional")
             )
+            if not members:
+                assert (
+                    self.capability_matrix.languages[language].capabilities[FactCapability.ATTRIBUTES].status
+                    is CapabilityStatus.UNSUPPORTED
+                ), language
+                continue
             assert len(members) == 1, language
             if members[0].is_optional:
                 optional_members.append(language)

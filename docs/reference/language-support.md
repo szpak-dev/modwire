@@ -12,6 +12,7 @@ completeness. This page states the runtime contract and the capability differenc
 | TypeScript | `modwire.typescript.ts-morph` version 2 | `.ts`, `.tsx`, `.js`, `.jsx` | Node.js 20 or 22 and newer | Node.js 20 for extractor-resource checks |
 | PHP | `modwire.php.php-parser` version 2 | `.php` | PHP 8.1 or newer | Runner-provided PHP; the workflow does not pin a version |
 | Java | `modwire.java.javaparser` version 1 | `.java` | Java 17 or newer | Temurin 17 for extractor-resource checks |
+| Ruby | `modwire.ruby.prism` version 1 | `.rb` | Ruby 4.0.x with Prism 1.9.x | Ruby 4.0.7 and Prism 1.9.0 |
 
 The Python requirement comes from the Modwire package. The Node.js range comes from
 the bundled TypeScript extractor's package metadata. The PHP extractor uses PHP 8.1
@@ -19,7 +20,9 @@ syntax; its bundled `nikic/php-parser` library has a lower PHP 7.4 floor, which 
 not lower the executable extractor requirement. Node.js and PHP must be available
 on `PATH`. The Java extractor uses JavaParser Core in Java 25 syntax mode without
 JavaSymbolSolver and runs as a bundled executable JAR. Java must also be available
-on `PATH`; Modwire reports an unavailable runtime as a public failure.
+on `PATH`. The Ruby extractor runs a bundled script against Prism without loading the
+analysed application. Ruby and Prism must satisfy their declared version ranges.
+Modwire reports an unavailable or incompatible runtime as a public failure.
 
 ## Fact-capability coverage
 
@@ -27,23 +30,23 @@ on `PATH`; Modwire reports an unavailable runtime as a public failure.
 publishes. `Partial` means the extractor deliberately publishes only the stated
 subset. `Unsupported` means consumers must not infer that fact from an empty result.
 
-| Capability | Python | TypeScript | PHP | Java |
-| --- | --- | --- | --- | --- |
-| sources | Supported | Supported | Supported | Supported |
-| symbols | Supported | Supported | Supported | Supported |
-| callables | Supported | Supported | Supported | Supported |
-| calls | Supported | Supported | Supported | Supported |
-| parameters | Supported | Supported | Supported | Supported |
-| annotations | Partial | Partial | Partial | Partial |
-| modifiers | Partial | Partial | Partial | Partial |
-| attributes | Supported | Supported | Supported | Supported |
-| assigned_values | Supported | Unsupported | Unsupported | Unsupported |
-| inheritance | Supported | Supported | Supported | Supported |
-| namespaces | Unsupported | Unsupported | Unsupported | Supported |
-| declaration_kinds | Supported | Supported | Supported | Supported |
-| composition | Partial | Partial | Partial | Partial |
-| dependencies | Supported | Supported | Supported | Partial |
-| spans | Partial | Partial | Partial | Partial |
+| Capability | Python | TypeScript | PHP | Java | Ruby |
+| --- | --- | --- | --- | --- | --- |
+| sources | Supported | Supported | Supported | Supported | Supported |
+| symbols | Supported | Supported | Supported | Supported | Partial |
+| callables | Supported | Supported | Supported | Supported | Partial |
+| calls | Supported | Supported | Supported | Supported | Partial |
+| parameters | Supported | Supported | Supported | Supported | Partial |
+| annotations | Partial | Partial | Partial | Partial | Unsupported |
+| modifiers | Partial | Partial | Partial | Partial | Partial |
+| attributes | Supported | Supported | Supported | Supported | Unsupported |
+| assigned_values | Supported | Unsupported | Unsupported | Unsupported | Unsupported |
+| inheritance | Supported | Supported | Supported | Supported | Supported |
+| namespaces | Unsupported | Unsupported | Unsupported | Supported | Partial |
+| declaration_kinds | Supported | Supported | Supported | Supported | Supported |
+| composition | Unsupported | Partial | Partial | Partial | Partial |
+| dependencies | Supported | Supported | Supported | Partial | Partial |
+| spans | Partial | Partial | Partial | Partial | Partial |
 
 The exact explanations travel with every public `CodeMap` in
 `code_map.producer.capabilities`. In particular:
@@ -53,14 +56,16 @@ The exact explanations travel with every public `CodeMap` in
 - modifiers normalize visibility and member or callable kind rather than preserving
   every language keyword;
 - Python assigned values distinguish calls, references, literals, unresolved
-  expressions, and unassigned declarations; TypeScript, PHP, and Java do not yet extract
-  assigned-value evidence;
-- Java publishes authored package declarations; namespace extraction remains
-  unsupported for Python, TypeScript, and PHP;
+  expressions, and unassigned declarations; TypeScript, PHP, Java, and Ruby do not yet
+  extract assigned-value evidence;
+- Java publishes authored package declarations and Ruby publishes authored module
+  declarations; namespace extraction remains unsupported for Python, TypeScript, and PHP;
 - declaration kinds distinguish the exact shared class, abstract-class, interface,
   function, callable, and value categories currently emitted by each extractor;
-- composition currently records class extension and implementation evidence without
-  inferring language- or framework-specific mixin semantics;
+- inheritance records authored class extension; composition records implementation,
+  trait, include, prepend, and singleton-extension evidence when the language adapter
+  can distinguish those forms. Python base expressions remain inheritance evidence, and
+  no distinct Python composition relation is classified;
 - callable spans are exact, while other symbols expose line counts.
 
 ## Relationship-capability coverage
@@ -70,11 +75,11 @@ Relationship coverage separates semantic understanding from inventory completene
 family boundary. Semantic support can remain partial when Modwire preserves every
 authored fact but cannot resolve its complete runtime meaning.
 
-| Family | Required fact evidence | Python | TypeScript | PHP | Java |
-| --- | --- | --- | --- | --- | --- |
-| declaration | symbols, inheritance, declaration kinds, composition | Partial / Supported | Partial / Supported | Partial / Partial | Partial / Partial |
-| member | symbols, callables, calls, parameters, annotations, modifiers, attributes, assigned values, declaration kinds | Partial / Supported | Partial / Partial | Partial / Partial | Partial / Partial |
-| dependency | sources, dependencies | Supported / Supported | Supported / Supported | Supported / Supported | Partial / Partial |
+| Family | Required fact evidence | Python | TypeScript | PHP | Java | Ruby |
+| --- | --- | --- | --- | --- | --- | --- |
+| declaration | symbols, inheritance, declaration kinds, composition | Partial / Supported | Partial / Supported | Partial / Partial | Partial / Partial | Partial / Partial |
+| member | symbols, callables, calls, parameters, annotations, modifiers, attributes, assigned values, declaration kinds | Partial / Supported | Partial / Partial | Partial / Partial | Partial / Partial | Partial / Partial |
+| dependency | sources, dependencies | Supported / Supported | Supported / Supported | Supported / Supported | Partial / Partial | Partial / Partial |
 
 Each language cell is `semantics / inventory`. The exact statuses, evidence
 requirements, and explanations travel in
@@ -95,6 +100,15 @@ calls resolve only when one same-file target is unambiguous; overloads, arbitrar
 receivers, inherited calls, and cross-file calls remain unresolved. Sealed declarations
 retain their underlying class or interface kind, but `permits` relations are not yet
 published.
+
+Ruby publishes statically named classes, modules, constants, instance methods,
+singleton methods, constructors, parameters, superclass clauses, and literal
+`include`, `prepend`, and `extend` sites. Reopened declarations remain separate
+authored sites rather than being merged. Literal `require` and `require_relative`
+loads are normalized; dynamic loading, refinements, metaprogramming, unresolved
+constant semantics, load-path inference, Rails conventions, and Zeitwerk autoloading
+are not inferred. Method and constant aliases are not emitted as new declarations.
+Same-file calls resolve only when one static target is unambiguous.
 
 ## Deliberate boundaries
 

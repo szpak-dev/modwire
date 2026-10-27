@@ -2,11 +2,15 @@ import json
 import runpy
 import shutil
 
+from modwire.application import FactCapability
+
 from ..cli.base_test import CliTestCase
+from ..support.code_map_fixture.language_capability_matrix.reader import LanguageCapabilityMatrixReader
 
 
 class TestDocumentationExamples(CliTestCase):
     examples = CliTestCase.repository / "docs/_examples"
+    capability_matrix = LanguageCapabilityMatrixReader().read(CliTestCase.repository / "language-capabilities.yaml")
 
     def copy_tutorial(self) -> None:
         shutil.copytree(self.examples / "tutorial", self.workspace, dirs_exist_ok=True)
@@ -40,16 +44,16 @@ class TestDocumentationExamples(CliTestCase):
     def test_python_api_example_runs_through_the_public_application(self) -> None:
         runpy.run_path(str(self.examples / "python_api.py"), run_name="__main__")
 
-    def test_language_capability_table_matches_public_producer_contracts(self) -> None:
+    def test_language_capability_table_matches_root_capability_matrix(self) -> None:
         documented = self.capability_table()
-        languages = self.application.extraction.supported_languages()
-        fixtures = self.repository / "tests/fixtures/code_map/language_extensions"
+        expected = {
+            language: {
+                capability.value: expectation.status.value for capability, expectation in row.capabilities.items()
+            }
+            for language, row in self.capability_matrix.languages.items()
+        }
 
-        assert tuple(documented) == languages
-        for language in languages:
-            code_map = self.application.generate_map(language, fixtures / language, self.scan_policy())
-            actual = {item.capability.value: item.status.value for item in code_map.producer.capabilities}
-            assert documented[language] == actual
+        assert documented == expected
 
     def test_recorded_evidence_page_tracks_authoritative_json(self) -> None:
         page = (self.repository / "docs/reference/evidence.md").read_text(encoding="utf-8")
@@ -79,23 +83,7 @@ class TestDocumentationExamples(CliTestCase):
 
     def capability_table(self) -> dict[str, dict[str, str]]:
         page = (self.repository / "docs/reference/language-support.md").read_text(encoding="utf-8")
-        capabilities = {
-            "sources",
-            "symbols",
-            "callables",
-            "calls",
-            "parameters",
-            "annotations",
-            "modifiers",
-            "attributes",
-            "assigned_values",
-            "inheritance",
-            "namespaces",
-            "declaration_kinds",
-            "composition",
-            "dependencies",
-            "spans",
-        }
+        capabilities = {capability.value for capability in FactCapability}
         lines = page.splitlines()
         header = next(line for line in lines if line.startswith("| Capability |"))
         languages = tuple(cell.strip().casefold() for cell in header.strip().strip("|").split("|")[1:])

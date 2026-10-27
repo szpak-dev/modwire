@@ -1,8 +1,8 @@
-# One model across four languages
+# One model across five languages
 
-Python, PHP, TypeScript, and Java disagree about syntax, runtime, and type systems. An
-architecture rule should not need three unrelated meanings of “module dependency”
-because of that.
+Python, PHP, TypeScript, Java, and Ruby disagree about syntax, runtime, and type
+systems. An architecture rule should not need a different meaning of “module
+dependency” for each of them.
 
 Modwire places language-specific work at the extraction boundary. Each extractor
 observes source files and publishes the same typed concepts: files, declarations,
@@ -36,8 +36,8 @@ the same contracts and declares its own truthful statuses. Unresolved or unsuppo
 syntax remains explicit rather than being guessed into a convenient shape.
 
 External runtimes remain operational dependencies. Python extraction runs with
-Modwire, while TypeScript needs Node.js, PHP needs PHP, and Java needs a Java 17 or
-newer runtime. A missing runtime is an
+Modwire, while TypeScript needs Node.js, PHP needs PHP, Java needs a Java 17 or
+newer runtime, and Ruby needs Ruby 4.0 with Prism 1.9. A missing runtime is an
 extractor failure, not an empty code map.
 
 This separation keeps architecture rules portable without hiding the evidence they

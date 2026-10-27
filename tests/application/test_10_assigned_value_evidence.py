@@ -1,39 +1,33 @@
 import pytest
 
-from modwire.application import CapabilityStatus, FactCapability, SourceAssignedValueKind
+from modwire.application import SourceAssignedValueKind
 
+from ..support.code_map_fixture.language_capability_matrix.limits.capability.value import (
+    AssignedValueLimitationExpectation,
+)
+from ..support.code_map_fixture.language_capability_matrix.reader import LanguageCapabilityMatrixReader
 from .base_test import ApplicationTestCase
 
 
 class TestAssignedValueEvidence(ApplicationTestCase):
+    capability_matrix = LanguageCapabilityMatrixReader().read(
+        ApplicationTestCase.repository / "language-capabilities.yaml"
+    )
+    assigned_value_limitation_cases = tuple(
+        (language, limitation)
+        for language, row in capability_matrix.languages.items()
+        for limitation in row.capability_limitations.assigned_values
+    )
+
     def test_python_manifest_publishes_ordered_assigned_value_evidence(self) -> None:
-        root = self.project(
-            {
-                "src/example.py": (
-                    "EXAMPLE_REFERENCE = 'example'\n\n"
-                    "def example_factory() -> object:\n"
-                    "    return object()\n\n"
-                    "class ExampleValue:\n"
-                    "    example_unassigned: str\n"
-                    "    example_literal = 1\n"
-                    "    example_reference: str = EXAMPLE_REFERENCE\n"
-                    "    example_call = example_factory()\n"
-                    "    example_unresolved = 1 + 2\n\n"
-                    "    def __init__(self, example_input: str):\n"
-                    "        self.example_reference = example_input\n"
-                    "        if example_input:\n"
-                    "            self.example_nested = 1\n"
-                    "        self.example_nested = 2\n"
-                )
-            }
-        )
+        root = self.repository / "tests/fixtures/code_map/language_extensions/python"
         format = self.application.implementation_manifest_formats()[0]
         manifest = self.application.read_implementation_manifest(
             self.application.implementation_manifest(
                 self.application.generate_map("python", root, self.scan_policy()), format
             )
         )
-        owner_id = next(item.id for item in manifest.symbols if item.id.qualified_name == "ExampleValue")
+        owner_id = next(item.id for item in manifest.symbols if item.id.qualified_name == "ExampleAssignedValues")
         evidence = {
             item.name: tuple((value.kind, value.expression, value.reference) for value in item.assigned_values)
             for item in manifest.attributes
@@ -56,16 +50,19 @@ class TestAssignedValueEvidence(ApplicationTestCase):
         }
 
     @pytest.mark.parametrize(
-        ("language", "path", "content"),
-        (
-            ("typescript", "src/example.ts", "class ExampleValue { example_value = 1; }\n"),
-            ("php", "src/example.php", "<?php\nclass ExampleValue { public int $example_value = 1; }\n"),
-        ),
+        ("language", "limitation"),
+        assigned_value_limitation_cases,
+        ids=[f"{language}-{limitation.scenario}" for language, limitation in assigned_value_limitation_cases],
     )
-    def test_manifest_marks_unavailable_assigned_value_evidence_as_unsupported(
-        self, language: str, path: str, content: str
+    def test_manifest_matches_the_matrix_assigned_value_limitation(
+        self,
+        language: str,
+        limitation: AssignedValueLimitationExpectation,
     ) -> None:
-        root = self.project({path: content})
+        row = self.capability_matrix.languages[language]
+        root = self.repository / row.fixtures.capability_gap_root
+        scenario = next(scenario for scenario in row.scenarios if scenario.scenario == limitation.scenario)
+        assert (root / scenario.source).is_file()
         format = self.application.implementation_manifest_formats()[0]
         manifest = self.application.read_implementation_manifest(
             self.application.implementation_manifest(
@@ -73,36 +70,11 @@ class TestAssignedValueEvidence(ApplicationTestCase):
             )
         )
 
-        assert tuple(
-            (value.kind, value.expression, value.reference)
+        observed = {
+            attribute.name: tuple(value.kind for value in attribute.assigned_values)
             for attribute in manifest.attributes
-            for value in attribute.assigned_values
-        ) == ((SourceAssignedValueKind.UNSUPPORTED, "", ""),)
+        }
 
-    @pytest.mark.parametrize(
-        ("language", "path", "content", "expected"),
-        (
-            ("python", "src/example.py", "class ExampleValue:\n    example_value: int\n", CapabilityStatus.SUPPORTED),
-            (
-                "typescript",
-                "src/example.ts",
-                "class ExampleValue { example_value: number; }\n",
-                CapabilityStatus.UNSUPPORTED,
-            ),
-            (
-                "php",
-                "src/example.php",
-                "<?php\nclass ExampleValue { public int $example_value; }\n",
-                CapabilityStatus.UNSUPPORTED,
-            ),
-        ),
-    )
-    def test_extractors_report_assigned_value_capability_honestly(
-        self, language: str, path: str, content: str, expected: CapabilityStatus
-    ) -> None:
-        code_map = self.application.generate_map(language, self.project({path: content}), self.scan_policy())
-
-        coverage = next(
-            item for item in code_map.producer.capabilities if item.capability is FactCapability.ASSIGNED_VALUES
-        )
-        assert coverage.status is expected
+        assert set(limitation.present_attribute_names) <= set(observed)
+        assert set(limitation.absent_attribute_names).isdisjoint(observed)
+        assert all(observed[name] == kinds for name, kinds in limitation.expected_value_kinds.items())
