@@ -7,9 +7,9 @@ from wireup import injectable
 from ...architecture.config.models.architecture_config import ArchitectureConfig
 from ...architecture.report.models.report_node import ReportNode
 from ...extraction.extractors.models.extraction_request import ExtractionRequest
-from ...shared.code.models.scan_policy import ScanPolicy
-from ...shared.code.models.source_manifest_identity import SourceManifestIdentity
+from ...shared.code.models.sources.scan_policy import ScanPolicy
 from ...shared.code.models.sources.source_extraction import SourceExtraction
+from ...shared.code.models.sources.source_manifest_identity import SourceManifestIdentity
 from .domain import ReportPipelineStep, SourceReader
 from .models.command_request import CommandRequest
 from .models.extractor_command_input import ExtractorCommandInput

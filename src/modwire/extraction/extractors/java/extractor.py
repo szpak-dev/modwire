@@ -2,13 +2,13 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.capability_coverage import CapabilityCoverage
-from ....shared.code.models.capability_status import CapabilityStatus
-from ....shared.code.models.fact_capability import FactCapability
+from ....shared.code.models.capabilities.capability_coverage import CapabilityCoverage
+from ....shared.code.models.capabilities.capability_status import CapabilityStatus
+from ....shared.code.models.capabilities.fact_capability import FactCapability
+from ....shared.code.models.capabilities.relationship_coverage import RelationshipCoverage
+from ....shared.code.models.capabilities.relationship_family import RelationshipFamily
+from ....shared.code.models.declarations.source_namespace_kind import SourceNamespaceKind
 from ....shared.code.models.maps.extractor_descriptor import ExtractorDescriptor
-from ....shared.code.models.relationship_coverage import RelationshipCoverage
-from ....shared.code.models.relationship_family import RelationshipFamily
-from ....shared.code.models.source_namespace_kind import SourceNamespaceKind
 from ....shared.code.models.sources.identity import FileId, ImportIdentity
 from ....shared.code.models.sources.source_file import SourceFile
 from ..domain import SourceExtractor

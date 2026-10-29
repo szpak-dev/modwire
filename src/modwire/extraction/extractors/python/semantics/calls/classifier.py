@@ -4,9 +4,9 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ......shared.code.models.declaration_identity import DeclarationIdentity
-from ......shared.code.models.source_call import SourceCall
-from ......shared.code.models.source_call_resolution import SourceCallResolution
+from ......shared.code.models.callables.source_call import SourceCall
+from ......shared.code.models.callables.source_call_resolution import SourceCallResolution
+from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.call_candidate import PythonCallCandidate

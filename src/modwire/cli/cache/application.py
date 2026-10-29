@@ -9,11 +9,11 @@ from ...architecture.config.models.architecture_config import ArchitectureConfig
 from ...architecture.report.models.report_node import ReportNode
 from ...extraction.extractors.models.duplicate_identity_error import DuplicateIdentityError
 from ...extraction.extractors.models.extraction_request import ExtractionRequest
-from ...shared.code.models.code_error import CodeError
-from ...shared.code.models.code_map import CodeMap
-from ...shared.code.models.scan_policy import ScanPolicy
+from ...shared.code.models.failures.code_error import CodeError
+from ...shared.code.models.maps.code_map import CodeMap
 from ...shared.code.models.sources.identity import FileId, ImportIdentity
 from ...shared.code.models.sources.identity_kind import IdentityKind
+from ...shared.code.models.sources.scan_policy import ScanPolicy
 from ...shared.code.models.sources.source_extraction import SourceExtraction
 from ...shared.code.models.sources.source_file import SourceFile
 from ..pipeline.domain import SourceReader

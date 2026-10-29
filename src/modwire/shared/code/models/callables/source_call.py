@@ -1,9 +1,9 @@
 from pydantic import Field
 
-from ...values.models.value_model import ValueModel
-from .declaration_identity import DeclarationIdentity
+from ....values.models.value_model import ValueModel
+from ..declarations.declaration_identity import DeclarationIdentity
+from ..sources.identity import FileId
 from .source_call_resolution import SourceCallResolution
-from .sources.identity import FileId
 
 
 class SourceCall(ValueModel):

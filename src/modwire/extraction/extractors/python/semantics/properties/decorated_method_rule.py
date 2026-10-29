@@ -4,9 +4,9 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.declaration_identity import DeclarationIdentity
-from ......shared.code.models.source_member_kind import SourceMemberKind
+from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
 from ......shared.code.models.values.source_class_property import SourceClassProperty
+from ......shared.code.models.values.source_member_kind import SourceMemberKind
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.property_candidate import PythonPropertyCandidate

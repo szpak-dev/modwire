@@ -9,10 +9,10 @@ from ......shared.code.models.callables.source_callable_kind import SourceCallab
 from ......shared.code.models.callables.source_callable_value import SourceCallableValue
 from ......shared.code.models.callables.source_class_method import SourceClassMethod
 from ......shared.code.models.callables.source_function import SourceFunction
-from ......shared.code.models.declaration_family import DeclarationFamily
-from ......shared.code.models.declaration_identity import DeclarationIdentity
+from ......shared.code.models.declarations.declaration_family import DeclarationFamily
+from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ......shared.code.models.declarations.source_symbol_kind import SourceSymbolKind
 from ......shared.code.models.declarations.source_visibility import SourceVisibility
-from ......shared.code.models.source_symbol_kind import SourceSymbolKind
 from ......shared.code.models.values.source_value_declaration_kind import SourceValueDeclarationKind
 from ......shared.code.models.values.source_value_scope import SourceValueScope
 from ....models.extractor_invariant_error import ExtractorInvariantError

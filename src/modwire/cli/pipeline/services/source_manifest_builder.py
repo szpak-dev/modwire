@@ -7,9 +7,9 @@ from importlib import resources
 from wireup import injectable
 
 from ....extraction.extractors.models.extraction_request import ExtractionRequest
-from ....shared.code.models.digest_algorithm import DigestAlgorithm
-from ....shared.code.models.scan_policy import ScanPolicy
+from ....shared.code.models.sources.digest_algorithm import DigestAlgorithm
 from ....shared.code.models.sources.runtime_observation import RuntimeObservation
+from ....shared.code.models.sources.scan_policy import ScanPolicy
 from ....shared.code.models.sources.source_manifest import SourceManifest
 from ..models.extractor_contract_error import ExtractorContractError
 from ..models.extractor_contract_violation import ExtractorContractViolation

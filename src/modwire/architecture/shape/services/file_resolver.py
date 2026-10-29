@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.declaration_family import DeclarationFamily
+from ....shared.code.models.declarations.declaration_family import DeclarationFamily
 from ....shared.code.models.sources.identity import FileId
 from ....shared.code.models.values.source_value_declaration_kind import SourceValueDeclarationKind
 from ....shared.code.models.values.source_value_scope import SourceValueScope

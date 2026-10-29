@@ -2,8 +2,8 @@ from typing import Literal, Self
 
 from pydantic import model_validator
 
+from ....shared.code.models.callables.source_call import SourceCall
 from ....shared.code.models.maps.code_map_producer import CodeMapProducer
-from ....shared.code.models.source_call import SourceCall
 from ....shared.code.models.sources.source_manifest import SourceManifest
 from ....shared.values.models.value_model import ValueModel
 from .implementation_manifest_validator import ImplementationManifestValidator

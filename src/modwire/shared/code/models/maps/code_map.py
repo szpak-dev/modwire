@@ -2,20 +2,20 @@ from typing import ClassVar, Self
 
 from pydantic import model_validator
 
-from ...values.models.value_model import ValueModel
-from .capability_status import CapabilityStatus
-from .code_validation_error import CodeValidationError
-from .code_violation import CodeViolation
-from .dependencies.dependency_graph import DependencyGraph
-from .fact_capability import FactCapability
-from .maps.code_map_producer import CodeMapProducer
-from .source_call_resolution import SourceCallResolution
-from .source_types.absent import SourceTypeAbsent
-from .source_types.kind import SourceTypeKind
-from .source_types.reference import SourceTypeReference
-from .source_types.unsupported import SourceTypeUnsupported
-from .sources.source_extraction import SourceExtraction
-from .sources.source_file import SourceFile
+from ....values.models.value_model import ValueModel
+from ..callables.source_call_resolution import SourceCallResolution
+from ..capabilities.capability_status import CapabilityStatus
+from ..capabilities.fact_capability import FactCapability
+from ..dependencies.dependency_graph import DependencyGraph
+from ..failures.code_validation_error import CodeValidationError
+from ..failures.code_violation import CodeViolation
+from ..source_types.absent import SourceTypeAbsent
+from ..source_types.kind import SourceTypeKind
+from ..source_types.reference import SourceTypeReference
+from ..source_types.unsupported import SourceTypeUnsupported
+from ..sources.source_extraction import SourceExtraction
+from ..sources.source_file import SourceFile
+from .code_map_producer import CodeMapProducer
 
 
 class CodeMap(ValueModel):
@@ -54,11 +54,7 @@ class CodeMap(ValueModel):
         coverage = next(
             item for item in self.producer.capabilities if item.capability is FactCapability.TYPE_REFERENCES
         )
-        slots = tuple(
-            slot
-            for source_file in self.extraction.files.values()
-            for slot in self.type_slots(source_file)
-        )
+        slots = tuple(slot for source_file in self.extraction.files.values() for slot in self.type_slots(source_file))
         kinds = tuple(kind for slot in slots for kind in self.type_kinds(slot))
         has_unsupported = SourceTypeKind.UNSUPPORTED in kinds
         has_observed = any(kind in {SourceTypeKind.REFERENCE, SourceTypeKind.ABSENT} for kind in kinds)
@@ -112,11 +108,7 @@ class CodeMap(ValueModel):
     ) -> tuple[str, ...]:
         if slot.kind is not SourceTypeKind.REFERENCE:
             return ()
-        return tuple(
-            name
-            for argument in slot.arguments
-            for name in self.type_reference_names(argument)
-        )
+        return tuple(name for argument in slot.arguments for name in self.type_reference_names(argument))
 
     def type_tokens(
         self,

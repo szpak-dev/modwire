@@ -117,6 +117,7 @@ class SyntaxParameterReader(PythonParameterReader):
     @has_decorator.register
     def function_has_decorator(self, node: ast.FunctionDef, name: str) -> bool:
         return any(ast.unparse(decorator).rsplit(".", 1)[-1] == name for decorator in node.decorator_list)
+
     @has_decorator.register
     def async_function_has_decorator(self, node: ast.AsyncFunctionDef, name: str) -> bool:
         return any(ast.unparse(decorator).rsplit(".", 1)[-1] == name for decorator in node.decorator_list)

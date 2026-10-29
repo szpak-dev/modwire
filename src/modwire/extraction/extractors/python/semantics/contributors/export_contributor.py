@@ -4,7 +4,7 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.declaration_family import DeclarationFamily
+from ......shared.code.models.declarations.declaration_family import DeclarationFamily
 from ......shared.code.models.sources.identity import ImportSpecifier
 from ......shared.code.models.sources.source_export_kind import SourceExportKind
 from ...observations.export_candidate import PythonExportCandidate

@@ -5,11 +5,11 @@ from functools import singledispatchmethod
 from wireup import injectable
 
 from ......shared.code.models.callables.source_class_method import SourceClassMethod
-from ......shared.code.models.declaration_family import DeclarationFamily
-from ......shared.code.models.declaration_identity import DeclarationIdentity
+from ......shared.code.models.declarations.declaration_family import DeclarationFamily
+from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
 from ......shared.code.models.declarations.source_declaration import SourceDeclaration
+from ......shared.code.models.declarations.source_symbol_kind import SourceSymbolKind
 from ......shared.code.models.declarations.source_visibility import SourceVisibility
-from ......shared.code.models.source_symbol_kind import SourceSymbolKind
 from ......shared.code.models.values.source_class_property import SourceClassProperty
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation

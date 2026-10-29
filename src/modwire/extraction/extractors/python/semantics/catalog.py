@@ -1,6 +1,7 @@
 from pydantic import Field
 
 from .....shared.code.models.callables.source_anonymous_callable import SourceAnonymousCallable
+from .....shared.code.models.callables.source_call import SourceCall
 from .....shared.code.models.callables.source_callable import SourceCallable
 from .....shared.code.models.callables.source_callable_value import SourceCallableValue
 from .....shared.code.models.callables.source_class_method import SourceClassMethod
@@ -8,7 +9,6 @@ from .....shared.code.models.callables.source_function import SourceFunction
 from .....shared.code.models.declarations.source_declaration import SourceDeclaration
 from .....shared.code.models.declarations.source_declaration_relation import SourceDeclarationRelation
 from .....shared.code.models.declarations.source_namespace import SourceNamespace
-from .....shared.code.models.source_call import SourceCall
 from .....shared.code.models.sources.source_export import SourceExport
 from .....shared.code.models.sources.source_import import SourceImport
 from .....shared.code.models.values.source_class_property import SourceClassProperty

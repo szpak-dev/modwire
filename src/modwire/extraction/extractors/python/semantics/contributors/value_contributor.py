@@ -4,9 +4,9 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.declaration_family import DeclarationFamily
+from ......shared.code.models.declarations.declaration_family import DeclarationFamily
+from ......shared.code.models.declarations.source_symbol_kind import SourceSymbolKind
 from ......shared.code.models.declarations.source_visibility import SourceVisibility
-from ......shared.code.models.source_symbol_kind import SourceSymbolKind
 from ......shared.code.models.values.source_value import SourceValue
 from ......shared.code.models.values.source_value_declaration_kind import SourceValueDeclarationKind
 from ......shared.code.models.values.source_value_scope import SourceValueScope

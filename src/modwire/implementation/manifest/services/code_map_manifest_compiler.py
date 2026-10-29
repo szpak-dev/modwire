@@ -3,13 +3,13 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.code_map import CodeMap
-from ....shared.code.models.declaration_identity import DeclarationIdentity
+from ....shared.code.models.callables.source_call import SourceCall
+from ....shared.code.models.declarations.declaration_identity import DeclarationIdentity
 from ....shared.code.models.declarations.source_declaration import SourceDeclaration
+from ....shared.code.models.declarations.source_symbol_kind import SourceSymbolKind
 from ....shared.code.models.declarations.source_visibility import SourceVisibility
 from ....shared.code.models.dependencies.source_dependency_resolution import SourceDependencyResolution
-from ....shared.code.models.source_call import SourceCall
-from ....shared.code.models.source_symbol_kind import SourceSymbolKind
+from ....shared.code.models.maps.code_map import CodeMap
 from ....shared.values.models.value_model import ValueModel
 from ..contracts.manifest_compiler import ManifestCompiler
 from ..models.implementation_manifest import ImplementationManifest

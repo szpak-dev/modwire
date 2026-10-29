@@ -1,7 +1,7 @@
 from enum import StrEnum
 
-from .code_validation_error import CodeValidationError
-from .code_violation import CodeViolation
+from ..failures.code_validation_error import CodeValidationError
+from ..failures.code_violation import CodeViolation
 from .fact_capability import FactCapability
 
 

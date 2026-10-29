@@ -2,9 +2,9 @@ from typing import Self
 
 from pydantic import model_validator
 
-from ..code_validation_error import CodeValidationError
-from ..code_violation import CodeViolation
-from ..declaration_identity import DeclarationIdentity
+from ..declarations.declaration_identity import DeclarationIdentity
+from ..failures.code_validation_error import CodeValidationError
+from ..failures.code_violation import CodeViolation
 from .source_callable import SourceCallable
 from .source_callable_kind import SourceCallableKind
 

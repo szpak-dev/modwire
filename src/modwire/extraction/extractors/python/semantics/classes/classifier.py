@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ......shared.code.models.declaration_family import DeclarationFamily
+from ......shared.code.models.declarations.declaration_family import DeclarationFamily
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.class_candidate import PythonClassCandidate

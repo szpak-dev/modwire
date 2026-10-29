@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from ...values.models.value_model import ValueModel
+from ....values.models.value_model import ValueModel
 from .digest_algorithm import DigestAlgorithm
 
 

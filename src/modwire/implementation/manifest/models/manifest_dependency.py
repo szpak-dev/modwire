@@ -2,8 +2,8 @@ from typing import Self
 
 from pydantic import model_validator
 
+from ....shared.code.models.dependencies.source_dependency_kind import SourceDependencyKind
 from ....shared.code.models.dependencies.source_dependency_resolution import SourceDependencyResolution
-from ....shared.code.models.source_dependency_kind import SourceDependencyKind
 from ....shared.values.models.value_model import ValueModel
 from .implementation_manifest_validation_error import ImplementationManifestValidationError
 from .implementation_manifest_violation import ImplementationManifestViolation

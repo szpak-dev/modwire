@@ -3,12 +3,12 @@ from typing import Self
 from pydantic import model_validator
 
 from ....values.models.value_model import ValueModel
-from ..code_validation_error import CodeValidationError
-from ..code_violation import CodeViolation
-from ..declaration_family import DeclarationFamily
-from ..declaration_identity import DeclarationIdentity
+from ..declarations.declaration_family import DeclarationFamily
+from ..declarations.declaration_identity import DeclarationIdentity
+from ..declarations.source_symbol_kind import SourceSymbolKind
 from ..declarations.source_visibility import SourceVisibility
-from ..source_symbol_kind import SourceSymbolKind
+from ..failures.code_validation_error import CodeValidationError
+from ..failures.code_violation import CodeViolation
 from .source_value_declaration_kind import SourceValueDeclarationKind
 from .source_value_scope import SourceValueScope
 

@@ -8,9 +8,9 @@ from wireup import injectable
 from ....architecture.config.models.architecture_config import ArchitectureConfig
 from ....extraction.extractors.models.extraction_request import ExtractionRequest
 from ....shared.code.contracts.package_version import PackageVersion
-from ....shared.code.models.code_map import CodeMap
-from ....shared.code.models.scan_policy import ScanPolicy
+from ....shared.code.models.maps.code_map import CodeMap
 from ....shared.code.models.sources.runtime_observation import RuntimeObservation
+from ....shared.code.models.sources.scan_policy import ScanPolicy
 from ....shared.code.models.sources.source_manifest import SourceManifest
 from ...cache.models.cache_key import CacheKey
 from ...cache.models.cache_kind import CacheKind

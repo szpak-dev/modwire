@@ -3,16 +3,16 @@ from typing import Self
 from pydantic import Field, model_validator
 
 from ....values.models.value_model import ValueModel
-from ..code_validation_error import CodeValidationError
-from ..code_violation import CodeViolation
-from ..declaration_family import DeclarationFamily
-from ..declaration_identity import DeclarationIdentity
+from ..declarations.declaration_family import DeclarationFamily
+from ..declarations.declaration_identity import DeclarationIdentity
 from ..declarations.source_visibility import SourceVisibility
-from ..source_assigned_value import SourceAssignedValue
-from ..source_member_kind import SourceMemberKind
+from ..failures.code_validation_error import CodeValidationError
+from ..failures.code_violation import CodeViolation
 from ..source_types.absent import SourceTypeAbsent
 from ..source_types.reference import SourceTypeReference
 from ..source_types.unsupported import SourceTypeUnsupported
+from .source_assigned_value import SourceAssignedValue
+from .source_member_kind import SourceMemberKind
 
 
 class SourceClassProperty(ValueModel):

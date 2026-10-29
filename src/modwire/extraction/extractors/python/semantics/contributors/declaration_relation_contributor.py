@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ......shared.code.models.declarations.source_declaration_relation import SourceDeclarationRelation
-from ......shared.code.models.source_declaration_relation_kind import SourceDeclarationRelationKind
+from ......shared.code.models.declarations.source_declaration_relation_kind import SourceDeclarationRelationKind
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
 from ..catalog import PythonSemanticCatalog

@@ -4,17 +4,17 @@ from pydantic import Field, model_validator
 
 from ....values.models.value_model import ValueModel
 from ..callables.source_anonymous_callable import SourceAnonymousCallable
+from ..callables.source_call import SourceCall
 from ..callables.source_callable import SourceCallable
 from ..callables.source_callable_value import SourceCallableValue
 from ..callables.source_function import SourceFunction
-from ..code_validation_error import CodeValidationError
-from ..code_violation import CodeViolation
-from ..declaration_family import DeclarationFamily
+from ..declarations.declaration_family import DeclarationFamily
 from ..declarations.source_declaration import SourceDeclaration
 from ..declarations.source_declaration_relation import SourceDeclarationRelation
 from ..declarations.source_namespace import SourceNamespace
-from ..source_call import SourceCall
-from ..source_symbol_kind import SourceSymbolKind
+from ..declarations.source_symbol_kind import SourceSymbolKind
+from ..failures.code_validation_error import CodeValidationError
+from ..failures.code_violation import CodeViolation
 from ..values.source_value import SourceValue
 from .identity import FileId, ImportIdentity
 from .source_export import SourceExport

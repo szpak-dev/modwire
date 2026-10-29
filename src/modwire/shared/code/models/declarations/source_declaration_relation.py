@@ -1,8 +1,8 @@
 from pydantic import Field
 
 from ....values.models.value_model import ValueModel
-from ..declaration_identity import DeclarationIdentity
-from ..source_declaration_relation_kind import SourceDeclarationRelationKind
+from .declaration_identity import DeclarationIdentity
+from .source_declaration_relation_kind import SourceDeclarationRelationKind
 
 
 class SourceDeclarationRelation(ValueModel):
