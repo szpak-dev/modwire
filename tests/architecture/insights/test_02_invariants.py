@@ -60,9 +60,13 @@ class TestInsightInvariants(InsightTestCase):
         result = self.insight(
             {
                 source_id: {
-                    "callables": [
-                        CodeMapFactory().source_callable(source_id, "example_target"),
-                        CodeMapFactory().source_callable(source_id, "example_caller"),
+                    "functions": [
+                        CodeMapFactory().source_function(
+                            "example_target", line_count=1, parameter_count=0, optional_parameter_count=0
+                        ),
+                        CodeMapFactory().source_function(
+                            "example_caller", line_count=1, parameter_count=0, optional_parameter_count=0
+                        ),
                     ],
                     "calls": [
                         CodeMapFactory().source_call(

@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ......shared.code.models.import_crossing_type import ImportCrossingType
-from ......shared.code.models.source_export import SourceExport
+from ......shared.code.models.sources.import_crossing_type import ImportCrossingType
+from ......shared.code.models.sources.source_export import SourceExport
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.export_candidate import PythonExportCandidate

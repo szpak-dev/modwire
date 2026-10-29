@@ -4,13 +4,12 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.declaration_family import DeclarationFamily
-from ......shared.code.models.source_callable import SourceCallable
-from ......shared.code.models.source_symbol_kind import SourceSymbolKind
-from ......shared.code.models.source_value import SourceValue
-from ......shared.code.models.source_value_declaration_kind import SourceValueDeclarationKind
-from ......shared.code.models.source_value_scope import SourceValueScope
-from ......shared.code.models.source_visibility import SourceVisibility
+from ......shared.code.models.declarations.declaration_family import DeclarationFamily
+from ......shared.code.models.declarations.source_symbol_kind import SourceSymbolKind
+from ......shared.code.models.declarations.source_visibility import SourceVisibility
+from ......shared.code.models.values.source_value import SourceValue
+from ......shared.code.models.values.source_value_declaration_kind import SourceValueDeclarationKind
+from ......shared.code.models.values.source_value_scope import SourceValueScope
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.source_context import PythonSourceContext
@@ -43,29 +42,20 @@ class ValueSemanticContributor(PythonSemanticContributor):
         catalog: PythonSemanticCatalog,
         context: PythonSourceContext,
     ) -> PythonSemanticContribution:
-        callables = {
-            candidate.identity_node: source_callable
-            for candidate, source_callable in zip(observation.callables, catalog.callables, strict=True)
-        }
         values = tuple(
-            self.source_value(candidate, callables, context)
+            self.source_value(candidate, context)
             for candidate in observation.values
-            if candidate.target.id != "__all__" and not self.aliases.is_alias(candidate)
+            if candidate.target.id != "__all__"
+            and not self.aliases.is_alias(candidate)
+            and self.value_kind(candidate.statement) is not SourceSymbolKind.VALUE_CALLABLE
         )
         return PythonSemanticContribution(values=values)
 
     def source_value(
         self,
         candidate: PythonValueCandidate,
-        callables: dict[ast.stmt | ast.expr, SourceCallable],
         context: PythonSourceContext,
     ) -> SourceValue:
-        declared_args = 0
-        optional_args = 0
-        if candidate.target in callables:
-            source_callable = callables[candidate.target]
-            declared_args = source_callable.declared_args
-            optional_args = source_callable.optional_args
         line_end = candidate.statement.end_lineno
         if line_end is None:
             raise ExtractorInvariantError(ExtractorInvariantViolation.MISSING_VALUE_END_LINE, candidate.target.id)
@@ -88,8 +78,6 @@ class ValueSemanticContributor(PythonSemanticContributor):
             ),
             value_kind=self.value_kind(candidate.statement),
             scope=SourceValueScope.MODULE,
-            declared_args=declared_args,
-            optional_args=optional_args,
         )
 
     def is_constant(self, candidate: PythonValueCandidate) -> bool:

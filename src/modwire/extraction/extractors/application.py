@@ -3,13 +3,12 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ...shared.code.application import CodeApplication
-from ...shared.code.domain import PackageVersion
-from ...shared.code.models.code_map import CodeMap
-from ...shared.code.models.code_map_producer import CodeMapProducer
-from ...shared.code.models.identity import FileId
-from ...shared.code.models.queryable_code_map import QueryableCodeMap
-from ...shared.code.models.source_extraction import SourceExtraction
+from ...shared.code.contracts.package_version import PackageVersion
+from ...shared.code.models.maps.code_map import CodeMap
+from ...shared.code.models.maps.code_map_producer import CodeMapProducer
+from ...shared.code.models.queries.queryable_code_map import QueryableCodeMap
+from ...shared.code.models.sources.identity import FileId
+from ...shared.code.models.sources.source_extraction import SourceExtraction
 from ..dependency.application import DependencyApplication
 from .domain import SourceExtractor, SourceParser
 from .models.extraction_request import ExtractionRequest
@@ -23,7 +22,6 @@ from .models.unsupported_parser_error import UnsupportedParserError
 class ExtractorsApplication:
     extractors: Mapping[Hashable, SourceExtractor]
     dependency: DependencyApplication
-    code: CodeApplication
     parsers: Mapping[Hashable, SourceParser]
     version: PackageVersion
 
@@ -61,7 +59,7 @@ class ExtractorsApplication:
         )
 
     def generate_queryable_map(self, request: ExtractionRequest, extraction: SourceExtraction) -> QueryableCodeMap:
-        return self.code.queryable(self.generate_map(request, extraction))
+        return QueryableCodeMap(code_map=self.generate_map(request, extraction))
 
     def parse_source(self, language: str, content: str, path: str, root: str, source_id: FileId) -> ParsedSourceFile:
         if language not in self.parsers:

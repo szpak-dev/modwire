@@ -16,4 +16,7 @@ class CallableFactContributor(PythonSourceFactContributor):
         return 40
 
     def contribute(self, catalog: PythonSemanticCatalog, context: PythonSourceContext) -> PythonSourceFactContribution:
-        return PythonSourceFactContribution(callables=catalog.callables)
+        return PythonSourceFactContribution(
+            callable_values=catalog.callable_values,
+            anonymous_callables=catalog.anonymous_callables,
+        )

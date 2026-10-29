@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ...shared.code.models.queryable_code_map import QueryableCodeMap
+from ...shared.code.models.queries.queryable_code_map import QueryableCodeMap
 from ..config.models.architecture_config import ArchitectureConfig
 from ..map.application import MapApplication
 from .domain import ReportCollector

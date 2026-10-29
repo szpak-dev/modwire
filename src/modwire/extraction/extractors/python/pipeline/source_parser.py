@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from .....shared.code.models.identity import FileId
+from .....shared.code.models.sources.identity import FileId
 from ...domain import SourceParser
 from ...models.extractor_invariant_error import ExtractorInvariantError
 from ...models.extractor_invariant_violation import ExtractorInvariantViolation

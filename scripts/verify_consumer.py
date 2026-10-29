@@ -4,7 +4,7 @@ import sys
 from wireup import create_sync_container, injectable
 from wireup.errors import UnknownServiceRequestedError
 
-from modwire.application import ModwireApplication, ScanPolicy
+from modwire.application import ModwireApplication, ModwireApplicationFactory, ScanPolicy
 
 
 @injectable
@@ -30,7 +30,7 @@ parser.add_argument("root")
 parser.add_argument("--language", required=True)
 arguments = parser.parse_args()
 
-application = ModwireApplication.create()
+application = ModwireApplicationFactory().create()
 config = application.configure({"shape": {"realms": [{"name": "example-source", "match": "src"}]}})
 code_map = application.generate_queryable_map(arguments.language, arguments.root, ScanPolicy())
 reports = application.analyze(code_map, config)

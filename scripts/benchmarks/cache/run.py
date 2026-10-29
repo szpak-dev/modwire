@@ -10,7 +10,7 @@ from pathlib import Path
 from types import FrameType
 from typing import Any
 
-from modwire.application import CacheOptions, ModwireApplication, ScanPolicy
+from modwire.application import CacheOptions, ModwireApplicationFactory, ScanPolicy
 
 from .benchmark_process_timeout import BenchmarkProcessTimeout
 
@@ -112,7 +112,7 @@ class CacheBenchmark:
         replacement = self.replacement.read_bytes()
         if original == replacement:
             raise RuntimeError("Replacement source must differ from the incremental source.")
-        application = ModwireApplication.create()
+        application = ModwireApplicationFactory().create()
         policy = ScanPolicy()
         options = CacheOptions(
             directory=str(self.cache_directory),

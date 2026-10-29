@@ -2,9 +2,9 @@ from typing import Literal, Self
 
 from pydantic import model_validator
 
-from ....shared.code.models.code_map_producer import CodeMapProducer
-from ....shared.code.models.source_call import SourceCall
-from ....shared.code.models.source_manifest import SourceManifest
+from ....shared.code.models.callables.source_call import SourceCall
+from ....shared.code.models.maps.code_map_producer import CodeMapProducer
+from ....shared.code.models.sources.source_manifest import SourceManifest
 from ....shared.values.models.value_model import ValueModel
 from .implementation_manifest_validator import ImplementationManifestValidator
 from .manifest_annotation import ManifestAnnotation
@@ -21,7 +21,7 @@ from .manifest_symbol import ManifestSymbol
 class ImplementationManifest(ValueModel):
     """A versioned, language-neutral statement of observed implementation facts and provenance."""
 
-    schema_version: Literal[9] = 9
+    schema_version: Literal[10] = 10
     producer: CodeMapProducer
     source_manifest: SourceManifest
     namespaces: tuple[ManifestNamespace, ...]

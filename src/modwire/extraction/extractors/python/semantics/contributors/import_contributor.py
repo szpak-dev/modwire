@@ -4,10 +4,10 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.identity import ImportSpecifier
-from ......shared.code.models.import_crossing_type import ImportCrossingType
-from ......shared.code.models.source_import import SourceImport
-from ......shared.code.models.source_imported_symbol import SourceImportedSymbol
+from ......shared.code.models.sources.identity import ImportSpecifier
+from ......shared.code.models.sources.import_crossing_type import ImportCrossingType
+from ......shared.code.models.sources.source_import import SourceImport
+from ......shared.code.models.sources.source_imported_symbol import SourceImportedSymbol
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.import_candidate import PythonImportCandidate

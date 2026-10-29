@@ -3,7 +3,7 @@ from typing import ClassVar
 
 from wireup import injectable
 
-from ....shared.code.models.identity import FileId
+from ....shared.code.models.sources.identity import FileId
 from ...map.models.architecture_map import ArchitectureMap
 from ..domain import InsightReporterInterface
 from ..models.clusters_report import ClustersReport

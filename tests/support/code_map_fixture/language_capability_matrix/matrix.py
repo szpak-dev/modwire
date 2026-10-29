@@ -7,13 +7,17 @@ from modwire.application import CapabilityStatus, FactCapability, RelationshipFa
 
 from ..model import FixtureModel
 from .expectations.capability import CapabilityExpectation
+from .expectations.manifest import ManifestEvidenceExpectation
+from .expectations.parameter_kind import ParameterKindExpectation
 from .expectations.relationship import RelationshipExpectation
 from .expectations.scenario import LimitationScenarioExpectation
+from .expectations.transition import ManifestTransitionExpectation
 from .row import LanguageCapabilityRow
 
 
 class LanguageCapabilityMatrix(FixtureModel):
     reference_projection: str = Field(min_length=1)
+    manifest_transitions: tuple[ManifestTransitionExpectation, ...]
     languages: dict[str, LanguageCapabilityRow]
 
     def capability_cases(self) -> tuple[tuple[str, FactCapability, CapabilityExpectation], ...]:
@@ -33,18 +37,57 @@ class LanguageCapabilityMatrix(FixtureModel):
     def scenario_cases(self) -> tuple[tuple[str, LimitationScenarioExpectation], ...]:
         return tuple((language, scenario) for language, row in self.languages.items() for scenario in row.scenarios)
 
+    def parameter_kind_cases(self) -> tuple[tuple[str, ParameterKindExpectation], ...]:
+        return tuple((language, row.parameter_kinds) for language, row in self.languages.items())
+
+    def manifest_cases(self) -> tuple[tuple[str, str, ManifestEvidenceExpectation], ...]:
+        return tuple(
+            (language, scenario, expectation)
+            for language, row in self.languages.items()
+            for scenario, expectation in row.manifest_expectations.items()
+        )
+
+    def manifest_transition_cases(
+        self,
+    ) -> tuple[tuple[str, LanguageCapabilityRow, ManifestTransitionExpectation], ...]:
+        return tuple(
+            (language, row, transition)
+            for language, row in self.languages.items()
+            for transition in self.manifest_transitions
+        )
+
     @model_validator(mode="after")
     def validate_contract(self) -> Self:
         manifest_layouts: set[tuple[str, ...]] = set()
         for language, row in self.languages.items():
             self.validate_row_inventory(language, row)
             self.validate_row_scenarios(language, row)
+            if not row.convention.accepts_source_path(row.parameter_kinds.source):
+                raise ValueError(f"{language} parameter-kind evidence is not a source path")
             if not all(row.convention.accepts_source_path(path) for path in row.fixtures.manifest_sources.values()):
                 raise ValueError(f"{language} manifest inventory contains a non-source path")
+            if not all(
+                row.convention.accepts_source_path(path)
+                for path in row.fixtures.type_reference_sources()
+            ):
+                raise ValueError(f"{language} type-reference inventory contains a non-source path")
+            type_reference_roots = {
+                PurePosixPath(path).parents[1]
+                for path in row.fixtures.type_reference_sources()
+            }
+            if len(type_reference_roots) != 1:
+                raise ValueError(f"{language} type-reference sources do not share one language root")
             if any(
                 PurePosixPath(path).parts[0] != scenario for scenario, path in row.fixtures.manifest_sources.items()
             ):
                 raise ValueError(f"{language} manifest source is outside its named scenario")
+            if tuple(row.manifest_expectations) != tuple(row.fixtures.manifest_sources):
+                raise ValueError(f"{language} manifest expectations do not exactly cover fixture scenarios")
+            if any(
+                expectation.source != row.fixtures.manifest_sources[scenario]
+                for scenario, expectation in row.manifest_expectations.items()
+            ):
+                raise ValueError(f"{language} manifest expectation source differs from fixture inventory")
             manifest_layouts.add(
                 tuple(
                     f"{scenario}:{PurePosixPath(path).parent.as_posix()}"
@@ -53,6 +96,12 @@ class LanguageCapabilityMatrix(FixtureModel):
             )
         if len(manifest_layouts) != 1:
             raise ValueError("language manifest inventories do not share one scenario layout")
+        manifest_scenarios = tuple(next(iter(self.languages.values())).fixtures.manifest_sources)
+        if any(
+            transition.before not in manifest_scenarios or transition.after not in manifest_scenarios
+            for transition in self.manifest_transitions
+        ):
+            raise ValueError("manifest transition names an undeclared scenario")
         return self
 
     def validate_row_inventory(self, language: str, row: LanguageCapabilityRow) -> None:

@@ -11,13 +11,16 @@ from modwire.application import (
     DigestAlgorithm,
     FactCapability,
     RelationshipFamily,
-    SourceCallResolution,
-    SourceDependencyKind,
 )
 
 from ..support.code_map import CodeMapFactory
+from ..support.code_map_fixture.language_capability_matrix.expectations.manifest import ManifestEvidenceExpectation
+from ..support.code_map_fixture.language_capability_matrix.expectations.transition import (
+    ManifestTransitionExpectation,
+)
 from ..support.code_map_fixture.language_capability_matrix.reader import LanguageCapabilityMatrixReader
 from ..support.code_map_fixture.language_capability_matrix.row import LanguageCapabilityRow
+from ..support.code_map_fixture.manifest_evidence import FixtureManifestEvidence
 from .base_test import ApplicationTestCase
 
 
@@ -97,16 +100,21 @@ class TestImplementationManifest(ApplicationTestCase):
         }
 
     @pytest.mark.parametrize(
-        ("language", "row"),
-        tuple(capability_matrix.languages.items()),
-        ids=tuple(capability_matrix.languages),
+        ("language", "scenario", "expectation"),
+        capability_matrix.manifest_cases(),
+        ids=(
+            f"{language}-{scenario}"
+            for language, scenario, expectation in capability_matrix.manifest_cases()
+        ),
     )
-    def test_each_language_publishes_a_canonical_complete_provenance_bearing_manifest(
+    def test_every_matrix_manifest_scenario_has_exact_public_evidence_and_provenance(
         self,
         language: str,
-        row: LanguageCapabilityRow,
+        scenario: str,
+        expectation: ManifestEvidenceExpectation,
     ) -> None:
-        root = self.manifest_scenario_root(row, "canonical")
+        row = self.capability_matrix.languages[language]
+        root = self.manifest_scenario_root(row, scenario)
         code_map = self.application.generate_map(language, root, self.scan_policy())
         formats = self.application.implementation_manifest_formats()
         document = self.application.implementation_manifest(code_map, formats[0])
@@ -119,20 +127,21 @@ class TestImplementationManifest(ApplicationTestCase):
         )
 
         assert tuple(format.id for format in formats) == ("canonical-json",)
-        assert manifest.schema_version == 9
+        assert manifest.schema_version == 10
         assert manifest.producer.extractor.language == language
         assert manifest.producer.extractor.version
         assert {item.capability for item in manifest.producer.capabilities} == set(FactCapability)
         assert {item.family for item in manifest.producer.relationship_capabilities} == set(RelationshipFamily)
         assert manifest.source_manifest.policy == self.scan_policy()
         assert tuple(item.relative_path for item in manifest.source_manifest.sources) == (
-            str(row.fixtures.manifest_source("canonical").relative_to("canonical")),
+            str(row.fixtures.manifest_source(scenario).relative_to(scenario)),
         )
         assert str(root) not in canonical
-        assert manifest.symbols
-        assert manifest.callables
-        assert manifest.declaration_relations
-        assert manifest.dependencies
+        assert FixtureManifestEvidence().observe(manifest, expectation.source) == expectation
+        assert all("annotation" not in item.model_dump() for item in manifest.attributes)
+        assert "parameter_type" not in document.payload
+        assert "return_type" not in document.payload
+        assert "attribute_type" not in document.payload
         assert document.payload == canonical
         assert document.algorithm is DigestAlgorithm.SHA256
         assert document.digest == hashlib.sha256(canonical.encode()).hexdigest()
@@ -140,136 +149,26 @@ class TestImplementationManifest(ApplicationTestCase):
         assert self.application.implementation_manifest(code_map, formats[0]) == document
 
     @pytest.mark.parametrize(
-        ("language", "row"),
-        tuple(capability_matrix.languages.items()),
-        ids=tuple(capability_matrix.languages),
+        ("language", "row", "transition"),
+        capability_matrix.manifest_transition_cases(),
     )
-    def test_each_language_preserves_two_distinct_observed_calls(
+    def test_matrix_manifest_transition_changes_source_and_implementation_identity(
         self,
         language: str,
         row: LanguageCapabilityRow,
+        transition: ManifestTransitionExpectation,
     ) -> None:
-        code_map = self.application.generate_queryable_map(
-            language,
-            self.manifest_scenario_root(row, "calls"),
-            self.scan_policy(),
-        )
-        format = self.application.implementation_manifest_formats()[0]
-        manifest = self.application.read_implementation_manifest(
-            self.application.implementation_manifest(code_map.code_map, format)
-        )
-        calls = tuple(result.item for result in code_map.calls().all())
-
-        assert len(calls) == len(manifest.calls) == 2
-        assert tuple(item.ordinal for item in calls) == (1, 2)
-        assert tuple(sorted(item.ordinal for item in manifest.calls)) == (1, 2)
-        assert len({item.identity() for item in calls}) == 2
-        assert len({item.target_name for item in calls}) == 1
-        assert all(item.resolution is SourceCallResolution.RESOLVED for item in (*calls, *manifest.calls))
-        assert all(item.target_callable_id is not None for item in (*calls, *manifest.calls))
-
-    @pytest.mark.parametrize(
-        ("language", "row"),
-        tuple(capability_matrix.languages.items()),
-        ids=tuple(capability_matrix.languages),
-    )
-    def test_each_language_truthfully_publishes_no_observed_calls(
-        self,
-        language: str,
-        row: LanguageCapabilityRow,
-    ) -> None:
-        code_map = self.application.generate_queryable_map(
-            language,
-            self.manifest_scenario_root(row, "no_calls"),
-            self.scan_policy(),
-        )
-        manifest = self.application.read_implementation_manifest(
-            self.application.implementation_manifest(
-                code_map.code_map, self.application.implementation_manifest_formats()[0]
-            )
-        )
-        member = next(
-            coverage
-            for coverage in code_map.code_map.producer.relationship_capabilities
-            if coverage.family is RelationshipFamily.MEMBER
-        )
-
-        assert FactCapability.CALLS in member.evidence_requirements
-        assert code_map.calls().all() == ()
-        assert manifest.calls == ()
-
-    @pytest.mark.parametrize(
-        ("language", "row"),
-        tuple(capability_matrix.languages.items()),
-        ids=tuple(capability_matrix.languages),
-    )
-    def test_each_language_does_not_fabricate_runtime_or_generated_members(
-        self,
-        language: str,
-        row: LanguageCapabilityRow,
-    ) -> None:
-        manifest = self.application.read_implementation_manifest(
-            self.application.implementation_manifest(
-                self.application.generate_map(
-                    language,
-                    self.manifest_scenario_root(row, "negative_members"),
-                    self.scan_policy(),
-                ),
-                self.application.implementation_manifest_formats()[0],
-            )
-        )
-
-        assert not any("runtime" in item.name.lower() for item in manifest.attributes)
-        assert not any(
-            "generated" in item.symbol_id.qualified_name.rsplit(".", 1)[-1].lower() for item in manifest.callables
-        )
-
-    @pytest.mark.parametrize(
-        ("language", "row"),
-        tuple(capability_matrix.languages.items()),
-        ids=tuple(capability_matrix.languages),
-    )
-    def test_each_language_publishes_its_authored_dependency(
-        self,
-        language: str,
-        row: LanguageCapabilityRow,
-    ) -> None:
-        manifest = self.application.read_implementation_manifest(
-            self.application.implementation_manifest(
-                self.application.generate_map(
-                    language,
-                    self.manifest_scenario_root(row, "dependencies"),
-                    self.scan_policy(),
-                ),
-                self.application.implementation_manifest_formats()[0],
-            )
-        )
-
-        assert len(manifest.dependencies) == 1
-        assert manifest.dependencies[0].specifier
-        assert manifest.dependencies[0].kind is SourceDependencyKind.IMPORTS
-
-    @pytest.mark.parametrize(
-        ("language", "row"),
-        tuple(capability_matrix.languages.items()),
-        ids=tuple(capability_matrix.languages),
-    )
-    def test_source_edit_changes_source_and_implementation_identity_for_each_language(
-        self,
-        language: str,
-        row: LanguageCapabilityRow,
-    ) -> None:
-        root = self.workspace / f"{language}_source_edit"
-        shutil.copytree(self.manifest_scenario_root(row, "source_edit_before"), root)
+        root = self.workspace / f"{language}_{transition.before}_{transition.after}"
+        shutil.copytree(self.manifest_scenario_root(row, transition.before), root)
         format = self.application.implementation_manifest_formats()[0]
         before_document = self.application.implementation_manifest(
             self.application.generate_map(language, root, self.scan_policy()), format
         )
-        before_source = row.fixtures.manifest_source("source_edit_before")
-        after_source = row.fixtures.manifest_source("source_edit_after")
+        before_source = row.fixtures.manifest_source(transition.before)
+        after_source = row.fixtures.manifest_source(transition.after)
         shutil.copyfile(
             self.repository / row.fixtures.manifest_root / after_source,
-            root / before_source.relative_to("source_edit_before"),
+            root / before_source.relative_to(transition.before),
         )
         after_document = self.application.implementation_manifest(
             self.application.generate_map(language, root, self.scan_policy()), format
@@ -279,33 +178,3 @@ class TestImplementationManifest(ApplicationTestCase):
 
         assert before.source_manifest.digest != after.source_manifest.digest
         assert before_document.digest != after_document.digest
-
-    def test_matrix_languages_publish_one_manifest_vocabulary(self) -> None:
-        format = self.application.implementation_manifest_formats()[0]
-        manifests = {
-            language: self.application.read_implementation_manifest(
-                self.application.implementation_manifest(
-                    self.application.generate_map(
-                        language,
-                        self.manifest_scenario_root(row, "canonical"),
-                        self.scan_policy(),
-                    ),
-                    format,
-                )
-            )
-            for language, row in self.capability_matrix.languages.items()
-        }
-
-        assert len({tuple(manifest.model_dump(mode="json")) for manifest in manifests.values()}) == 1
-
-    def test_every_manifest_fixture_declared_by_the_matrix_is_executable(self) -> None:
-        for language, row in self.capability_matrix.languages.items():
-            for scenario in row.fixtures.manifest_sources:
-                code_map = self.application.generate_map(
-                    language,
-                    self.manifest_scenario_root(row, scenario),
-                    self.scan_policy(),
-                )
-                assert tuple(code_map.extraction.files) == (
-                    str(row.fixtures.manifest_source(scenario).relative_to(scenario)),
-                )

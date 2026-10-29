@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.identity import FileId
+from ....shared.code.models.sources.identity import FileId
 from ...config.models.boundaries_config import BoundariesConfig
 from ...map.models.architecture_map import ArchitectureMap
 from ..domain import BaseFlowAnalyzer, FlowAnalyzerInterface

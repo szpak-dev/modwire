@@ -120,7 +120,7 @@ class TestNativeSymbols(ExtractionTestCase):
             assert self.normalized_name(contracts[0].methods[0].name) == self.normalized_name("example_required"), (
                 language
             )
-            assert contracts[0].methods[0].declared_args == 1, language
+            assert len(contracts[0].methods[0].parameters) == 1, language
 
         assert interface_languages
 
@@ -148,8 +148,8 @@ class TestNativeSymbols(ExtractionTestCase):
         root = LANGUAGE_EXTENSIONS / "python"
         result = self.application.generate_queryable_map("python", root, self.scan_policy())
         asynchronous = result.functions().where_equal(lambda item: item.item.name, "example_async").first().item
-        assert asynchronous.declared_args == 2
-        assert asynchronous.optional_args == 1
+        assert len(asynchronous.parameters) == 2
+        assert sum(parameter.has_default for parameter in asynchronous.parameters) == 1
         names = {item.item.qualified_name for item in result.callables().all()}
         assert {"example_async", "example_outer"} <= names
         assert all(item.item.name != "example_inner" for item in result.callables().all())
@@ -159,7 +159,7 @@ class TestNativeSymbols(ExtractionTestCase):
         result = self.application.generate_queryable_map("typescript", root, self.scan_policy())
         callback = result.types().where_equal(lambda item: item.item.name, "ExampleCallback").first().item
         assert callback.visibility == "public"
-        assert callback.signatures == []
+        assert callback.signatures == ()
 
     def test_module_variable_shape_is_language_neutral(self) -> None:
         module_variable_languages = []

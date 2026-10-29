@@ -42,9 +42,9 @@ same across all five.
 The supported Python interface is exported by `modwire.application`:
 
 ```python
-from modwire.application import ModwireApplication, ScanPolicy
+from modwire.application import ModwireApplicationFactory, ScanPolicy
 
-application = ModwireApplication.create()
+application = ModwireApplicationFactory().create()
 code_map = application.generate_queryable_map(
     "python",
     ".",

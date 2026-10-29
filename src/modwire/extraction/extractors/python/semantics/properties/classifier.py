@@ -6,10 +6,14 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.source_assigned_value import SourceAssignedValue
-from ......shared.code.models.source_class_property import SourceClassProperty
-from ......shared.code.models.source_member_kind import SourceMemberKind
-from ......shared.code.models.source_visibility import SourceVisibility
+from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ......shared.code.models.declarations.source_member_kind import SourceMemberKind
+from ......shared.code.models.declarations.source_visibility import SourceVisibility
+from ......shared.code.models.source_types.absent import SourceTypeAbsent
+from ......shared.code.models.source_types.reference import SourceTypeReference
+from ......shared.code.models.source_types.unsupported import SourceTypeUnsupported
+from ......shared.code.models.values.source_assigned_value import SourceAssignedValue
+from ......shared.code.models.values.source_class_property import SourceClassProperty
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.property_candidate import PythonPropertyCandidate
@@ -26,22 +30,31 @@ class PythonPropertyRule(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def classify(self, candidate: PythonPropertyCandidate) -> SourceClassProperty:
+    def classify(
+        self,
+        candidate: PythonPropertyCandidate,
+        declaration_id: DeclarationIdentity,
+        owner_declaration_id: DeclarationIdentity,
+    ) -> SourceClassProperty:
         raise NotImplementedError
 
     def build(
         self,
         candidate: PythonPropertyCandidate,
+        declaration_id: DeclarationIdentity,
+        owner_declaration_id: DeclarationIdentity,
         is_optional: bool,
-        annotation: str,
+        type: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported,
         visibility: SourceVisibility,
         member_kind: SourceMemberKind,
         assigned_value: SourceAssignedValue,
     ) -> SourceClassProperty:
         return SourceClassProperty(
+            declaration_id=declaration_id,
+            owner_declaration_id=owner_declaration_id,
             name=candidate.name,
             is_optional=is_optional,
-            annotation=annotation,
+            type=type,
             visibility=visibility,
             member_kind=member_kind,
             assigned_values=(assigned_value,),
@@ -139,7 +152,12 @@ class PythonPropertyRule(ABC):
 
 class PythonPropertyClassifier(ABC):
     @abstractmethod
-    def classify(self, candidate: PythonPropertyCandidate) -> SourceClassProperty:
+    def classify(
+        self,
+        candidate: PythonPropertyCandidate,
+        declaration_id: DeclarationIdentity,
+        owner_declaration_id: DeclarationIdentity,
+    ) -> SourceClassProperty:
         raise NotImplementedError
 
 
@@ -148,8 +166,13 @@ class PythonPropertyClassifier(ABC):
 class OrderedPythonPropertyClassifier(PythonPropertyClassifier):
     rules: Mapping[Hashable, PythonPropertyRule]
 
-    def classify(self, candidate: PythonPropertyCandidate) -> SourceClassProperty:
+    def classify(
+        self,
+        candidate: PythonPropertyCandidate,
+        declaration_id: DeclarationIdentity,
+        owner_declaration_id: DeclarationIdentity,
+    ) -> SourceClassProperty:
         for rule in sorted(self.rules.values(), key=lambda item: item.order):
             if rule.applies(candidate):
-                return rule.classify(candidate)
+                return rule.classify(candidate, declaration_id, owner_declaration_id)
         raise ExtractorInvariantError(ExtractorInvariantViolation.UNCLASSIFIED_PROPERTY, candidate.name)

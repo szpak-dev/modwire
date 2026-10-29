@@ -154,7 +154,8 @@ final class JavaSourceExtractor {
         result.add("declarations", declarations);
         result.add("functions", new JsonArray());
         result.add("values", new JsonArray());
-        result.add("callables", callables);
+        result.add("callable_values", new JsonArray());
+        result.add("anonymous_callables", new JsonArray());
         result.add("calls", calls());
         result.add("declaration_relations", relations);
         result.addProperty("line_count", content.split("\\R", -1).length);
@@ -227,15 +228,15 @@ final class JavaSourceExtractor {
             ? declaration.getNameAsString()
             : owner + "." + declaration.getNameAsString();
         DeclarationKind kind = declarationKind(declaration);
+        JsonObject identity = declarationIdentity(kind.family(), qualifiedName, ordinal(declaration));
         String visibility = visibility(declaration, implicitTypeVisibility(declaration));
         JsonArray methods = new JsonArray();
         JsonArray abstractMethods = new JsonArray();
         JsonArray properties = new JsonArray();
 
-        collectProperties(declaration, properties);
-        collectCallableDeclarations(declaration, qualifiedName, methods, abstractMethods, callables);
+        collectProperties(declaration, identity, properties);
+        collectCallableDeclarations(declaration, identity, qualifiedName, methods, abstractMethods, callables);
 
-        JsonObject identity = declarationIdentity(kind.family(), qualifiedName, ordinal(declaration));
         JsonObject fact = new JsonObject();
         fact.add("declaration_id", identity.deepCopy());
         fact.addProperty("kind", kind.kind());
@@ -258,7 +259,7 @@ final class JavaSourceExtractor {
         }
     }
 
-    private void collectProperties(TypeDeclaration<?> declaration, JsonArray properties) {
+    private void collectProperties(TypeDeclaration<?> declaration, JsonObject ownerIdentity, JsonArray properties) {
         boolean implicitStaticFields = (
             declaration.isClassOrInterfaceDeclaration()
                 && declaration.asClassOrInterfaceDeclaration().isInterface()
@@ -267,6 +268,8 @@ final class JavaSourceExtractor {
             String fallback = implicitStaticFields ? "public" : "internal";
             for (VariableDeclarator variable : field.getVariables()) {
                 properties.add(property(
+                    variable,
+                    ownerIdentity,
                     variable.getNameAsString(),
                     variable.getType().toString(),
                     visibility(field, fallback),
@@ -277,6 +280,8 @@ final class JavaSourceExtractor {
         if (declaration.isRecordDeclaration()) {
             for (Parameter component : declaration.asRecordDeclaration().getParameters()) {
                 properties.add(property(
+                    component,
+                    ownerIdentity,
                     component.getNameAsString(),
                     component.getType().toString(),
                     "public",
@@ -286,7 +291,14 @@ final class JavaSourceExtractor {
         }
         if (declaration.isEnumDeclaration()) {
             for (EnumConstantDeclaration entry : declaration.asEnumDeclaration().getEntries()) {
-                properties.add(property(entry.getNameAsString(), declaration.getNameAsString(), "public", "static"));
+                properties.add(property(
+                    entry,
+                    ownerIdentity,
+                    entry.getNameAsString(),
+                    declaration.getNameAsString(),
+                    "public",
+                    "static"
+                ));
             }
         }
         if (declaration.isAnnotationDeclaration()) {
@@ -294,6 +306,8 @@ final class JavaSourceExtractor {
                 if (member.isAnnotationMemberDeclaration()) {
                     AnnotationMemberDeclaration annotationMember = member.asAnnotationMemberDeclaration();
                     properties.add(property(
+                        annotationMember,
+                        ownerIdentity,
                         annotationMember.getNameAsString(),
                         annotationMember.getType().toString(),
                         "public",
@@ -304,7 +318,14 @@ final class JavaSourceExtractor {
         }
     }
 
-    private JsonObject property(String name, String annotation, String visibility, String memberKind) {
+    private JsonObject property(
+        Node declaration,
+        JsonObject ownerIdentity,
+        String name,
+        String annotation,
+        String visibility,
+        String memberKind
+    ) {
         JsonObject value = new JsonObject();
         value.addProperty("kind", "unsupported");
         value.addProperty("expression", "");
@@ -313,9 +334,18 @@ final class JavaSourceExtractor {
         assignedValues.add(value);
 
         JsonObject property = new JsonObject();
+        property.add(
+            "declaration_id",
+            declarationIdentity(
+                "property",
+                ownerIdentity.get("qualified_name").getAsString() + "." + name,
+                ordinal(declaration)
+            )
+        );
+        property.add("owner_declaration_id", ownerIdentity.deepCopy());
         property.addProperty("name", name);
         property.addProperty("is_optional", false);
-        property.addProperty("annotation", annotation);
+        property.add("type", sourceType(annotation));
         property.addProperty("visibility", visibility);
         property.addProperty("member_kind", memberKind);
         property.add("assigned_values", assignedValues);
@@ -324,6 +354,7 @@ final class JavaSourceExtractor {
 
     private void collectCallableDeclarations(
         TypeDeclaration<?> declaration,
+        JsonObject ownerIdentity,
         String owner,
         JsonArray methods,
         JsonArray abstractMethods,
@@ -334,21 +365,17 @@ final class JavaSourceExtractor {
         String methodFallback = interfaceDeclaration ? "public" : "internal";
         String constructorFallback = declaration.isEnumDeclaration() ? "private" : methodFallback;
         for (ConstructorDeclaration constructor : declaration.getConstructors()) {
-            JsonObject summary = methodSummary(
+            JsonObject callable = addCallable(
                 constructor,
                 "constructor",
-                visibility(constructor, constructorFallback)
-            );
-            methods.add(summary);
-            addCallable(
-                constructor,
-                "constructor",
+                ownerIdentity,
                 owner,
                 "constructor",
                 "",
                 visibility(constructor, constructorFallback),
                 callables
             );
+            methods.add(callable.deepCopy());
         }
         if (declaration.isRecordDeclaration()) {
             RecordDeclaration record = declaration.asRecordDeclaration();
@@ -357,87 +384,55 @@ final class JavaSourceExtractor {
                     constructor,
                     visibility(record, implicitTypeVisibility(record))
                 );
-                methods.add(compactConstructorSummary(constructor, record.getParameters(), constructorVisibility));
-                addCompactConstructor(constructor, record.getParameters(), owner, constructorVisibility, callables);
+                JsonObject callable = addCompactConstructor(
+                    constructor,
+                    record.getParameters(),
+                    ownerIdentity,
+                    owner,
+                    constructorVisibility,
+                    callables
+                );
+                methods.add(callable.deepCopy());
             }
         }
         for (MethodDeclaration method : declaration.getMethods()) {
             String methodVisibility = visibility(method, methodFallback);
-            JsonObject summary = methodSummary(method, method.getNameAsString(), methodVisibility);
-            if (!interfaceDeclaration && (method.isAbstract() || method.getBody().isEmpty())) {
-                abstractMethods.add(summary);
-            } else {
-                methods.add(summary);
-            }
-            addCallable(
+            JsonObject callable = addCallable(
                 method,
                 method.getNameAsString(),
+                ownerIdentity,
                 owner,
                 method.isStatic() ? "static_method" : "instance_method",
                 method.getType().toString(),
                 methodVisibility,
                 callables
             );
+            if (!interfaceDeclaration && (method.isAbstract() || method.getBody().isEmpty())) {
+                abstractMethods.add(callable.deepCopy());
+            } else {
+                methods.add(callable.deepCopy());
+            }
         }
         if (declaration.isAnnotationDeclaration()) {
             for (BodyDeclaration<?> member : declaration.getMembers()) {
                 if (member.isAnnotationMemberDeclaration()) {
                     AnnotationMemberDeclaration annotationMember = member.asAnnotationMemberDeclaration();
-                    JsonObject summary = annotationMemberSummary(annotationMember);
-                    abstractMethods.add(summary);
-                    addAnnotationCallable(annotationMember, owner, callables);
+                    JsonObject callable = addAnnotationCallable(
+                        annotationMember,
+                        ownerIdentity,
+                        owner,
+                        callables
+                    );
+                    abstractMethods.add(callable.deepCopy());
                 }
             }
         }
     }
 
-    private JsonObject methodSummary(
+    private JsonObject addCallable(
         CallableDeclaration<?> declaration,
         String name,
-        String visibility
-    ) {
-        JsonObject summary = new JsonObject();
-        summary.addProperty("name", name);
-        summary.addProperty("visibility", visibility);
-        summary.addProperty("visibility_intent", visibility);
-        summary.add("declaration_annotations", annotations(declaration.getAnnotations()));
-        summary.addProperty("line_count", lineCount(declaration));
-        summary.addProperty("declared_args", declaration.getParameters().size());
-        summary.addProperty("optional_args", 0);
-        return summary;
-    }
-
-    private JsonObject annotationMemberSummary(AnnotationMemberDeclaration declaration) {
-        JsonObject summary = new JsonObject();
-        summary.addProperty("name", declaration.getNameAsString());
-        summary.addProperty("visibility", "public");
-        summary.addProperty("visibility_intent", "public");
-        summary.add("declaration_annotations", annotations(declaration.getAnnotations()));
-        summary.addProperty("line_count", lineCount(declaration));
-        summary.addProperty("declared_args", 0);
-        summary.addProperty("optional_args", 0);
-        return summary;
-    }
-
-    private JsonObject compactConstructorSummary(
-        CompactConstructorDeclaration declaration,
-        List<Parameter> parameters,
-        String visibility
-    ) {
-        JsonObject summary = new JsonObject();
-        summary.addProperty("name", "constructor");
-        summary.addProperty("visibility", visibility);
-        summary.addProperty("visibility_intent", visibility);
-        summary.add("declaration_annotations", annotations(declaration.getAnnotations()));
-        summary.addProperty("line_count", lineCount(declaration));
-        summary.addProperty("declared_args", parameters.size());
-        summary.addProperty("optional_args", 0);
-        return summary;
-    }
-
-    private void addCallable(
-        CallableDeclaration<?> declaration,
-        String name,
+        JsonObject ownerIdentity,
         String owner,
         String kind,
         String returnAnnotation,
@@ -450,6 +445,7 @@ final class JavaSourceExtractor {
             declaration,
             declaration.getParameters(),
             name,
+            ownerIdentity,
             owner,
             qualifiedName,
             kind,
@@ -459,10 +455,12 @@ final class JavaSourceExtractor {
         );
         callables.add(callable);
         callableFacts.add(new CallableFact(declaration, callable, name, owner, qualifiedName, "constructor".equals(kind)));
+        return callable;
     }
 
-    private void addAnnotationCallable(
+    private JsonObject addAnnotationCallable(
         AnnotationMemberDeclaration declaration,
+        JsonObject ownerIdentity,
         String owner,
         JsonArray callables
     ) {
@@ -473,6 +471,7 @@ final class JavaSourceExtractor {
             declaration,
             List.of(),
             name,
+            ownerIdentity,
             owner,
             qualifiedName,
             "instance_method",
@@ -482,11 +481,13 @@ final class JavaSourceExtractor {
         );
         callables.add(callable);
         callableFacts.add(new CallableFact(declaration, callable, name, owner, qualifiedName, false));
+        return callable;
     }
 
-    private void addCompactConstructor(
+    private JsonObject addCompactConstructor(
         CompactConstructorDeclaration declaration,
         List<Parameter> parameters,
+        JsonObject ownerIdentity,
         String owner,
         String visibility,
         JsonArray callables
@@ -497,6 +498,7 @@ final class JavaSourceExtractor {
             declaration,
             parameters,
             "constructor",
+            ownerIdentity,
             owner,
             qualifiedName,
             "constructor",
@@ -506,12 +508,14 @@ final class JavaSourceExtractor {
         );
         callables.add(callable);
         callableFacts.add(new CallableFact(declaration, callable, "constructor", owner, qualifiedName, true));
+        return callable;
     }
 
     private JsonObject callable(
         Node declaration,
         List<Parameter> parameters,
         String name,
+        JsonObject ownerIdentity,
         String owner,
         String qualifiedName,
         String kind,
@@ -524,7 +528,6 @@ final class JavaSourceExtractor {
         callable.addProperty("source_id", sourceId);
         callable.addProperty("name", name);
         callable.addProperty("qualified_name", qualifiedName);
-        callable.addProperty("owner_name", owner);
         callable.addProperty("kind", kind);
         callable.addProperty("visibility", visibility);
         callable.addProperty("visibility_intent", visibility);
@@ -533,11 +536,10 @@ final class JavaSourceExtractor {
         callable.addProperty("line_end", endLine(declaration));
         callable.addProperty("line_count", lineCount(declaration));
         callable.add("parameters", parameters(parameters));
-        callable.addProperty("declared_args", parameters.size());
-        callable.addProperty("optional_args", 0);
-        callable.addProperty("return_annotation", returnAnnotation);
+        callable.add("return_type", sourceType(returnAnnotation));
         callable.add("decorators", annotationsForNode(declaration));
         callable.addProperty("docstring", "");
+        callable.add("owner_declaration_id", ownerIdentity.deepCopy());
         return callable;
     }
 
@@ -546,12 +548,72 @@ final class JavaSourceExtractor {
         for (Parameter parameter : parameters) {
             JsonObject fact = new JsonObject();
             fact.addProperty("name", parameter.getNameAsString());
-            fact.addProperty("annotation", parameter.getType().toString());
+            fact.add("type", sourceType(parameter.getType().toString()));
             fact.addProperty("kind", parameter.isVarArgs() ? "variadic_positional" : "positional");
             fact.addProperty("has_default", false);
             result.add(fact);
         }
         return result;
+    }
+
+    private JsonObject sourceType(String authoredType) {
+        String value = authoredType.strip();
+        JsonObject type = new JsonObject();
+        if (value.isEmpty()) {
+            type.addProperty("kind", "absent");
+            return type;
+        }
+        if (value.contains("?") || value.contains("[") || value.contains("&") || value.contains("|")) {
+            type.addProperty("kind", "unsupported");
+            return type;
+        }
+        int genericStart = value.indexOf('<');
+        if (genericStart < 0) {
+            type.addProperty("kind", "reference");
+            type.addProperty("name", value);
+            type.add("arguments", new JsonArray());
+            return type;
+        }
+        if (!value.endsWith(">")) {
+            type.addProperty("kind", "unsupported");
+            return type;
+        }
+        String name = value.substring(0, genericStart).strip();
+        List<String> arguments = genericArguments(value.substring(genericStart + 1, value.length() - 1));
+        if (name.isEmpty() || arguments.isEmpty()) {
+            type.addProperty("kind", "unsupported");
+            return type;
+        }
+        JsonArray typeArguments = new JsonArray();
+        for (String argument : arguments) {
+            typeArguments.add(sourceType(argument));
+        }
+        type.addProperty("kind", "reference");
+        type.addProperty("name", name);
+        type.add("arguments", typeArguments);
+        return type;
+    }
+
+    private List<String> genericArguments(String content) {
+        List<String> arguments = new ArrayList<>();
+        int depth = 0;
+        int start = 0;
+        for (int index = 0; index < content.length(); index++) {
+            char token = content.charAt(index);
+            if (token == '<') {
+                depth++;
+            } else if (token == '>') {
+                depth--;
+            } else if (token == ',' && depth == 0) {
+                arguments.add(content.substring(start, index).strip());
+                start = index + 1;
+            }
+        }
+        if (depth != 0) {
+            return List.of();
+        }
+        arguments.add(content.substring(start).strip());
+        return arguments.stream().filter(argument -> !argument.isEmpty()).toList();
     }
 
     private void collectRelations(TypeDeclaration<?> declaration, JsonObject identity, JsonArray relations) {

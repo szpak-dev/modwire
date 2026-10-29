@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from ...shared.code.models.identity import FileId, ImportIdentity
-from ...shared.code.models.source_file import SourceFile
+from ...shared.code.models.sources.identity import FileId, ImportIdentity
+from ...shared.code.models.sources.source_file import SourceFile
 from .models.batch_config import BatchConfig
 from .models.extractor_runtime import ExtractorRuntime
 from .models.parsed_source_file import ParsedSourceFile

@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ....extraction.extractors.models.parsed_source_file import ParsedSourceFile
-from ....shared.code.models.identity import FileId, ImportIdentity
-from ....shared.code.models.source_file import SourceFile
+from ....shared.code.models.sources.identity import FileId, ImportIdentity
+from ....shared.code.models.sources.source_file import SourceFile
 
 
 @injectable
@@ -18,10 +18,11 @@ class SourceFileFactory:
             exports=parsed.exports,
             namespaces=tuple(parsed.namespaces),
             declarations=tuple(parsed.declarations),
-            functions=parsed.functions,
-            values=parsed.values,
-            callables=parsed.callables,
-            calls=parsed.calls,
+            functions=tuple(parsed.functions),
+            values=tuple(parsed.values),
+            callable_values=tuple(parsed.callable_values),
+            anonymous_callables=tuple(parsed.anonymous_callables),
+            calls=tuple(parsed.calls),
             declaration_relations=tuple(parsed.declaration_relations),
             line_count=parsed.line_count,
             code_line_count=parsed.code_line_count,

@@ -4,15 +4,18 @@ import pytest
 from pydantic import ValidationError
 
 from modwire.application import (
+    CapabilityStatus,
     CodeMap,
     FactCapability,
     RelationshipFamily,
+    SourceTypeKind,
 )
 
 from ..support.code_map_fixture.capability_evidence import FixtureCapabilityEvidence
 from ..support.code_map_fixture.fixture_contract import PolyglotFixtureContract
 from ..support.code_map_fixture.fixture_contract_error import FixtureContractError
 from ..support.code_map_fixture.language_capability_matrix.expectations.capability import CapabilityExpectation
+from ..support.code_map_fixture.language_capability_matrix.expectations.parameter_kind import ParameterKindExpectation
 from ..support.code_map_fixture.language_capability_matrix.expectations.relationship import RelationshipExpectation
 from ..support.code_map_fixture.language_capability_matrix.expectations.scenario import (
     LimitationScenarioExpectation,
@@ -50,6 +53,9 @@ from ..support.code_map_fixture.language_capability_matrix.limits.capability.spa
 from ..support.code_map_fixture.language_capability_matrix.limits.capability.symbol import (
     SymbolLimitationExpectation,
 )
+from ..support.code_map_fixture.language_capability_matrix.limits.capability.type_reference import (
+    TypeReferenceLimitationExpectation,
+)
 from ..support.code_map_fixture.language_capability_matrix.limits.capability.value import (
     AssignedValueLimitationExpectation,
 )
@@ -76,6 +82,12 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
 
     def capability_gap_root(self, language: str) -> Path:
         return self.repository / self.capability_matrix.languages[language].fixtures.capability_gap_root
+
+    def type_reference_root(self, language: str) -> Path:
+        return self.repository / self.capability_matrix.languages[language].fixtures.type_reference_root()
+
+    def scenario_source(self, scenario: LimitationScenarioExpectation) -> Path:
+        return self.repository / scenario.source
 
     def test_missing_language_attack_is_rejected_before_valid_inventory_recovers(self) -> None:
         contract = PolyglotFixtureContract()
@@ -198,7 +210,15 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
 
         contract.validate_language_inventory(fixture_root, expected_languages)
         for language, row in self.capability_matrix.languages.items():
-            expected_sources = tuple(sorted({scenario.source for scenario in row.scenarios}))
+            expected_sources = tuple(
+                sorted(
+                    {
+                        Path(scenario.source).relative_to(row.fixtures.capability_gap_root).as_posix()
+                        for scenario in row.scenarios
+                        if Path(scenario.source).is_relative_to(row.fixtures.capability_gap_root)
+                    }
+                )
+            )
             contract.validate_source_inventory(fixture_root / language, expected_sources)
 
     def test_implementation_manifest_fixture_inventory_covers_every_matrix_language(self) -> None:
@@ -212,6 +232,26 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
                 tuple(sorted(row.fixtures.manifest_sources.values())),
             )
 
+    def test_type_reference_fixture_inventory_is_exactly_matrix_driven(self) -> None:
+        contract = PolyglotFixtureContract()
+        for language, row in self.capability_matrix.languages.items():
+            root = self.type_reference_root(language)
+            root_path = row.fixtures.type_reference_root()
+            expected = tuple(
+                sorted(
+                    Path(path).relative_to(root_path).as_posix()
+                    for path in row.fixtures.type_reference_sources()
+                )
+            )
+            contract.validate_source_inventory(root, expected)
+
+    def test_parameter_kind_fixture_inventory_is_exactly_matrix_driven(self) -> None:
+        contract = PolyglotFixtureContract()
+        for expectation in (row.parameter_kinds for row in self.capability_matrix.languages.values()):
+            source = Path(expectation.source)
+            root = self.repository / source.parents[1]
+            contract.validate_source_inventory(root, (source.relative_to(source.parents[1]).as_posix(),))
+
     @pytest.mark.parametrize(
         ("language", "scenario"),
         capability_matrix.scenario_cases(),
@@ -222,7 +262,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         language: str,
         scenario: LimitationScenarioExpectation,
     ) -> None:
-        source = (self.capability_gap_root(language) / scenario.source).read_text(encoding="utf-8")
+        source = self.scenario_source(scenario).read_text(encoding="utf-8")
 
         assert all(authored_syntax in source for authored_syntax in scenario.authored_syntax)
 
@@ -294,6 +334,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
 
         assert declared[capability].status is expectation.status
         assert declared[capability].explanation == expectation.explanation
+        assert FixtureCapabilityEvidence().capability_evidence(code_map, capability) == expectation.evidence
 
     @pytest.mark.parametrize(
         ("language", "family", "expectation"),
@@ -318,6 +359,112 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         assert coverage.semantics_explanation == expectation.semantics_explanation
         assert coverage.inventory is expectation.inventory
         assert coverage.inventory_explanation == expectation.inventory_explanation
+        assert FixtureCapabilityEvidence().relationship_evidence(code_map, family) == expectation.evidence
+
+    @pytest.mark.parametrize(
+        ("language", "expectation"),
+        capability_matrix.parameter_kind_cases(),
+        ids=tuple(capability_matrix.languages),
+    )
+    def test_parameter_kinds_exactly_match_the_matrix_partition(
+        self,
+        language: str,
+        expectation: ParameterKindExpectation,
+    ) -> None:
+        source = Path(expectation.source)
+        code_map = self.application.generate_map(
+            language,
+            self.repository / source.parents[1],
+            self.scan_policy(),
+        )
+
+        assert FixtureCapabilityEvidence().parameter_kinds(code_map) == expectation.present
+
+    @pytest.mark.parametrize(
+        ("language", "row"),
+        tuple(capability_matrix.languages.items()),
+        ids=tuple(capability_matrix.languages),
+    )
+    def test_member_ownership_is_exact_for_every_language(
+        self,
+        language: str,
+        row: LanguageCapabilityRow,
+    ) -> None:
+        code_map = self.application.generate_map(
+            language,
+            self.repository / row.fixtures.reference_root,
+            self.scan_policy(),
+        )
+
+        for source in code_map.extraction.files.values():
+            for declaration in source.declarations:
+                assert all(
+                    member.owner_declaration_id == declaration.declaration_id
+                    for member in (*declaration.methods, *declaration.abstract_methods, *declaration.properties)
+                )
+
+    @pytest.mark.parametrize(
+        ("language", "limitation"),
+        tuple(
+            (language, limitation)
+            for language, row in capability_matrix.languages.items()
+            for limitation in row.capability_limitations.type_references
+        ),
+    )
+    def test_type_reference_limitations_match_recursive_public_evidence(
+        self,
+        language: str,
+        limitation: TypeReferenceLimitationExpectation,
+    ) -> None:
+        code_map = self.application.generate_map(language, self.type_reference_root(language), self.scan_policy())
+        evidence = FixtureCapabilityEvidence()
+        slots = evidence.type_slots(code_map)
+
+        assert evidence.type_reference_names(code_map) == limitation.present_reference_names
+        assert evidence.nested_type_reference_names(code_map) == limitation.present_nested_reference_names
+        assert sum(slot.kind is SourceTypeKind.ABSENT for slot in slots) == limitation.absent_slot_count
+        assert sum(slot.kind is SourceTypeKind.UNSUPPORTED for slot in slots) == limitation.unsupported_slot_count
+
+    @pytest.mark.parametrize(
+        ("language", "row"),
+        tuple(
+            (language, row)
+            for language, row in capability_matrix.languages.items()
+            if row.capabilities[FactCapability.TYPE_REFERENCES].status is CapabilityStatus.SUPPORTED
+        ),
+    )
+    def test_supported_type_reference_absence_is_explicit(
+        self,
+        language: str,
+        row: LanguageCapabilityRow,
+    ) -> None:
+        code_map = self.application.generate_map(language, self.type_reference_root(language), self.scan_policy())
+        slots = FixtureCapabilityEvidence().type_slots(code_map)
+
+        assert slots
+        assert all(slot.kind is SourceTypeKind.ABSENT for slot in slots)
+
+    @pytest.mark.parametrize(
+        ("language", "row"),
+        tuple(capability_matrix.languages.items()),
+        ids=tuple(capability_matrix.languages),
+    )
+    def test_empty_source_has_a_complete_empty_type_observation(
+        self,
+        language: str,
+        row: LanguageCapabilityRow,
+    ) -> None:
+        root = self.type_reference_root(language)
+        cases = Path(row.fixtures.type_reference_cases)
+        root_path = cases.parents[1]
+        code_map = self.application.generate_map(
+            language,
+            root,
+            self.configured_scan_policy((cases.relative_to(root_path).as_posix(),), False),
+        )
+
+        assert len(code_map.extraction.files) == 1
+        assert FixtureCapabilityEvidence().type_slot_count(code_map) == 0
 
     @pytest.mark.parametrize(
         ("language", "limitation"),

@@ -57,6 +57,6 @@ shared code contracts.
 - `modwire.cli` owns filesystem and process interaction, extractor transport, project
   initialization, rendering, and persistent cache storage.
 
-`ModwireApplication.create()` composes these boundaries through Wireup. A consuming
+`ModwireApplicationFactory().create()` composes these boundaries through Wireup. A consuming
 application receives one public object and does not need to assemble internal
 services or depend on their packages.

@@ -3,16 +3,67 @@ import json
 import re
 from pathlib import PurePosixPath
 
-from modwire.application import CapabilityStatus, CodeMap
+from modwire.application import (
+    CapabilityStatus,
+    CodeMap,
+    DeclarationIdentity,
+    SourceCallableKind,
+    SourceClassMethod,
+    SourceTypeUnsupported,
+)
 
 
 class FixtureCodeMapProjector:
+    def canonical_name(self, name: str) -> str:
+        separated = re.sub("([a-z0-9])([A-Z])", r"\1_\2", name.replace("-", "_"))
+        return re.sub("([A-Z]+)([A-Z][a-z])", r"\1_\2", separated).lower()
+
+    def project_method(
+        self,
+        method: SourceClassMethod,
+        source_id: str,
+        owner_declaration_id: DeclarationIdentity,
+        ordinal: int,
+    ) -> SourceClassMethod:
+        name = self.canonical_name(method.name)
+        qualified_name = f"{owner_declaration_id.qualified_name}.{name}"
+        return method.model_copy(
+            update={
+                "name": name,
+                "source_id": source_id,
+                "qualified_name": qualified_name,
+                "declaration_id": method.declaration_id.model_copy(
+                    update={
+                        "source_id": source_id,
+                        "qualified_name": qualified_name,
+                        "ordinal": ordinal,
+                    }
+                ),
+                "owner_declaration_id": owner_declaration_id,
+                "parameters": tuple(
+                    parameter.model_copy(
+                        update={
+                            "name": self.canonical_name(parameter.name),
+                            "type": SourceTypeUnsupported(),
+                        }
+                    )
+                    for parameter in method.parameters
+                ),
+                "return_type": SourceTypeUnsupported(),
+                "decorators": (),
+                "docstring": "",
+                "declaration_annotations": (),
+                "line_count": 0,
+                "line_start": 0,
+                "line_end": 0,
+            }
+        )
+
     def project(self, code_map: CodeMap) -> CodeMap:
         source_ids: dict[str, str] = {}
         for source_id in code_map.extraction.files:
             path = PurePosixPath(str(source_id))
-            separated = re.sub("([a-z0-9])([A-Z])", r"\1_\2", path.stem.replace("-", "_"))
-            canonical_name = re.sub("([A-Z]+)([A-Z][a-z])", r"\1_\2", separated).lower()
+            canonical_name = self.canonical_name(path.stem)
             source_ids[str(source_id)] = str(PurePosixPath(*path.parts[:-1], canonical_name))
 
         projected_source_ids: list[str] = []
@@ -21,45 +72,9 @@ class FixtureCodeMapProjector:
         for original_source_id, source_file in code_map.extraction.files.items():
             source_id = source_ids[str(original_source_id)]
             projected_source_ids.append(source_id)
-            constructor_names = {
-                callable_fact.owner_name: callable_fact.name
-                for callable_fact in source_file.callables
-                if callable_fact.kind is callable_fact.kind.CONSTRUCTOR
-            }
             declarations = list(source_file.declarations)
             declarations.clear()
             for ordinal, declaration in enumerate(sorted(source_file.declarations, key=lambda item: item.name), 1):
-                constructor_name = constructor_names.get(declaration.name, "")
-                methods = [
-                    method.model_copy(
-                        update={
-                            "name": re.sub(
-                                "([A-Z]+)([A-Z][a-z])",
-                                r"\1_\2",
-                                re.sub("([a-z0-9])([A-Z])", r"\1_\2", method.name),
-                            ).lower(),
-                            "declaration_annotations": [],
-                            "line_count": 0,
-                        }
-                    )
-                    for method in sorted(declaration.methods, key=lambda item: item.name)
-                    if method.name != constructor_name
-                ]
-                abstract_methods = [
-                    method.model_copy(
-                        update={
-                            "name": re.sub(
-                                "([A-Z]+)([A-Z][a-z])",
-                                r"\1_\2",
-                                re.sub("([a-z0-9])([A-Z])", r"\1_\2", method.name),
-                            ).lower(),
-                            "declaration_annotations": [],
-                            "line_count": 0,
-                        }
-                    )
-                    for method in sorted(declaration.abstract_methods, key=lambda item: item.name)
-                    if method.name != constructor_name
-                ]
                 identity = declaration.declaration_id.model_copy(
                     update={
                         "source_id": source_id,
@@ -67,16 +82,38 @@ class FixtureCodeMapProjector:
                         "ordinal": ordinal,
                     }
                 )
+                methods = tuple(
+                    self.project_method(method, source_id, identity, method_ordinal)
+                    for method_ordinal, method in enumerate(
+                        (
+                            method
+                            for method in sorted(declaration.methods, key=lambda item: item.name)
+                            if method.kind is not SourceCallableKind.CONSTRUCTOR
+                        ),
+                        start=1,
+                    )
+                )
+                abstract_methods = tuple(
+                    self.project_method(method, source_id, identity, method_ordinal)
+                    for method_ordinal, method in enumerate(
+                        (
+                            method
+                            for method in sorted(declaration.abstract_methods, key=lambda item: item.name)
+                            if method.kind is not SourceCallableKind.CONSTRUCTOR
+                        ),
+                        start=1,
+                    )
+                )
                 declarations.append(
                     declaration.model_copy(
                         update={
                             "declaration_id": identity,
-                            "declaration_annotations": [],
+                            "declaration_annotations": (),
                             "line_count": 0,
                             "methods": methods,
                             "abstract_methods": abstract_methods,
-                            "properties": [],
-                            "signatures": [],
+                            "properties": (),
+                            "signatures": (),
                         }
                     )
                 )
@@ -89,10 +126,11 @@ class FixtureCodeMapProjector:
                         "exports": [],
                         "namespaces": (),
                         "declarations": tuple(declarations),
-                        "functions": [],
-                        "values": [],
-                        "callables": [],
-                        "calls": [],
+                        "functions": (),
+                        "values": (),
+                        "callable_values": (),
+                        "anonymous_callables": (),
+                        "calls": (),
                         "declaration_relations": (),
                         "line_count": 0,
                         "code_line_count": 0,

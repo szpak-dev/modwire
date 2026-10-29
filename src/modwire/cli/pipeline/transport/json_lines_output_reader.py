@@ -4,7 +4,7 @@ from pydantic import TypeAdapter
 from wireup import injectable
 
 from ....extraction.extractors.models.parsed_source_file import ParsedSourceFile
-from ....shared.code.models.identity import FileId
+from ....shared.code.models.sources.identity import FileId
 from .output_reader import ExtractorBatchOutputReader
 
 

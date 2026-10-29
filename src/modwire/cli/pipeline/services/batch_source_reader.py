@@ -21,13 +21,13 @@ from ....extraction.extractors.models.extractor_error import ExtractorError
 from ....extraction.extractors.models.extractor_failure_document import ExtractorFailureDocument
 from ....extraction.extractors.models.extractor_runtime import ExtractorRuntime
 from ....extraction.extractors.models.source_parse_error import SourceParseError
-from ....shared.code.application import CodeApplication
-from ....shared.code.domain import PathMatcher
-from ....shared.code.models.identity import FileId, ImportIdentity
-from ....shared.code.models.identity_kind import IdentityKind
-from ....shared.code.models.scan_policy import ScanPolicy
-from ....shared.code.models.source_extraction import SourceExtraction
-from ....shared.code.models.source_file import SourceFile
+from ....shared.code.contracts.identity_resolver import IdentityResolver
+from ....shared.code.contracts.path_matcher import PathMatcher
+from ....shared.code.models.sources.identity import FileId, ImportIdentity
+from ....shared.code.models.sources.identity_kind import IdentityKind
+from ....shared.code.models.sources.scan_policy import ScanPolicy
+from ....shared.code.models.sources.source_extraction import SourceExtraction
+from ....shared.code.models.sources.source_file import SourceFile
 from ..batching.planner import SourceBatchPlanner
 from ..domain import SourceReader
 from ..models.extractor_contract_error import ExtractorContractError
@@ -48,7 +48,7 @@ from .source_manifest_builder import SourceManifestBuilder
 @injectable(as_type=SourceReader)
 @dataclass(frozen=True)
 class BatchSourceReader(SourceReader):
-    code: CodeApplication
+    identities: IdentityResolver
     files: SourceFileFactory
     paths: PathMatcher
     manifests: SourceManifestBuilder
@@ -257,9 +257,9 @@ class BatchSourceReader(SourceReader):
         if not script_path.is_file():
             raise ExtractorResourceError(runtime.descriptor.language, str(script_path))
         paths_by_source_id = {
-            self.code.file_id(str(root), str(source_path)): str(source_path) for source_path in source_paths
+            self.identities.file_id(str(root), str(source_path)): str(source_path) for source_path in source_paths
         }
-        command = [*runtime.command, *runtime.entrypoint_arguments, str(script_path), "--batch", str(root)]
+        command = [*runtime.command, *entrypoint.command_arguments(script_path), "--batch", str(root)]
         if request.batch_config.output_format is BatchOutputFormat.JSON_LINES:
             command.append("--jsonl")
         try:
@@ -317,7 +317,7 @@ class BatchSourceReader(SourceReader):
             )
         extracted_by_source_id = dict(extracted)
         source_paths_by_id = {
-            self.code.file_id(str(root), str(source_path)): source_path for source_path in source_paths
+            self.identities.file_id(str(root), str(source_path)): source_path for source_path in source_paths
         }
         expected = set(source_paths_by_id)
         actual = set(extracted_by_source_id)
@@ -336,7 +336,7 @@ class BatchSourceReader(SourceReader):
                 source_path = source_paths_by_id[file_id]
                 extracted_files[file_id] = self.files.create(
                     file_id,
-                    self.code.import_identity(str(root), str(source_path)),
+                    self.identities.import_identity(str(root), str(source_path)),
                     parsed_source_file,
                 )
         except ValidationError as error:
@@ -386,7 +386,7 @@ class BatchSourceReader(SourceReader):
             files[file_id] = source_file
 
     def _source_id_for_path(self, request: ExtractionRequest, root: Path, path: Path) -> FileId:
-        return self.code.file_id(str(root), str(path))
+        return self.identities.file_id(str(root), str(path))
 
     def _content_digest(self, path: Path) -> str:
         return hashlib.sha256(path.read_bytes()).hexdigest()

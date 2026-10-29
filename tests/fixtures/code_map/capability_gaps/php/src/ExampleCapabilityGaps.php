@@ -22,6 +22,11 @@ final class ExampleConsumer
     use ExampleTrait;
 
     public string $exampleValue = 'example_value';
+
+    public function exampleConsumerValue(): string
+    {
+        return $this->exampleValue;
+    }
 }
 
 $exampleConsumer = new ExampleConsumer();

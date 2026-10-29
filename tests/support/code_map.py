@@ -2,7 +2,6 @@ import hashlib
 import json
 from collections.abc import Mapping
 from pathlib import PurePosixPath
-from typing import Any
 
 from modwire.application import CodeMap, FactCapability, QueryableCodeMap, RelationshipFamily
 
@@ -110,7 +109,8 @@ class CodeMapFactory:
             "declarations": [],
             "functions": [],
             "values": [],
-            "callables": [],
+            "callable_values": [],
+            "anonymous_callables": [],
             "calls": [],
             "declaration_relations": [],
             "line_count": 1,
@@ -129,46 +129,80 @@ class CodeMapFactory:
             "module": "type",
             "type_alias": "type",
         }
-        for collection, family in (("functions", "function"), ("values", "value")):
-            source_file[collection] = [
-                {
-                    **declaration,
-                    "declaration_id": {
-                        "source_id": source_id,
-                        "family": family,
-                        "qualified_name": declaration["name"],
-                        "ordinal": ordinal,
-                    },
-                }
-                for ordinal, declaration in enumerate(source_file[collection], start=1)
-            ]
-        source_file["declarations"] = [
+        source_file["functions"] = [
             {
                 **declaration,
+                "source_id": source_id,
+                "qualified_name": declaration["name"],
                 "declaration_id": {
                     "source_id": source_id,
-                    "family": declaration_families[str(declaration["kind"])],
+                    "family": "function",
                     "qualified_name": declaration["name"],
                     "ordinal": ordinal,
                 },
             }
-            for ordinal, declaration in enumerate(source_file["declarations"], start=1)
+            for ordinal, declaration in enumerate(source_file["functions"], start=1)
         ]
-        source_file["callables"] = [
+        source_file["values"] = [
             {
-                **callable_definition,
+                **declaration,
                 "declaration_id": {
                     "source_id": source_id,
-                    "family": "function",
-                    "qualified_name": callable_definition["qualified_name"],
+                    "family": "value",
+                    "qualified_name": declaration["name"],
                     "ordinal": ordinal,
                 },
             }
-            for ordinal, callable_definition in enumerate(source_file["callables"], start=1)
+            for ordinal, declaration in enumerate(source_file["values"], start=1)
         ]
+        declarations: list[dict[str, object]] = []
+        for ordinal, declaration in enumerate(source_file["declarations"], start=1):
+            declaration_id = {
+                "source_id": source_id,
+                "family": declaration_families[str(declaration["kind"])],
+                "qualified_name": declaration["name"],
+                "ordinal": ordinal,
+            }
+            methods = [
+                {
+                    **method,
+                    "source_id": source_id,
+                    "qualified_name": f"{declaration['name']}.{method['name']}",
+                    "owner_declaration_id": declaration_id,
+                    "declaration_id": {
+                        "source_id": source_id,
+                        "family": "method",
+                        "qualified_name": f"{declaration['name']}.{method['name']}",
+                        "ordinal": method_ordinal,
+                    },
+                }
+                for method_ordinal, method in enumerate(declaration["methods"], start=1)
+            ]
+            properties = [
+                {
+                    **property_definition,
+                    "owner_declaration_id": declaration_id,
+                    "declaration_id": {
+                        "source_id": source_id,
+                        "family": "property",
+                        "qualified_name": f"{declaration['name']}.{property_definition['name']}",
+                        "ordinal": property_ordinal,
+                    },
+                }
+                for property_ordinal, property_definition in enumerate(declaration["properties"], start=1)
+            ]
+            declarations.append(
+                {
+                    **declaration,
+                    "declaration_id": declaration_id,
+                    "methods": methods,
+                    "properties": properties,
+                }
+            )
+        source_file["declarations"] = declarations
         callable_ids = {
             callable_definition["qualified_name"]: callable_definition["declaration_id"]
-            for callable_definition in source_file["callables"]
+            for callable_definition in source_file["functions"]
         }
         source_file["calls"] = [
             {
@@ -180,15 +214,71 @@ class CodeMapFactory:
         ]
         return source_file
 
-    def symbol(self, name: str, *, line_count: int, declared_args: int, optional_args: int) -> dict[str, Any]:
+    def source_function(
+        self,
+        name: str,
+        *,
+        line_count: int,
+        parameter_count: int,
+        optional_parameter_count: int,
+    ) -> dict[str, object]:
+        return self.source_callable(
+            name,
+            kind="function",
+            line_count=line_count,
+            parameter_count=parameter_count,
+            optional_parameter_count=optional_parameter_count,
+        )
+
+    def source_method(
+        self,
+        name: str,
+        *,
+        line_count: int,
+        parameter_count: int,
+        optional_parameter_count: int,
+    ) -> dict[str, object]:
+        return self.source_callable(
+            name,
+            kind="instance_method",
+            line_count=line_count,
+            parameter_count=parameter_count,
+            optional_parameter_count=optional_parameter_count,
+        )
+
+    def source_callable(
+        self,
+        name: str,
+        *,
+        kind: str,
+        line_count: int,
+        parameter_count: int,
+        optional_parameter_count: int,
+    ) -> dict[str, object]:
+        if optional_parameter_count > parameter_count:
+            raise ValueError("optional parameter count exceeds parameter count")
         return {
             "name": name,
             "visibility": "public",
             "visibility_intent": "public",
             "declaration_annotations": [],
             "line_count": line_count,
-            "declared_args": declared_args,
-            "optional_args": optional_args,
+            "qualified_name": name,
+            "kind": kind,
+            "line_start": 1,
+            "line_end": line_count,
+            "parameters": [
+                {
+                    "name": f"argument_{position}",
+                    "type": {"kind": "unsupported"},
+                    "kind": "positional",
+                    "has_default": position > parameter_count - optional_parameter_count,
+                }
+                for position in range(1, parameter_count + 1)
+            ],
+            "return_type": {"kind": "unsupported"},
+            "decorators": [],
+            "docstring": "",
         }
 
     def source_class(
@@ -207,9 +297,10 @@ class CodeMapFactory:
             "declaration_annotations": [],
             "line_count": line_count,
             "methods": list(methods),
+            "abstract_methods": [],
             "properties": [
                 {
-                    "annotation": "",
+                    "type": {"kind": "unsupported"},
                     "visibility": "public",
                     "member_kind": "instance",
                     "assigned_values": [{"kind": "unassigned", "expression": "", "reference": ""}],
@@ -228,8 +319,6 @@ class CodeMapFactory:
             "declaration_kind": declaration_kind,
             "value_kind": "value_literal",
             "scope": scope,
-            "declared_args": 0,
-            "optional_args": 0,
         }
 
     def source_import(
@@ -269,21 +358,6 @@ class CodeMapFactory:
             "is_default": False,
             "is_aliased": False,
             "statement_id": 0,
-        }
-
-    def source_callable(self, source_id: str, name: str) -> dict[str, object]:
-        return {
-            **self.symbol(name, line_count=1, declared_args=0, optional_args=0),
-            "source_id": source_id,
-            "qualified_name": name,
-            "owner_name": "",
-            "kind": "function",
-            "line_start": 1,
-            "line_end": 1,
-            "parameters": [],
-            "return_annotation": "",
-            "decorators": [],
-            "docstring": "",
         }
 
     def source_call(

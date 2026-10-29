@@ -2,10 +2,10 @@ from typing import Self
 
 from pydantic import Field, model_validator
 
-from ....shared.code.models.declaration_identity import DeclarationIdentity
-from ....shared.code.models.source_assigned_value import SourceAssignedValue
-from ....shared.code.models.source_member_kind import SourceMemberKind
-from ....shared.code.models.source_visibility import SourceVisibility
+from ....shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ....shared.code.models.declarations.source_member_kind import SourceMemberKind
+from ....shared.code.models.declarations.source_visibility import SourceVisibility
+from ....shared.code.models.values.source_assigned_value import SourceAssignedValue
 from ....shared.values.models.value_model import ValueModel
 from .implementation_manifest_validation_error import ImplementationManifestValidationError
 from .implementation_manifest_violation import ImplementationManifestViolation
@@ -16,7 +16,6 @@ class ManifestAttribute(ValueModel):
     owner_symbol_id: DeclarationIdentity
     name: str
     is_optional: bool
-    annotation: str
     visibility: SourceVisibility
     member_kind: SourceMemberKind
     assigned_values: tuple[SourceAssignedValue, ...] = Field(min_length=1)

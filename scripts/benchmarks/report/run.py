@@ -13,7 +13,7 @@ from pathlib import Path
 from types import FrameType
 from typing import Any, cast
 
-from modwire.application import CacheOptions, CodeMap, ModwireApplication, QueryableCodeMap, ScanPolicy
+from modwire.application import CacheOptions, CodeMap, ModwireApplicationFactory, QueryableCodeMap, ScanPolicy
 
 from .benchmark_process_timeout import BenchmarkProcessTimeout
 
@@ -177,7 +177,7 @@ class ReportBenchmark:
             raise RuntimeError(f"Benchmark root is not a directory: {self.root}")
         if self.code_map_cache_file is not None and not self.code_map_cache_file.is_file():
             raise RuntimeError(f"CodeMap cache file does not exist: {self.code_map_cache_file}")
-        application = ModwireApplication.create()
+        application = ModwireApplicationFactory().create()
         policy = ScanPolicy()
         request = application.extraction.request(self.language, str(self.root))
         options = CacheOptions(

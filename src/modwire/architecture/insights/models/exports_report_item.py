@@ -1,5 +1,5 @@
-from ....shared.code.models.import_crossing_type import ImportCrossingType
-from ....shared.code.models.source_export_kind import SourceExportKind
+from ....shared.code.models.sources.import_crossing_type import ImportCrossingType
+from ....shared.code.models.sources.source_export_kind import SourceExportKind
 from ....shared.values.models.value_model import ValueModel
 
 

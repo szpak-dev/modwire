@@ -27,8 +27,9 @@ class ExtractorBuildChecks:
         environment["PYTHONPATH"] = (
             os.pathsep.join((source_root, configured_paths)) if configured_paths else source_root
         )
+        module = ".".join(path.relative_to(self.repository / "src").with_suffix("").parts)
         subprocess.run(
-            (sys.executable, str(path), str(path.parent), str(work)),
+            (sys.executable, "-m", module, str(path.parent), str(work)),
             check=True,
             env=environment,
         )

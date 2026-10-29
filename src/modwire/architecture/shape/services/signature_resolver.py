@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.source_signature import SourceSignature
+from ....shared.code.models.callables.source_signature import SourceSignature
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, SymbolShapeResolverInterface
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap

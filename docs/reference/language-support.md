@@ -30,43 +30,14 @@ Modwire reports an unavailable or incompatible runtime as a public failure.
 publishes. `Partial` means the extractor deliberately publishes only the stated
 subset. `Unsupported` means consumers must not infer that fact from an empty result.
 
-| Capability | Python | TypeScript | PHP | Java | Ruby |
-| --- | --- | --- | --- | --- | --- |
-| sources | Supported | Supported | Supported | Supported | Supported |
-| symbols | Supported | Supported | Supported | Supported | Partial |
-| callables | Supported | Supported | Supported | Supported | Partial |
-| calls | Supported | Supported | Supported | Supported | Partial |
-| parameters | Supported | Supported | Supported | Supported | Partial |
-| annotations | Partial | Partial | Partial | Partial | Unsupported |
-| modifiers | Partial | Partial | Partial | Partial | Partial |
-| attributes | Supported | Supported | Supported | Supported | Unsupported |
-| assigned_values | Supported | Unsupported | Unsupported | Unsupported | Unsupported |
-| inheritance | Supported | Supported | Supported | Supported | Supported |
-| namespaces | Unsupported | Unsupported | Unsupported | Supported | Partial |
-| declaration_kinds | Supported | Supported | Supported | Supported | Supported |
-| composition | Unsupported | Partial | Partial | Partial | Partial |
-| dependencies | Supported | Supported | Supported | Partial | Partial |
-| spans | Partial | Partial | Partial | Partial | Partial |
+The executable authority is the repository-root
+[`language-capabilities.yaml`](../../language-capabilities.yaml). It owns every
+language/capability status, explanation, exact public evidence observation, and
+source-backed limitation. Tests load that file directly and require all capability
+cells in canonical order, so this page deliberately does not copy the matrix.
 
-The exact explanations travel with every public `CodeMap` in
-`code_map.producer.capabilities`. In particular:
-
-- annotations are declared types plus selected decorators or attributes; arbitrary
-  annotations are not evaluated;
-- modifiers normalize visibility and member or callable kind rather than preserving
-  every language keyword;
-- Python assigned values distinguish calls, references, literals, unresolved
-  expressions, and unassigned declarations; TypeScript, PHP, Java, and Ruby do not yet
-  extract assigned-value evidence;
-- Java publishes authored package declarations and Ruby publishes authored module
-  declarations; namespace extraction remains unsupported for Python, TypeScript, and PHP;
-- declaration kinds distinguish the exact shared class, abstract-class, interface,
-  function, callable, and value categories currently emitted by each extractor;
-- inheritance records authored class extension; composition records implementation,
-  trait, include, prepend, and singleton-extension evidence when the language adapter
-  can distinguish those forms. Python base expressions remain inheritance evidence, and
-  no distinct Python composition relation is classified;
-- callable spans are exact, while other symbols expose line counts.
+The same statuses and explanations travel with every public `CodeMap` in
+`code_map.producer.capabilities`.
 
 ## Relationship-capability coverage
 
@@ -75,16 +46,11 @@ Relationship coverage separates semantic understanding from inventory completene
 family boundary. Semantic support can remain partial when Modwire preserves every
 authored fact but cannot resolve its complete runtime meaning.
 
-| Family | Required fact evidence | Python | TypeScript | PHP | Java | Ruby |
-| --- | --- | --- | --- | --- | --- | --- |
-| declaration | symbols, inheritance, declaration kinds, composition | Partial / Supported | Partial / Supported | Partial / Partial | Partial / Partial | Partial / Partial |
-| member | symbols, callables, calls, parameters, annotations, modifiers, attributes, assigned values, declaration kinds | Partial / Supported | Partial / Partial | Partial / Partial | Partial / Partial | Partial / Partial |
-| dependency | sources, dependencies | Supported / Supported | Supported / Supported | Supported / Supported | Partial / Partial | Partial / Partial |
-
-Each language cell is `semantics / inventory`. The exact statuses, evidence
-requirements, and explanations travel in
-`code_map.producer.relationship_capabilities`. Every extractor classifies every
-family through the same shared contract.
+The same root
+[`language-capabilities.yaml`](../../language-capabilities.yaml) owns every
+language/family semantics status, inventory status, explanation, exact public
+evidence observation, and limitation. The values travel in
+`code_map.producer.relationship_capabilities`.
 
 The inventory boundary contains authored declaration relations, static member and
 callable references, assigned values when supported, and authored source
@@ -92,23 +58,6 @@ dependencies. It does not contain runtime calls, reflection, dynamic loading,
 dependency-injection wiring, generated behavior, or framework conventions. An empty
 relationship family is not evidence of absence unless its inventory status is
 `Supported`.
-
-Java exact imports resolve when the target declaration is present in the same source
-set. Wildcard imports, implicit same-package dependencies, classpath or framework
-inference, generated code, and annotation-processor effects remain unresolved. Local
-calls resolve only when one same-file target is unambiguous; overloads, arbitrary
-receivers, inherited calls, and cross-file calls remain unresolved. Sealed declarations
-retain their underlying class or interface kind, but `permits` relations are not yet
-published.
-
-Ruby publishes statically named classes, modules, constants, instance methods,
-singleton methods, constructors, parameters, superclass clauses, and literal
-`include`, `prepend`, and `extend` sites. Reopened declarations remain separate
-authored sites rather than being merged. Literal `require` and `require_relative`
-loads are normalized; dynamic loading, refinements, metaprogramming, unresolved
-constant semantics, load-path inference, Rails conventions, and Zeitwerk autoloading
-are not inferred. Method and constant aliases are not emitted as new declarations.
-Same-file calls resolve only when one static target is unambiguous.
 
 ## Deliberate boundaries
 

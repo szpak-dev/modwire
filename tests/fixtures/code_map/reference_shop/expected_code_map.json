@@ -35,6 +35,11 @@
         "explanation": "The common fixture projection does not publish adapter capability claims."
       },
       {
+        "capability": "type_references",
+        "status": "unsupported",
+        "explanation": "The common fixture projection does not publish adapter capability claims."
+      },
+      {
         "capability": "annotations",
         "status": "unsupported",
         "explanation": "The common fixture projection does not publish adapter capability claims."
@@ -159,8 +164,38 @@
                 "visibility_intent": "public",
                 "line_count": 0,
                 "declaration_annotations": [],
-                "declared_args": 1,
-                "optional_args": 0
+                "declaration_id": {
+                  "source_id": "src/commerce/orders/application/actions/place_order",
+                  "family": "method",
+                  "qualified_name": "PlaceOrder.place",
+                  "ordinal": 1
+                },
+                "source_id": "src/commerce/orders/application/actions/place_order",
+                "qualified_name": "PlaceOrder.place",
+                "kind": "instance_method",
+                "line_start": 0,
+                "line_end": 0,
+                "parameters": [
+                  {
+                    "name": "order",
+                    "type": {
+                      "kind": "unsupported"
+                    },
+                    "kind": "positional",
+                    "has_default": false
+                  }
+                ],
+                "return_type": {
+                  "kind": "unsupported"
+                },
+                "decorators": [],
+                "docstring": "",
+                "owner_declaration_id": {
+                  "source_id": "src/commerce/orders/application/actions/place_order",
+                  "family": "class",
+                  "qualified_name": "PlaceOrder",
+                  "ordinal": 1
+                }
               }
             ],
             "abstract_methods": [],
@@ -170,7 +205,8 @@
         ],
         "functions": [],
         "values": [],
-        "callables": [],
+        "callable_values": [],
+        "anonymous_callables": [],
         "calls": [],
         "declaration_relations": [],
         "line_count": 0,
@@ -204,8 +240,29 @@
                 "visibility_intent": "public",
                 "line_count": 0,
                 "declaration_annotations": [],
-                "declared_args": 0,
-                "optional_args": 0
+                "declaration_id": {
+                  "source_id": "src/commerce/orders/domain/model/order",
+                  "family": "method",
+                  "qualified_name": "Order.is_placed",
+                  "ordinal": 1
+                },
+                "source_id": "src/commerce/orders/domain/model/order",
+                "qualified_name": "Order.is_placed",
+                "kind": "instance_method",
+                "line_start": 0,
+                "line_end": 0,
+                "parameters": [],
+                "return_type": {
+                  "kind": "unsupported"
+                },
+                "decorators": [],
+                "docstring": "",
+                "owner_declaration_id": {
+                  "source_id": "src/commerce/orders/domain/model/order",
+                  "family": "class",
+                  "qualified_name": "Order",
+                  "ordinal": 1
+                }
               },
               {
                 "name": "mark_placed",
@@ -213,8 +270,29 @@
                 "visibility_intent": "public",
                 "line_count": 0,
                 "declaration_annotations": [],
-                "declared_args": 0,
-                "optional_args": 0
+                "declaration_id": {
+                  "source_id": "src/commerce/orders/domain/model/order",
+                  "family": "method",
+                  "qualified_name": "Order.mark_placed",
+                  "ordinal": 2
+                },
+                "source_id": "src/commerce/orders/domain/model/order",
+                "qualified_name": "Order.mark_placed",
+                "kind": "instance_method",
+                "line_start": 0,
+                "line_end": 0,
+                "parameters": [],
+                "return_type": {
+                  "kind": "unsupported"
+                },
+                "decorators": [],
+                "docstring": "",
+                "owner_declaration_id": {
+                  "source_id": "src/commerce/orders/domain/model/order",
+                  "family": "class",
+                  "qualified_name": "Order",
+                  "ordinal": 1
+                }
               }
             ],
             "abstract_methods": [],
@@ -224,7 +302,8 @@
         ],
         "functions": [],
         "values": [],
-        "callables": [],
+        "callable_values": [],
+        "anonymous_callables": [],
         "calls": [],
         "declaration_relations": [],
         "line_count": 0,
@@ -258,8 +337,38 @@
                 "visibility_intent": "public",
                 "line_count": 0,
                 "declaration_annotations": [],
-                "declared_args": 1,
-                "optional_args": 0
+                "declaration_id": {
+                  "source_id": "src/commerce/orders/domain/services/order_policy",
+                  "family": "method",
+                  "qualified_name": "OrderPolicy.allows",
+                  "ordinal": 1
+                },
+                "source_id": "src/commerce/orders/domain/services/order_policy",
+                "qualified_name": "OrderPolicy.allows",
+                "kind": "instance_method",
+                "line_start": 0,
+                "line_end": 0,
+                "parameters": [
+                  {
+                    "name": "order",
+                    "type": {
+                      "kind": "unsupported"
+                    },
+                    "kind": "positional",
+                    "has_default": false
+                  }
+                ],
+                "return_type": {
+                  "kind": "unsupported"
+                },
+                "decorators": [],
+                "docstring": "",
+                "owner_declaration_id": {
+                  "source_id": "src/commerce/orders/domain/services/order_policy",
+                  "family": "class",
+                  "qualified_name": "OrderPolicy",
+                  "ordinal": 1
+                }
               }
             ],
             "abstract_methods": [],
@@ -269,7 +378,8 @@
         ],
         "functions": [],
         "values": [],
-        "callables": [],
+        "callable_values": [],
+        "anonymous_callables": [],
         "calls": [],
         "declaration_relations": [],
         "line_count": 0,
@@ -303,8 +413,38 @@
                 "visibility_intent": "public",
                 "line_count": 0,
                 "declaration_annotations": [],
-                "declared_args": 1,
-                "optional_args": 0
+                "declaration_id": {
+                  "source_id": "src/commerce/orders/infrastructure/repositories/order_repository",
+                  "family": "method",
+                  "qualified_name": "OrderRepository.save",
+                  "ordinal": 1
+                },
+                "source_id": "src/commerce/orders/infrastructure/repositories/order_repository",
+                "qualified_name": "OrderRepository.save",
+                "kind": "instance_method",
+                "line_start": 0,
+                "line_end": 0,
+                "parameters": [
+                  {
+                    "name": "order",
+                    "type": {
+                      "kind": "unsupported"
+                    },
+                    "kind": "positional",
+                    "has_default": false
+                  }
+                ],
+                "return_type": {
+                  "kind": "unsupported"
+                },
+                "decorators": [],
+                "docstring": "",
+                "owner_declaration_id": {
+                  "source_id": "src/commerce/orders/infrastructure/repositories/order_repository",
+                  "family": "class",
+                  "qualified_name": "OrderRepository",
+                  "ordinal": 1
+                }
               }
             ],
             "abstract_methods": [],
@@ -314,7 +454,8 @@
         ],
         "functions": [],
         "values": [],
-        "callables": [],
+        "callable_values": [],
+        "anonymous_callables": [],
         "calls": [],
         "declaration_relations": [],
         "line_count": 0,
@@ -348,8 +489,38 @@
                 "visibility_intent": "public",
                 "line_count": 0,
                 "declaration_annotations": [],
-                "declared_args": 1,
-                "optional_args": 0
+                "declaration_id": {
+                  "source_id": "src/commerce/orders/interfaces/http/order_controller",
+                  "family": "method",
+                  "qualified_name": "OrderController.handle",
+                  "ordinal": 1
+                },
+                "source_id": "src/commerce/orders/interfaces/http/order_controller",
+                "qualified_name": "OrderController.handle",
+                "kind": "instance_method",
+                "line_start": 0,
+                "line_end": 0,
+                "parameters": [
+                  {
+                    "name": "order_id",
+                    "type": {
+                      "kind": "unsupported"
+                    },
+                    "kind": "positional",
+                    "has_default": false
+                  }
+                ],
+                "return_type": {
+                  "kind": "unsupported"
+                },
+                "decorators": [],
+                "docstring": "",
+                "owner_declaration_id": {
+                  "source_id": "src/commerce/orders/interfaces/http/order_controller",
+                  "family": "class",
+                  "qualified_name": "OrderController",
+                  "ordinal": 1
+                }
               }
             ],
             "abstract_methods": [],
@@ -359,7 +530,8 @@
         ],
         "functions": [],
         "values": [],
-        "callables": [],
+        "callable_values": [],
+        "anonymous_callables": [],
         "calls": [],
         "declaration_relations": [],
         "line_count": 0,
@@ -393,8 +565,38 @@
                 "visibility_intent": "public",
                 "line_count": 0,
                 "declaration_annotations": [],
-                "declared_args": 1,
-                "optional_args": 0
+                "declaration_id": {
+                  "source_id": "src/commerce/payments/application/actions/capture_payment",
+                  "family": "method",
+                  "qualified_name": "CapturePayment.capture",
+                  "ordinal": 1
+                },
+                "source_id": "src/commerce/payments/application/actions/capture_payment",
+                "qualified_name": "CapturePayment.capture",
+                "kind": "instance_method",
+                "line_start": 0,
+                "line_end": 0,
+                "parameters": [
+                  {
+                    "name": "payment",
+                    "type": {
+                      "kind": "unsupported"
+                    },
+                    "kind": "positional",
+                    "has_default": false
+                  }
+                ],
+                "return_type": {
+                  "kind": "unsupported"
+                },
+                "decorators": [],
+                "docstring": "",
+                "owner_declaration_id": {
+                  "source_id": "src/commerce/payments/application/actions/capture_payment",
+                  "family": "class",
+                  "qualified_name": "CapturePayment",
+                  "ordinal": 1
+                }
               }
             ],
             "abstract_methods": [],
@@ -404,7 +606,8 @@
         ],
         "functions": [],
         "values": [],
-        "callables": [],
+        "callable_values": [],
+        "anonymous_callables": [],
         "calls": [],
         "declaration_relations": [],
         "line_count": 0,
@@ -438,8 +641,29 @@
                 "visibility_intent": "public",
                 "line_count": 0,
                 "declaration_annotations": [],
-                "declared_args": 0,
-                "optional_args": 0
+                "declaration_id": {
+                  "source_id": "src/commerce/payments/domain/model/payment",
+                  "family": "method",
+                  "qualified_name": "Payment.capture",
+                  "ordinal": 1
+                },
+                "source_id": "src/commerce/payments/domain/model/payment",
+                "qualified_name": "Payment.capture",
+                "kind": "instance_method",
+                "line_start": 0,
+                "line_end": 0,
+                "parameters": [],
+                "return_type": {
+                  "kind": "unsupported"
+                },
+                "decorators": [],
+                "docstring": "",
+                "owner_declaration_id": {
+                  "source_id": "src/commerce/payments/domain/model/payment",
+                  "family": "class",
+                  "qualified_name": "Payment",
+                  "ordinal": 1
+                }
               }
             ],
             "abstract_methods": [],
@@ -449,7 +673,8 @@
         ],
         "functions": [],
         "values": [],
-        "callables": [],
+        "callable_values": [],
+        "anonymous_callables": [],
         "calls": [],
         "declaration_relations": [],
         "line_count": 0,

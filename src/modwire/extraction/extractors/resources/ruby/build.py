@@ -3,8 +3,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from modwire.extraction.extractors.models.extractor_invariant_error import ExtractorInvariantError
-from modwire.extraction.extractors.models.extractor_invariant_violation import ExtractorInvariantViolation
+from ...models.extractor_invariant_error import ExtractorInvariantError
+from ...models.extractor_invariant_violation import ExtractorInvariantViolation
 
 
 class BuildAdapter:

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.import_crossing_type import ImportCrossingType
+from ....shared.code.models.sources.import_crossing_type import ImportCrossingType
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, ShapeResolverInterface
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap

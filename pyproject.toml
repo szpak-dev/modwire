@@ -90,6 +90,7 @@ select = ["E", "F", "I", "UP"]
 [tool.pyright]
 include = ["src/modwire"]
 extraPaths = ["src"]
+stubPath = "typings"
 venvPath = "."
 venv = ".venv"
 pythonVersion = "3.12"

@@ -2,7 +2,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from modwire.application import ModwireApplication, ScanPolicy
+from modwire.application import ModwireApplication, ModwireApplicationFactory, ScanPolicy
 
 from .base_test import BaseTestCase
 
@@ -12,7 +12,7 @@ class ServiceTestCase(BaseTestCase):
 
     @pytest.fixture(autouse=True)
     def _service_lifecycle(self) -> Iterator[None]:
-        self.application = ModwireApplication.create()
+        self.application = ModwireApplicationFactory().create()
         yield
 
     def example_configuration(self):

@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
-from ...shared.code.models.dependency_graph import DependencyGraph
-from ...shared.code.models.identity import FileId, ImportIdentity
-from ...shared.code.models.source_file import SourceFile
+from ...shared.code.models.dependencies.dependency_graph import DependencyGraph
+from ...shared.code.models.sources.identity import FileId, ImportIdentity
+from ...shared.code.models.sources.source_file import SourceFile
 
 
 class GraphBuilder(ABC):

@@ -26,7 +26,7 @@ class TestPythonInvariants(ExtractionTestCase):
         example_method = (
             result.callables().where_equal(lambda item: item.item.qualified_name, "ExampleValue.example_method").first()
         )
-        assert example_method.item.optional_args == 1
+        assert tuple(parameter.has_default for parameter in example_method.item.parameters) == (True,)
 
     def test_repeated_extraction_is_deterministic(self) -> None:
         source = {"src/example.py": "class ExampleValue:\n    pass\n"}

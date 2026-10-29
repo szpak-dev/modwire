@@ -1,4 +1,6 @@
-from pydantic import field_validator
+from typing import Self
+
+from pydantic import model_validator
 
 from ....shared.values.models.value_model import ValueModel
 from .cache_stage import CacheStage
@@ -26,16 +28,11 @@ class CacheOutcome(ValueModel):
     stored: int = 0
     source_observation_reused: bool = False
 
-    @field_validator("namespace")
-    @classmethod
-    def _non_empty_namespace(cls, value: str) -> str:
-        if not value.strip():
-            raise CacheValidationError(CacheViolation.EMPTY_CACHE_OUTCOME_NAMESPACE, value)
-        return value
-
-    @field_validator("hits", "misses", "invalidated", "computed", "stored")
-    @classmethod
-    def _non_negative_count(cls, value: int) -> int:
-        if value < 0:
-            raise CacheValidationError(CacheViolation.NEGATIVE_CACHE_OUTCOME_COUNT, str(value))
-        return value
+    @model_validator(mode="after")
+    def validate_state(self) -> Self:
+        if not self.namespace.strip():
+            raise CacheValidationError(CacheViolation.EMPTY_CACHE_OUTCOME_NAMESPACE, self.namespace)
+        for value in (self.hits, self.misses, self.invalidated, self.computed, self.stored):
+            if value < 0:
+                raise CacheValidationError(CacheViolation.NEGATIVE_CACHE_OUTCOME_COUNT, str(value))
+        return self

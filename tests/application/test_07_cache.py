@@ -104,7 +104,7 @@ class TestPersistentCache(ApplicationTestCase):
         original_source = source.read_bytes()
         self.tamper_cache_payload(
             source_cache,
-            lambda payload: payload["callables"].append(payload["callables"][0]),
+            lambda payload: payload["functions"].append(payload["functions"][0]),
         )
         code_map_cache.unlink()
 

@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ..domain import IdentityResolver
-from ..models.code_validation_error import CodeValidationError
-from ..models.code_violation import CodeViolation
-from ..models.identity import FileId, ImportIdentity
+from ..contracts.identity_resolver import IdentityResolver
+from ..models.failures.code_validation_error import CodeValidationError
+from ..models.failures.code_violation import CodeViolation
+from ..models.sources.identity import FileId, ImportIdentity
 
 
 @injectable(as_type=IdentityResolver)

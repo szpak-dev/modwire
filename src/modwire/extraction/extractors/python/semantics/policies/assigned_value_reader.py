@@ -5,8 +5,8 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.source_assigned_value import SourceAssignedValue
-from ......shared.code.models.source_assigned_value_kind import SourceAssignedValueKind
+from ......shared.code.models.values.source_assigned_value import SourceAssignedValue
+from ......shared.code.models.values.source_assigned_value_kind import SourceAssignedValueKind
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.value_candidate import PythonValueCandidate

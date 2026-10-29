@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from ....extraction.extractors.models.parsed_source_file import ParsedSourceFile
-from ....shared.code.models.identity import FileId
+from ....shared.code.models.sources.identity import FileId
 
 
 class ExtractorBatchOutputReader(ABC):

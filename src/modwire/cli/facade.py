@@ -10,11 +10,11 @@ from ..architecture.report.models.report_node import ReportNode
 from ..extraction.extractors.models.extraction_request import ExtractionRequest
 from ..extraction.extractors.models.parsed_source_batch import ParsedSourceBatch
 from ..extraction.facade import ExtractionFacade
-from ..shared.code.models.code_map import CodeMap
-from ..shared.code.models.queryable_code_map import QueryableCodeMap
-from ..shared.code.models.scan_policy import ScanPolicy
-from ..shared.code.models.source_extraction import SourceExtraction
-from ..shared.code.models.source_manifest_identity import SourceManifestIdentity
+from ..shared.code.models.maps.code_map import CodeMap
+from ..shared.code.models.queries.queryable_code_map import QueryableCodeMap
+from ..shared.code.models.sources.scan_policy import ScanPolicy
+from ..shared.code.models.sources.source_extraction import SourceExtraction
+from ..shared.code.models.sources.source_manifest_identity import SourceManifestIdentity
 from .cache.application import CacheApplication
 from .cache.models.cache_options import CacheOptions
 from .cache.models.cache_plan import CachePlan

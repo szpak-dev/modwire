@@ -22,8 +22,12 @@ class TestShapeLimits(ShapeTestCase):
                 "max_functions_per_file",
                 {
                     "functions": [
-                        CodeMapFactory().symbol("example_first", line_count=1, declared_args=0, optional_args=0),
-                        CodeMapFactory().symbol("example_second", line_count=1, declared_args=0, optional_args=0),
+                        CodeMapFactory().source_function(
+                            "example_first", line_count=1, parameter_count=0, optional_parameter_count=0
+                        ),
+                        CodeMapFactory().source_function(
+                            "example_second", line_count=1, parameter_count=0, optional_parameter_count=0
+                        ),
                     ]
                 },
                 2,
@@ -46,11 +50,11 @@ class TestShapeLimits(ShapeTestCase):
                             "ExampleValue",
                             line_count=1,
                             methods=(
-                                CodeMapFactory().symbol(
-                                    "example_first", line_count=1, declared_args=0, optional_args=0
+                                CodeMapFactory().source_method(
+                                    "example_first", line_count=1, parameter_count=0, optional_parameter_count=0
                                 ),
-                                CodeMapFactory().symbol(
-                                    "example_second", line_count=1, declared_args=0, optional_args=0
+                                CodeMapFactory().source_method(
+                                    "example_second", line_count=1, parameter_count=0, optional_parameter_count=0
                                 ),
                             ),
                             properties=(),
@@ -63,7 +67,9 @@ class TestShapeLimits(ShapeTestCase):
                 "max_declared_args",
                 {
                     "functions": [
-                        CodeMapFactory().symbol("example_function", line_count=1, declared_args=2, optional_args=0)
+                        CodeMapFactory().source_function(
+                            "example_function", line_count=1, parameter_count=2, optional_parameter_count=0
+                        )
                     ]
                 },
                 2,
@@ -72,7 +78,9 @@ class TestShapeLimits(ShapeTestCase):
                 "max_function_lines",
                 {
                     "functions": [
-                        CodeMapFactory().symbol("example_function", line_count=3, declared_args=0, optional_args=0)
+                        CodeMapFactory().source_function(
+                            "example_function", line_count=3, parameter_count=0, optional_parameter_count=0
+                        )
                     ]
                 },
                 3,
@@ -85,8 +93,8 @@ class TestShapeLimits(ShapeTestCase):
                             "ExampleValue",
                             line_count=1,
                             methods=(
-                                CodeMapFactory().symbol(
-                                    "example_method", line_count=3, declared_args=0, optional_args=0
+                                CodeMapFactory().source_method(
+                                    "example_method", line_count=3, parameter_count=0, optional_parameter_count=0
                                 ),
                             ),
                             properties=(),
@@ -187,7 +195,9 @@ class TestShapeLimits(ShapeTestCase):
                 "allow_optional_function_args",
                 {
                     "functions": [
-                        CodeMapFactory().symbol("example_function", line_count=1, declared_args=1, optional_args=1)
+                        CodeMapFactory().source_function(
+                            "example_function", line_count=1, parameter_count=1, optional_parameter_count=1
+                        )
                     ]
                 },
             ),
@@ -199,8 +209,8 @@ class TestShapeLimits(ShapeTestCase):
                             "ExampleValue",
                             line_count=1,
                             methods=(
-                                CodeMapFactory().symbol(
-                                    "example_method", line_count=1, declared_args=1, optional_args=1
+                                CodeMapFactory().source_method(
+                                    "example_method", line_count=1, parameter_count=1, optional_parameter_count=1
                                 ),
                             ),
                             properties=(),

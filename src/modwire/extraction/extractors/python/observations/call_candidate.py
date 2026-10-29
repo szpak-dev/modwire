@@ -1,8 +1,8 @@
 import ast
 from dataclasses import dataclass
 
-from .....shared.code.models.declaration_identity import DeclarationIdentity
-from .....shared.code.models.identity import FileId
+from .....shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from .....shared.code.models.sources.identity import FileId
 from .call_reference import PythonCallReference
 
 

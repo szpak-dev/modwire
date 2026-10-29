@@ -3,7 +3,7 @@ from importlib import metadata
 
 from wireup import injectable
 
-from ..domain import PackageVersion
+from ..contracts.package_version import PackageVersion
 
 
 @injectable(as_type=PackageVersion)

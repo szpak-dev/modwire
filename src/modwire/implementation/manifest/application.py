@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ...shared.code.models.code_map import CodeMap
+from ...shared.code.models.maps.code_map import CodeMap
 from .contracts.manifest_compiler import ManifestCompiler
 from .contracts.manifest_serializer import ManifestSerializer
 from .models.implementation_manifest import ImplementationManifest

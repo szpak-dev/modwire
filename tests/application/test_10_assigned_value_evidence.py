@@ -62,7 +62,7 @@ class TestAssignedValueEvidence(ApplicationTestCase):
         row = self.capability_matrix.languages[language]
         root = self.repository / row.fixtures.capability_gap_root
         scenario = next(scenario for scenario in row.scenarios if scenario.scenario == limitation.scenario)
-        assert (root / scenario.source).is_file()
+        assert (self.repository / scenario.source).is_file()
         format = self.application.implementation_manifest_formats()[0]
         manifest = self.application.read_implementation_manifest(
             self.application.implementation_manifest(

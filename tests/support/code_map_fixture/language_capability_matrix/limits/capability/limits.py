@@ -10,6 +10,7 @@ from .namespace import NamespaceLimitationExpectation
 from .parameter import ParameterLimitationExpectation
 from .span import SpanLimitationExpectation
 from .symbol import SymbolLimitationExpectation
+from .type_reference import TypeReferenceLimitationExpectation
 from .value import AssignedValueLimitationExpectation
 
 
@@ -18,6 +19,7 @@ class LanguageCapabilityLimitations(FixtureModel):
     callables: tuple[CallableLimitationExpectation, ...]
     calls: tuple[CallLimitationExpectation, ...]
     parameters: tuple[ParameterLimitationExpectation, ...]
+    type_references: tuple[TypeReferenceLimitationExpectation, ...]
     annotations: tuple[AnnotationLimitationExpectation, ...]
     modifiers: tuple[ModifierLimitationExpectation, ...]
     attributes: tuple[AttributeLimitationExpectation, ...]
@@ -33,6 +35,7 @@ class LanguageCapabilityLimitations(FixtureModel):
             *((limitation.scenario, "callables") for limitation in self.callables),
             *((limitation.scenario, "calls") for limitation in self.calls),
             *((limitation.scenario, "parameters") for limitation in self.parameters),
+            *((limitation.scenario, "type_references") for limitation in self.type_references),
             *((limitation.scenario, "annotations") for limitation in self.annotations),
             *((limitation.scenario, "modifiers") for limitation in self.modifiers),
             *((limitation.scenario, "attributes") for limitation in self.attributes),

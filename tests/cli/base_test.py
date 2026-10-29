@@ -27,7 +27,8 @@ class CliTestCase(ServiceTestCase):
         return subprocess.run(
             (
                 sys.executable,
-                str(self.repository / "src/modwire/extraction/extractors/resources/python/script.py"),
+                "-m",
+                "modwire.extraction.extractors.resources.python.script",
                 "--batch",
                 str(root),
             ),
@@ -42,7 +43,8 @@ class CliTestCase(ServiceTestCase):
         return subprocess.run(
             (
                 sys.executable,
-                str(self.repository / "src/modwire/extraction/extractors/resources/python/script.py"),
+                "-m",
+                "modwire.extraction.extractors.resources.python.script",
                 str(source),
                 str(root),
             ),

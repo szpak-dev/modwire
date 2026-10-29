@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from modwire.application import (
     ExtractorContractError,
     ExtractorUnavailableError,
-    ModwireApplication,
+    ModwireApplicationFactory,
     ScanPolicy,
 )
 
@@ -13,7 +13,7 @@ from modwire.application import (
 @dataclass(frozen=True)
 class FailureConsumer:
     def run(self, root: str, language: str) -> int:
-        application = ModwireApplication.create()
+        application = ModwireApplicationFactory().create()
         try:
             application.generate_map(language, root, ScanPolicy())
         except ExtractorUnavailableError as error:

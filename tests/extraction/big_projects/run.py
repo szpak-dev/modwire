@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 from typing import Any, cast
 
-from modwire.application import ModwireApplication, ScanPolicy
+from modwire.application import ModwireApplicationFactory, ScanPolicy
 
 from .project import Project
 
@@ -23,7 +23,7 @@ class BigProjectBenchmark:
         self.clone_root = clone_root
         self.refresh = refresh
         self.repetitions = repetitions
-        self.application = ModwireApplication.create()
+        self.application = ModwireApplicationFactory().create()
 
     @classmethod
     def main(cls) -> int:

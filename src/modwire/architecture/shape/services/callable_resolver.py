@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.source_callable_symbol import SourceCallableSymbol
+from ....shared.code.models.callables.source_callable import SourceCallable
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, SymbolShapeResolverInterface
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
@@ -79,7 +79,7 @@ class CallableResolver(SymbolShapeResolverInterface, BaseShapeResolver):
         *,
         source_id: str,
         symbol_kind: str,
-        symbol: SourceCallableSymbol,
+        symbol: SourceCallable,
         line_limit: int,
         allow_optional_args: bool,
         config: ShapeRules,
@@ -97,13 +97,13 @@ class CallableResolver(SymbolShapeResolverInterface, BaseShapeResolver):
             self.limit_violation(
                 source_id=source_id,
                 rule_name="max_declared_args",
-                actual=symbol.declared_args,
+                actual=len(symbol.parameters),
                 limit=config.max_declared_args,
                 symbol_kind=symbol_kind,
                 symbol_name=symbol.name,
             ),
         ]
-        if not allow_optional_args and symbol.optional_args:
+        if not allow_optional_args and any(parameter.has_default for parameter in symbol.parameters):
             violations.append(
                 ShapeViolation(
                     source_id=source_id,

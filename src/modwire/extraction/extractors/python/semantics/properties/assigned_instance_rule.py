@@ -4,8 +4,10 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.source_class_property import SourceClassProperty
-from ......shared.code.models.source_member_kind import SourceMemberKind
+from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ......shared.code.models.declarations.source_member_kind import SourceMemberKind
+from ......shared.code.models.source_types.absent import SourceTypeAbsent
+from ......shared.code.models.values.source_class_property import SourceClassProperty
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.property_candidate import PythonPropertyCandidate
@@ -28,8 +30,13 @@ class AssignedInstancePropertyRule(PythonPropertyRule):
     def applies(self, candidate: PythonPropertyCandidate) -> bool:
         return candidate.scope is PythonPropertyScope.METHOD and self.is_assignment(candidate.statement)
 
-    def classify(self, candidate: PythonPropertyCandidate) -> SourceClassProperty:
-        return self.read(candidate.statement, candidate)
+    def classify(
+        self,
+        candidate: PythonPropertyCandidate,
+        declaration_id: DeclarationIdentity,
+        owner_declaration_id: DeclarationIdentity,
+    ) -> SourceClassProperty:
+        return self.read(candidate.statement, candidate, declaration_id, owner_declaration_id)
 
     @singledispatchmethod
     def is_assignment(self, statement: ast.stmt) -> bool:
@@ -40,20 +47,34 @@ class AssignedInstancePropertyRule(PythonPropertyRule):
         return True
 
     @singledispatchmethod
-    def read(self, statement: ast.stmt, candidate: PythonPropertyCandidate) -> SourceClassProperty:
+    def read(
+        self,
+        statement: ast.stmt,
+        candidate: PythonPropertyCandidate,
+        declaration_id: DeclarationIdentity,
+        owner_declaration_id: DeclarationIdentity,
+    ) -> SourceClassProperty:
         raise ExtractorInvariantError(
             ExtractorInvariantViolation.ASSIGNED_INSTANCE_PROPERTY_REQUIRES_ASSIGNMENT, candidate.name
         )
 
     @read.register
-    def read_assignment(self, statement: ast.Assign, candidate: PythonPropertyCandidate) -> SourceClassProperty:
+    def read_assignment(
+        self,
+        statement: ast.Assign,
+        candidate: PythonPropertyCandidate,
+        declaration_id: DeclarationIdentity,
+        owner_declaration_id: DeclarationIdentity,
+    ) -> SourceClassProperty:
         optional_parameters = self.optional_parameters(candidate.method)
         member_kind = SourceMemberKind.INSTANCE if candidate.receiver == "self" else SourceMemberKind.STATIC
         return self.build(
             candidate=candidate,
+            declaration_id=declaration_id,
+            owner_declaration_id=owner_declaration_id,
             is_optional=self.value_is_none(statement.value)
             or self.expression_name(statement.value) in optional_parameters,
-            annotation="",
+            type=SourceTypeAbsent(),
             visibility=self.visibility.classify(candidate.name),
             member_kind=member_kind,
             assigned_value=self.assigned_values.read_expression(statement.value),

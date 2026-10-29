@@ -2,18 +2,18 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.capability_coverage import CapabilityCoverage
-from ....shared.code.models.capability_status import CapabilityStatus
-from ....shared.code.models.extractor_descriptor import ExtractorDescriptor
-from ....shared.code.models.fact_capability import FactCapability
-from ....shared.code.models.identity import FileId, ImportIdentity
-from ....shared.code.models.relationship_coverage import RelationshipCoverage
-from ....shared.code.models.relationship_family import RelationshipFamily
-from ....shared.code.models.source_file import SourceFile
+from ....shared.code.models.capabilities.capability_coverage import CapabilityCoverage
+from ....shared.code.models.capabilities.capability_status import CapabilityStatus
+from ....shared.code.models.capabilities.fact_capability import FactCapability
+from ....shared.code.models.capabilities.relationship_coverage import RelationshipCoverage
+from ....shared.code.models.capabilities.relationship_family import RelationshipFamily
+from ....shared.code.models.maps.extractor_descriptor import ExtractorDescriptor
+from ....shared.code.models.sources.identity import FileId, ImportIdentity
+from ....shared.code.models.sources.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
 from ..models.batch_output_format import BatchOutputFormat
-from ..models.extractor_resource import ExtractorResource
+from ..models.entrypoints.file_entrypoint import FileExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
 
 
@@ -26,7 +26,7 @@ class PhpExtractor(SourceExtractor):
             order=2,
             descriptor=ExtractorDescriptor(
                 id="modwire.php.php-parser",
-                version="2",
+                version="3",
                 language="php",
                 runtime="php",
             ),
@@ -39,7 +39,7 @@ class PhpExtractor(SourceExtractor):
                 CapabilityCoverage(
                     capability=FactCapability.SYMBOLS,
                     status=CapabilityStatus.SUPPORTED,
-                    explanation="Classes, interfaces, functions, and values are extracted.",
+                    explanation="Classes, abstract classes, interfaces, traits, functions, and values are extracted.",
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.CALLABLES,
@@ -58,6 +58,14 @@ class PhpExtractor(SourceExtractor):
                     capability=FactCapability.PARAMETERS,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Callable parameter order, kind, annotation, and default presence are extracted.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.TYPE_REFERENCES,
+                    status=CapabilityStatus.PARTIAL,
+                    explanation=(
+                        "Named references are structural; unions, intersections, and other authored type syntax are "
+                        "reported as unsupported."
+                    ),
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.ANNOTATIONS,
@@ -98,7 +106,7 @@ class PhpExtractor(SourceExtractor):
                 CapabilityCoverage(
                     capability=FactCapability.DECLARATION_KINDS,
                     status=CapabilityStatus.SUPPORTED,
-                    explanation="Classes, abstract classes, and interfaces publish exact shared declaration kinds.",
+                explanation="Classes, abstract classes, interfaces, and traits publish exact shared declaration kinds.",
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.COMPOSITION,
@@ -160,11 +168,11 @@ class PhpExtractor(SourceExtractor):
             ),
             file_extensions=(".php",),
             command=("php",),
-            entrypoint_arguments=(),
             version_arguments=("--version",),
-            entrypoint=ExtractorResource(
+            entrypoint=FileExtractorEntrypoint(
                 package="modwire.extraction.extractors.resources",
                 path="php/script.php",
+                arguments=(),
             ),
         )
 

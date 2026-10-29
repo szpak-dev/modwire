@@ -253,13 +253,43 @@ function parameterDefinitions(parameters) {
         const typeNode = typeof parameter.getTypeNode === 'function' ? parameter.getTypeNode() : undefined;
         return {
             name,
-            annotation: textOf(typeNode),
+            type: sourceType(typeNode),
             kind: parameter.isRestParameter() ? 'variadic_positional' : 'positional',
             has_default: parameter.isRestParameter()
                 || parameter.isOptional()
                 || parameter.getInitializer() !== undefined,
         };
     });
+}
+
+function sourceType(typeNode) {
+    if (typeNode === undefined) {
+        return { kind: 'absent' };
+    }
+    if (Node.isTypeReference(typeNode)) {
+        return {
+            kind: 'reference',
+            name: typeNode.getTypeName().getText(),
+            arguments: typeNode.getTypeArguments().map(sourceType),
+        };
+    }
+    const keywordKinds = new Set([
+        SyntaxKind.AnyKeyword,
+        SyntaxKind.BigIntKeyword,
+        SyntaxKind.BooleanKeyword,
+        SyntaxKind.NeverKeyword,
+        SyntaxKind.NumberKeyword,
+        SyntaxKind.ObjectKeyword,
+        SyntaxKind.StringKeyword,
+        SyntaxKind.SymbolKeyword,
+        SyntaxKind.UndefinedKeyword,
+        SyntaxKind.UnknownKeyword,
+        SyntaxKind.VoidKeyword,
+    ]);
+    if (keywordKinds.has(typeNode.getKind())) {
+        return { kind: 'reference', name: typeNode.getText(), arguments: [] };
+    }
+    return { kind: 'unsupported' };
 }
 
 function functionParameters(functionLike) {
@@ -269,7 +299,6 @@ function functionParameters(functionLike) {
 }
 
 function sourceValue(options) {
-    const counts = options.counts || { declared_args: 0, optional_args: 0 };
     return {
         declaration_id: {
             source_id: options.sourceId,
@@ -284,8 +313,6 @@ function sourceValue(options) {
         declaration_kind: options.declarationKind,
         value_kind: options.valueKind,
         scope: options.scope,
-        declared_args: counts.declared_args,
-        optional_args: counts.optional_args,
     };
 }
 
@@ -306,7 +333,6 @@ function sourceCallable(options) {
         source_id: options.sourceId,
         name: options.name,
         qualified_name: options.qualifiedName,
-        owner_name: options.ownerName || '',
         kind: options.kind,
         visibility: options.visibility,
         visibility_intent: visibilityIntent(options.name, options.visibility),
@@ -315,11 +341,15 @@ function sourceCallable(options) {
         line_end: lineNumberAt(options.lineStarts, options.endIndex),
         line_count: lineSpan(options.lineStarts, options.startIndex, options.endIndex),
         parameters,
-        declared_args: parameters.length,
-        optional_args: parameters.filter(parameter => parameter.has_default).length,
-        return_annotation: options.returnAnnotation || '',
+        return_type: sourceType(options.returnTypeNode),
         decorators: [],
         docstring: '',
+        ...(options.ownerDeclarationId === undefined ? {} : { owner_declaration_id: options.ownerDeclarationId }),
+        ...(options.kind === 'callable_value' ? {
+            declaration_kind: options.declarationKind || 'assignment',
+            value_kind: 'value_callable',
+            scope: options.scope || 'module',
+        } : {}),
     };
 }
 
@@ -349,11 +379,11 @@ function callableBodyInfo(functionLike) {
     };
 }
 
-function addCallable(callables, callableRanges, callable, bodyInfo, functionNode) {
+function addCallable(callables, callableRanges, callable, bodyInfo, functionNode, ownerName) {
     callables.push(callable);
     callableRanges.push({
         declarationId: callable.declaration_id,
-        ownerName: callable.owner_name,
+        ownerName,
         bodyNode: bodyInfo.bodyNode,
         functionNode,
         bodyStart: bodyInfo.bodyStart,
@@ -613,17 +643,38 @@ function propertyIsOptional(property) {
     );
 }
 
-function sourceClassMethod(method, lineStarts, name = propertyNameText(method)) {
-    const parameters = functionParameters(method);
+function sourceClassMethod(method, lineStarts, sourceId, ownerDeclarationId, kind, name = propertyNameText(method)) {
     const visibility = visibilityFromModifiers(method);
-    return {
+    return sourceCallable({
+        sourceId,
         name,
+        qualifiedName: `${ownerDeclarationId.qualified_name}.${name}`,
+        ownerDeclarationId,
+        kind,
         visibility,
-        visibility_intent: visibilityIntent(name, visibility),
-        declaration_annotations: [],
-        line_count: lineSpan(lineStarts, method.getStart(), endIndexForNode(method)),
-        declared_args: parameters.length,
-        optional_args: parameters.filter(parameter => parameter.has_default).length,
+        startIndex: method.getStart(),
+        endIndex: endIndexForNode(method),
+        lineStarts,
+        parameters: functionParameters(method),
+        returnTypeNode: typeof method.getReturnTypeNode === 'function' ? method.getReturnTypeNode() : undefined,
+    });
+}
+
+function sourceProperty(property, sourceId, ownerDeclarationId, name, visibility, memberKind) {
+    return {
+        declaration_id: {
+            source_id: sourceId,
+            family: 'property',
+            qualified_name: `${ownerDeclarationId.qualified_name}.${name}`,
+            ordinal: property.getStart() + 1,
+        },
+        owner_declaration_id: ownerDeclarationId,
+        name,
+        is_optional: propertyIsOptional(property),
+        type: sourceType(typeof property.getTypeNode === 'function' ? property.getTypeNode() : undefined),
+        visibility,
+        member_kind: memberKind,
+        assigned_values: [{ kind: 'unsupported', expression: '', reference: '' }],
     };
 }
 
@@ -635,6 +686,12 @@ function collectClasses(sourceFile, lineStarts, sourceId) {
     for (const classDeclaration of sourceFile.getClasses()) {
         const name = classDeclaration.getName() || 'default';
         const visibility = moduleVisibility(classDeclaration);
+        const ownerDeclarationId = {
+            source_id: sourceId,
+            family: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
+            qualified_name: name,
+            ordinal: classDeclaration.getStart() + 1,
+        };
         classRanges.push({
             start: classDeclaration.getStart(),
             end: classDeclaration.getEnd(),
@@ -643,27 +700,27 @@ function collectClasses(sourceFile, lineStarts, sourceId) {
         const properties = new Map();
         for (const property of classDeclaration.getProperties()) {
             const propertyName = propertyNameText(property);
-            properties.set(propertyName, {
-                name: propertyName,
-                is_optional: propertyIsOptional(property),
-                annotation: textOf(property.getTypeNode()),
-                visibility: visibilityFromModifiers(property),
-                member_kind: memberKindFromModifiers(property),
-                assigned_values: [{ kind: 'unsupported', expression: '', reference: '' }],
-            });
+            properties.set(propertyName, sourceProperty(
+                property,
+                sourceId,
+                ownerDeclarationId,
+                propertyName,
+                visibilityFromModifiers(property),
+                memberKindFromModifiers(property),
+            ));
         }
         for (const constructorDeclaration of classDeclaration.getConstructors()) {
             for (const parameter of constructorDeclaration.getParameters()) {
                 if (parameter.isParameterProperty()) {
                     const parameterName = singleBindingName(parameter.getNameNode()) || parameter.getNameNode().getText();
-                    properties.set(parameterName, {
-                        name: parameterName,
-                        is_optional: parameter.isOptional() || parameter.getInitializer() !== undefined,
-                        annotation: textOf(parameter.getTypeNode()),
-                        visibility: visibilityFromModifiers(parameter),
-                        member_kind: 'instance',
-                        assigned_values: [{ kind: 'unsupported', expression: '', reference: '' }],
-                    });
+                    properties.set(parameterName, sourceProperty(
+                        parameter,
+                        sourceId,
+                        ownerDeclarationId,
+                        parameterName,
+                        visibilityFromModifiers(parameter),
+                        'instance',
+                    ));
                 }
             }
         }
@@ -671,10 +728,25 @@ function collectClasses(sourceFile, lineStarts, sourceId) {
         const concreteMethods = [];
         const abstractMethods = [];
         for (const constructorDeclaration of classDeclaration.getConstructors()) {
-            concreteMethods.push(sourceClassMethod(constructorDeclaration, lineStarts, 'constructor'));
+            concreteMethods.push(sourceClassMethod(
+                constructorDeclaration,
+                lineStarts,
+                sourceId,
+                ownerDeclarationId,
+                'constructor',
+                'constructor',
+            ));
         }
         for (const method of classDeclaration.getMethods()) {
-            const methodValue = sourceClassMethod(method, lineStarts);
+            const methodValue = sourceClassMethod(
+                method,
+                lineStarts,
+                sourceId,
+                ownerDeclarationId,
+                method.getModifiers().some(modifier => modifier.getKind() === SyntaxKind.StaticKeyword)
+                    ? 'static_method'
+                    : 'instance_method',
+            );
             if (method.getBody() === undefined || method.getModifiers().some(modifier => modifier.getKind() === SyntaxKind.AbstractKeyword)) {
                 abstractMethods.push(methodValue);
             } else {
@@ -683,12 +755,7 @@ function collectClasses(sourceFile, lineStarts, sourceId) {
         }
 
         const base = {
-            declaration_id: {
-                source_id: sourceId,
-                family: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
-                qualified_name: name,
-                ordinal: classDeclaration.getStart() + 1,
-            },
+            declaration_id: ownerDeclarationId,
             kind: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
             name,
             visibility,
@@ -743,22 +810,29 @@ function collectSignaturesFromMembers(members, lineStarts) {
 function collectInterfaces(sourceFile, lineStarts, sourceId) {
     return sourceFile.getInterfaces().map(interfaceDeclaration => {
         const visibility = moduleVisibility(interfaceDeclaration);
-        const properties = interfaceDeclaration.getProperties().map(property => ({
-            name: propertyNameText(property),
-            is_optional: propertyIsOptional(property),
-            annotation: textOf(property.getTypeNode()),
-            visibility: 'public',
-            member_kind: 'instance',
-            assigned_values: [{ kind: 'unsupported', expression: '', reference: '' }],
-        }));
-        const methods = interfaceDeclaration.getMethods().map(method => sourceClassMethod(method, lineStarts));
+        const ownerDeclarationId = {
+            source_id: sourceId,
+            family: 'interface',
+            qualified_name: interfaceDeclaration.getName(),
+            ordinal: interfaceDeclaration.getStart() + 1,
+        };
+        const properties = interfaceDeclaration.getProperties().map(property => sourceProperty(
+            property,
+            sourceId,
+            ownerDeclarationId,
+            propertyNameText(property),
+            'public',
+            'instance',
+        ));
+        const methods = interfaceDeclaration.getMethods().map(method => sourceClassMethod(
+            method,
+            lineStarts,
+            sourceId,
+            ownerDeclarationId,
+            'instance_method',
+        ));
         return {
-            declaration_id: {
-                source_id: sourceId,
-                family: 'interface',
-                qualified_name: interfaceDeclaration.getName(),
-                ordinal: interfaceDeclaration.getStart() + 1,
-            },
+            declaration_id: ownerDeclarationId,
             kind: 'interface',
             name: interfaceDeclaration.getName(),
             visibility,
@@ -775,23 +849,24 @@ function collectInterfaces(sourceFile, lineStarts, sourceId) {
 function collectTypes(sourceFile, lineStarts, sourceId) {
     return sourceFile.getTypeAliases().map(typeAlias => {
         const visibility = moduleVisibility(typeAlias);
+        const ownerDeclarationId = {
+            source_id: sourceId,
+            family: 'type',
+            qualified_name: typeAlias.getName(),
+            ordinal: typeAlias.getStart() + 1,
+        };
         const typeNode = typeAlias.getTypeNode();
         const members = Node.isTypeLiteral(typeNode) ? typeNode.getMembers() : [];
-        const properties = members.filter(member => Node.isPropertySignature(member)).map(property => ({
-            name: propertyNameText(property),
-            is_optional: propertyIsOptional(property),
-            annotation: textOf(property.getTypeNode()),
-            visibility: 'public',
-            member_kind: 'instance',
-            assigned_values: [{ kind: 'unsupported', expression: '', reference: '' }],
-        }));
+        const properties = members.filter(member => Node.isPropertySignature(member)).map(property => sourceProperty(
+            property,
+            sourceId,
+            ownerDeclarationId,
+            propertyNameText(property),
+            'public',
+            'instance',
+        ));
         return {
-            declaration_id: {
-                source_id: sourceId,
-                family: 'type',
-                qualified_name: typeAlias.getName(),
-                ordinal: typeAlias.getStart() + 1,
-            },
+            declaration_id: ownerDeclarationId,
             kind: 'type_alias',
             name: typeAlias.getName(),
             visibility,
@@ -825,14 +900,10 @@ function collectValues(sourceFile, lineStarts, sourceId) {
     for (const declaration of sourceFile.getVariableDeclarations()) {
         const initializer = declaration.getInitializer();
         const valueKind = expressionValueKind(initializer);
+        if (valueKind === 'value_callable') {
+            continue;
+        }
         const expression = initializer === undefined ? undefined : unwrapExpression(initializer);
-        const parameters = expression !== undefined && (Node.isArrowFunction(expression) || Node.isFunctionExpression(expression))
-            ? functionParameters(expression)
-            : [];
-        const counts = {
-            declared_args: parameters.length,
-            optional_args: parameters.filter(parameter => parameter.has_default).length,
-        };
         const variableStatement = declaration.getVariableStatement();
         const declarationKind = variableStatement !== undefined
             && variableStatement.getDeclarationKind() === VariableDeclarationKind.Const
@@ -852,60 +923,10 @@ function collectValues(sourceFile, lineStarts, sourceId) {
                 valueKind,
                 declarationKind,
                 scope: variableScope(declaration),
-                counts,
             }));
         }
     }
     return values;
-}
-
-function collectFunctions(sourceFile, lineStarts, sourceId) {
-    const functions = [];
-    const seen = new Set();
-
-    function addFunction(name, node, parameters, visibility) {
-        if (!name || seen.has(name)) {
-            return;
-        }
-        seen.add(name);
-        functions.push({
-            declaration_id: {
-                source_id: sourceId,
-                family: 'function',
-                qualified_name: name,
-                ordinal: node.getStart() + 1,
-            },
-            name,
-            visibility,
-            visibility_intent: visibilityIntent(name, visibility),
-            declaration_annotations: [],
-            line_count: lineSpan(lineStarts, node.getStart(), endIndexForNode(node)),
-            declared_args: parameters.length,
-            optional_args: parameters.filter(parameter => parameter.has_default).length,
-        });
-    }
-
-    for (const functionDeclaration of sourceFile.getFunctions()) {
-        const name = functionDeclaration.getName() || (functionDeclaration.isDefaultExport() ? 'default' : '');
-        addFunction(name, functionDeclaration, functionParameters(functionDeclaration), moduleVisibility(functionDeclaration));
-    }
-
-    for (const declaration of moduleVariableDeclarations(sourceFile)) {
-        const name = singleBindingName(declaration.getNameNode());
-        const initializer = declaration.getInitializer();
-        const expression = initializer === undefined ? undefined : unwrapExpression(initializer);
-        if (name && expression !== undefined && (Node.isArrowFunction(expression) || Node.isFunctionExpression(expression))) {
-            addFunction(name, declaration, functionParameters(expression), moduleVisibility(declaration.getVariableStatement()));
-        }
-    }
-
-    for (const exportAssignment of sourceFile.getExportAssignments()) {
-        const expression = unwrapExpression(exportAssignment.getExpression());
-        if (Node.isArrowFunction(expression) || Node.isFunctionExpression(expression)) {
-            addFunction('default', exportAssignment, functionParameters(expression), 'public');
-        }
-    }
-    return functions;
 }
 
 function nearestFunctionLike(node) {
@@ -970,19 +991,49 @@ function collectCallables(sourceFile, lineStarts, sourceId) {
 
     function addFunctionLike(node, nameInfo, kind, startNode = node) {
         const bodyInfo = callableBodyInfo(node);
+        let declarationKind = 'assignment';
+        let scope = 'module';
+        if (Node.isVariableDeclaration(startNode)) {
+            const statement = startNode.getVariableStatement();
+            declarationKind = statement !== undefined
+                && statement.getDeclarationKind() === VariableDeclarationKind.Const
+                ? 'constant'
+                : 'assignment';
+            scope = variableScope(startNode);
+        } else if (
+            Node.isPropertyDeclaration(startNode)
+            || Node.isPropertyAssignment(startNode)
+            || Node.isShorthandPropertyAssignment(startNode)
+        ) {
+            declarationKind = 'property';
+            scope = 'member';
+        }
+        const ownerDeclarationId = nameInfo.ownerName
+            ? {
+                source_id: sourceId,
+                family: nameInfo.ownerFamily || 'class',
+                qualified_name: nameInfo.ownerName,
+                ordinal: nameInfo.ownerOrdinal,
+            }
+            : undefined;
         addCallable(callables, callableRanges, sourceCallable({
             sourceId,
             name: nameInfo.name,
             qualifiedName: nameInfo.qualifiedName,
             ownerName: nameInfo.ownerName,
+            ownerDeclarationId: ['instance_method', 'type_method', 'static_method', 'constructor'].includes(kind)
+                ? ownerDeclarationId
+                : undefined,
             kind,
             visibility: nameInfo.visibility,
             startIndex: startNode.getStart(),
             endIndex: bodyInfo.endIndex,
             lineStarts,
             parameters: functionParameters(node),
-            returnAnnotation: textOf(typeof node.getReturnTypeNode === 'function' ? node.getReturnTypeNode() : undefined),
-        }), bodyInfo, node);
+            returnTypeNode: typeof node.getReturnTypeNode === 'function' ? node.getReturnTypeNode() : undefined,
+            declarationKind,
+            scope,
+        }), bodyInfo, node, nameInfo.ownerName);
     }
 
     for (const functionDeclaration of sourceFile.getFunctions()) {
@@ -1008,6 +1059,8 @@ function collectCallables(sourceFile, lineStarts, sourceId) {
                     name: 'constructor',
                     qualifiedName: `${className}.constructor`,
                     ownerName: className,
+                ownerFamily: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
+                ownerOrdinal: classDeclaration.getStart() + 1,
                     visibility: visibilityFromModifiers(constructorDeclaration),
                 }, 'constructor');
             }
@@ -1022,6 +1075,8 @@ function collectCallables(sourceFile, lineStarts, sourceId) {
                 name,
                 qualifiedName: `${className}.${name}`,
                 ownerName: className,
+                ownerFamily: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
+                ownerOrdinal: classDeclaration.getStart() + 1,
                 visibility: visibilityFromModifiers(method),
             }, isStatic ? 'static_method' : 'instance_method');
         }
@@ -1077,9 +1132,10 @@ function collectCalls(sourceFile, lineStarts, sourceId, callableRanges, callable
             byName.set(callable.name, [...(byName.get(callable.name) || []), callable.declaration_id]);
         }
         if (callable.kind === 'constructor') {
+            const ownerName = callable.owner_declaration_id.qualified_name;
             constructorsByName.set(
-                callable.owner_name,
-                [...(constructorsByName.get(callable.owner_name) || []), callable.declaration_id],
+                ownerName,
+                [...(constructorsByName.get(ownerName) || []), callable.declaration_id],
             );
         }
     }
@@ -1183,9 +1239,10 @@ function extractFile(filePath, sourcesRoot, sourceId = null) {
             ...collectTypes(sourceFile, lineStarts, resolvedSourceId),
             ...abstractClasses,
         ],
-        functions: collectFunctions(sourceFile, lineStarts, resolvedSourceId),
+        functions: callableGraph.callables.filter(callable => callable.kind === 'function'),
         values: callableGraph.values,
-        callables: callableGraph.callables,
+        callable_values: callableGraph.callables.filter(callable => callable.kind === 'callable_value'),
+        anonymous_callables: callableGraph.callables.filter(callable => callable.kind === 'anonymous'),
         calls: callableGraph.calls,
         declaration_relations: [
             ...sourceFile.getClasses().flatMap(classDeclaration => {

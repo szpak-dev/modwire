@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.identity import FileId
-from ....shared.code.models.source_dependency_resolution import SourceDependencyResolution
+from ....shared.code.models.dependencies.source_dependency_resolution import SourceDependencyResolution
+from ....shared.code.models.sources.identity import FileId
 from ...map.models.architecture_map import ArchitectureMap
 from ..domain import InsightReporterInterface
 from ..models.coherence_report import CoherenceReport

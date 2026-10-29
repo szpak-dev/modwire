@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from pydantic import ValidationError
 from wireup import injectable
 
-from ....shared.code.models.code_error import CodeError
-from ....shared.code.models.digest_algorithm import DigestAlgorithm
+from ....shared.code.models.failures.code_error import CodeError
+from ....shared.code.models.sources.digest_algorithm import DigestAlgorithm
 from ..contracts.manifest_serializer import ManifestSerializer
 from ..models.implementation_manifest import ImplementationManifest
 from ..models.implementation_manifest_document import ImplementationManifestDocument
