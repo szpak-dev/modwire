@@ -4,9 +4,12 @@ import json
 from modwire.application import (
     CapabilityStatus,
     CodeMap,
+    SourceClassMethod,
+    SourceDeclaration,
+    SourceFile,
 )
 
-from .language_capability_matrix.fixtures.projection import ReferenceProjection
+from .language_capability_matrix.projections.model import ReferenceProjection
 
 
 class FixtureCodeMapProjector:
@@ -17,26 +20,27 @@ class FixtureCodeMapProjector:
             for callable_fact in source.canonical_callables()
             if callable_fact.return_type.kind.value == "unsupported"
         )
-        source_ids = {item.authored.value.as_posix(): item.canonical.value.as_posix() for item in projection.sources}
-        declaration_ids = {item.authored: item.canonical for item in projection.declarations}
-        callable_ids = {item.authored: item.canonical for item in projection.callables}
+        source_ids = {
+            item.authored.value.as_posix(): item.canonical.value.as_posix() for item in projection.mappings.sources
+        }
+        declaration_ids = {item.authored: item.canonical for item in projection.mappings.declarations}
+        callable_ids = {item.authored: item.canonical for item in projection.mappings.callables}
         parameter_names = {
-            (item.callable, item.authored.value): item.canonical.value for item in projection.parameters
+            (item.authored_callable, item.authored.value): item.canonical.value
+            for item in projection.mappings.parameters
         }
 
         projected_source_ids: list[str] = []
-        projected_source_files = list(code_map.extraction.files.values())
-        projected_source_files.clear()
+        projected_source_files: list[SourceFile] = []
         for original_source_id, source_file in code_map.extraction.files.items():
             source_id = source_ids[str(original_source_id)]
             projected_source_ids.append(source_id)
-            declarations = list(source_file.declarations)
-            declarations.clear()
+            declarations: list[SourceDeclaration] = []
             for declaration in sorted(source_file.declarations, key=lambda item: item.name):
                 identity = declaration_ids[declaration.declaration_id]
-                projected_method_groups = []
+                projected_method_groups: list[tuple[SourceClassMethod, ...]] = []
                 for authored_methods in (declaration.methods, declaration.abstract_methods):
-                    projected_methods = []
+                    projected_methods: list[SourceClassMethod] = []
                     for method in sorted(authored_methods, key=lambda item: item.name):
                         if method.declaration_id not in callable_ids:
                             continue

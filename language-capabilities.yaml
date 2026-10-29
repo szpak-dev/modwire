@@ -1,16 +1,18 @@
 schema_version: 1
 reference_code_map: tests/fixtures/code_map/reference_shop/expected_code_map.json
-parameter_kinds:
-  - positional
-  - variadic_positional
-  - named_only
-  - variadic_named
 languages:
-  python: language-capabilities/python.yaml
-  typescript: language-capabilities/typescript.yaml
-  php: language-capabilities/php.yaml
-  java: language-capabilities/java.yaml
-  ruby: language-capabilities/ruby.yaml
-manifest_transitions:
-  - before: source_edit_before
-    after: source_edit_after
+  python:
+    contract: language-capabilities/contracts/python.yaml
+    reference_projection: language-capabilities/reference-projections/python.yaml
+  typescript:
+    contract: language-capabilities/contracts/typescript.yaml
+    reference_projection: language-capabilities/reference-projections/typescript.yaml
+  php:
+    contract: language-capabilities/contracts/php.yaml
+    reference_projection: language-capabilities/reference-projections/php.yaml
+  java:
+    contract: language-capabilities/contracts/java.yaml
+    reference_projection: language-capabilities/reference-projections/java.yaml
+  ruby:
+    contract: language-capabilities/contracts/ruby.yaml
+    reference_projection: language-capabilities/reference-projections/ruby.yaml

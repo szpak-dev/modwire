@@ -1,9 +1,20 @@
 from pydantic import Field
 
-from modwire.application import DeclarationIdentity, FactCapability
+from modwire.application import DeclarationIdentity
 
 from ...model import FixtureModel
 from ..values import Identifier, RepositorySourcePath
+
+type DeclarationIdentityKey = tuple[str, str, str, int]
+
+
+def declaration_identity_key(identity: DeclarationIdentity) -> DeclarationIdentityKey:
+    return (
+        str(identity.source_id),
+        identity.family.value,
+        identity.qualified_name,
+        identity.ordinal,
+    )
 
 
 class SourceIdentityProjection(FixtureModel):
@@ -22,15 +33,14 @@ class CallableIdentityProjection(FixtureModel):
 
 
 class ParameterNameProjection(FixtureModel):
-    callable: DeclarationIdentity
+    authored_callable: DeclarationIdentity
     authored: Identifier
+    canonical_callable: DeclarationIdentity
     canonical: Identifier
 
 
-class ReferenceProjection(FixtureModel):
+class ProjectionMappings(FixtureModel):
     sources: tuple[SourceIdentityProjection, ...] = Field(min_length=1)
     declarations: tuple[DeclarationIdentityProjection, ...]
     callables: tuple[CallableIdentityProjection, ...]
     parameters: tuple[ParameterNameProjection, ...]
-    compared_capabilities: tuple[FactCapability, ...] = Field(min_length=1)
-    language_specific_capabilities: tuple[FactCapability, ...]

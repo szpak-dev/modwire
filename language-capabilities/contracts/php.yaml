@@ -1,0 +1,422 @@
+language: php
+runtime:
+  runtime: php
+  executable: php
+  version:
+    major: 8
+    minor: 4
+    patch: 8
+  packages: []
+fixtures:
+  source_suffixes:
+    - .php
+  extensions:
+    root: tests/fixtures/code_map/language_extensions/php
+    sources:
+      - src/ExampleShapes.php
+  gaps:
+    root: tests/fixtures/code_map/capability_gaps/php
+    sources:
+      - src/ExampleCapabilityGaps.php
+  types:
+    root: tests/fixtures/code_map/type_references/php
+    sources:
+      - src/TypeReferenceCases.php
+      - src/TypeReferenceEmpty.php
+  parameters:
+    root: tests/fixtures/code_map/parameter_kinds/php
+    sources:
+      - src/Params.php
+capabilities:
+  sources:
+    status: supported
+    explanation: Every included PHP source is identified and hashed.
+  symbols:
+    status: supported
+    explanation: Classes, abstract classes, interfaces, traits, functions, and values are extracted.
+  callables:
+    status: supported
+    explanation: Functions, methods, constructors, closures, and arrow functions are extracted.
+  calls:
+    status: supported
+    explanation: Static calls owned by extracted callables are emitted with explicit resolved, 
+      external, unresolved, or dynamic state.
+  parameters:
+    status: supported
+    explanation: Callable parameter order, kind, annotation, and default presence are extracted.
+  type_references:
+    status: partial
+    explanation: Named references are structural; unions, intersections, and other authored type 
+      syntax are reported as unsupported.
+  annotations:
+    status: partial
+    explanation: Class and interface attributes and declared type annotations are extracted; 
+      attributes on other declarations are not yet emitted.
+  modifiers:
+    status: partial
+    explanation: Visibility intent, callable kind, and property member kind are normalized.
+  attributes:
+    status: supported
+    explanation: Declared and promoted property identity, exact declared type, visibility, 
+      optionality, and member kind are extracted.
+  assigned_values:
+    status: unsupported
+    explanation: PHP property assigned-value evidence is not extracted yet.
+  inheritance:
+    status: supported
+    explanation: Class and interface inheritance declarations are recorded.
+  namespaces:
+    status: unsupported
+    explanation: PHP namespace declarations are not extracted yet.
+  declaration_kinds:
+    status: supported
+    explanation: Classes, abstract classes, interfaces, and traits publish exact shared declaration 
+      kinds.
+  composition:
+    status: partial
+    explanation: Extension and implementation are extracted; trait use is not classified.
+  dependencies:
+    status: supported
+    explanation: Namespace imports are normalized and resolved when targets are present.
+  spans:
+    status: partial
+    explanation: Callable spans are exact; other symbol facts expose line counts.
+relationships:
+  declaration:
+    semantics: partial
+    semantics_explanation: Authored extension and implementation relations are preserved without 
+      classifying trait use or framework conventions.
+    inventory: partial
+    inventory_explanation: Class and interface heritage is emitted, but trait-use relationships are 
+      not yet classified.
+  member:
+    semantics: partial
+    semantics_explanation: Declared property and callable types and static calls are preserved 
+      without resolving runtime types or framework ownership.
+    inventory: partial
+    inventory_explanation: Declared type and static-call evidence is emitted, but assigned-value 
+      relationship evidence is not available.
+  dependency:
+    semantics: supported
+    semantics_explanation: Authored namespace imports are normalized with explicit resolution state;
+      dynamic loading is excluded.
+    inventory: supported
+    inventory_explanation: Every authored namespace import in included PHP sources is emitted 
+      deterministically.
+scenarios:
+  - name: non-type-attribute-boundary
+    fixture: gaps
+    source: src/ExampleCapabilityGaps.php
+    claims:
+      - kind: capability
+        capability: annotations
+        state: present
+        observation:
+          kind: annotation
+          owner: ExampleConsumer
+          expression: ExampleTypeMarker
+      - kind: capability
+        capability: annotations
+        state: absent
+        observation:
+          kind: annotation
+          owner: ExampleTrait.exampleTraitValue
+          expression: ExampleMethodMarker
+  - name: modifier-normalization-boundary
+    fixture: gaps
+    source: src/ExampleCapabilityGaps.php
+    claims:
+      - kind: capability
+        capability: modifiers
+        state: absent
+        observation:
+          kind: modifier
+          owner: ExampleConsumer
+          modifier: final
+  - name: assigned-value
+    fixture: gaps
+    source: src/ExampleCapabilityGaps.php
+    claims:
+      - kind: capability
+        capability: assigned_values
+        state: present
+        observation:
+          kind: assigned_value_partition
+          owner: ExampleTypeMarker
+          absent: []
+          literal: []
+          reference: []
+          call: []
+          unresolved: []
+      - kind: capability
+        capability: attributes
+        state: present
+        observation:
+          kind: attribute
+          owner: ExampleConsumer
+          name: exampleValue
+          member_kind: instance
+      - kind: relationship
+        relationship: member
+        aspect: inventory
+        state: present
+        observation:
+          kind: attribute
+          owner: ExampleConsumer
+          name: exampleValue
+          member_kind: instance
+  - name: namespace-declaration
+    fixture: gaps
+    source: src/ExampleCapabilityGaps.php
+    claims:
+      - kind: capability
+        capability: namespaces
+        state: absent
+        observation:
+          kind: namespace
+          qualified_name: ExampleCapabilityGaps
+          namespace_kind: namespace
+  - name: trait-use
+    fixture: gaps
+    source: src/ExampleCapabilityGaps.php
+    claims:
+      - kind: capability
+        capability: composition
+        state: absent
+        observation:
+          kind: declaration_relation
+          source: ExampleConsumer
+          relation: extends
+          target: ExampleTrait
+      - kind: relationship
+        relationship: declaration
+        aspect: semantics
+        state: absent
+        observation:
+          kind: declaration_relation
+          source: ExampleConsumer
+          relation: extends
+          target: ExampleTrait
+      - kind: relationship
+        relationship: declaration
+        aspect: inventory
+        state: absent
+        observation:
+          kind: declaration_relation
+          source: ExampleConsumer
+          relation: extends
+          target: ExampleTrait
+  - name: non-callable-span-boundary
+    fixture: gaps
+    source: src/ExampleCapabilityGaps.php
+    claims:
+      - kind: capability
+        capability: spans
+        state: present
+        observation:
+          kind: exact_span
+          owner: ExampleConsumer.exampleConsumerValue
+          start: 26
+          end: 29
+      - kind: capability
+        capability: spans
+        state: absent
+        observation:
+          kind: span_owner
+          owner: ExampleConsumer
+  - name: member-runtime-semantics-boundary
+    fixture: gaps
+    source: src/ExampleCapabilityGaps.php
+    claims:
+      - kind: capability
+        capability: attributes
+        state: present
+        observation:
+          kind: attribute
+          owner: ExampleConsumer
+          name: exampleValue
+          member_kind: instance
+      - kind: capability
+        capability: attributes
+        state: absent
+        observation:
+          kind: attribute
+          owner: ExampleConsumer
+          name: exampleRuntimeMember
+          member_kind: instance
+      - kind: relationship
+        relationship: member
+        aspect: semantics
+        state: present
+        observation:
+          kind: attribute
+          owner: ExampleConsumer
+          name: exampleValue
+          member_kind: instance
+  - name: type-reference-grammar-boundary
+    fixture: types
+    source: src/TypeReferenceCases.php
+    claims:
+      - kind: capability
+        capability: type_references
+        state: present
+        observation:
+          kind: type_reference
+          owner: exampleTypes
+          role: return
+          position: 0
+          type:
+            kind: reference
+            name: ExampleResult
+            arguments: []
+      - kind: capability
+        capability: type_references
+        state: unsupported
+        observation:
+          kind: type_slot
+          owner: exampleTypes
+          role: parameter
+          position: 1
+      - kind: capability
+        capability: type_references
+        state: absent
+        observation:
+          kind: type_slot
+          owner: exampleTypes
+          role: parameter
+          position: 2
+  - name: parameter-kinds
+    fixture: parameters
+    source: src/Params.php
+    claims:
+      - kind: capability
+        capability: parameters
+        state: present
+        observation:
+          kind: parameter_kinds
+          present:
+            - positional
+            - variadic_positional
+manifests:
+  root: tests/fixtures/implementation_manifest/php
+  scenarios:
+    - name: canonical
+      source: canonical/src/Example.php
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/Example.php
+        - state: present
+          observation:
+            kind: symbol
+            qualified_name: src/Example.ExampleAbstract
+            symbol_kind: abstract_class
+        - state: present
+          observation:
+            kind: callable
+            qualified_name: ExampleImplementation.__construct
+            callable_kind: constructor
+        - state: present
+          observation:
+            kind: parameter
+            owner: exampleFunction
+            name: exampleValue
+            position: 0
+            parameter_kind: positional
+            has_default: false
+        - state: present
+          observation:
+            kind: attribute
+            owner: ExampleImplementation
+            name: exampleOptional
+            member_kind: instance
+        - state: present
+          observation:
+            kind: call
+            owner: ExampleImplementation.exampleTimestamp
+            target: exampleFormat
+            resolution: unresolved
+        - state: present
+          observation:
+            kind: declaration_relation
+            source: ExampleImplementation
+            relation: extends
+            target: ExampleAbstract
+        - state: present
+          observation:
+            kind: dependency
+            source: src/Example.php
+            target: DateTimeImmutable
+            resolution: external
+    - name: calls
+      source: calls/src/Example.php
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/Example.php
+        - state: present
+          observation:
+            kind: call
+            owner: exampleSource
+            target: exampleTarget
+            resolution: resolved
+    - name: no_calls
+      source: no_calls/src/Example.php
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/Example.php
+        - state: absent
+          observation:
+            kind: call
+            owner: exampleSource
+            target: exampleTarget
+            resolution: resolved
+    - name: negative_members
+      source: negative_members/src/Example.php
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/Example.php
+        - state: absent
+          observation:
+            kind: symbol
+            qualified_name: src/Example.ExampleAbstract
+            symbol_kind: abstract_class
+    - name: dependencies
+      source: dependencies/src/Example.php
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/Example.php
+        - state: present
+          observation:
+            kind: dependency
+            source: src/Example.php
+            target: DateTimeImmutable
+            resolution: external
+    - name: source_edit_before
+      source: source_edit_before/src/Example.php
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/Example.php
+    - name: source_edit_after
+      source: source_edit_after/src/Example.php
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/Example.php
+  transitions:
+    - before: source_edit_before
+      after: source_edit_after
+      changes:
+        - source_identity
+        - implementation_identity

@@ -1,0 +1,480 @@
+language: java
+runtime:
+  runtime: java
+  executable: java
+  version:
+    major: 25
+    minor: 0
+    patch: 2
+  packages: []
+fixtures:
+  source_suffixes:
+    - .java
+  extensions:
+    root: tests/fixtures/code_map/language_extensions/java
+    sources:
+      - src/ExampleShapes.java
+  gaps:
+    root: tests/fixtures/code_map/capability_gaps/java
+    sources:
+      - src/ExampleCapabilityGaps.java
+  types:
+    root: tests/fixtures/code_map/type_references/java
+    sources:
+      - src/TypeReferenceCases.java
+      - src/TypeReferenceEmpty.java
+  parameters:
+    root: tests/fixtures/code_map/parameter_kinds/java
+    sources:
+      - src/Params.java
+capabilities:
+  sources:
+    status: supported
+    explanation: Every included Java source is identified and hashed.
+  symbols:
+    status: supported
+    explanation: Classes, interfaces, records, enums, and annotation declarations are extracted.
+  callables:
+    status: supported
+    explanation: Constructors, methods, and annotation elements are extracted.
+  calls:
+    status: supported
+    explanation: Static method and constructor calls owned by extracted callables are emitted with 
+      explicit resolved, external, unresolved, or dynamic state.
+  parameters:
+    status: supported
+    explanation: Callable parameter order, kind, and exact declared type are extracted.
+  type_references:
+    status: partial
+    explanation: Named references and ordered generic arguments are structural; wildcards, arrays, 
+      and other authored type syntax are reported as unsupported.
+  annotations:
+    status: partial
+    explanation: Declaration annotations and exact declared types are extracted without evaluation.
+  modifiers:
+    status: partial
+    explanation: Visibility, callable kind, and property member kind are normalized.
+  attributes:
+    status: supported
+    explanation: Fields, record components, enum constants, and annotation elements are extracted.
+  assigned_values:
+    status: unsupported
+    explanation: Java member assigned-value evidence is not extracted yet.
+  inheritance:
+    status: supported
+    explanation: Declared extension and implementation relations are recorded.
+  namespaces:
+    status: supported
+    explanation: Authored package declarations are extracted.
+  declaration_kinds:
+    status: supported
+    explanation: Java declaration forms publish exact shared declaration kinds.
+  composition:
+    status: partial
+    explanation: Extension and implementation are extracted; permits relations are not yet emitted.
+  dependencies:
+    status: partial
+    explanation: Exact imports resolve internally; wildcard and implicit dependencies remain 
+      unresolved.
+  spans:
+    status: partial
+    explanation: Callable spans are exact; other declarations expose line counts.
+relationships:
+  declaration:
+    semantics: partial
+    semantics_explanation: Authored extension and implementation relations are preserved without 
+      permits, annotation-processor, or framework inference.
+    inventory: partial
+    inventory_explanation: Extension and implementation clauses are emitted, but permits 
+      relationships are not available.
+  member:
+    semantics: partial
+    semantics_explanation: Declared member and callable types and static calls are preserved without
+      classpath, generated-code, or framework inference.
+    inventory: partial
+    inventory_explanation: Declared type and static-call evidence is emitted, but assigned-value 
+      relationship evidence is not available.
+  dependency:
+    semantics: partial
+    semantics_explanation: Exact imports are normalized, while wildcard, implicit same-package, 
+      classpath, and generated dependencies remain unresolved.
+    inventory: partial
+    inventory_explanation: Authored exact imports are emitted, but wildcard and implicit dependency 
+      inventory is incomplete.
+scenarios:
+  - name: annotation-evaluation-boundary
+    fixture: gaps
+    source: src/ExampleCapabilityGaps.java
+    claims:
+      - kind: capability
+        capability: annotations
+        state: present
+        observation:
+          kind: annotation
+          owner: ExampleBase
+          expression: '@ExampleMarker(exampleValue = "exampleRuntimeAnnotation")'
+      - kind: capability
+        capability: annotations
+        state: absent
+        observation:
+          kind: annotation
+          owner: ExampleBase
+          expression: exampleRuntimeAnnotation
+  - name: modifier-normalization-boundary
+    fixture: gaps
+    source: src/ExampleCapabilityGaps.java
+    claims:
+      - kind: capability
+        capability: modifiers
+        state: absent
+        observation:
+          kind: modifier
+          owner: ExampleBase.exampleValue
+          modifier: final
+  - name: assigned-value
+    fixture: gaps
+    source: src/ExampleCapabilityGaps.java
+    claims:
+      - kind: capability
+        capability: assigned_values
+        state: present
+        observation:
+          kind: assigned_value_partition
+          owner: ExampleMarker
+          absent:
+            - exampleValue
+          literal: []
+          reference: []
+          call: []
+          unresolved: []
+      - kind: capability
+        capability: attributes
+        state: present
+        observation:
+          kind: attribute
+          owner: ExampleMarker
+          name: exampleValue
+          member_kind: instance
+      - kind: relationship
+        relationship: member
+        aspect: inventory
+        state: present
+        observation:
+          kind: attribute
+          owner: ExampleMarker
+          name: exampleValue
+          member_kind: instance
+  - name: permits-relation
+    fixture: gaps
+    source: src/ExampleCapabilityGaps.java
+    claims:
+      - kind: capability
+        capability: composition
+        state: present
+        observation:
+          kind: declaration_relation
+          source: ExampleChild
+          relation: extends
+          target: ExampleBase
+      - kind: capability
+        capability: composition
+        state: absent
+        observation:
+          kind: declaration_relation
+          source: ExampleBase
+          relation: extends
+          target: ExampleChild
+      - kind: capability
+        capability: inheritance
+        state: present
+        observation:
+          kind: declaration_relation
+          source: ExampleChild
+          relation: extends
+          target: ExampleBase
+      - kind: capability
+        capability: inheritance
+        state: absent
+        observation:
+          kind: declaration_relation
+          source: ExampleBase
+          relation: extends
+          target: ExampleChild
+      - kind: relationship
+        relationship: declaration
+        aspect: semantics
+        state: present
+        observation:
+          kind: declaration_relation
+          source: ExampleChild
+          relation: extends
+          target: ExampleBase
+      - kind: relationship
+        relationship: declaration
+        aspect: inventory
+        state: present
+        observation:
+          kind: declaration_relation
+          source: ExampleChild
+          relation: extends
+          target: ExampleBase
+  - name: dependency-resolution-boundary
+    fixture: gaps
+    source: src/ExampleCapabilityGaps.java
+    claims:
+      - kind: capability
+        capability: dependencies
+        state: present
+        observation:
+          kind: dependency
+          source: src/ExampleCapabilityGaps.java
+          target: java.util.*
+          resolution: external
+      - kind: capability
+        capability: dependencies
+        state: absent
+        observation:
+          kind: dependency
+          source: src/ExampleCapabilityGaps.java
+          target: java.util.*
+          resolution: resolved
+      - kind: relationship
+        relationship: dependency
+        aspect: semantics
+        state: present
+        observation:
+          kind: dependency
+          source: src/ExampleCapabilityGaps.java
+          target: java.util.*
+          resolution: external
+      - kind: relationship
+        relationship: dependency
+        aspect: inventory
+        state: present
+        observation:
+          kind: dependency
+          source: src/ExampleCapabilityGaps.java
+          target: java.util.*
+          resolution: external
+  - name: non-callable-span-boundary
+    fixture: gaps
+    source: src/ExampleCapabilityGaps.java
+    claims:
+      - kind: capability
+        capability: spans
+        state: present
+        observation:
+          kind: exact_span
+          owner: ExampleBase.exampleMethod
+          start: 13
+          end: 13
+      - kind: capability
+        capability: spans
+        state: absent
+        observation:
+          kind: span_owner
+          owner: ExampleBase
+  - name: member-runtime-semantics-boundary
+    fixture: gaps
+    source: src/ExampleCapabilityGaps.java
+    claims:
+      - kind: capability
+        capability: attributes
+        state: present
+        observation:
+          kind: attribute
+          owner: ExampleMarker
+          name: exampleValue
+          member_kind: instance
+      - kind: capability
+        capability: attributes
+        state: absent
+        observation:
+          kind: attribute
+          owner: ExampleBase
+          name: exampleRuntimeAnnotation
+          member_kind: instance
+      - kind: relationship
+        relationship: member
+        aspect: semantics
+        state: present
+        observation:
+          kind: attribute
+          owner: ExampleMarker
+          name: exampleValue
+          member_kind: instance
+  - name: type-reference-grammar-boundary
+    fixture: types
+    source: src/TypeReferenceCases.java
+    claims:
+      - kind: capability
+        capability: type_references
+        state: present
+        observation:
+          kind: type_reference
+          owner: TypeReferenceCases.exampleTypes
+          role: return
+          position: 0
+          type:
+            kind: reference
+            name: List
+            arguments:
+              - kind: reference
+                name: String
+                arguments: []
+      - kind: capability
+        capability: type_references
+        state: unsupported
+        observation:
+          kind: type_slot
+          owner: TypeReferenceCases.exampleTypes
+          role: parameter
+          position: 1
+      - kind: capability
+        capability: type_references
+        state: absent
+        observation:
+          kind: type_slot
+          owner: TypeReferenceCases.constructor
+          role: return
+          position: 0
+  - name: parameter-kinds
+    fixture: parameters
+    source: src/Params.java
+    claims:
+      - kind: capability
+        capability: parameters
+        state: present
+        observation:
+          kind: parameter_kinds
+          present:
+            - positional
+            - variadic_positional
+manifests:
+  root: tests/fixtures/implementation_manifest/java
+  scenarios:
+    - name: canonical
+      source: canonical/src/Example.java
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/Example.java
+        - state: present
+          observation:
+            kind: namespace
+            qualified_name: example.manifest
+            namespace_kind: package
+        - state: present
+          observation:
+            kind: symbol
+            qualified_name: example.manifest.ExampleAbstract
+            symbol_kind: abstract_class
+        - state: present
+          observation:
+            kind: callable
+            qualified_name: ExampleImplementation.constructor
+            callable_kind: constructor
+        - state: present
+          observation:
+            kind: parameter
+            owner: ExampleAbstract.exampleRequired
+            name: exampleValue
+            position: 0
+            parameter_kind: positional
+            has_default: false
+        - state: present
+          observation:
+            kind: attribute
+            owner: ExampleImplementation
+            name: EXAMPLE_CONSTANT
+            member_kind: static
+        - state: present
+          observation:
+            kind: call
+            owner: ExampleImplementation.exampleTimestamp
+            target: now
+            resolution: unresolved
+        - state: present
+          observation:
+            kind: declaration_relation
+            source: ExampleImplementation
+            relation: extends
+            target: ExampleAbstract
+        - state: present
+          observation:
+            kind: dependency
+            source: src/Example.java
+            target: java.time.Instant
+            resolution: external
+    - name: calls
+      source: calls/src/Example.java
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/Example.java
+        - state: present
+          observation:
+            kind: call
+            owner: Example.exampleSource
+            target: exampleTarget
+            resolution: resolved
+    - name: no_calls
+      source: no_calls/src/Example.java
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/Example.java
+        - state: absent
+          observation:
+            kind: call
+            owner: Example.exampleSource
+            target: exampleTarget
+            resolution: resolved
+    - name: negative_members
+      source: negative_members/src/Example.java
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/Example.java
+        - state: absent
+          observation:
+            kind: symbol
+            qualified_name: example.manifest.ExampleAbstract
+            symbol_kind: abstract_class
+    - name: dependencies
+      source: dependencies/src/Example.java
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/Example.java
+        - state: present
+          observation:
+            kind: dependency
+            source: src/Example.java
+            target: java.util.List
+            resolution: external
+    - name: source_edit_before
+      source: source_edit_before/src/Example.java
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/Example.java
+    - name: source_edit_after
+      source: source_edit_after/src/Example.java
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/Example.java
+  transitions:
+    - before: source_edit_before
+      after: source_edit_after
+      changes:
+        - source_identity
+        - implementation_identity

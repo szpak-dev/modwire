@@ -1,0 +1,241 @@
+language: python
+fixture:
+  root: tests/fixtures/code_map/reference_shop/languages/python
+  sources:
+    - ignored/generated_order.py
+    - src/commerce/orders/application/actions/place_order.py
+    - src/commerce/orders/domain/model/order.py
+    - src/commerce/orders/domain/services/order_policy.py
+    - src/commerce/orders/infrastructure/repositories/order_repository.py
+    - src/commerce/orders/interfaces/http/order_controller.py
+    - src/commerce/payments/application/actions/capture_payment.py
+    - src/commerce/payments/domain/model/payment.py
+mappings:
+  sources:
+    - authored: src/commerce/orders/application/actions/place_order.py
+      canonical: src/commerce/orders/application/actions/place_order
+    - authored: src/commerce/orders/domain/model/order.py
+      canonical: src/commerce/orders/domain/model/order
+    - authored: src/commerce/orders/domain/services/order_policy.py
+      canonical: src/commerce/orders/domain/services/order_policy
+    - authored: src/commerce/orders/infrastructure/repositories/order_repository.py
+      canonical: src/commerce/orders/infrastructure/repositories/order_repository
+    - authored: src/commerce/orders/interfaces/http/order_controller.py
+      canonical: src/commerce/orders/interfaces/http/order_controller
+    - authored: src/commerce/payments/application/actions/capture_payment.py
+      canonical: src/commerce/payments/application/actions/capture_payment
+    - authored: src/commerce/payments/domain/model/payment.py
+      canonical: src/commerce/payments/domain/model/payment
+  declarations:
+    - authored:
+        source_id: src/commerce/orders/application/actions/place_order.py
+        family: class
+        qualified_name: PlaceOrder
+        ordinal: 21474836481
+      canonical:
+        source_id: src/commerce/orders/application/actions/place_order
+        family: class
+        qualified_name: PlaceOrder
+        ordinal: 1
+    - authored:
+        source_id: src/commerce/orders/domain/model/order.py
+        family: class
+        qualified_name: Order
+        ordinal: 4294967297
+      canonical:
+        source_id: src/commerce/orders/domain/model/order
+        family: class
+        qualified_name: Order
+        ordinal: 1
+    - authored:
+        source_id: src/commerce/orders/domain/services/order_policy.py
+        family: class
+        qualified_name: OrderPolicy
+        ordinal: 17179869185
+      canonical:
+        source_id: src/commerce/orders/domain/services/order_policy
+        family: class
+        qualified_name: OrderPolicy
+        ordinal: 1
+    - authored:
+        source_id: src/commerce/orders/infrastructure/repositories/order_repository.py
+        family: class
+        qualified_name: OrderRepository
+        ordinal: 25769803777
+      canonical:
+        source_id: src/commerce/orders/infrastructure/repositories/order_repository
+        family: class
+        qualified_name: OrderRepository
+        ordinal: 1
+    - authored:
+        source_id: src/commerce/orders/interfaces/http/order_controller.py
+        family: class
+        qualified_name: OrderController
+        ordinal: 21474836481
+      canonical:
+        source_id: src/commerce/orders/interfaces/http/order_controller
+        family: class
+        qualified_name: OrderController
+        ordinal: 1
+    - authored:
+        source_id: src/commerce/payments/application/actions/capture_payment.py
+        family: class
+        qualified_name: CapturePayment
+        ordinal: 17179869185
+      canonical:
+        source_id: src/commerce/payments/application/actions/capture_payment
+        family: class
+        qualified_name: CapturePayment
+        ordinal: 1
+    - authored:
+        source_id: src/commerce/payments/domain/model/payment.py
+        family: class
+        qualified_name: Payment
+        ordinal: 4294967297
+      canonical:
+        source_id: src/commerce/payments/domain/model/payment
+        family: class
+        qualified_name: Payment
+        ordinal: 1
+  callables:
+    - authored:
+        source_id: src/commerce/orders/application/actions/place_order.py
+        family: method
+        qualified_name: PlaceOrder.place
+        ordinal: 38654705669
+      canonical:
+        source_id: src/commerce/orders/application/actions/place_order
+        family: method
+        qualified_name: PlaceOrder.place
+        ordinal: 1
+    - authored:
+        source_id: src/commerce/orders/domain/model/order.py
+        family: method
+        qualified_name: Order.is_placed
+        ordinal: 38654705669
+      canonical:
+        source_id: src/commerce/orders/domain/model/order
+        family: method
+        qualified_name: Order.is_placed
+        ordinal: 1
+    - authored:
+        source_id: src/commerce/orders/domain/model/order.py
+        family: method
+        qualified_name: Order.mark_placed
+        ordinal: 25769803781
+      canonical:
+        source_id: src/commerce/orders/domain/model/order
+        family: method
+        qualified_name: Order.mark_placed
+        ordinal: 2
+    - authored:
+        source_id: src/commerce/orders/domain/services/order_policy.py
+        family: method
+        qualified_name: OrderPolicy.allows
+        ordinal: 21474836485
+      canonical:
+        source_id: src/commerce/orders/domain/services/order_policy
+        family: method
+        qualified_name: OrderPolicy.allows
+        ordinal: 1
+    - authored:
+        source_id: src/commerce/orders/infrastructure/repositories/order_repository.py
+        family: method
+        qualified_name: OrderRepository.save
+        ordinal: 42949672965
+      canonical:
+        source_id: src/commerce/orders/infrastructure/repositories/order_repository
+        family: method
+        qualified_name: OrderRepository.save
+        ordinal: 1
+    - authored:
+        source_id: src/commerce/orders/interfaces/http/order_controller.py
+        family: method
+        qualified_name: OrderController.handle
+        ordinal: 38654705669
+      canonical:
+        source_id: src/commerce/orders/interfaces/http/order_controller
+        family: method
+        qualified_name: OrderController.handle
+        ordinal: 1
+    - authored:
+        source_id: src/commerce/payments/application/actions/capture_payment.py
+        family: method
+        qualified_name: CapturePayment.capture
+        ordinal: 21474836485
+      canonical:
+        source_id: src/commerce/payments/application/actions/capture_payment
+        family: method
+        qualified_name: CapturePayment.capture
+        ordinal: 1
+    - authored:
+        source_id: src/commerce/payments/domain/model/payment.py
+        family: method
+        qualified_name: Payment.capture
+        ordinal: 25769803781
+      canonical:
+        source_id: src/commerce/payments/domain/model/payment
+        family: method
+        qualified_name: Payment.capture
+        ordinal: 1
+  parameters:
+    - authored_callable:
+        source_id: src/commerce/orders/application/actions/place_order.py
+        family: method
+        qualified_name: PlaceOrder.place
+        ordinal: 38654705669
+      authored: order
+      canonical_callable:
+        source_id: src/commerce/orders/application/actions/place_order
+        family: method
+        qualified_name: PlaceOrder.place
+        ordinal: 1
+      canonical: order
+    - authored_callable:
+        source_id: src/commerce/orders/domain/services/order_policy.py
+        family: method
+        qualified_name: OrderPolicy.allows
+        ordinal: 21474836485
+      authored: order
+      canonical_callable:
+        source_id: src/commerce/orders/domain/services/order_policy
+        family: method
+        qualified_name: OrderPolicy.allows
+        ordinal: 1
+      canonical: order
+    - authored_callable:
+        source_id: src/commerce/orders/infrastructure/repositories/order_repository.py
+        family: method
+        qualified_name: OrderRepository.save
+        ordinal: 42949672965
+      authored: order
+      canonical_callable:
+        source_id: src/commerce/orders/infrastructure/repositories/order_repository
+        family: method
+        qualified_name: OrderRepository.save
+        ordinal: 1
+      canonical: order
+    - authored_callable:
+        source_id: src/commerce/orders/interfaces/http/order_controller.py
+        family: method
+        qualified_name: OrderController.handle
+        ordinal: 38654705669
+      authored: order_id
+      canonical_callable:
+        source_id: src/commerce/orders/interfaces/http/order_controller
+        family: method
+        qualified_name: OrderController.handle
+        ordinal: 1
+      canonical: order_id
+    - authored_callable:
+        source_id: src/commerce/payments/application/actions/capture_payment.py
+        family: method
+        qualified_name: CapturePayment.capture
+        ordinal: 21474836485
+      authored: payment
+      canonical_callable:
+        source_id: src/commerce/payments/application/actions/capture_payment
+        family: method
+        qualified_name: CapturePayment.capture
+        ordinal: 1
+      canonical: payment

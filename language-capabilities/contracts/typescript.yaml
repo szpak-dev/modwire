@@ -1,0 +1,393 @@
+language: typescript
+runtime:
+  runtime: node
+  executable: node
+  version:
+    major: 24
+    minor: 2
+    patch: 0
+  packages: []
+fixtures:
+  source_suffixes:
+    - .ts
+    - .tsx
+    - .js
+    - .jsx
+  extensions:
+    root: tests/fixtures/code_map/language_extensions/typescript
+    sources:
+      - src/example-audit.js
+      - src/example-panel.jsx
+      - src/example-shapes.ts
+      - src/example-view.tsx
+  gaps:
+    root: tests/fixtures/code_map/capability_gaps/typescript
+    sources:
+      - src/example-capability-gaps.ts
+  types:
+    root: tests/fixtures/code_map/type_references/typescript
+    sources:
+      - src/type-reference-cases.ts
+      - src/type-reference-empty.ts
+  parameters:
+    root: tests/fixtures/code_map/parameter_kinds/typescript
+    sources:
+      - src/params.ts
+capabilities:
+  sources:
+    status: supported
+    explanation: Every included TypeScript or JavaScript source is identified and hashed.
+  symbols:
+    status: supported
+    explanation: Classes, interfaces, types, functions, and values are extracted.
+  callables:
+    status: supported
+    explanation: Functions, methods, constructors, and callable values are extracted.
+  calls:
+    status: supported
+    explanation: Static calls owned by extracted callables are emitted with explicit resolved, 
+      external, unresolved, or dynamic state.
+  parameters:
+    status: supported
+    explanation: Callable parameter order, kind, annotation, and default presence are extracted.
+  type_references:
+    status: partial
+    explanation: Named references and ordered generic arguments are structural; other authored type 
+      syntax is reported as unsupported.
+  annotations:
+    status: partial
+    explanation: Class decorator expressions and declared type annotations are extracted; decorators
+      on other declarations are not yet emitted.
+  modifiers:
+    status: partial
+    explanation: Visibility intent, callable kind, and property member kind are normalized.
+  attributes:
+    status: supported
+    explanation: Class and type property identity, exact declared type, visibility, optionality, and
+      member kind are extracted.
+  assigned_values:
+    status: unsupported
+    explanation: TypeScript property assigned-value evidence is not extracted yet.
+  inheritance:
+    status: supported
+    explanation: Class and interface heritage clauses are recorded.
+  namespaces:
+    status: unsupported
+    explanation: TypeScript namespace declarations are not extracted yet.
+  declaration_kinds:
+    status: supported
+    explanation: Classes, interfaces, and type aliases publish exact shared declaration kinds.
+  composition:
+    status: partial
+    explanation: Extension and implementation heritage is extracted.
+  dependencies:
+    status: supported
+    explanation: Imports are normalized and resolved when targets are present.
+  spans:
+    status: partial
+    explanation: Callable spans are exact; other symbol facts expose line counts.
+relationships:
+  declaration:
+    semantics: partial
+    semantics_explanation: Authored extension and implementation heritage is preserved without 
+      resolving runtime base aliases.
+    inventory: supported
+    inventory_explanation: Every authored class and interface heritage clause in included TypeScript
+      sources is emitted deterministically.
+  member:
+    semantics: partial
+    semantics_explanation: Declared member and callable types and static calls are preserved without
+      resolving runtime types or framework ownership.
+    inventory: partial
+    inventory_explanation: Declared type and static-call evidence is emitted, but assigned-value 
+      relationship evidence is not available.
+  dependency:
+    semantics: supported
+    semantics_explanation: Authored import dependencies are normalized with explicit resolution 
+      state; dynamic loading is excluded.
+    inventory: supported
+    inventory_explanation: Every authored import declaration in included TypeScript and JavaScript 
+      sources is emitted deterministically.
+scenarios:
+  - name: non-class-decorator-boundary
+    fixture: gaps
+    source: src/example-capability-gaps.ts
+    claims:
+      - kind: capability
+        capability: annotations
+        state: absent
+        observation:
+          kind: annotation
+          owner: ExampleAssignedValue
+          expression: ExampleMethodDecorator
+  - name: modifier-normalization-boundary
+    fixture: gaps
+    source: src/example-capability-gaps.ts
+    claims:
+      - kind: capability
+        capability: modifiers
+        state: absent
+        observation:
+          kind: modifier
+          owner: ExampleClassDecorator
+          modifier: readonly
+  - name: assigned-value
+    fixture: gaps
+    source: src/example-capability-gaps.ts
+    claims:
+      - kind: capability
+        capability: assigned_values
+        state: present
+        observation:
+          kind: assigned_value_partition
+          owner: ExampleAssignedValue
+          absent:
+            - exampleValue
+          literal: []
+          reference: []
+          call: []
+          unresolved: []
+      - kind: relationship
+        relationship: member
+        aspect: inventory
+        state: present
+        observation:
+          kind: attribute
+          owner: ExampleAssignedValue
+          name: exampleValue
+          member_kind: instance
+  - name: namespace-declaration
+    fixture: gaps
+    source: src/example-capability-gaps.ts
+    claims:
+      - kind: capability
+        capability: namespaces
+        state: absent
+        observation:
+          kind: namespace
+          qualified_name: ExampleNamespace
+          namespace_kind: namespace
+  - name: heritage-only-composition-boundary
+    fixture: gaps
+    source: src/example-capability-gaps.ts
+    claims:
+      - kind: capability
+        capability: composition
+        state: absent
+        observation:
+          kind: declaration_relation
+          source: ExampleCombined
+          relation: includes
+          target: ExampleFirst
+  - name: non-callable-span-boundary
+    fixture: gaps
+    source: src/example-capability-gaps.ts
+    claims:
+      - kind: capability
+        capability: spans
+        state: absent
+        observation:
+          kind: span_owner
+          owner: ExampleAssignedValue
+  - name: declaration-runtime-semantics-boundary
+    fixture: gaps
+    source: src/example-capability-gaps.ts
+    claims:
+      - kind: relationship
+        relationship: declaration
+        aspect: semantics
+        state: absent
+        observation:
+          kind: declaration_relation
+          source: ExampleRuntime
+          relation: includes
+          target: ExampleAssignedValue
+  - name: member-runtime-semantics-boundary
+    fixture: gaps
+    source: src/example-capability-gaps.ts
+    claims:
+      - kind: relationship
+        relationship: member
+        aspect: semantics
+        state: absent
+        observation:
+          kind: attribute
+          owner: ExampleAssignedValue
+          name: exampleRuntimeMember
+          member_kind: instance
+  - name: type-reference-grammar-boundary
+    fixture: types
+    source: src/type-reference-cases.ts
+    claims:
+      - kind: capability
+        capability: type_references
+        state: present
+        observation:
+          kind: type_reference
+          owner: exampleTypes
+          role: return
+          position: 0
+          type:
+            kind: reference
+            name: Map
+            arguments:
+              - kind: reference
+                name: string
+                arguments: []
+              - kind: reference
+                name: Array
+                arguments:
+                  - kind: reference
+                    name: number
+                    arguments: []
+      - kind: capability
+        capability: type_references
+        state: unsupported
+        observation:
+          kind: type_slot
+          owner: exampleTypes
+          role: parameter
+          position: 1
+      - kind: capability
+        capability: type_references
+        state: absent
+        observation:
+          kind: type_slot
+          owner: exampleTypes
+          role: parameter
+          position: 2
+  - name: parameter-kinds
+    fixture: parameters
+    source: src/params.ts
+    claims:
+      - kind: capability
+        capability: parameters
+        state: present
+        observation:
+          kind: parameter_kinds
+          present:
+            - positional
+            - variadic_positional
+manifests:
+  root: tests/fixtures/implementation_manifest/typescript
+  scenarios:
+    - name: canonical
+      source: canonical/src/example.ts
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/example.ts
+        - state: present
+          observation:
+            kind: symbol
+            qualified_name: src/example.ExampleAbstract
+            symbol_kind: abstract_class
+        - state: present
+          observation:
+            kind: callable
+            qualified_name: exampleArrow
+            callable_kind: callable_value
+        - state: present
+          observation:
+            kind: parameter
+            owner: ExampleContract.exampleRequired
+            name: exampleValue
+            position: 0
+            parameter_kind: positional
+            has_default: false
+        - state: present
+          observation:
+            kind: attribute
+            owner: ExampleImplementation
+            name: exampleOptional
+            member_kind: instance
+        - state: present
+          observation:
+            kind: call
+            owner: ExampleImplementation.examplePath
+            target: join
+            resolution: unresolved
+        - state: present
+          observation:
+            kind: declaration_relation
+            source: ExampleImplementation
+            relation: extends
+            target: ExampleAbstract
+        - state: present
+          observation:
+            kind: dependency
+            source: src/example.ts
+            target: node:path
+            resolution: external
+    - name: calls
+      source: calls/src/example.ts
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/example.ts
+        - state: present
+          observation:
+            kind: call
+            owner: exampleSource
+            target: exampleTarget
+            resolution: resolved
+    - name: no_calls
+      source: no_calls/src/example.ts
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/example.ts
+        - state: absent
+          observation:
+            kind: call
+            owner: exampleSource
+            target: exampleTarget
+            resolution: resolved
+    - name: negative_members
+      source: negative_members/src/example.ts
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/example.ts
+        - state: absent
+          observation:
+            kind: symbol
+            qualified_name: src/example.ExampleAbstract
+            symbol_kind: abstract_class
+    - name: dependencies
+      source: dependencies/src/example.ts
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/example.ts
+        - state: present
+          observation:
+            kind: dependency
+            source: src/example.ts
+            target: node:path
+            resolution: external
+    - name: source_edit_before
+      source: source_edit_before/src/example.ts
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/example.ts
+    - name: source_edit_after
+      source: source_edit_after/src/example.ts
+      claims:
+        - state: present
+          observation:
+            kind: source
+            relative_path: src/example.ts
+  transitions:
+    - before: source_edit_before
+      after: source_edit_after
+      changes:
+        - source_identity
+        - implementation_identity
