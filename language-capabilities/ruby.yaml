@@ -1,0 +1,745 @@
+language: ruby
+convention:
+  suffix: .rb
+  suffixes:
+    - .rb
+  separator: _
+  class_named_file: false
+fixtures:
+  reference_root: tests/fixtures/code_map/reference_shop/languages/ruby
+  capability_gap_root: tests/fixtures/code_map/capability_gaps/ruby
+  type_reference_cases: tests/fixtures/code_map/type_references/ruby/src/type_reference_cases.rb
+  type_reference_empty: tests/fixtures/code_map/type_references/ruby/src/type_reference_empty.rb
+  manifest_root: tests/fixtures/implementation_manifest/ruby
+  manifest_sources:
+    canonical: canonical/src/example.rb
+    calls: calls/src/example.rb
+    no_calls: no_calls/src/example.rb
+    negative_members: negative_members/src/example.rb
+    dependencies: dependencies/src/example.rb
+    source_edit_before: source_edit_before/src/example.rb
+    source_edit_after: source_edit_after/src/example.rb
+capabilities:
+  sources:
+    status: supported
+    explanation: Every included Ruby source is identified and hashed.
+    limitation_scenarios: []
+    evidence:
+      count: 8
+      variants:
+        - source:ignored/generated_order.rb
+        - source:src/commerce/orders/application/actions/place_order.rb
+        - source:src/commerce/orders/domain/model/order.rb
+        - source:src/commerce/orders/domain/services/order_policy.rb
+        - source:src/commerce/orders/infrastructure/repositories/order_repository.rb
+        - source:src/commerce/orders/interfaces/http/order_controller.rb
+        - source:src/commerce/payments/application/actions/capture_payment.rb
+        - source:src/commerce/payments/domain/model/payment.rb
+  symbols:
+    status: partial
+    explanation: Classes, modules, and statically named constants are extracted.
+    limitation_scenarios:
+      - runtime-generated-symbol
+    evidence:
+      count: 8
+      variants:
+        - declaration:class:CapturePayment
+        - declaration:class:GeneratedOrder
+        - declaration:class:Order
+        - declaration:class:OrderController
+        - declaration:class:OrderPolicy
+        - declaration:class:OrderRepository
+        - declaration:class:Payment
+        - declaration:class:PlaceOrder
+  callables:
+    status: partial
+    explanation: Instance methods, singleton methods, and constructors owned by statically named classes or modules
+      are extracted; aliases and generated methods are not.
+    limitation_scenarios:
+      - generated-callable
+    evidence:
+      count: 13
+      variants:
+        - constructor:Order.initialize
+        - constructor:OrderController.initialize
+        - constructor:OrderRepository.initialize
+        - constructor:Payment.initialize
+        - constructor:PlaceOrder.initialize
+        - instance_method:CapturePayment.capture
+        - instance_method:Order.is_placed
+        - instance_method:Order.mark_placed
+        - instance_method:OrderController.handle
+        - instance_method:OrderPolicy.allows
+        - instance_method:OrderRepository.save
+        - instance_method:Payment.capture
+        - instance_method:PlaceOrder.place
+  calls:
+    status: partial
+    explanation: Calls owned by extracted methods are emitted; dynamic dispatch and runtime-generated targets remain
+      unresolved.
+    limitation_scenarios:
+      - dynamic-call-resolution
+    evidence:
+      count: 9
+      variants:
+        - dynamic:!:1
+        - dynamic:allows:1
+        - dynamic:capture:1
+        - dynamic:is_placed:2
+        - dynamic:mark_placed:2
+        - dynamic:order_id:2
+        - dynamic:place:1
+        - unresolved:Order:2
+        - unresolved:generate:1
+  parameters:
+    status: partial
+    explanation: Positional, keyword, rest, keyword-rest, block, and forwarding parameters are normalized.
+    limitation_scenarios:
+      - generated-callable-parameters
+    evidence:
+      count: 10
+      variants:
+        - positional:action:false
+        - positional:order:false
+        - positional:order_id:false
+        - positional:payment:false
+        - positional:payment_id:false
+        - positional:policy:false
+        - positional:root:false
+  type_references:
+    status: supported
+    explanation: Every callable type slot is explicitly reported as absent because Ruby has no inline type syntax.
+    limitation_scenarios: []
+    evidence:
+      count: 23
+      variants:
+        - absent
+  annotations:
+    status: unsupported
+    explanation: Ruby source annotations are not inferred.
+    limitation_scenarios:
+      - annotation-dsl
+    evidence:
+      count: 0
+      variants: []
+  modifiers:
+    status: partial
+    explanation: Authored method visibility and callable kind are normalized.
+    limitation_scenarios:
+      - singleton-visibility
+    evidence:
+      count: 21
+      variants:
+        - callable_kind:constructor:Order.initialize
+        - callable_kind:constructor:OrderController.initialize
+        - callable_kind:constructor:OrderRepository.initialize
+        - callable_kind:constructor:Payment.initialize
+        - callable_kind:constructor:PlaceOrder.initialize
+        - callable_kind:instance_method:CapturePayment.capture
+        - callable_kind:instance_method:Order.is_placed
+        - callable_kind:instance_method:Order.mark_placed
+        - callable_kind:instance_method:OrderController.handle
+        - callable_kind:instance_method:OrderPolicy.allows
+        - callable_kind:instance_method:OrderRepository.save
+        - callable_kind:instance_method:Payment.capture
+        - callable_kind:instance_method:PlaceOrder.place
+        - visibility:public:CapturePayment
+        - visibility:public:GeneratedOrder
+        - visibility:public:Order
+        - visibility:public:OrderController
+        - visibility:public:OrderPolicy
+        - visibility:public:OrderRepository
+        - visibility:public:Payment
+        - visibility:public:PlaceOrder
+  attributes:
+    status: unsupported
+    explanation: Ruby instance, class, and generated attributes are not extracted.
+    limitation_scenarios:
+      - generated-attributes
+    evidence:
+      count: 0
+      variants: []
+  assigned_values:
+    status: unsupported
+    explanation: Ruby assigned-value relationship evidence is not extracted yet.
+    limitation_scenarios:
+      - generated-attributes
+    evidence:
+      count: 0
+      variants: []
+  inheritance:
+    status: supported
+    explanation: Authored class superclass clauses are recorded.
+    limitation_scenarios: []
+    evidence:
+      count: 0
+      variants: []
+  namespaces:
+    status: partial
+    explanation: Statically named module declarations are extracted as namespaces.
+    limitation_scenarios:
+      - dynamic-namespace
+    evidence:
+      count: 0
+      variants: []
+  declaration_kinds:
+    status: supported
+    explanation: Ruby classes, modules, and constants publish exact shared declaration kinds.
+    limitation_scenarios: []
+    evidence:
+      count: 8
+      variants:
+        - class:CapturePayment
+        - class:GeneratedOrder
+        - class:Order
+        - class:OrderController
+        - class:OrderPolicy
+        - class:OrderRepository
+        - class:Payment
+        - class:PlaceOrder
+  composition:
+    status: partial
+    explanation: Literal include, prepend, and extend composition is recorded.
+    limitation_scenarios:
+      - dynamic-composition
+    evidence:
+      count: 0
+      variants: []
+  dependencies:
+    status: partial
+    explanation: Literal require and require_relative dependencies are normalized without load-path or framework
+      inference.
+    limitation_scenarios:
+      - dynamic-dependency
+    evidence:
+      count: 8
+      variants:
+        - 'external:json:'
+        - resolved:../../application/actions/place_order:src/commerce/orders/application/actions/place_order.rb
+        - resolved:../../domain/model/order:src/commerce/orders/domain/model/order.rb
+        - resolved:../../domain/model/payment:src/commerce/payments/domain/model/payment.rb
+        - resolved:../../domain/services/order_policy:src/commerce/orders/domain/services/order_policy.rb
+        - resolved:../model/order:src/commerce/orders/domain/model/order.rb
+  spans:
+    status: partial
+    explanation: Callable spans are exact; other declarations expose line counts.
+    limitation_scenarios:
+      - non-callable-span-boundary
+    evidence:
+      count: 13
+      variants:
+        - constructor:Order.initialize:4:7
+        - constructor:OrderController.initialize:5:7
+        - constructor:OrderRepository.initialize:5:7
+        - constructor:Payment.initialize:2:5
+        - constructor:PlaceOrder.initialize:5:7
+        - instance_method:CapturePayment.capture:4:6
+        - instance_method:Order.is_placed:13:15
+        - instance_method:Order.mark_placed:9:11
+        - instance_method:OrderController.handle:9:11
+        - instance_method:OrderPolicy.allows:4:6
+        - instance_method:OrderRepository.save:9:11
+        - instance_method:Payment.capture:7:9
+        - instance_method:PlaceOrder.place:9:14
+relationships:
+  declaration:
+    semantics: partial
+    semantics_explanation: Authored superclass and literal module-composition relations are preserved without
+      refinements, metaprogramming, or framework inference.
+    semantics_limitation_scenarios:
+      - runtime-superclass-semantics
+    inventory: partial
+    inventory_explanation: Superclass, include, prepend, and extend sites are emitted, while dynamic composition and
+      reopened-definition merging are not available.
+    inventory_limitation_scenarios:
+      - dynamic-composition
+    evidence:
+      count: 0
+      variants: []
+  member:
+    semantics: partial
+    semantics_explanation: Authored methods and bounded same-file call targets are preserved without runtime
+      dispatch or generated members.
+    semantics_limitation_scenarios:
+      - generated-attributes
+    inventory: partial
+    inventory_explanation: Declared method and static call evidence is emitted, but attributes and assigned-value
+      relationship evidence are not available.
+    inventory_limitation_scenarios:
+      - generated-attributes
+    evidence:
+      count: 32
+      variants:
+        - call:dynamic:!:1
+        - call:dynamic:allows:1
+        - call:dynamic:capture:1
+        - call:dynamic:is_placed:2
+        - call:dynamic:mark_placed:2
+        - call:dynamic:order_id:2
+        - call:dynamic:place:1
+        - call:unresolved:Order:2
+        - call:unresolved:generate:1
+        - callable:constructor:Order.initialize
+        - callable:constructor:OrderController.initialize
+        - callable:constructor:OrderRepository.initialize
+        - callable:constructor:Payment.initialize
+        - callable:constructor:PlaceOrder.initialize
+        - callable:instance_method:CapturePayment.capture
+        - callable:instance_method:Order.is_placed
+        - callable:instance_method:Order.mark_placed
+        - callable:instance_method:OrderController.handle
+        - callable:instance_method:OrderPolicy.allows
+        - callable:instance_method:OrderRepository.save
+        - callable:instance_method:Payment.capture
+        - callable:instance_method:PlaceOrder.place
+        - parameter:positional:CapturePayment.capture:payment
+        - parameter:positional:Order.initialize:order_id
+        - parameter:positional:OrderController.handle:order_id
+        - parameter:positional:OrderController.initialize:action
+        - parameter:positional:OrderPolicy.allows:order
+        - parameter:positional:OrderRepository.initialize:root
+        - parameter:positional:OrderRepository.save:order
+        - parameter:positional:Payment.initialize:payment_id
+        - parameter:positional:PlaceOrder.initialize:policy
+        - parameter:positional:PlaceOrder.place:order
+  dependency:
+    semantics: partial
+    semantics_explanation: Literal require and require_relative calls are normalized without Ruby load-path, Rails,
+      or Zeitwerk inference.
+    semantics_limitation_scenarios:
+      - dynamic-dependency
+    inventory: partial
+    inventory_explanation: Authored literal loads are emitted, but dynamic loads and framework-generated
+      dependencies are not available.
+    inventory_limitation_scenarios:
+      - dynamic-dependency
+    evidence:
+      count: 8
+      variants:
+        - 'external:json:'
+        - resolved:../../application/actions/place_order:src/commerce/orders/application/actions/place_order.rb
+        - resolved:../../domain/model/order:src/commerce/orders/domain/model/order.rb
+        - resolved:../../domain/model/payment:src/commerce/payments/domain/model/payment.rb
+        - resolved:../../domain/services/order_policy:src/commerce/orders/domain/services/order_policy.rb
+        - resolved:../model/order:src/commerce/orders/domain/model/order.rb
+scenarios:
+  - scenario: runtime-generated-symbol
+    rationale: Runtime class construction remains a constant value and does not fabricate a class declaration.
+    source: tests/fixtures/code_map/capability_gaps/ruby/src/example_capability_gaps.rb
+    authored_syntax:
+      - ExampleGenerated = Class.new
+  - scenario: generated-callable
+    rationale: A generated method is not fabricated as a statically declared callable.
+    source: tests/fixtures/code_map/capability_gaps/ruby/src/example_capability_gaps.rb
+    authored_syntax:
+      - define_method(:example_generated_method)
+  - scenario: dynamic-call-resolution
+    rationale: Static, missing, and receiver-driven calls retain distinct resolution evidence while calls inside a
+      generated method remain absent.
+    source: tests/fixtures/code_map/capability_gaps/ruby/src/example_capability_gaps.rb
+    authored_syntax:
+      - example_receiver.public_send
+      - example_generated_call
+  - scenario: generated-callable-parameters
+    rationale: Parameters of declared methods are normalized while a generated method parameter is not fabricated.
+    source: tests/fixtures/code_map/capability_gaps/ruby/src/example_capability_gaps.rb
+    authored_syntax:
+      - example_generated_parameter
+  - scenario: annotation-dsl
+    rationale: Annotation DSL calls do not fabricate shared annotation facts.
+    source: tests/fixtures/code_map/capability_gaps/ruby/src/example_capability_gaps.rb
+    authored_syntax:
+      - sig { params
+  - scenario: singleton-visibility
+    rationale: Declared callable kinds and ordinary visibility are normalized without interpreting singleton
+      visibility mutation.
+    source: tests/fixtures/code_map/capability_gaps/ruby/src/example_capability_gaps.rb
+    authored_syntax:
+      - private_class_method :example_hidden
+  - scenario: generated-attributes
+    rationale: Reader declarations and instance-variable assignments do not fabricate shared attribute or
+      assigned-value facts.
+    source: tests/fixtures/code_map/capability_gaps/ruby/src/example_capability_gaps.rb
+    authored_syntax:
+      - attr_reader :example_generated_attribute
+      - '@example_generated_attribute = example_value'
+  - scenario: dynamic-namespace
+    rationale: Runtime module construction does not fabricate a statically declared namespace.
+    source: tests/fixtures/code_map/capability_gaps/ruby/src/example_capability_gaps.rb
+    authored_syntax:
+      - ExampleDynamicNamespace = Module.new
+  - scenario: dynamic-composition
+    rationale: Literal declaration-body composition is emitted while runtime composition is not fabricated.
+    source: tests/fixtures/code_map/capability_gaps/ruby/src/example_capability_gaps.rb
+    authored_syntax:
+      - ExampleRuntime.include(ExampleIncluded)
+  - scenario: dynamic-dependency
+    rationale: A literal load is emitted while a runtime-computed load is not fabricated.
+    source: tests/fixtures/code_map/capability_gaps/ruby/src/example_capability_gaps.rb
+    authored_syntax:
+      - require example_dependency
+  - scenario: non-callable-span-boundary
+    rationale: Callable spans are exact while class declarations have no exact-span identity.
+    source: tests/fixtures/code_map/capability_gaps/ruby/src/example_capability_gaps.rb
+    authored_syntax:
+      - class ExampleBase
+  - scenario: runtime-superclass-semantics
+    rationale: The authored superclass alias is retained without resolving its runtime target.
+    source: tests/fixtures/code_map/capability_gaps/ruby/src/example_capability_gaps.rb
+    authored_syntax:
+      - class ExampleRuntime < ExampleRuntimeBase
+parameter_kinds:
+  source: tests/fixtures/code_map/parameter_kinds/ruby/src/params.rb
+  present:
+    - positional
+    - variadic_positional
+    - named_only
+    - variadic_named
+  not_applicable: []
+capability_limitations:
+  symbols:
+    - scenario: runtime-generated-symbol
+      present_declaration_names:
+        - ExampleBase
+      absent_declaration_names:
+        - ExampleGenerated
+  callables:
+    - scenario: generated-callable
+      present_callable_names:
+        - ExampleBase.example_local
+      absent_callable_names:
+        - ExampleBase.example_generated_method
+  calls:
+    - scenario: dynamic-call-resolution
+      present_resolutions:
+        - resolved
+        - unresolved
+        - dynamic
+      absent_target_names:
+        - example_generated_call
+  parameters:
+    - scenario: generated-callable-parameters
+      present_parameter_kinds:
+        - positional
+        - variadic_positional
+        - named_only
+        - variadic_named
+      unrepresented_authored_parameters:
+        - example_generated_parameter
+  type_references: []
+  annotations:
+    - scenario: annotation-dsl
+      present_annotations: []
+      absent_annotations:
+        - sig
+      absent_attribute_names: []
+  modifiers:
+    - scenario: singleton-visibility
+      present_visibility_intents:
+        - public
+      present_callable_kinds:
+        - type_method
+      present_member_kinds: []
+      unrepresented_authored_modifiers:
+        - private_class_method
+  attributes:
+    - scenario: generated-attributes
+      present_attribute_names: []
+      absent_attribute_names:
+        - example_generated_attribute
+  assigned_values:
+    - scenario: generated-attributes
+      present_attribute_names: []
+      absent_attribute_names:
+        - example_generated_attribute
+      expected_value_kinds: {}
+  namespaces:
+    - scenario: dynamic-namespace
+      absent_namespaces:
+        - ExampleDynamicNamespace
+  composition:
+    - scenario: dynamic-composition
+      present_relations:
+        - source_declaration_id:
+            source_id: src/example_capability_gaps.rb
+            family: class
+            qualified_name: ExampleBase
+            ordinal: 287
+          relation: includes
+          target_reference: ExampleIncluded
+        - source_declaration_id:
+            source_id: src/example_capability_gaps.rb
+            family: class
+            qualified_name: ExampleBase
+            ordinal: 287
+          relation: prepends
+          target_reference: ExamplePrepended
+        - source_declaration_id:
+            source_id: src/example_capability_gaps.rb
+            family: class
+            qualified_name: ExampleBase
+            ordinal: 287
+          relation: extends_singleton
+          target_reference: ExampleExtended
+      absent_endpoints:
+        - source_declaration_id:
+            source_id: src/example_capability_gaps.rb
+            family: class
+            qualified_name: ExampleRuntime
+            ordinal: 1333
+          target_reference: ExampleIncluded
+  dependencies:
+    - scenario: dynamic-dependency
+      present_dependencies:
+        - path: json
+          resolution: external
+      absent_dependencies:
+        - path: yaml
+          resolution: external
+  spans:
+    - scenario: non-callable-span-boundary
+      present_exact_span_owners:
+        - source_id: src/example_capability_gaps.rb
+          family: method
+          qualified_name: ExampleBase.example_local
+          ordinal: 730
+      absent_exact_span_owners:
+        - source_id: src/example_capability_gaps.rb
+          family: class
+          qualified_name: ExampleBase
+          ordinal: 287
+relationship_limitations:
+  declaration_semantics:
+    - scenario: runtime-superclass-semantics
+      present_relations:
+        - source_declaration_id:
+            source_id: src/example_capability_gaps.rb
+            family: class
+            qualified_name: ExampleRuntime
+            ordinal: 1333
+          relation: extends
+          target_reference: ExampleRuntimeBase
+      present_endpoints:
+        - source_declaration_id:
+            source_id: src/example_capability_gaps.rb
+            family: class
+            qualified_name: ExampleRuntime
+            ordinal: 1333
+          target_reference: ExampleRuntimeBase
+      absent_endpoints:
+        - source_declaration_id:
+            source_id: src/example_capability_gaps.rb
+            family: class
+            qualified_name: ExampleRuntime
+            ordinal: 1333
+          target_reference: ExampleBase
+  declaration_inventory:
+    - scenario: dynamic-composition
+      present_relations:
+        - source_declaration_id:
+            source_id: src/example_capability_gaps.rb
+            family: class
+            qualified_name: ExampleBase
+            ordinal: 287
+          relation: includes
+          target_reference: ExampleIncluded
+      present_endpoints:
+        - source_declaration_id:
+            source_id: src/example_capability_gaps.rb
+            family: class
+            qualified_name: ExampleBase
+            ordinal: 287
+          target_reference: ExampleIncluded
+      absent_endpoints:
+        - source_declaration_id:
+            source_id: src/example_capability_gaps.rb
+            family: class
+            qualified_name: ExampleRuntime
+            ordinal: 1333
+          target_reference: ExampleIncluded
+  member_semantics:
+    - scenario: generated-attributes
+      present_attribute_names: []
+      absent_attribute_names:
+        - example_generated_attribute
+      present_value_kinds: []
+      absent_value_kinds:
+        - literal
+  member_inventory:
+    - scenario: generated-attributes
+      present_attribute_names: []
+      absent_attribute_names:
+        - example_generated_attribute
+      present_value_kinds: []
+      absent_value_kinds:
+        - literal
+  dependency_semantics:
+    - scenario: dynamic-dependency
+      present_dependencies:
+        - path: json
+          resolution: external
+      absent_dependencies:
+        - path: yaml
+          resolution: external
+  dependency_inventory:
+    - scenario: dynamic-dependency
+      present_dependencies:
+        - path: json
+          resolution: external
+      absent_dependencies:
+        - path: yaml
+          resolution: external
+manifest_expectations:
+  canonical:
+    source: canonical/src/example.rb
+    namespaces:
+      - module:ExampleClassMethods
+      - module:ExampleFormatting
+      - module:ExampleValidation
+    symbols:
+      - callable:ExampleClassMethods.ExampleAbstract.EXAMPLE_CALLBACK
+      - callable:ExampleClassMethods.ExampleAbstract.example_private
+      - callable:ExampleClassMethods.ExampleAbstract.example_protected
+      - callable:ExampleClassMethods.ExampleAbstract.example_required
+      - callable:ExampleClassMethods.ExampleAbstract.example_type_method
+      - callable:ExampleClassMethods.ExampleAbstract.initialize
+      - callable:ExampleClassMethods.ExampleFormatting.example_format
+      - callable:ExampleClassMethods.ExampleImplementation.example_execute
+      - class:ExampleClassMethods.ExampleAbstract
+      - class:ExampleClassMethods.ExampleImplementation
+      - module:ExampleClassMethods.ExampleClassMethods
+      - module:ExampleClassMethods.ExampleFormatting
+      - module:ExampleClassMethods.ExampleValidation
+      - value_literal:ExampleClassMethods.ExampleAbstract.EXAMPLE_CONSTANT
+    callables:
+      - callable_value:ExampleAbstract.EXAMPLE_CALLBACK
+      - constructor:ExampleAbstract.initialize
+      - instance_method:ExampleAbstract.example_private
+      - instance_method:ExampleAbstract.example_protected
+      - instance_method:ExampleAbstract.example_required
+      - instance_method:ExampleFormatting.example_format
+      - instance_method:ExampleImplementation.example_execute
+      - type_method:ExampleAbstract.example_type_method
+    parameters:
+      - named_only:ExampleAbstract.example_required:example_block:6:false
+      - named_only:ExampleAbstract.example_required:example_default:4:true
+      - named_only:ExampleAbstract.example_required:example_named:3:false
+      - positional:ExampleAbstract.EXAMPLE_CALLBACK:example_value:0:false
+      - positional:ExampleAbstract.example_required:example_optional:1:true
+      - positional:ExampleAbstract.example_required:example_value:0:false
+      - positional:ExampleAbstract.example_type_method:example_value:0:false
+      - positional:ExampleAbstract.initialize:example_name:0:false
+      - positional:ExampleFormatting.example_format:example_value:0:false
+      - positional:ExampleImplementation.example_execute:example_value:0:false
+      - variadic_named:ExampleAbstract.example_required:example_options:5:false
+      - variadic_positional:ExampleAbstract.example_required:example_items:2:false
+    attributes: []
+    annotations: []
+    calls:
+      - 'dynamic:ExampleAbstract.example_required:call:3:'
+      - 'dynamic:ExampleFormatting.example_format:upcase:1:'
+      - resolved:ExampleAbstract.example_private:example_protected:1:ExampleAbstract.example_protected
+      - 'unresolved:ExampleAbstract.example_required:example_format:1:'
+      - 'unresolved:ExampleAbstract.example_required:generate:2:'
+      - 'unresolved:ExampleImplementation.example_execute:example_required:1:'
+    declaration_relations:
+      - extends:ExampleImplementation:ExampleAbstract
+      - extends_singleton:ExampleAbstract:ExampleClassMethods
+      - includes:ExampleAbstract:ExampleFormatting
+      - prepends:ExampleAbstract:ExampleValidation
+    dependencies:
+      - imports:external:src/example.rb:external:json:json
+  calls:
+    source: calls/src/example.rb
+    namespaces: []
+    symbols:
+      - callable:src/example.ExampleCalls.example_source
+      - callable:src/example.ExampleCalls.example_target
+      - class:src/example.ExampleCalls
+    callables:
+      - instance_method:ExampleCalls.example_source
+      - instance_method:ExampleCalls.example_target
+    parameters:
+      - positional:ExampleCalls.example_source:example_value:0:false
+      - positional:ExampleCalls.example_target:example_value:0:false
+    attributes: []
+    annotations: []
+    calls:
+      - resolved:ExampleCalls.example_source:example_target:1:ExampleCalls.example_target
+      - resolved:ExampleCalls.example_source:example_target:2:ExampleCalls.example_target
+    declaration_relations: []
+    dependencies: []
+  no_calls:
+    source: no_calls/src/example.rb
+    namespaces: []
+    symbols:
+      - callable:src/example.ExampleNoCalls.example_without_calls
+      - class:src/example.ExampleNoCalls
+    callables:
+      - instance_method:ExampleNoCalls.example_without_calls
+    parameters:
+      - positional:ExampleNoCalls.example_without_calls:example_value:0:false
+    attributes: []
+    annotations: []
+    calls: []
+    declaration_relations: []
+    dependencies: []
+  negative_members:
+    source: negative_members/src/example.rb
+    namespaces: []
+    symbols:
+      - callable:src/example.ExampleValue.initialize
+      - class:src/example.ExampleValue
+    callables:
+      - constructor:ExampleValue.initialize
+    parameters: []
+    attributes: []
+    annotations: []
+    calls: []
+    declaration_relations: []
+    dependencies: []
+  dependencies:
+    source: dependencies/src/example.rb
+    namespaces: []
+    symbols:
+      - callable:src/example.ExampleDependency.example_json
+      - class:src/example.ExampleDependency
+    callables:
+      - instance_method:ExampleDependency.example_json
+    parameters:
+      - positional:ExampleDependency.example_json:example_value:0:false
+    attributes: []
+    annotations: []
+    calls:
+      - 'unresolved:ExampleDependency.example_json:generate:1:'
+    declaration_relations: []
+    dependencies:
+      - imports:external:src/example.rb:external:json:json
+  source_edit_before:
+    source: source_edit_before/src/example.rb
+    namespaces: []
+    symbols:
+      - callable:src/example.Example.example_value
+      - class:src/example.Example
+    callables:
+      - type_method:Example.example_value
+    parameters: []
+    attributes: []
+    annotations: []
+    calls: []
+    declaration_relations: []
+    dependencies: []
+  source_edit_after:
+    source: source_edit_after/src/example.rb
+    namespaces: []
+    symbols:
+      - callable:src/example.Example.example_value
+      - class:src/example.Example
+    callables:
+      - type_method:Example.example_value
+    parameters: []
+    attributes: []
+    annotations: []
+    calls: []
+    declaration_relations: []
+    dependencies: []

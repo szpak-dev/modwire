@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 import pytest
@@ -131,14 +132,14 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
 
     def test_duplicate_parameter_kind_vocabulary_attack_is_rejected(self) -> None:
         attacked = self.capability_matrix.model_dump(mode="json")
-        attacked["parameter_kinds"].append(attacked["parameter_kinds"][0])
+        attacked["index"]["parameter_kinds"].append(attacked["index"]["parameter_kinds"][0])
 
         with pytest.raises(ValidationError, match="parameter-kind vocabulary contains duplicates"):
             LanguageCapabilityMatrix.model_validate(attacked)
 
     def test_unobserved_parameter_kind_vocabulary_attack_is_rejected(self) -> None:
         attacked = self.capability_matrix.model_dump(mode="json")
-        attacked["parameter_kinds"].append("example_unobserved")
+        attacked["index"]["parameter_kinds"].append("example_unobserved")
         for row in attacked["languages"].values():
             row["parameter_kinds"]["not_applicable"].append("example_unobserved")
 
@@ -147,6 +148,93 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             match="parameter-kind vocabulary contains a kind absent from every language",
         ):
             LanguageCapabilityMatrix.model_validate(attacked)
+
+    def test_unknown_matrix_schema_version_attack_is_rejected(self) -> None:
+        attacked = self.capability_matrix.model_dump(mode="json")
+        attacked["index"]["schema_version"] = 2
+
+        with pytest.raises(ValidationError, match="literal_error"):
+            LanguageCapabilityMatrix.model_validate(attacked)
+
+    def test_duplicate_language_document_path_attack_is_rejected(self) -> None:
+        attacked = self.capability_matrix.model_dump(mode="json")
+        paths = tuple(attacked["index"]["languages"].values())
+        attacked["index"]["languages"]["ruby"] = paths[0]
+
+        with pytest.raises(ValidationError, match="language document paths contain duplicates"):
+            LanguageCapabilityMatrix.model_validate(attacked)
+
+    def test_deep_language_document_path_attack_is_rejected(self) -> None:
+        attacked = self.capability_matrix.model_dump(mode="json")
+        for language in attacked["index"]["languages"]:
+            attacked["index"]["languages"][language] = f"nested/languages/{language}.yaml"
+
+        with pytest.raises(ValidationError, match="language documents must share one nested directory"):
+            LanguageCapabilityMatrix.model_validate(attacked)
+
+    def test_language_document_identity_attack_is_rejected(self) -> None:
+        language = next(iter(self.capability_matrix.languages))
+        attacked = self.capability_matrix.model_dump(mode="json")
+        attacked["languages"][language]["language"] = "example_language"
+
+        with pytest.raises(ValidationError, match=f"{language} document declares language example_language"):
+            LanguageCapabilityMatrix.model_validate(attacked)
+
+    def test_missing_language_document_attack_is_rejected_before_valid_inventory_recovers(self) -> None:
+        index_path = self.workspace / "language-capabilities.yaml"
+        document_root = self.workspace / "language-capabilities"
+        shutil.copyfile(self.repository / "language-capabilities.yaml", index_path)
+        shutil.copytree(self.repository / "language-capabilities", document_root)
+        missing = document_root / "ruby.yaml"
+        missing.unlink()
+
+        with pytest.raises(FixtureContractError, match="language document inventory mismatch"):
+            LanguageCapabilityMatrixReader().read(index_path)
+
+        shutil.copyfile(self.repository / "language-capabilities/ruby.yaml", missing)
+        LanguageCapabilityMatrixReader().read(index_path)
+
+    def test_missing_language_document_directory_attack_is_rejected_before_recovery(self) -> None:
+        index_path = self.workspace / "language-capabilities.yaml"
+        document_root = self.workspace / "language-capabilities"
+        shutil.copyfile(self.repository / "language-capabilities.yaml", index_path)
+
+        with pytest.raises(FixtureContractError, match="language document directory is missing"):
+            LanguageCapabilityMatrixReader().read(index_path)
+
+        shutil.copytree(self.repository / "language-capabilities", document_root)
+        LanguageCapabilityMatrixReader().read(index_path)
+
+    def test_extra_language_document_attack_is_rejected_before_valid_inventory_recovers(self) -> None:
+        index_path = self.workspace / "language-capabilities.yaml"
+        document_root = self.workspace / "language-capabilities"
+        shutil.copyfile(self.repository / "language-capabilities.yaml", index_path)
+        shutil.copytree(self.repository / "language-capabilities", document_root)
+        extra = document_root / "example.yaml"
+        extra.write_text("language: example\n", encoding="utf-8")
+
+        with pytest.raises(FixtureContractError, match="language document inventory mismatch"):
+            LanguageCapabilityMatrixReader().read(index_path)
+
+        extra.unlink()
+        LanguageCapabilityMatrixReader().read(index_path)
+
+    def test_non_file_language_document_attack_is_rejected_before_recovery(self) -> None:
+        index_path = self.workspace / "language-capabilities.yaml"
+        document_root = self.workspace / "language-capabilities"
+        shutil.copyfile(self.repository / "language-capabilities.yaml", index_path)
+        shutil.copytree(self.repository / "language-capabilities", document_root)
+        relative_document = next(iter(self.capability_matrix.index.languages.values()))
+        attacked_document = self.workspace / relative_document
+        attacked_document.unlink()
+        attacked_document.mkdir()
+
+        with pytest.raises(FixtureContractError, match="language document inventory mismatch"):
+            LanguageCapabilityMatrixReader().read(index_path)
+
+        attacked_document.rmdir()
+        shutil.copyfile(self.repository / relative_document, attacked_document)
+        LanguageCapabilityMatrixReader().read(index_path)
 
     def test_extra_nested_matrix_field_attack_is_rejected(self) -> None:
         language = next(iter(self.capability_matrix.languages))
@@ -256,10 +344,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             root = self.type_reference_root(language)
             root_path = row.fixtures.type_reference_root()
             expected = tuple(
-                sorted(
-                    Path(path).relative_to(root_path).as_posix()
-                    for path in row.fixtures.type_reference_sources()
-                )
+                sorted(Path(path).relative_to(root_path).as_posix() for path in row.fixtures.type_reference_sources())
             )
             contract.validate_source_inventory(root, expected)
 
