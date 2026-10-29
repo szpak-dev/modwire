@@ -1,6 +1,6 @@
 from modwire.application import ImplementationManifest
 
-from .language_capability_matrix.expectations.manifest import ManifestEvidenceExpectation
+from .language_capability_matrix.manifests.coverage import ManifestEvidenceExpectation
 
 
 class FixtureManifestEvidence:

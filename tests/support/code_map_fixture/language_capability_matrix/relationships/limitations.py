@@ -1,7 +1,34 @@
-from ....model import FixtureModel
-from .declaration import DeclarationRelationshipLimitationExpectation
-from .dependency import DependencyRelationshipLimitationExpectation
-from .member import MemberRelationshipLimitationExpectation
+from pydantic import Field
+
+from modwire.application import SourceAssignedValueKind
+
+from ...model import FixtureModel
+from ..capabilities.evidence import (
+    DeclarationRelationEndpointEvidence,
+    DeclarationRelationEvidence,
+    DependencyEvidence,
+)
+
+
+class DeclarationRelationshipLimitationExpectation(FixtureModel):
+    scenario: str = Field(min_length=1)
+    present_relations: tuple[DeclarationRelationEvidence, ...]
+    present_endpoints: tuple[DeclarationRelationEndpointEvidence, ...]
+    absent_endpoints: tuple[DeclarationRelationEndpointEvidence, ...]
+
+
+class DependencyRelationshipLimitationExpectation(FixtureModel):
+    scenario: str = Field(min_length=1)
+    present_dependencies: tuple[DependencyEvidence, ...]
+    absent_dependencies: tuple[DependencyEvidence, ...]
+
+
+class MemberRelationshipLimitationExpectation(FixtureModel):
+    scenario: str = Field(min_length=1)
+    present_attribute_names: tuple[str, ...]
+    absent_attribute_names: tuple[str, ...]
+    present_value_kinds: tuple[SourceAssignedValueKind, ...]
+    absent_value_kinds: tuple[SourceAssignedValueKind, ...]
 
 
 class LanguageRelationshipLimitations(FixtureModel):

@@ -2,7 +2,7 @@ import pytest
 
 from modwire.application import SourceAssignedValueKind
 
-from ..support.code_map_fixture.language_capability_matrix.limits.capability.value import (
+from ..support.code_map_fixture.language_capability_matrix.capabilities.limitations import (
     AssignedValueLimitationExpectation,
 )
 from ..support.code_map_fixture.language_capability_matrix.reader import LanguageCapabilityMatrixReader
@@ -60,7 +60,7 @@ class TestAssignedValueEvidence(ApplicationTestCase):
         limitation: AssignedValueLimitationExpectation,
     ) -> None:
         row = self.capability_matrix.languages[language]
-        root = self.repository / row.fixtures.capability_gap_root
+        root = self.repository / row.fixtures.capability_gaps.root.value
         scenario = next(scenario for scenario in row.scenarios if scenario.scenario == limitation.scenario)
         assert (self.repository / scenario.source).is_file()
         format = self.application.implementation_manifest_formats()[0]

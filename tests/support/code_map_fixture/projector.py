@@ -1,31 +1,28 @@
 import hashlib
 import json
-import re
-from pathlib import PurePosixPath
 
 from modwire.application import (
     CapabilityStatus,
     CodeMap,
 )
 
+from .language_capability_matrix.fixtures.projection import ReferenceProjection
+
 
 class FixtureCodeMapProjector:
-    def canonical_name(self, name: str) -> str:
-        separated = re.sub("([a-z0-9])([A-Z])", r"\1_\2", name.replace("-", "_"))
-        return re.sub("([A-Z]+)([A-Z][a-z])", r"\1_\2", separated).lower()
-
-    def project(self, code_map: CodeMap, reference: CodeMap) -> CodeMap:
+    def project(self, code_map: CodeMap, projection: ReferenceProjection, reference: CodeMap) -> CodeMap:
         unsupported_type = next(
             callable_fact.return_type
             for source in reference.extraction.files.values()
             for callable_fact in source.canonical_callables()
             if callable_fact.return_type.kind.value == "unsupported"
         )
-        source_ids: dict[str, str] = {}
-        for source_id in code_map.extraction.files:
-            path = PurePosixPath(str(source_id))
-            canonical_name = self.canonical_name(path.stem)
-            source_ids[str(source_id)] = str(PurePosixPath(*path.parts[:-1], canonical_name))
+        source_ids = {item.authored.value.as_posix(): item.canonical.value.as_posix() for item in projection.sources}
+        declaration_ids = {item.authored: item.canonical for item in projection.declarations}
+        callable_ids = {item.authored: item.canonical for item in projection.callables}
+        parameter_names = {
+            (item.callable, item.authored.value): item.canonical.value for item in projection.parameters
+        }
 
         projected_source_ids: list[str] = []
         projected_source_files = list(code_map.extraction.files.values())
@@ -35,45 +32,28 @@ class FixtureCodeMapProjector:
             projected_source_ids.append(source_id)
             declarations = list(source_file.declarations)
             declarations.clear()
-            for ordinal, declaration in enumerate(sorted(source_file.declarations, key=lambda item: item.name), 1):
-                identity = declaration.declaration_id.model_copy(
-                    update={
-                        "source_id": source_id,
-                        "qualified_name": declaration.name,
-                        "ordinal": ordinal,
-                    }
-                )
+            for declaration in sorted(source_file.declarations, key=lambda item: item.name):
+                identity = declaration_ids[declaration.declaration_id]
                 projected_method_groups = []
                 for authored_methods in (declaration.methods, declaration.abstract_methods):
                     projected_methods = []
-                    for method_ordinal, method in enumerate(
-                        (
-                            method
-                            for method in sorted(authored_methods, key=lambda item: item.name)
-                            if method.kind.value != "constructor"
-                        ),
-                        start=1,
-                    ):
-                        name = self.canonical_name(method.name)
-                        qualified_name = f"{identity.qualified_name}.{name}"
+                    for method in sorted(authored_methods, key=lambda item: item.name):
+                        if method.declaration_id not in callable_ids:
+                            continue
+                        callable_identity = callable_ids[method.declaration_id]
+                        name = callable_identity.qualified_name.rsplit(".", 1)[-1]
                         projected_methods.append(
                             method.model_copy(
                                 update={
                                     "name": name,
                                     "source_id": source_id,
-                                    "qualified_name": qualified_name,
-                                    "declaration_id": method.declaration_id.model_copy(
-                                        update={
-                                            "source_id": source_id,
-                                            "qualified_name": qualified_name,
-                                            "ordinal": method_ordinal,
-                                        }
-                                    ),
+                                    "qualified_name": callable_identity.qualified_name,
+                                    "declaration_id": callable_identity,
                                     "owner_declaration_id": identity,
                                     "parameters": tuple(
                                         parameter.model_copy(
                                             update={
-                                                "name": self.canonical_name(parameter.name),
+                                                "name": parameter_names[(method.declaration_id, parameter.name)],
                                                 "type": unsupported_type,
                                             }
                                         )

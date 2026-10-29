@@ -10,10 +10,13 @@ from modwire.application import (
     SourceMemberKind,
 )
 
-from .language_capability_matrix.evidence.dependency import DependencyEvidence
-from .language_capability_matrix.evidence.endpoint import DeclarationRelationEndpointEvidence
-from .language_capability_matrix.evidence.relation import DeclarationRelationEvidence
-from .language_capability_matrix.expectations.evidence import EvidenceExpectation
+from .language_capability_matrix.capabilities.evidence import (
+    DeclarationRelationEndpointEvidence,
+    DeclarationRelationEvidence,
+    DependencyEvidence,
+    EvidenceExpectation,
+)
+from .language_capability_matrix.relationships.evidence import RelationshipEvidenceExpectation
 
 
 class FixtureCapabilityEvidence:
@@ -173,7 +176,7 @@ class FixtureCapabilityEvidence:
         self,
         code_map: CodeMap,
         family: RelationshipFamily,
-    ) -> EvidenceExpectation:
+    ) -> RelationshipEvidenceExpectation:
         if family is RelationshipFamily.DECLARATION:
             observations = tuple(
                 f"{relation.kind.value}:{relation.source_declaration_id.qualified_name}:{relation.target_reference}"
@@ -223,7 +226,7 @@ class FixtureCapabilityEvidence:
             )
         else:
             assert_never(family)
-        return self.evidence_expectation(observations)
+        return RelationshipEvidenceExpectation(count=len(observations), variants=tuple(sorted(set(observations))))
 
     def evidence_expectation(self, observations: tuple[str, ...]) -> EvidenceExpectation:
         return EvidenceExpectation(count=len(observations), variants=tuple(sorted(set(observations))))

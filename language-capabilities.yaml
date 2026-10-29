@@ -1,5 +1,5 @@
 schema_version: 1
-reference_projection: tests/fixtures/code_map/reference_shop/expected_code_map.json
+reference_code_map: tests/fixtures/code_map/reference_shop/expected_code_map.json
 parameter_kinds:
   - positional
   - variadic_positional

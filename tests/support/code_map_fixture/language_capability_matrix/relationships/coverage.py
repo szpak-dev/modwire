@@ -3,7 +3,7 @@ from pydantic import Field
 from modwire.application import CapabilityStatus
 
 from ...model import FixtureModel
-from .evidence import EvidenceExpectation
+from .evidence import RelationshipEvidenceExpectation
 
 
 class RelationshipExpectation(FixtureModel):
@@ -13,4 +13,4 @@ class RelationshipExpectation(FixtureModel):
     inventory: CapabilityStatus
     inventory_explanation: str = Field(min_length=1)
     inventory_limitation_scenarios: tuple[str, ...]
-    evidence: EvidenceExpectation
+    evidence: RelationshipEvidenceExpectation

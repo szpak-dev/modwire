@@ -14,3 +14,8 @@ class ManifestEvidenceExpectation(FixtureModel):
     calls: tuple[str, ...]
     declaration_relations: tuple[str, ...]
     dependencies: tuple[str, ...]
+
+
+class ManifestTransitionExpectation(FixtureModel):
+    before: str = Field(min_length=1)
+    after: str = Field(min_length=1)

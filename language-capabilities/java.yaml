@@ -1,24 +1,268 @@
 language: java
-convention:
-  suffix: .java
-  suffixes:
-    - .java
-  separator: _
-  class_named_file: true
 fixtures:
-  reference_root: tests/fixtures/code_map/reference_shop/languages/java
-  capability_gap_root: tests/fixtures/code_map/capability_gaps/java
-  type_reference_cases: tests/fixtures/code_map/type_references/java/src/TypeReferenceCases.java
-  type_reference_empty: tests/fixtures/code_map/type_references/java/src/TypeReferenceEmpty.java
-  manifest_root: tests/fixtures/implementation_manifest/java
-  manifest_sources:
-    canonical: canonical/src/Example.java
-    calls: calls/src/Example.java
-    no_calls: no_calls/src/Example.java
-    negative_members: negative_members/src/Example.java
-    dependencies: dependencies/src/Example.java
-    source_edit_before: source_edit_before/src/Example.java
-    source_edit_after: source_edit_after/src/Example.java
+  source_suffixes:
+  - .java
+  reference:
+    root: tests/fixtures/code_map/reference_shop/languages/java
+    sources:
+    - ignored/GeneratedOrder.java
+    - src/commerce/orders/application/actions/PlaceOrder.java
+    - src/commerce/orders/domain/model/Order.java
+    - src/commerce/orders/domain/services/OrderPolicy.java
+    - src/commerce/orders/infrastructure/repositories/OrderRepository.java
+    - src/commerce/orders/interfaces/http/OrderController.java
+    - src/commerce/payments/application/actions/CapturePayment.java
+    - src/commerce/payments/domain/model/Payment.java
+  language_extensions:
+    root: tests/fixtures/code_map/language_extensions/java
+    sources:
+    - src/ExampleShapes.java
+  capability_gaps:
+    root: tests/fixtures/code_map/capability_gaps/java
+    sources:
+    - src/ExampleCapabilityGaps.java
+  type_references:
+    root: tests/fixtures/code_map/type_references/java
+    cases: src/TypeReferenceCases.java
+    empty: src/TypeReferenceEmpty.java
+  parameter_kinds:
+    root: tests/fixtures/code_map/parameter_kinds/java
+    sources:
+    - src/Params.java
+  manifests:
+    root: tests/fixtures/implementation_manifest/java
+    sources:
+      canonical: canonical/src/Example.java
+      calls: calls/src/Example.java
+      no_calls: no_calls/src/Example.java
+      negative_members: negative_members/src/Example.java
+      dependencies: dependencies/src/Example.java
+      source_edit_before: source_edit_before/src/Example.java
+      source_edit_after: source_edit_after/src/Example.java
+projection:
+  sources:
+  - authored: ignored/GeneratedOrder.java
+    canonical: ignored/generated_order
+  - authored: src/commerce/orders/application/actions/PlaceOrder.java
+    canonical: src/commerce/orders/application/actions/place_order
+  - authored: src/commerce/orders/domain/model/Order.java
+    canonical: src/commerce/orders/domain/model/order
+  - authored: src/commerce/orders/domain/services/OrderPolicy.java
+    canonical: src/commerce/orders/domain/services/order_policy
+  - authored: src/commerce/orders/infrastructure/repositories/OrderRepository.java
+    canonical: src/commerce/orders/infrastructure/repositories/order_repository
+  - authored: src/commerce/orders/interfaces/http/OrderController.java
+    canonical: src/commerce/orders/interfaces/http/order_controller
+  - authored: src/commerce/payments/application/actions/CapturePayment.java
+    canonical: src/commerce/payments/application/actions/capture_payment
+  - authored: src/commerce/payments/domain/model/Payment.java
+    canonical: src/commerce/payments/domain/model/payment
+  declarations:
+  - authored:
+      source_id: src/commerce/orders/application/actions/PlaceOrder.java
+      family: class
+      qualified_name: PlaceOrder
+      ordinal: 60001
+    canonical:
+      source_id: src/commerce/orders/application/actions/place_order
+      family: class
+      qualified_name: PlaceOrder
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/domain/model/Order.java
+      family: class
+      qualified_name: Order
+      ordinal: 30001
+    canonical:
+      source_id: src/commerce/orders/domain/model/order
+      family: class
+      qualified_name: Order
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/domain/services/OrderPolicy.java
+      family: class
+      qualified_name: OrderPolicy
+      ordinal: 50001
+    canonical:
+      source_id: src/commerce/orders/domain/services/order_policy
+      family: class
+      qualified_name: OrderPolicy
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/infrastructure/repositories/OrderRepository.java
+      family: class
+      qualified_name: OrderRepository
+      ordinal: 60001
+    canonical:
+      source_id: src/commerce/orders/infrastructure/repositories/order_repository
+      family: class
+      qualified_name: OrderRepository
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/interfaces/http/OrderController.java
+      family: class
+      qualified_name: OrderController
+      ordinal: 60001
+    canonical:
+      source_id: src/commerce/orders/interfaces/http/order_controller
+      family: class
+      qualified_name: OrderController
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/payments/application/actions/CapturePayment.java
+      family: class
+      qualified_name: CapturePayment
+      ordinal: 50001
+    canonical:
+      source_id: src/commerce/payments/application/actions/capture_payment
+      family: class
+      qualified_name: CapturePayment
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/payments/domain/model/Payment.java
+      family: class
+      qualified_name: Payment
+      ordinal: 30001
+    canonical:
+      source_id: src/commerce/payments/domain/model/payment
+      family: class
+      qualified_name: Payment
+      ordinal: 1
+  callables:
+  - authored:
+      source_id: src/commerce/orders/application/actions/PlaceOrder.java
+      family: method
+      qualified_name: PlaceOrder.place
+      ordinal: 130005
+    canonical:
+      source_id: src/commerce/orders/application/actions/place_order
+      family: method
+      qualified_name: PlaceOrder.place
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/domain/model/Order.java
+      family: method
+      qualified_name: Order.isPlaced
+      ordinal: 160005
+    canonical:
+      source_id: src/commerce/orders/domain/model/order
+      family: method
+      qualified_name: Order.is_placed
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/domain/model/Order.java
+      family: method
+      qualified_name: Order.markPlaced
+      ordinal: 120005
+    canonical:
+      source_id: src/commerce/orders/domain/model/order
+      family: method
+      qualified_name: Order.mark_placed
+      ordinal: 2
+  - authored:
+      source_id: src/commerce/orders/domain/services/OrderPolicy.java
+      family: method
+      qualified_name: OrderPolicy.allows
+      ordinal: 60005
+    canonical:
+      source_id: src/commerce/orders/domain/services/order_policy
+      family: method
+      qualified_name: OrderPolicy.allows
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/infrastructure/repositories/OrderRepository.java
+      family: method
+      qualified_name: OrderRepository.save
+      ordinal: 130005
+    canonical:
+      source_id: src/commerce/orders/infrastructure/repositories/order_repository
+      family: method
+      qualified_name: OrderRepository.save
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/interfaces/http/OrderController.java
+      family: method
+      qualified_name: OrderController.handle
+      ordinal: 130005
+    canonical:
+      source_id: src/commerce/orders/interfaces/http/order_controller
+      family: method
+      qualified_name: OrderController.handle
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/payments/application/actions/CapturePayment.java
+      family: method
+      qualified_name: CapturePayment.capture
+      ordinal: 60005
+    canonical:
+      source_id: src/commerce/payments/application/actions/capture_payment
+      family: method
+      qualified_name: CapturePayment.capture
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/payments/domain/model/Payment.java
+      family: method
+      qualified_name: Payment.capture
+      ordinal: 120005
+    canonical:
+      source_id: src/commerce/payments/domain/model/payment
+      family: method
+      qualified_name: Payment.capture
+      ordinal: 1
+  parameters:
+  - callable:
+      source_id: src/commerce/orders/application/actions/PlaceOrder.java
+      family: method
+      qualified_name: PlaceOrder.place
+      ordinal: 130005
+    authored: order
+    canonical: order
+  - callable:
+      source_id: src/commerce/orders/domain/services/OrderPolicy.java
+      family: method
+      qualified_name: OrderPolicy.allows
+      ordinal: 60005
+    authored: order
+    canonical: order
+  - callable:
+      source_id: src/commerce/orders/infrastructure/repositories/OrderRepository.java
+      family: method
+      qualified_name: OrderRepository.save
+      ordinal: 130005
+    authored: order
+    canonical: order
+  - callable:
+      source_id: src/commerce/orders/interfaces/http/OrderController.java
+      family: method
+      qualified_name: OrderController.handle
+      ordinal: 130005
+    authored: orderId
+    canonical: order_id
+  - callable:
+      source_id: src/commerce/payments/application/actions/CapturePayment.java
+      family: method
+      qualified_name: CapturePayment.capture
+      ordinal: 60005
+    authored: payment
+    canonical: payment
+  compared_capabilities:
+  - sources
+  - symbols
+  - callables
+  - parameters
+  - declaration_kinds
+  language_specific_capabilities:
+  - calls
+  - type_references
+  - annotations
+  - modifiers
+  - attributes
+  - assigned_values
+  - inheritance
+  - namespaces
+  - composition
+  - dependencies
+  - spans
 capabilities:
   sources:
     status: supported
@@ -27,14 +271,14 @@ capabilities:
     evidence:
       count: 8
       variants:
-        - source:ignored/GeneratedOrder.java
-        - source:src/commerce/orders/application/actions/PlaceOrder.java
-        - source:src/commerce/orders/domain/model/Order.java
-        - source:src/commerce/orders/domain/services/OrderPolicy.java
-        - source:src/commerce/orders/infrastructure/repositories/OrderRepository.java
-        - source:src/commerce/orders/interfaces/http/OrderController.java
-        - source:src/commerce/payments/application/actions/CapturePayment.java
-        - source:src/commerce/payments/domain/model/Payment.java
+      - source:ignored/GeneratedOrder.java
+      - source:src/commerce/orders/application/actions/PlaceOrder.java
+      - source:src/commerce/orders/domain/model/Order.java
+      - source:src/commerce/orders/domain/services/OrderPolicy.java
+      - source:src/commerce/orders/infrastructure/repositories/OrderRepository.java
+      - source:src/commerce/orders/interfaces/http/OrderController.java
+      - source:src/commerce/payments/application/actions/CapturePayment.java
+      - source:src/commerce/payments/domain/model/Payment.java
   symbols:
     status: supported
     explanation: Classes, interfaces, records, enums, and annotation declarations are extracted.
@@ -42,14 +286,14 @@ capabilities:
     evidence:
       count: 8
       variants:
-        - declaration:class:CapturePayment
-        - declaration:class:GeneratedOrder
-        - declaration:class:Order
-        - declaration:class:OrderController
-        - declaration:class:OrderPolicy
-        - declaration:class:OrderRepository
-        - declaration:class:Payment
-        - declaration:class:PlaceOrder
+      - declaration:class:CapturePayment
+      - declaration:class:GeneratedOrder
+      - declaration:class:Order
+      - declaration:class:OrderController
+      - declaration:class:OrderPolicy
+      - declaration:class:OrderRepository
+      - declaration:class:Payment
+      - declaration:class:PlaceOrder
   callables:
     status: supported
     explanation: Constructors, methods, and annotation elements are extracted.
@@ -57,19 +301,19 @@ capabilities:
     evidence:
       count: 13
       variants:
-        - constructor:Order.constructor
-        - constructor:OrderController.constructor
-        - constructor:OrderRepository.constructor
-        - constructor:Payment.constructor
-        - constructor:PlaceOrder.constructor
-        - instance_method:CapturePayment.capture
-        - instance_method:Order.isPlaced
-        - instance_method:Order.markPlaced
-        - instance_method:OrderController.handle
-        - instance_method:OrderPolicy.allows
-        - instance_method:OrderRepository.save
-        - instance_method:Payment.capture
-        - instance_method:PlaceOrder.place
+      - constructor:Order.constructor
+      - constructor:OrderController.constructor
+      - constructor:OrderRepository.constructor
+      - constructor:Payment.constructor
+      - constructor:PlaceOrder.constructor
+      - instance_method:CapturePayment.capture
+      - instance_method:Order.isPlaced
+      - instance_method:Order.markPlaced
+      - instance_method:OrderController.handle
+      - instance_method:OrderPolicy.allows
+      - instance_method:OrderRepository.save
+      - instance_method:Payment.capture
+      - instance_method:PlaceOrder.place
   calls:
     status: supported
     explanation: Static method and constructor calls owned by extracted callables are emitted with explicit
@@ -78,13 +322,13 @@ capabilities:
     evidence:
       count: 7
       variants:
-        - unresolved:Order:2
-        - unresolved:allows:1
-        - unresolved:capture:1
-        - unresolved:isPlaced:1
-        - unresolved:markPlaced:2
-        - unresolved:now:1
-        - unresolved:place:1
+      - unresolved:Order:2
+      - unresolved:allows:1
+      - unresolved:capture:1
+      - unresolved:isPlaced:1
+      - unresolved:markPlaced:2
+      - unresolved:now:1
+      - unresolved:place:1
   parameters:
     status: supported
     explanation: Callable parameter order, kind, and exact declared type are extracted.
@@ -92,35 +336,35 @@ capabilities:
     evidence:
       count: 10
       variants:
-        - positional:action:false
-        - positional:order:false
-        - positional:orderId:false
-        - positional:payment:false
-        - positional:paymentId:false
-        - positional:policy:false
-        - positional:root:false
+      - positional:action:false
+      - positional:order:false
+      - positional:orderId:false
+      - positional:payment:false
+      - positional:paymentId:false
+      - positional:policy:false
+      - positional:root:false
   type_references:
     status: partial
     explanation: Named references and ordered generic arguments are structural; wildcards, arrays, and other
       authored type syntax are reported as unsupported.
     limitation_scenarios:
-      - type-reference-grammar-boundary
+    - type-reference-grammar-boundary
     evidence:
       count: 30
       variants:
-        - absent
-        - reference:Order
-        - reference:OrderPolicy
-        - reference:Payment
-        - reference:PlaceOrder
-        - reference:String
-        - reference:boolean
-        - reference:void
+      - absent
+      - reference:Order
+      - reference:OrderPolicy
+      - reference:Payment
+      - reference:PlaceOrder
+      - reference:String
+      - reference:boolean
+      - reference:void
   annotations:
     status: partial
     explanation: Declaration annotations and exact declared types are extracted without evaluation.
     limitation_scenarios:
-      - annotation-evaluation-boundary
+    - annotation-evaluation-boundary
     evidence:
       count: 0
       variants: []
@@ -128,38 +372,38 @@ capabilities:
     status: partial
     explanation: Visibility, callable kind, and property member kind are normalized.
     limitation_scenarios:
-      - modifier-normalization-boundary
+    - modifier-normalization-boundary
     evidence:
       count: 28
       variants:
-        - callable_kind:constructor:Order.constructor
-        - callable_kind:constructor:OrderController.constructor
-        - callable_kind:constructor:OrderRepository.constructor
-        - callable_kind:constructor:Payment.constructor
-        - callable_kind:constructor:PlaceOrder.constructor
-        - callable_kind:instance_method:CapturePayment.capture
-        - callable_kind:instance_method:Order.isPlaced
-        - callable_kind:instance_method:Order.markPlaced
-        - callable_kind:instance_method:OrderController.handle
-        - callable_kind:instance_method:OrderPolicy.allows
-        - callable_kind:instance_method:OrderRepository.save
-        - callable_kind:instance_method:Payment.capture
-        - callable_kind:instance_method:PlaceOrder.place
-        - member_kind:instance:action
-        - member_kind:instance:captured
-        - member_kind:instance:orderId
-        - member_kind:instance:paymentId
-        - member_kind:instance:placed
-        - member_kind:instance:policy
-        - member_kind:instance:root
-        - visibility:public:CapturePayment
-        - visibility:public:GeneratedOrder
-        - visibility:public:Order
-        - visibility:public:OrderController
-        - visibility:public:OrderPolicy
-        - visibility:public:OrderRepository
-        - visibility:public:Payment
-        - visibility:public:PlaceOrder
+      - callable_kind:constructor:Order.constructor
+      - callable_kind:constructor:OrderController.constructor
+      - callable_kind:constructor:OrderRepository.constructor
+      - callable_kind:constructor:Payment.constructor
+      - callable_kind:constructor:PlaceOrder.constructor
+      - callable_kind:instance_method:CapturePayment.capture
+      - callable_kind:instance_method:Order.isPlaced
+      - callable_kind:instance_method:Order.markPlaced
+      - callable_kind:instance_method:OrderController.handle
+      - callable_kind:instance_method:OrderPolicy.allows
+      - callable_kind:instance_method:OrderRepository.save
+      - callable_kind:instance_method:Payment.capture
+      - callable_kind:instance_method:PlaceOrder.place
+      - member_kind:instance:action
+      - member_kind:instance:captured
+      - member_kind:instance:orderId
+      - member_kind:instance:paymentId
+      - member_kind:instance:placed
+      - member_kind:instance:policy
+      - member_kind:instance:root
+      - visibility:public:CapturePayment
+      - visibility:public:GeneratedOrder
+      - visibility:public:Order
+      - visibility:public:OrderController
+      - visibility:public:OrderPolicy
+      - visibility:public:OrderRepository
+      - visibility:public:Payment
+      - visibility:public:PlaceOrder
   attributes:
     status: supported
     explanation: Fields, record components, enum constants, and annotation elements are extracted.
@@ -167,28 +411,28 @@ capabilities:
     evidence:
       count: 7
       variants:
-        - instance:action
-        - instance:captured
-        - instance:orderId
-        - instance:paymentId
-        - instance:placed
-        - instance:policy
-        - instance:root
+      - instance:action
+      - instance:captured
+      - instance:orderId
+      - instance:paymentId
+      - instance:placed
+      - instance:policy
+      - instance:root
   assigned_values:
     status: unsupported
     explanation: Java member assigned-value evidence is not extracted yet.
     limitation_scenarios:
-      - assigned-value
+    - assigned-value
     evidence:
       count: 7
       variants:
-        - 'unsupported:action::'
-        - 'unsupported:captured::'
-        - 'unsupported:orderId::'
-        - 'unsupported:paymentId::'
-        - 'unsupported:placed::'
-        - 'unsupported:policy::'
-        - 'unsupported:root::'
+      - 'unsupported:action::'
+      - 'unsupported:captured::'
+      - 'unsupported:orderId::'
+      - 'unsupported:paymentId::'
+      - 'unsupported:placed::'
+      - 'unsupported:policy::'
+      - 'unsupported:root::'
   inheritance:
     status: supported
     explanation: Declared extension and implementation relations are recorded.
@@ -203,14 +447,14 @@ capabilities:
     evidence:
       count: 8
       variants:
-        - package:commerce.orders.application.actions
-        - package:commerce.orders.domain.model
-        - package:commerce.orders.domain.services
-        - package:commerce.orders.infrastructure.repositories
-        - package:commerce.orders.interfaces.http
-        - package:commerce.payments.application.actions
-        - package:commerce.payments.domain.model
-        - package:ignored
+      - package:commerce.orders.application.actions
+      - package:commerce.orders.domain.model
+      - package:commerce.orders.domain.services
+      - package:commerce.orders.infrastructure.repositories
+      - package:commerce.orders.interfaces.http
+      - package:commerce.payments.application.actions
+      - package:commerce.payments.domain.model
+      - package:ignored
   declaration_kinds:
     status: supported
     explanation: Java declaration forms publish exact shared declaration kinds.
@@ -218,19 +462,19 @@ capabilities:
     evidence:
       count: 8
       variants:
-        - class:CapturePayment
-        - class:GeneratedOrder
-        - class:Order
-        - class:OrderController
-        - class:OrderPolicy
-        - class:OrderRepository
-        - class:Payment
-        - class:PlaceOrder
+      - class:CapturePayment
+      - class:GeneratedOrder
+      - class:Order
+      - class:OrderController
+      - class:OrderPolicy
+      - class:OrderRepository
+      - class:Payment
+      - class:PlaceOrder
   composition:
     status: partial
     explanation: Extension and implementation are extracted; permits relations are not yet emitted.
     limitation_scenarios:
-      - permits-relation
+    - permits-relation
     evidence:
       count: 0
       variants: []
@@ -238,403 +482,403 @@ capabilities:
     status: partial
     explanation: Exact imports resolve internally; wildcard and implicit dependencies remain unresolved.
     limitation_scenarios:
-      - dependency-resolution-boundary
+    - dependency-resolution-boundary
     evidence:
       count: 8
       variants:
-        - 'external:java.time.Instant:'
-        - resolved:commerce.orders.application.actions.PlaceOrder:src/commerce/orders/application/actions/PlaceOrder.java
-        - resolved:commerce.orders.domain.model.Order:src/commerce/orders/domain/model/Order.java
-        - resolved:commerce.orders.domain.services.OrderPolicy:src/commerce/orders/domain/services/OrderPolicy.java
-        - resolved:commerce.payments.domain.model.Payment:src/commerce/payments/domain/model/Payment.java
+      - 'external:java.time.Instant:'
+      - resolved:commerce.orders.application.actions.PlaceOrder:src/commerce/orders/application/actions/PlaceOrder.java
+      - resolved:commerce.orders.domain.model.Order:src/commerce/orders/domain/model/Order.java
+      - resolved:commerce.orders.domain.services.OrderPolicy:src/commerce/orders/domain/services/OrderPolicy.java
+      - resolved:commerce.payments.domain.model.Payment:src/commerce/payments/domain/model/Payment.java
   spans:
     status: partial
     explanation: Callable spans are exact; other declarations expose line counts.
     limitation_scenarios:
-      - non-callable-span-boundary
+    - non-callable-span-boundary
     evidence:
       count: 13
       variants:
-        - constructor:Order.constructor:7:10
-        - constructor:OrderController.constructor:9:11
-        - constructor:OrderRepository.constructor:9:11
-        - constructor:Payment.constructor:7:10
-        - constructor:PlaceOrder.constructor:9:11
-        - instance_method:CapturePayment.capture:6:8
-        - instance_method:Order.isPlaced:16:18
-        - instance_method:Order.markPlaced:12:14
-        - instance_method:OrderController.handle:13:15
-        - instance_method:OrderPolicy.allows:6:8
-        - instance_method:OrderRepository.save:13:15
-        - instance_method:Payment.capture:12:14
-        - instance_method:PlaceOrder.place:13:19
+      - constructor:Order.constructor:7:10
+      - constructor:OrderController.constructor:9:11
+      - constructor:OrderRepository.constructor:9:11
+      - constructor:Payment.constructor:7:10
+      - constructor:PlaceOrder.constructor:9:11
+      - instance_method:CapturePayment.capture:6:8
+      - instance_method:Order.isPlaced:16:18
+      - instance_method:Order.markPlaced:12:14
+      - instance_method:OrderController.handle:13:15
+      - instance_method:OrderPolicy.allows:6:8
+      - instance_method:OrderRepository.save:13:15
+      - instance_method:Payment.capture:12:14
+      - instance_method:PlaceOrder.place:13:19
 relationships:
   declaration:
     semantics: partial
     semantics_explanation: Authored extension and implementation relations are preserved without permits,
       annotation-processor, or framework inference.
     semantics_limitation_scenarios:
-      - permits-relation
+    - permits-relation
     inventory: partial
     inventory_explanation: Extension and implementation clauses are emitted, but permits relationships are not
       available.
     inventory_limitation_scenarios:
-      - permits-relation
+    - permits-relation
     evidence:
       count: 0
       variants: []
   member:
     semantics: partial
-    semantics_explanation: Declared member and callable types and static calls are preserved without classpath,
-      generated-code, or framework inference.
+    semantics_explanation: Declared member and callable types and static calls are preserved without
+      classpath, generated-code, or framework inference.
     semantics_limitation_scenarios:
-      - member-runtime-semantics-boundary
+    - member-runtime-semantics-boundary
     inventory: partial
     inventory_explanation: Declared type and static-call evidence is emitted, but assigned-value relationship
       evidence is not available.
     inventory_limitation_scenarios:
-      - assigned-value
+    - assigned-value
     evidence:
       count: 44
       variants:
-        - assigned:unsupported:Order:orderId
-        - assigned:unsupported:Order:placed
-        - assigned:unsupported:OrderController:action
-        - assigned:unsupported:OrderRepository:root
-        - assigned:unsupported:Payment:captured
-        - assigned:unsupported:Payment:paymentId
-        - assigned:unsupported:PlaceOrder:policy
-        - attribute:instance:Order:orderId
-        - attribute:instance:Order:placed
-        - attribute:instance:OrderController:action
-        - attribute:instance:OrderRepository:root
-        - attribute:instance:Payment:captured
-        - attribute:instance:Payment:paymentId
-        - attribute:instance:PlaceOrder:policy
-        - call:unresolved:Order:2
-        - call:unresolved:allows:1
-        - call:unresolved:capture:1
-        - call:unresolved:isPlaced:1
-        - call:unresolved:markPlaced:2
-        - call:unresolved:now:1
-        - call:unresolved:place:1
-        - callable:constructor:Order.constructor
-        - callable:constructor:OrderController.constructor
-        - callable:constructor:OrderRepository.constructor
-        - callable:constructor:Payment.constructor
-        - callable:constructor:PlaceOrder.constructor
-        - callable:instance_method:CapturePayment.capture
-        - callable:instance_method:Order.isPlaced
-        - callable:instance_method:Order.markPlaced
-        - callable:instance_method:OrderController.handle
-        - callable:instance_method:OrderPolicy.allows
-        - callable:instance_method:OrderRepository.save
-        - callable:instance_method:Payment.capture
-        - callable:instance_method:PlaceOrder.place
-        - parameter:positional:CapturePayment.capture:payment
-        - parameter:positional:Order.constructor:orderId
-        - parameter:positional:OrderController.constructor:action
-        - parameter:positional:OrderController.handle:orderId
-        - parameter:positional:OrderPolicy.allows:order
-        - parameter:positional:OrderRepository.constructor:root
-        - parameter:positional:OrderRepository.save:order
-        - parameter:positional:Payment.constructor:paymentId
-        - parameter:positional:PlaceOrder.constructor:policy
-        - parameter:positional:PlaceOrder.place:order
+      - assigned:unsupported:Order:orderId
+      - assigned:unsupported:Order:placed
+      - assigned:unsupported:OrderController:action
+      - assigned:unsupported:OrderRepository:root
+      - assigned:unsupported:Payment:captured
+      - assigned:unsupported:Payment:paymentId
+      - assigned:unsupported:PlaceOrder:policy
+      - attribute:instance:Order:orderId
+      - attribute:instance:Order:placed
+      - attribute:instance:OrderController:action
+      - attribute:instance:OrderRepository:root
+      - attribute:instance:Payment:captured
+      - attribute:instance:Payment:paymentId
+      - attribute:instance:PlaceOrder:policy
+      - call:unresolved:Order:2
+      - call:unresolved:allows:1
+      - call:unresolved:capture:1
+      - call:unresolved:isPlaced:1
+      - call:unresolved:markPlaced:2
+      - call:unresolved:now:1
+      - call:unresolved:place:1
+      - callable:constructor:Order.constructor
+      - callable:constructor:OrderController.constructor
+      - callable:constructor:OrderRepository.constructor
+      - callable:constructor:Payment.constructor
+      - callable:constructor:PlaceOrder.constructor
+      - callable:instance_method:CapturePayment.capture
+      - callable:instance_method:Order.isPlaced
+      - callable:instance_method:Order.markPlaced
+      - callable:instance_method:OrderController.handle
+      - callable:instance_method:OrderPolicy.allows
+      - callable:instance_method:OrderRepository.save
+      - callable:instance_method:Payment.capture
+      - callable:instance_method:PlaceOrder.place
+      - parameter:positional:CapturePayment.capture:payment
+      - parameter:positional:Order.constructor:orderId
+      - parameter:positional:OrderController.constructor:action
+      - parameter:positional:OrderController.handle:orderId
+      - parameter:positional:OrderPolicy.allows:order
+      - parameter:positional:OrderRepository.constructor:root
+      - parameter:positional:OrderRepository.save:order
+      - parameter:positional:Payment.constructor:paymentId
+      - parameter:positional:PlaceOrder.constructor:policy
+      - parameter:positional:PlaceOrder.place:order
   dependency:
     semantics: partial
     semantics_explanation: Exact imports are normalized, while wildcard, implicit same-package, classpath, and
       generated dependencies remain unresolved.
     semantics_limitation_scenarios:
-      - dependency-resolution-boundary
+    - dependency-resolution-boundary
     inventory: partial
-    inventory_explanation: Authored exact imports are emitted, but wildcard and implicit dependency inventory is
-      incomplete.
+    inventory_explanation: Authored exact imports are emitted, but wildcard and implicit dependency inventory
+      is incomplete.
     inventory_limitation_scenarios:
-      - dependency-resolution-boundary
+    - dependency-resolution-boundary
     evidence:
       count: 8
       variants:
-        - 'external:java.time.Instant:'
-        - resolved:commerce.orders.application.actions.PlaceOrder:src/commerce/orders/application/actions/PlaceOrder.java
-        - resolved:commerce.orders.domain.model.Order:src/commerce/orders/domain/model/Order.java
-        - resolved:commerce.orders.domain.services.OrderPolicy:src/commerce/orders/domain/services/OrderPolicy.java
-        - resolved:commerce.payments.domain.model.Payment:src/commerce/payments/domain/model/Payment.java
+      - 'external:java.time.Instant:'
+      - resolved:commerce.orders.application.actions.PlaceOrder:src/commerce/orders/application/actions/PlaceOrder.java
+      - resolved:commerce.orders.domain.model.Order:src/commerce/orders/domain/model/Order.java
+      - resolved:commerce.orders.domain.services.OrderPolicy:src/commerce/orders/domain/services/OrderPolicy.java
+      - resolved:commerce.payments.domain.model.Payment:src/commerce/payments/domain/model/Payment.java
 scenarios:
-  - scenario: annotation-evaluation-boundary
-    rationale: Annotation syntax is preserved without generating a runtime class attribute.
-    source: tests/fixtures/code_map/capability_gaps/java/src/ExampleCapabilityGaps.java
-    authored_syntax:
-      - '@ExampleMarker'
-      - exampleRuntimeAnnotation
-  - scenario: modifier-normalization-boundary
-    rationale: Final syntax is authored without a fabricated shared visibility value.
-    source: tests/fixtures/code_map/capability_gaps/java/src/ExampleCapabilityGaps.java
-    authored_syntax:
-      - static final String exampleValue
-  - scenario: assigned-value
-    rationale: Authored field initializers emit attributes without assigned-value evidence.
-    source: tests/fixtures/code_map/capability_gaps/java/src/ExampleCapabilityGaps.java
-    authored_syntax:
-      - exampleValue =
-  - scenario: permits-relation
-    rationale: Extension is emitted while authored permits syntax has no fabricated relation.
-    source: tests/fixtures/code_map/capability_gaps/java/src/ExampleCapabilityGaps.java
-    authored_syntax:
-      - permits ExampleChild
-  - scenario: dependency-resolution-boundary
-    rationale: The wildcard dependency is emitted without claiming an internal resolved target.
-    source: tests/fixtures/code_map/capability_gaps/java/src/ExampleCapabilityGaps.java
-    authored_syntax:
-      - import java.util.*
-  - scenario: non-callable-span-boundary
-    rationale: Callable spans are exact while class declarations have no exact-span identity.
-    source: tests/fixtures/code_map/capability_gaps/java/src/ExampleCapabilityGaps.java
-    authored_syntax:
-      - class ExampleBase
-  - scenario: member-runtime-semantics-boundary
-    rationale: Annotation processing does not fabricate a generated class attribute.
-    source: tests/fixtures/code_map/capability_gaps/java/src/ExampleCapabilityGaps.java
-    authored_syntax:
-      - exampleRuntimeAnnotation
-  - scenario: type-reference-grammar-boundary
-    rationale: Named generic references are structural while array syntax is explicitly unsupported.
-    source: tests/fixtures/code_map/type_references/java/src/TypeReferenceCases.java
-    authored_syntax:
-      - List<String>
-      - String[] exampleUnsupported
+- scenario: annotation-evaluation-boundary
+  rationale: Annotation syntax is preserved without generating a runtime class attribute.
+  source: tests/fixtures/code_map/capability_gaps/java/src/ExampleCapabilityGaps.java
+  authored_syntax:
+  - '@ExampleMarker'
+  - exampleRuntimeAnnotation
+- scenario: modifier-normalization-boundary
+  rationale: Final syntax is authored without a fabricated shared visibility value.
+  source: tests/fixtures/code_map/capability_gaps/java/src/ExampleCapabilityGaps.java
+  authored_syntax:
+  - static final String exampleValue
+- scenario: assigned-value
+  rationale: Authored field initializers emit attributes without assigned-value evidence.
+  source: tests/fixtures/code_map/capability_gaps/java/src/ExampleCapabilityGaps.java
+  authored_syntax:
+  - exampleValue =
+- scenario: permits-relation
+  rationale: Extension is emitted while authored permits syntax has no fabricated relation.
+  source: tests/fixtures/code_map/capability_gaps/java/src/ExampleCapabilityGaps.java
+  authored_syntax:
+  - permits ExampleChild
+- scenario: dependency-resolution-boundary
+  rationale: The wildcard dependency is emitted without claiming an internal resolved target.
+  source: tests/fixtures/code_map/capability_gaps/java/src/ExampleCapabilityGaps.java
+  authored_syntax:
+  - import java.util.*
+- scenario: non-callable-span-boundary
+  rationale: Callable spans are exact while class declarations have no exact-span identity.
+  source: tests/fixtures/code_map/capability_gaps/java/src/ExampleCapabilityGaps.java
+  authored_syntax:
+  - class ExampleBase
+- scenario: member-runtime-semantics-boundary
+  rationale: Annotation processing does not fabricate a generated class attribute.
+  source: tests/fixtures/code_map/capability_gaps/java/src/ExampleCapabilityGaps.java
+  authored_syntax:
+  - exampleRuntimeAnnotation
+- scenario: type-reference-grammar-boundary
+  rationale: Named generic references are structural while array syntax is explicitly unsupported.
+  source: tests/fixtures/code_map/type_references/java/src/TypeReferenceCases.java
+  authored_syntax:
+  - List<String>
+  - String[] exampleUnsupported
 parameter_kinds:
   source: tests/fixtures/code_map/parameter_kinds/java/src/Params.java
   present:
-    - positional
-    - variadic_positional
+  - positional
+  - variadic_positional
   not_applicable:
-    - named_only
-    - variadic_named
+  - named_only
+  - variadic_named
 capability_limitations:
   symbols: []
   callables: []
   calls: []
   parameters: []
   type_references:
-    - scenario: type-reference-grammar-boundary
-      present_reference_names:
-        - List
-        - String
-      present_nested_reference_names:
-        - String
-      absent_slot_count: 1
-      unsupported_slot_count: 1
+  - scenario: type-reference-grammar-boundary
+    present_reference_names:
+    - List
+    - String
+    present_nested_reference_names:
+    - String
+    absent_slot_count: 1
+    unsupported_slot_count: 1
   annotations:
-    - scenario: annotation-evaluation-boundary
-      present_annotations:
-        - '@ExampleMarker(exampleValue = "exampleRuntimeAnnotation")'
-      absent_annotations: []
-      absent_attribute_names:
-        - exampleRuntimeAnnotation
+  - scenario: annotation-evaluation-boundary
+    present_annotations:
+    - '@ExampleMarker(exampleValue = "exampleRuntimeAnnotation")'
+    absent_annotations: []
+    absent_attribute_names:
+    - exampleRuntimeAnnotation
   modifiers:
-    - scenario: modifier-normalization-boundary
-      present_visibility_intents:
-        - internal
-      present_callable_kinds: []
-      present_member_kinds:
-        - static
-      unrepresented_authored_modifiers:
-        - final
+  - scenario: modifier-normalization-boundary
+    present_visibility_intents:
+    - internal
+    present_callable_kinds: []
+    present_member_kinds:
+    - static
+    unrepresented_authored_modifiers:
+    - final
   attributes: []
   assigned_values:
-    - scenario: assigned-value
-      present_attribute_names:
-        - exampleValue
-      absent_attribute_names: []
-      expected_value_kinds:
-        exampleValue:
-          - unsupported
+  - scenario: assigned-value
+    present_attribute_names:
+    - exampleValue
+    absent_attribute_names: []
+    expected_value_kinds:
+      exampleValue:
+      - unsupported
   namespaces: []
   composition:
-    - scenario: permits-relation
-      present_relations:
-        - source_declaration_id:
-            source_id: src/ExampleCapabilityGaps.java
-            family: class
-            qualified_name: ExampleChild
-            ordinal: 160001
-          relation: extends
-          target_reference: ExampleBase
-      absent_endpoints:
-        - source_declaration_id:
-            source_id: src/ExampleCapabilityGaps.java
-            family: class
-            qualified_name: ExampleBase
-            ordinal: 90001
-          target_reference: ExampleChild
+  - scenario: permits-relation
+    present_relations:
+    - source_declaration_id:
+        source_id: src/ExampleCapabilityGaps.java
+        family: class
+        qualified_name: ExampleChild
+        ordinal: 160001
+      relation: extends
+      target_reference: ExampleBase
+    absent_endpoints:
+    - source_declaration_id:
+        source_id: src/ExampleCapabilityGaps.java
+        family: class
+        qualified_name: ExampleBase
+        ordinal: 90001
+      target_reference: ExampleChild
   dependencies:
-    - scenario: dependency-resolution-boundary
-      present_dependencies:
-        - path: java.util.*
-          resolution: external
-      absent_dependencies:
-        - path: java.util.*
-          resolution: resolved
+  - scenario: dependency-resolution-boundary
+    present_dependencies:
+    - path: java.util.*
+      resolution: external
+    absent_dependencies:
+    - path: java.util.*
+      resolution: resolved
   spans:
-    - scenario: non-callable-span-boundary
-      present_exact_span_owners:
-        - source_id: src/ExampleCapabilityGaps.java
-          family: method
-          qualified_name: ExampleBase.exampleMethod
-          ordinal: 130005
-      absent_exact_span_owners:
-        - source_id: src/ExampleCapabilityGaps.java
-          family: class
-          qualified_name: ExampleBase
-          ordinal: 90001
+  - scenario: non-callable-span-boundary
+    present_exact_span_owners:
+    - source_id: src/ExampleCapabilityGaps.java
+      family: method
+      qualified_name: ExampleBase.exampleMethod
+      ordinal: 130005
+    absent_exact_span_owners:
+    - source_id: src/ExampleCapabilityGaps.java
+      family: class
+      qualified_name: ExampleBase
+      ordinal: 90001
 relationship_limitations:
   declaration_semantics:
-    - scenario: permits-relation
-      present_relations:
-        - source_declaration_id:
-            source_id: src/ExampleCapabilityGaps.java
-            family: class
-            qualified_name: ExampleChild
-            ordinal: 160001
-          relation: extends
-          target_reference: ExampleBase
-      present_endpoints: []
-      absent_endpoints:
-        - source_declaration_id:
-            source_id: src/ExampleCapabilityGaps.java
-            family: class
-            qualified_name: ExampleBase
-            ordinal: 90001
-          target_reference: ExampleChild
+  - scenario: permits-relation
+    present_relations:
+    - source_declaration_id:
+        source_id: src/ExampleCapabilityGaps.java
+        family: class
+        qualified_name: ExampleChild
+        ordinal: 160001
+      relation: extends
+      target_reference: ExampleBase
+    present_endpoints: []
+    absent_endpoints:
+    - source_declaration_id:
+        source_id: src/ExampleCapabilityGaps.java
+        family: class
+        qualified_name: ExampleBase
+        ordinal: 90001
+      target_reference: ExampleChild
   declaration_inventory:
-    - scenario: permits-relation
-      present_relations:
-        - source_declaration_id:
-            source_id: src/ExampleCapabilityGaps.java
-            family: class
-            qualified_name: ExampleChild
-            ordinal: 160001
-          relation: extends
-          target_reference: ExampleBase
-      present_endpoints: []
-      absent_endpoints:
-        - source_declaration_id:
-            source_id: src/ExampleCapabilityGaps.java
-            family: class
-            qualified_name: ExampleBase
-            ordinal: 90001
-          target_reference: ExampleChild
+  - scenario: permits-relation
+    present_relations:
+    - source_declaration_id:
+        source_id: src/ExampleCapabilityGaps.java
+        family: class
+        qualified_name: ExampleChild
+        ordinal: 160001
+      relation: extends
+      target_reference: ExampleBase
+    present_endpoints: []
+    absent_endpoints:
+    - source_declaration_id:
+        source_id: src/ExampleCapabilityGaps.java
+        family: class
+        qualified_name: ExampleBase
+        ordinal: 90001
+      target_reference: ExampleChild
   member_semantics:
-    - scenario: member-runtime-semantics-boundary
-      present_attribute_names:
-        - exampleValue
-      absent_attribute_names:
-        - exampleRuntimeAnnotation
-      present_value_kinds: []
-      absent_value_kinds: []
+  - scenario: member-runtime-semantics-boundary
+    present_attribute_names:
+    - exampleValue
+    absent_attribute_names:
+    - exampleRuntimeAnnotation
+    present_value_kinds: []
+    absent_value_kinds: []
   member_inventory:
-    - scenario: assigned-value
-      present_attribute_names:
-        - exampleValue
-      absent_attribute_names: []
-      present_value_kinds:
-        - unsupported
-      absent_value_kinds:
-        - literal
+  - scenario: assigned-value
+    present_attribute_names:
+    - exampleValue
+    absent_attribute_names: []
+    present_value_kinds:
+    - unsupported
+    absent_value_kinds:
+    - literal
   dependency_semantics:
-    - scenario: dependency-resolution-boundary
-      present_dependencies:
-        - path: java.util.*
-          resolution: external
-      absent_dependencies:
-        - path: java.util.*
-          resolution: resolved
+  - scenario: dependency-resolution-boundary
+    present_dependencies:
+    - path: java.util.*
+      resolution: external
+    absent_dependencies:
+    - path: java.util.*
+      resolution: resolved
   dependency_inventory:
-    - scenario: dependency-resolution-boundary
-      present_dependencies:
-        - path: java.util.*
-          resolution: external
-      absent_dependencies:
-        - path: java.util.*
-          resolution: resolved
+  - scenario: dependency-resolution-boundary
+    present_dependencies:
+    - path: java.util.*
+      resolution: external
+    absent_dependencies:
+    - path: java.util.*
+      resolution: resolved
 manifest_expectations:
   canonical:
     source: canonical/src/Example.java
     namespaces:
-      - package:example.manifest
+    - package:example.manifest
     symbols:
-      - abstract_class:example.manifest.ExampleAbstract
-      - annotation:example.manifest.ExampleAnnotation
-      - callable:example.manifest.ExampleAbstract.exampleRequired
-      - callable:example.manifest.ExampleAnnotation.exampleValue
-      - callable:example.manifest.ExampleContract.exampleRequired
-      - callable:example.manifest.ExampleImplementation.constructor
-      - callable:example.manifest.ExampleImplementation.exampleRequired
-      - callable:example.manifest.ExampleImplementation.exampleTimestamp
-      - class:example.manifest.ExampleImplementation
-      - enum:example.manifest.ExampleStatus
-      - interface:example.manifest.ExampleContract
-      - record:example.manifest.ExampleRecord
+    - abstract_class:example.manifest.ExampleAbstract
+    - annotation:example.manifest.ExampleAnnotation
+    - callable:example.manifest.ExampleAbstract.exampleRequired
+    - callable:example.manifest.ExampleAnnotation.exampleValue
+    - callable:example.manifest.ExampleContract.exampleRequired
+    - callable:example.manifest.ExampleImplementation.constructor
+    - callable:example.manifest.ExampleImplementation.exampleRequired
+    - callable:example.manifest.ExampleImplementation.exampleTimestamp
+    - class:example.manifest.ExampleImplementation
+    - enum:example.manifest.ExampleStatus
+    - interface:example.manifest.ExampleContract
+    - record:example.manifest.ExampleRecord
     callables:
-      - constructor:ExampleImplementation.constructor
-      - instance_method:ExampleAbstract.exampleRequired
-      - instance_method:ExampleAnnotation.exampleValue
-      - instance_method:ExampleContract.exampleRequired
-      - instance_method:ExampleImplementation.exampleRequired
-      - instance_method:ExampleImplementation.exampleTimestamp
+    - constructor:ExampleImplementation.constructor
+    - instance_method:ExampleAbstract.exampleRequired
+    - instance_method:ExampleAnnotation.exampleValue
+    - instance_method:ExampleContract.exampleRequired
+    - instance_method:ExampleImplementation.exampleRequired
+    - instance_method:ExampleImplementation.exampleTimestamp
     parameters:
-      - positional:ExampleAbstract.exampleRequired:exampleValue:0:false
-      - positional:ExampleContract.exampleRequired:exampleValue:0:false
-      - positional:ExampleImplementation.constructor:exampleName:0:false
-      - positional:ExampleImplementation.exampleRequired:exampleValue:0:false
-      - positional:ExampleImplementation.exampleTimestamp:exampleValue:0:false
+    - positional:ExampleAbstract.exampleRequired:exampleValue:0:false
+    - positional:ExampleContract.exampleRequired:exampleValue:0:false
+    - positional:ExampleImplementation.constructor:exampleName:0:false
+    - positional:ExampleImplementation.exampleRequired:exampleValue:0:false
+    - positional:ExampleImplementation.exampleTimestamp:exampleValue:0:false
     attributes:
-      - instance:ExampleAnnotation:exampleValue:false:public:unsupported
-      - instance:ExampleImplementation:exampleName:false:private:unsupported
-      - instance:ExampleRecord:exampleName:false:public:unsupported
-      - static:ExampleImplementation:EXAMPLE_CONSTANT:false:internal:unsupported
-      - static:ExampleStatus:EXAMPLE_READY:false:public:unsupported
+    - instance:ExampleAnnotation:exampleValue:false:public:unsupported
+    - instance:ExampleImplementation:exampleName:false:private:unsupported
+    - instance:ExampleRecord:exampleName:false:public:unsupported
+    - static:ExampleImplementation:EXAMPLE_CONSTANT:false:internal:unsupported
+    - static:ExampleStatus:EXAMPLE_READY:false:public:unsupported
     annotations:
-      - decorator:src/Example.java::method:210005:ExampleImplementation.exampleRequired:@Override
+    - decorator:src/Example.java::method:210005:ExampleImplementation.exampleRequired:@Override
     calls:
-      - 'unresolved:ExampleImplementation.exampleTimestamp:exampleRequired:2:'
-      - 'unresolved:ExampleImplementation.exampleTimestamp:now:1:'
+    - 'unresolved:ExampleImplementation.exampleTimestamp:exampleRequired:2:'
+    - 'unresolved:ExampleImplementation.exampleTimestamp:now:1:'
     declaration_relations:
-      - extends:ExampleImplementation:ExampleAbstract
-      - implements:ExampleImplementation:ExampleContract
+    - extends:ExampleImplementation:ExampleAbstract
+    - implements:ExampleImplementation:ExampleContract
     dependencies:
-      - imports:external:src/Example.java:external:java.time.Instant:java.time.Instant
+    - imports:external:src/Example.java:external:java.time.Instant:java.time.Instant
   calls:
     source: calls/src/Example.java
     namespaces: []
     symbols:
-      - callable:src/Example.Example.exampleSource
-      - callable:src/Example.Example.exampleTarget
-      - class:src/Example.Example
+    - callable:src/Example.Example.exampleSource
+    - callable:src/Example.Example.exampleTarget
+    - class:src/Example.Example
     callables:
-      - static_method:Example.exampleSource
-      - static_method:Example.exampleTarget
+    - static_method:Example.exampleSource
+    - static_method:Example.exampleTarget
     parameters:
-      - positional:Example.exampleSource:exampleValue:0:false
-      - positional:Example.exampleTarget:exampleValue:0:false
+    - positional:Example.exampleSource:exampleValue:0:false
+    - positional:Example.exampleTarget:exampleValue:0:false
     attributes: []
     annotations: []
     calls:
-      - resolved:Example.exampleSource:exampleTarget:1:Example.exampleTarget
-      - resolved:Example.exampleSource:exampleTarget:2:Example.exampleTarget
+    - resolved:Example.exampleSource:exampleTarget:1:Example.exampleTarget
+    - resolved:Example.exampleSource:exampleTarget:2:Example.exampleTarget
     declaration_relations: []
     dependencies: []
   no_calls:
     source: no_calls/src/Example.java
     namespaces: []
     symbols:
-      - callable:src/Example.Example.exampleWithoutCalls
-      - class:src/Example.Example
+    - callable:src/Example.Example.exampleWithoutCalls
+    - class:src/Example.Example
     callables:
-      - static_method:Example.exampleWithoutCalls
+    - static_method:Example.exampleWithoutCalls
     parameters:
-      - positional:Example.exampleWithoutCalls:exampleValue:0:false
+    - positional:Example.exampleWithoutCalls:exampleValue:0:false
     attributes: []
     annotations: []
     calls: []
@@ -644,17 +888,17 @@ manifest_expectations:
     source: negative_members/src/Example.java
     namespaces: []
     symbols:
-      - annotation:src/Example.ExampleGenerated
-      - callable:src/Example.ExampleGenerated.value
-      - class:src/Example.Example
+    - annotation:src/Example.ExampleGenerated
+    - callable:src/Example.ExampleGenerated.value
+    - class:src/Example.Example
     callables:
-      - instance_method:ExampleGenerated.value
+    - instance_method:ExampleGenerated.value
     parameters: []
     attributes:
-      - instance:Example:exampleDeclared:false:internal:unsupported
-      - instance:ExampleGenerated:value:false:public:unsupported
+    - instance:Example:exampleDeclared:false:internal:unsupported
+    - instance:ExampleGenerated:value:false:public:unsupported
     annotations:
-      - declaration:src/Example.java::class:50001:Example:@ExampleGenerated("exampleRuntimeMember")
+    - declaration:src/Example.java::class:50001:Example:@ExampleGenerated("exampleRuntimeMember")
     calls: []
     declaration_relations: []
     dependencies: []
@@ -662,26 +906,26 @@ manifest_expectations:
     source: dependencies/src/Example.java
     namespaces: []
     symbols:
-      - callable:src/Example.Example.exampleValues
-      - class:src/Example.Example
+    - callable:src/Example.Example.exampleValues
+    - class:src/Example.Example
     callables:
-      - instance_method:Example.exampleValues
+    - instance_method:Example.exampleValues
     parameters: []
     attributes: []
     annotations: []
     calls:
-      - 'unresolved:Example.exampleValues:of:1:'
+    - 'unresolved:Example.exampleValues:of:1:'
     declaration_relations: []
     dependencies:
-      - imports:external:src/Example.java:external:java.util.List:java.util.List
+    - imports:external:src/Example.java:external:java.util.List:java.util.List
   source_edit_before:
     source: source_edit_before/src/Example.java
     namespaces: []
     symbols:
-      - callable:src/Example.Example.exampleValue
-      - class:src/Example.Example
+    - callable:src/Example.Example.exampleValue
+    - class:src/Example.Example
     callables:
-      - static_method:Example.exampleValue
+    - static_method:Example.exampleValue
     parameters: []
     attributes: []
     annotations: []
@@ -692,10 +936,10 @@ manifest_expectations:
     source: source_edit_after/src/Example.java
     namespaces: []
     symbols:
-      - callable:src/Example.Example.exampleValue
-      - class:src/Example.Example
+    - callable:src/Example.Example.exampleValue
+    - class:src/Example.Example
     callables:
-      - static_method:Example.exampleValue
+    - static_method:Example.exampleValue
     parameters: []
     attributes: []
     annotations: []

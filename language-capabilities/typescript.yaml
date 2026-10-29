@@ -1,27 +1,274 @@
 language: typescript
-convention:
-  suffix: .ts
-  suffixes:
-    - .ts
-    - .tsx
-    - .js
-    - .jsx
-  separator: '-'
-  class_named_file: false
 fixtures:
-  reference_root: tests/fixtures/code_map/reference_shop/languages/typescript
-  capability_gap_root: tests/fixtures/code_map/capability_gaps/typescript
-  type_reference_cases: tests/fixtures/code_map/type_references/typescript/src/type-reference-cases.ts
-  type_reference_empty: tests/fixtures/code_map/type_references/typescript/src/type-reference-empty.ts
-  manifest_root: tests/fixtures/implementation_manifest/typescript
-  manifest_sources:
-    canonical: canonical/src/example.ts
-    calls: calls/src/example.ts
-    no_calls: no_calls/src/example.ts
-    negative_members: negative_members/src/example.ts
-    dependencies: dependencies/src/example.ts
-    source_edit_before: source_edit_before/src/example.ts
-    source_edit_after: source_edit_after/src/example.ts
+  source_suffixes:
+  - .ts
+  - .tsx
+  - .js
+  - .jsx
+  reference:
+    root: tests/fixtures/code_map/reference_shop/languages/typescript
+    sources:
+    - ignored/generated-order.ts
+    - src/commerce/orders/application/actions/place-order.ts
+    - src/commerce/orders/domain/model/order.ts
+    - src/commerce/orders/domain/services/order-policy.ts
+    - src/commerce/orders/infrastructure/repositories/order-repository.ts
+    - src/commerce/orders/interfaces/http/order-controller.ts
+    - src/commerce/payments/application/actions/capture-payment.ts
+    - src/commerce/payments/domain/model/payment.ts
+  language_extensions:
+    root: tests/fixtures/code_map/language_extensions/typescript
+    sources:
+    - src/example-audit.js
+    - src/example-panel.jsx
+    - src/example-shapes.ts
+    - src/example-view.tsx
+  capability_gaps:
+    root: tests/fixtures/code_map/capability_gaps/typescript
+    sources:
+    - src/example-capability-gaps.ts
+  type_references:
+    root: tests/fixtures/code_map/type_references/typescript
+    cases: src/type-reference-cases.ts
+    empty: src/type-reference-empty.ts
+  parameter_kinds:
+    root: tests/fixtures/code_map/parameter_kinds/typescript
+    sources:
+    - src/params.ts
+  manifests:
+    root: tests/fixtures/implementation_manifest/typescript
+    sources:
+      canonical: canonical/src/example.ts
+      calls: calls/src/example.ts
+      no_calls: no_calls/src/example.ts
+      negative_members: negative_members/src/example.ts
+      dependencies: dependencies/src/example.ts
+      source_edit_before: source_edit_before/src/example.ts
+      source_edit_after: source_edit_after/src/example.ts
+projection:
+  sources:
+  - authored: ignored/generated-order.ts
+    canonical: ignored/generated_order
+  - authored: src/commerce/orders/application/actions/place-order.ts
+    canonical: src/commerce/orders/application/actions/place_order
+  - authored: src/commerce/orders/domain/model/order.ts
+    canonical: src/commerce/orders/domain/model/order
+  - authored: src/commerce/orders/domain/services/order-policy.ts
+    canonical: src/commerce/orders/domain/services/order_policy
+  - authored: src/commerce/orders/infrastructure/repositories/order-repository.ts
+    canonical: src/commerce/orders/infrastructure/repositories/order_repository
+  - authored: src/commerce/orders/interfaces/http/order-controller.ts
+    canonical: src/commerce/orders/interfaces/http/order_controller
+  - authored: src/commerce/payments/application/actions/capture-payment.ts
+    canonical: src/commerce/payments/application/actions/capture_payment
+  - authored: src/commerce/payments/domain/model/payment.ts
+    canonical: src/commerce/payments/domain/model/payment
+  declarations:
+  - authored:
+      source_id: src/commerce/orders/application/actions/place-order.ts
+      family: class
+      qualified_name: PlaceOrder
+      ordinal: 118
+    canonical:
+      source_id: src/commerce/orders/application/actions/place_order
+      family: class
+      qualified_name: PlaceOrder
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/domain/model/order.ts
+      family: class
+      qualified_name: Order
+      ordinal: 1
+    canonical:
+      source_id: src/commerce/orders/domain/model/order
+      family: class
+      qualified_name: Order
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/domain/services/order-policy.ts
+      family: class
+      qualified_name: OrderPolicy
+      ordinal: 42
+    canonical:
+      source_id: src/commerce/orders/domain/services/order_policy
+      family: class
+      qualified_name: OrderPolicy
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/infrastructure/repositories/order-repository.ts
+      family: class
+      qualified_name: OrderRepository
+      ordinal: 83
+    canonical:
+      source_id: src/commerce/orders/infrastructure/repositories/order_repository
+      family: class
+      qualified_name: OrderRepository
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/interfaces/http/order-controller.ts
+      family: class
+      qualified_name: OrderController
+      ordinal: 120
+    canonical:
+      source_id: src/commerce/orders/interfaces/http/order_controller
+      family: class
+      qualified_name: OrderController
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/payments/application/actions/capture-payment.ts
+      family: class
+      qualified_name: CapturePayment
+      ordinal: 56
+    canonical:
+      source_id: src/commerce/payments/application/actions/capture_payment
+      family: class
+      qualified_name: CapturePayment
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/payments/domain/model/payment.ts
+      family: class
+      qualified_name: Payment
+      ordinal: 1
+    canonical:
+      source_id: src/commerce/payments/domain/model/payment
+      family: class
+      qualified_name: Payment
+      ordinal: 1
+  callables:
+  - authored:
+      source_id: src/commerce/orders/application/actions/place-order.ts
+      family: method
+      qualified_name: PlaceOrder.place
+      ordinal: 206
+    canonical:
+      source_id: src/commerce/orders/application/actions/place_order
+      family: method
+      qualified_name: PlaceOrder.place
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/domain/model/order.ts
+      family: method
+      qualified_name: Order.isPlaced
+      ordinal: 168
+    canonical:
+      source_id: src/commerce/orders/domain/model/order
+      family: method
+      qualified_name: Order.is_placed
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/domain/model/order.ts
+      family: method
+      qualified_name: Order.markPlaced
+      ordinal: 108
+    canonical:
+      source_id: src/commerce/orders/domain/model/order
+      family: method
+      qualified_name: Order.mark_placed
+      ordinal: 2
+  - authored:
+      source_id: src/commerce/orders/domain/services/order-policy.ts
+      family: method
+      qualified_name: OrderPolicy.allows
+      ordinal: 73
+    canonical:
+      source_id: src/commerce/orders/domain/services/order_policy
+      family: method
+      qualified_name: OrderPolicy.allows
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/infrastructure/repositories/order-repository.ts
+      family: method
+      qualified_name: OrderRepository.save
+      ordinal: 169
+    canonical:
+      source_id: src/commerce/orders/infrastructure/repositories/order_repository
+      family: method
+      qualified_name: OrderRepository.save
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/interfaces/http/order-controller.ts
+      family: method
+      qualified_name: OrderController.handle
+      ordinal: 212
+    canonical:
+      source_id: src/commerce/orders/interfaces/http/order_controller
+      family: method
+      qualified_name: OrderController.handle
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/payments/application/actions/capture-payment.ts
+      family: method
+      qualified_name: CapturePayment.capture
+      ordinal: 90
+    canonical:
+      source_id: src/commerce/payments/application/actions/capture_payment
+      family: method
+      qualified_name: CapturePayment.capture
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/payments/domain/model/payment.ts
+      family: method
+      qualified_name: Payment.capture
+      ordinal: 114
+    canonical:
+      source_id: src/commerce/payments/domain/model/payment
+      family: method
+      qualified_name: Payment.capture
+      ordinal: 1
+  parameters:
+  - callable:
+      source_id: src/commerce/orders/application/actions/place-order.ts
+      family: method
+      qualified_name: PlaceOrder.place
+      ordinal: 206
+    authored: order
+    canonical: order
+  - callable:
+      source_id: src/commerce/orders/domain/services/order-policy.ts
+      family: method
+      qualified_name: OrderPolicy.allows
+      ordinal: 73
+    authored: order
+    canonical: order
+  - callable:
+      source_id: src/commerce/orders/infrastructure/repositories/order-repository.ts
+      family: method
+      qualified_name: OrderRepository.save
+      ordinal: 169
+    authored: order
+    canonical: order
+  - callable:
+      source_id: src/commerce/orders/interfaces/http/order-controller.ts
+      family: method
+      qualified_name: OrderController.handle
+      ordinal: 212
+    authored: orderId
+    canonical: order_id
+  - callable:
+      source_id: src/commerce/payments/application/actions/capture-payment.ts
+      family: method
+      qualified_name: CapturePayment.capture
+      ordinal: 90
+    authored: payment
+    canonical: payment
+  compared_capabilities:
+  - sources
+  - symbols
+  - callables
+  - parameters
+  - declaration_kinds
+  language_specific_capabilities:
+  - calls
+  - type_references
+  - annotations
+  - modifiers
+  - attributes
+  - assigned_values
+  - inheritance
+  - namespaces
+  - composition
+  - dependencies
+  - spans
 capabilities:
   sources:
     status: supported
@@ -30,14 +277,14 @@ capabilities:
     evidence:
       count: 8
       variants:
-        - source:ignored/generated-order.ts
-        - source:src/commerce/orders/application/actions/place-order.ts
-        - source:src/commerce/orders/domain/model/order.ts
-        - source:src/commerce/orders/domain/services/order-policy.ts
-        - source:src/commerce/orders/infrastructure/repositories/order-repository.ts
-        - source:src/commerce/orders/interfaces/http/order-controller.ts
-        - source:src/commerce/payments/application/actions/capture-payment.ts
-        - source:src/commerce/payments/domain/model/payment.ts
+      - source:ignored/generated-order.ts
+      - source:src/commerce/orders/application/actions/place-order.ts
+      - source:src/commerce/orders/domain/model/order.ts
+      - source:src/commerce/orders/domain/services/order-policy.ts
+      - source:src/commerce/orders/infrastructure/repositories/order-repository.ts
+      - source:src/commerce/orders/interfaces/http/order-controller.ts
+      - source:src/commerce/payments/application/actions/capture-payment.ts
+      - source:src/commerce/payments/domain/model/payment.ts
   symbols:
     status: supported
     explanation: Classes, interfaces, types, functions, and values are extracted.
@@ -45,14 +292,14 @@ capabilities:
     evidence:
       count: 8
       variants:
-        - declaration:class:CapturePayment
-        - declaration:class:GeneratedOrder
-        - declaration:class:Order
-        - declaration:class:OrderController
-        - declaration:class:OrderPolicy
-        - declaration:class:OrderRepository
-        - declaration:class:Payment
-        - declaration:class:PlaceOrder
+      - declaration:class:CapturePayment
+      - declaration:class:GeneratedOrder
+      - declaration:class:Order
+      - declaration:class:OrderController
+      - declaration:class:OrderPolicy
+      - declaration:class:OrderRepository
+      - declaration:class:Payment
+      - declaration:class:PlaceOrder
   callables:
     status: supported
     explanation: Functions, methods, constructors, and callable values are extracted.
@@ -60,34 +307,34 @@ capabilities:
     evidence:
       count: 13
       variants:
-        - constructor:Order.constructor
-        - constructor:OrderController.constructor
-        - constructor:OrderRepository.constructor
-        - constructor:Payment.constructor
-        - constructor:PlaceOrder.constructor
-        - instance_method:CapturePayment.capture
-        - instance_method:Order.isPlaced
-        - instance_method:Order.markPlaced
-        - instance_method:OrderController.handle
-        - instance_method:OrderPolicy.allows
-        - instance_method:OrderRepository.save
-        - instance_method:Payment.capture
-        - instance_method:PlaceOrder.place
+      - constructor:Order.constructor
+      - constructor:OrderController.constructor
+      - constructor:OrderRepository.constructor
+      - constructor:Payment.constructor
+      - constructor:PlaceOrder.constructor
+      - instance_method:CapturePayment.capture
+      - instance_method:Order.isPlaced
+      - instance_method:Order.markPlaced
+      - instance_method:OrderController.handle
+      - instance_method:OrderPolicy.allows
+      - instance_method:OrderRepository.save
+      - instance_method:Payment.capture
+      - instance_method:PlaceOrder.place
   calls:
     status: supported
-    explanation: Static calls owned by extracted callables are emitted with explicit resolved, external, unresolved,
-      or dynamic state.
+    explanation: Static calls owned by extracted callables are emitted with explicit resolved, external,
+      unresolved, or dynamic state.
     limitation_scenarios: []
     evidence:
       count: 7
       variants:
-        - unresolved:Order:2
-        - unresolved:allows:1
-        - unresolved:capture:1
-        - unresolved:isPlaced:1
-        - unresolved:join:1
-        - unresolved:markPlaced:2
-        - unresolved:place:1
+      - unresolved:Order:2
+      - unresolved:allows:1
+      - unresolved:capture:1
+      - unresolved:isPlaced:1
+      - unresolved:join:1
+      - unresolved:markPlaced:2
+      - unresolved:place:1
   parameters:
     status: supported
     explanation: Callable parameter order, kind, annotation, and default presence are extracted.
@@ -95,36 +342,36 @@ capabilities:
     evidence:
       count: 10
       variants:
-        - positional:action:false
-        - positional:order:false
-        - positional:orderId:false
-        - positional:payment:false
-        - positional:paymentId:false
-        - positional:policy:false
-        - positional:root:false
+      - positional:action:false
+      - positional:order:false
+      - positional:orderId:false
+      - positional:payment:false
+      - positional:paymentId:false
+      - positional:policy:false
+      - positional:root:false
   type_references:
     status: partial
     explanation: Named references and ordered generic arguments are structural; other authored type syntax is
       reported as unsupported.
     limitation_scenarios:
-      - type-reference-grammar-boundary
+    - type-reference-grammar-boundary
     evidence:
       count: 30
       variants:
-        - absent
-        - reference:Order
-        - reference:OrderPolicy
-        - reference:Payment
-        - reference:PlaceOrder
-        - reference:boolean
-        - reference:string
-        - reference:void
+      - absent
+      - reference:Order
+      - reference:OrderPolicy
+      - reference:Payment
+      - reference:PlaceOrder
+      - reference:boolean
+      - reference:string
+      - reference:void
   annotations:
     status: partial
     explanation: Class decorator expressions and declared type annotations are extracted; decorators on other
       declarations are not yet emitted.
     limitation_scenarios:
-      - non-class-decorator-boundary
+    - non-class-decorator-boundary
     evidence:
       count: 0
       variants: []
@@ -132,68 +379,68 @@ capabilities:
     status: partial
     explanation: Visibility intent, callable kind, and property member kind are normalized.
     limitation_scenarios:
-      - modifier-normalization-boundary
+    - modifier-normalization-boundary
     evidence:
       count: 28
       variants:
-        - callable_kind:constructor:Order.constructor
-        - callable_kind:constructor:OrderController.constructor
-        - callable_kind:constructor:OrderRepository.constructor
-        - callable_kind:constructor:Payment.constructor
-        - callable_kind:constructor:PlaceOrder.constructor
-        - callable_kind:instance_method:CapturePayment.capture
-        - callable_kind:instance_method:Order.isPlaced
-        - callable_kind:instance_method:Order.markPlaced
-        - callable_kind:instance_method:OrderController.handle
-        - callable_kind:instance_method:OrderPolicy.allows
-        - callable_kind:instance_method:OrderRepository.save
-        - callable_kind:instance_method:Payment.capture
-        - callable_kind:instance_method:PlaceOrder.place
-        - member_kind:instance:action
-        - member_kind:instance:captured
-        - member_kind:instance:orderId
-        - member_kind:instance:paymentId
-        - member_kind:instance:placed
-        - member_kind:instance:policy
-        - member_kind:instance:root
-        - visibility:public:CapturePayment
-        - visibility:public:GeneratedOrder
-        - visibility:public:Order
-        - visibility:public:OrderController
-        - visibility:public:OrderPolicy
-        - visibility:public:OrderRepository
-        - visibility:public:Payment
-        - visibility:public:PlaceOrder
+      - callable_kind:constructor:Order.constructor
+      - callable_kind:constructor:OrderController.constructor
+      - callable_kind:constructor:OrderRepository.constructor
+      - callable_kind:constructor:Payment.constructor
+      - callable_kind:constructor:PlaceOrder.constructor
+      - callable_kind:instance_method:CapturePayment.capture
+      - callable_kind:instance_method:Order.isPlaced
+      - callable_kind:instance_method:Order.markPlaced
+      - callable_kind:instance_method:OrderController.handle
+      - callable_kind:instance_method:OrderPolicy.allows
+      - callable_kind:instance_method:OrderRepository.save
+      - callable_kind:instance_method:Payment.capture
+      - callable_kind:instance_method:PlaceOrder.place
+      - member_kind:instance:action
+      - member_kind:instance:captured
+      - member_kind:instance:orderId
+      - member_kind:instance:paymentId
+      - member_kind:instance:placed
+      - member_kind:instance:policy
+      - member_kind:instance:root
+      - visibility:public:CapturePayment
+      - visibility:public:GeneratedOrder
+      - visibility:public:Order
+      - visibility:public:OrderController
+      - visibility:public:OrderPolicy
+      - visibility:public:OrderRepository
+      - visibility:public:Payment
+      - visibility:public:PlaceOrder
   attributes:
     status: supported
-    explanation: Class and type property identity, exact declared type, visibility, optionality, and member kind are
-      extracted.
+    explanation: Class and type property identity, exact declared type, visibility, optionality, and member
+      kind are extracted.
     limitation_scenarios: []
     evidence:
       count: 7
       variants:
-        - instance:action
-        - instance:captured
-        - instance:orderId
-        - instance:paymentId
-        - instance:placed
-        - instance:policy
-        - instance:root
+      - instance:action
+      - instance:captured
+      - instance:orderId
+      - instance:paymentId
+      - instance:placed
+      - instance:policy
+      - instance:root
   assigned_values:
     status: unsupported
     explanation: TypeScript property assigned-value evidence is not extracted yet.
     limitation_scenarios:
-      - assigned-value
+    - assigned-value
     evidence:
       count: 7
       variants:
-        - 'unsupported:action::'
-        - 'unsupported:captured::'
-        - 'unsupported:orderId::'
-        - 'unsupported:paymentId::'
-        - 'unsupported:placed::'
-        - 'unsupported:policy::'
-        - 'unsupported:root::'
+      - 'unsupported:action::'
+      - 'unsupported:captured::'
+      - 'unsupported:orderId::'
+      - 'unsupported:paymentId::'
+      - 'unsupported:placed::'
+      - 'unsupported:policy::'
+      - 'unsupported:root::'
   inheritance:
     status: supported
     explanation: Class and interface heritage clauses are recorded.
@@ -205,7 +452,7 @@ capabilities:
     status: unsupported
     explanation: TypeScript namespace declarations are not extracted yet.
     limitation_scenarios:
-      - namespace-declaration
+    - namespace-declaration
     evidence:
       count: 0
       variants: []
@@ -216,19 +463,19 @@ capabilities:
     evidence:
       count: 8
       variants:
-        - class:CapturePayment
-        - class:GeneratedOrder
-        - class:Order
-        - class:OrderController
-        - class:OrderPolicy
-        - class:OrderRepository
-        - class:Payment
-        - class:PlaceOrder
+      - class:CapturePayment
+      - class:GeneratedOrder
+      - class:Order
+      - class:OrderController
+      - class:OrderPolicy
+      - class:OrderRepository
+      - class:Payment
+      - class:PlaceOrder
   composition:
     status: partial
     explanation: Extension and implementation heritage is extracted.
     limitation_scenarios:
-      - heritage-only-composition-boundary
+    - heritage-only-composition-boundary
     evidence:
       count: 0
       variants: []
@@ -239,43 +486,43 @@ capabilities:
     evidence:
       count: 8
       variants:
-        - 'external:node:path:'
-        - resolved:../../application/actions/place-order:src/commerce/orders/application/actions/place-order.ts
-        - resolved:../../domain/model/order:src/commerce/orders/domain/model/order.ts
-        - resolved:../../domain/model/payment:src/commerce/payments/domain/model/payment.ts
-        - resolved:../../domain/services/order-policy:src/commerce/orders/domain/services/order-policy.ts
-        - resolved:../model/order:src/commerce/orders/domain/model/order.ts
+      - 'external:node:path:'
+      - resolved:../../application/actions/place-order:src/commerce/orders/application/actions/place-order.ts
+      - resolved:../../domain/model/order:src/commerce/orders/domain/model/order.ts
+      - resolved:../../domain/model/payment:src/commerce/payments/domain/model/payment.ts
+      - resolved:../../domain/services/order-policy:src/commerce/orders/domain/services/order-policy.ts
+      - resolved:../model/order:src/commerce/orders/domain/model/order.ts
   spans:
     status: partial
     explanation: Callable spans are exact; other symbol facts expose line counts.
     limitation_scenarios:
-      - non-callable-span-boundary
+    - non-callable-span-boundary
     evidence:
       count: 13
       variants:
-        - constructor:Order.constructor:4:4
-        - constructor:OrderController.constructor:5:5
-        - constructor:OrderRepository.constructor:6:6
-        - constructor:Payment.constructor:4:4
-        - constructor:PlaceOrder.constructor:5:5
-        - instance_method:CapturePayment.capture:4:6
-        - instance_method:Order.isPlaced:10:12
-        - instance_method:Order.markPlaced:6:8
-        - instance_method:OrderController.handle:7:9
-        - instance_method:OrderPolicy.allows:4:6
-        - instance_method:OrderRepository.save:8:10
-        - instance_method:Payment.capture:6:8
-        - instance_method:PlaceOrder.place:7:13
+      - constructor:Order.constructor:4:4
+      - constructor:OrderController.constructor:5:5
+      - constructor:OrderRepository.constructor:6:6
+      - constructor:Payment.constructor:4:4
+      - constructor:PlaceOrder.constructor:5:5
+      - instance_method:CapturePayment.capture:4:6
+      - instance_method:Order.isPlaced:10:12
+      - instance_method:Order.markPlaced:6:8
+      - instance_method:OrderController.handle:7:9
+      - instance_method:OrderPolicy.allows:4:6
+      - instance_method:OrderRepository.save:8:10
+      - instance_method:Payment.capture:6:8
+      - instance_method:PlaceOrder.place:7:13
 relationships:
   declaration:
     semantics: partial
-    semantics_explanation: Authored extension and implementation heritage is preserved without resolving runtime
-      base aliases.
+    semantics_explanation: Authored extension and implementation heritage is preserved without resolving
+      runtime base aliases.
     semantics_limitation_scenarios:
-      - declaration-runtime-semantics-boundary
+    - declaration-runtime-semantics-boundary
     inventory: supported
-    inventory_explanation: Every authored class and interface heritage clause in included TypeScript sources is
-      emitted deterministically.
+    inventory_explanation: Every authored class and interface heritage clause in included TypeScript sources
+      is emitted deterministically.
     inventory_limitation_scenarios: []
     evidence:
       count: 0
@@ -285,59 +532,59 @@ relationships:
     semantics_explanation: Declared member and callable types and static calls are preserved without resolving
       runtime types or framework ownership.
     semantics_limitation_scenarios:
-      - member-runtime-semantics-boundary
+    - member-runtime-semantics-boundary
     inventory: partial
     inventory_explanation: Declared type and static-call evidence is emitted, but assigned-value relationship
       evidence is not available.
     inventory_limitation_scenarios:
-      - assigned-value
+    - assigned-value
     evidence:
       count: 44
       variants:
-        - assigned:unsupported:Order:orderId
-        - assigned:unsupported:Order:placed
-        - assigned:unsupported:OrderController:action
-        - assigned:unsupported:OrderRepository:root
-        - assigned:unsupported:Payment:captured
-        - assigned:unsupported:Payment:paymentId
-        - assigned:unsupported:PlaceOrder:policy
-        - attribute:instance:Order:orderId
-        - attribute:instance:Order:placed
-        - attribute:instance:OrderController:action
-        - attribute:instance:OrderRepository:root
-        - attribute:instance:Payment:captured
-        - attribute:instance:Payment:paymentId
-        - attribute:instance:PlaceOrder:policy
-        - call:unresolved:Order:2
-        - call:unresolved:allows:1
-        - call:unresolved:capture:1
-        - call:unresolved:isPlaced:1
-        - call:unresolved:join:1
-        - call:unresolved:markPlaced:2
-        - call:unresolved:place:1
-        - callable:constructor:Order.constructor
-        - callable:constructor:OrderController.constructor
-        - callable:constructor:OrderRepository.constructor
-        - callable:constructor:Payment.constructor
-        - callable:constructor:PlaceOrder.constructor
-        - callable:instance_method:CapturePayment.capture
-        - callable:instance_method:Order.isPlaced
-        - callable:instance_method:Order.markPlaced
-        - callable:instance_method:OrderController.handle
-        - callable:instance_method:OrderPolicy.allows
-        - callable:instance_method:OrderRepository.save
-        - callable:instance_method:Payment.capture
-        - callable:instance_method:PlaceOrder.place
-        - parameter:positional:CapturePayment.capture:payment
-        - parameter:positional:Order.constructor:orderId
-        - parameter:positional:OrderController.constructor:action
-        - parameter:positional:OrderController.handle:orderId
-        - parameter:positional:OrderPolicy.allows:order
-        - parameter:positional:OrderRepository.constructor:root
-        - parameter:positional:OrderRepository.save:order
-        - parameter:positional:Payment.constructor:paymentId
-        - parameter:positional:PlaceOrder.constructor:policy
-        - parameter:positional:PlaceOrder.place:order
+      - assigned:unsupported:Order:orderId
+      - assigned:unsupported:Order:placed
+      - assigned:unsupported:OrderController:action
+      - assigned:unsupported:OrderRepository:root
+      - assigned:unsupported:Payment:captured
+      - assigned:unsupported:Payment:paymentId
+      - assigned:unsupported:PlaceOrder:policy
+      - attribute:instance:Order:orderId
+      - attribute:instance:Order:placed
+      - attribute:instance:OrderController:action
+      - attribute:instance:OrderRepository:root
+      - attribute:instance:Payment:captured
+      - attribute:instance:Payment:paymentId
+      - attribute:instance:PlaceOrder:policy
+      - call:unresolved:Order:2
+      - call:unresolved:allows:1
+      - call:unresolved:capture:1
+      - call:unresolved:isPlaced:1
+      - call:unresolved:join:1
+      - call:unresolved:markPlaced:2
+      - call:unresolved:place:1
+      - callable:constructor:Order.constructor
+      - callable:constructor:OrderController.constructor
+      - callable:constructor:OrderRepository.constructor
+      - callable:constructor:Payment.constructor
+      - callable:constructor:PlaceOrder.constructor
+      - callable:instance_method:CapturePayment.capture
+      - callable:instance_method:Order.isPlaced
+      - callable:instance_method:Order.markPlaced
+      - callable:instance_method:OrderController.handle
+      - callable:instance_method:OrderPolicy.allows
+      - callable:instance_method:OrderRepository.save
+      - callable:instance_method:Payment.capture
+      - callable:instance_method:PlaceOrder.place
+      - parameter:positional:CapturePayment.capture:payment
+      - parameter:positional:Order.constructor:orderId
+      - parameter:positional:OrderController.constructor:action
+      - parameter:positional:OrderController.handle:orderId
+      - parameter:positional:OrderPolicy.allows:order
+      - parameter:positional:OrderRepository.constructor:root
+      - parameter:positional:OrderRepository.save:order
+      - parameter:positional:Payment.constructor:paymentId
+      - parameter:positional:PlaceOrder.constructor:policy
+      - parameter:positional:PlaceOrder.place:order
   dependency:
     semantics: supported
     semantics_explanation: Authored import dependencies are normalized with explicit resolution state; dynamic
@@ -350,188 +597,188 @@ relationships:
     evidence:
       count: 8
       variants:
-        - 'external:node:path:'
-        - resolved:../../application/actions/place-order:src/commerce/orders/application/actions/place-order.ts
-        - resolved:../../domain/model/order:src/commerce/orders/domain/model/order.ts
-        - resolved:../../domain/model/payment:src/commerce/payments/domain/model/payment.ts
-        - resolved:../../domain/services/order-policy:src/commerce/orders/domain/services/order-policy.ts
-        - resolved:../model/order:src/commerce/orders/domain/model/order.ts
+      - 'external:node:path:'
+      - resolved:../../application/actions/place-order:src/commerce/orders/application/actions/place-order.ts
+      - resolved:../../domain/model/order:src/commerce/orders/domain/model/order.ts
+      - resolved:../../domain/model/payment:src/commerce/payments/domain/model/payment.ts
+      - resolved:../../domain/services/order-policy:src/commerce/orders/domain/services/order-policy.ts
+      - resolved:../model/order:src/commerce/orders/domain/model/order.ts
 scenarios:
-  - scenario: non-class-decorator-boundary
-    rationale: Class decorators are emitted while method decorators remain absent.
-    source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
-    authored_syntax:
-      - '@ExampleClassDecorator'
-      - '@ExampleMethodDecorator'
-  - scenario: modifier-normalization-boundary
-    rationale: Readonly syntax is authored without a fabricated shared visibility value.
-    source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
-    authored_syntax:
-      - readonly exampleValue
-  - scenario: assigned-value
-    rationale: Authored property initializers emit attributes without assigned-value evidence.
-    source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
-    authored_syntax:
-      - exampleValue =
-  - scenario: namespace-declaration
-    rationale: Authored namespace syntax is scanned but no namespace fact is emitted.
-    source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
-    authored_syntax:
-      - ExampleNamespace
-  - scenario: heritage-only-composition-boundary
-    rationale: Implementation heritage is emitted while type-intersection composition is not.
-    source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
-    authored_syntax:
-      - implements ExampleFirst
-      - ExampleFirst & ExampleSecond
-  - scenario: non-callable-span-boundary
-    rationale: Callable spans are exact while class declarations have no exact-span identity.
-    source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
-    authored_syntax:
-      - class ExampleAssignedValue
-  - scenario: declaration-runtime-semantics-boundary
-    rationale: The authored runtime-base alias is retained without resolving its runtime target.
-    source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
-    authored_syntax:
-      - ExampleRuntimeBase = ExampleAssignedValue
-  - scenario: member-runtime-semantics-boundary
-    rationale: Prototype mutation does not fabricate a declared class attribute.
-    source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
-    authored_syntax:
-      - exampleRuntimeMember
-  - scenario: type-reference-grammar-boundary
-    rationale: Named generic references are structural while union syntax is explicitly unsupported.
-    source: tests/fixtures/code_map/type_references/typescript/src/type-reference-cases.ts
-    authored_syntax:
-      - Array<string>
-      - string | undefined
+- scenario: non-class-decorator-boundary
+  rationale: Class decorators are emitted while method decorators remain absent.
+  source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
+  authored_syntax:
+  - '@ExampleClassDecorator'
+  - '@ExampleMethodDecorator'
+- scenario: modifier-normalization-boundary
+  rationale: Readonly syntax is authored without a fabricated shared visibility value.
+  source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
+  authored_syntax:
+  - readonly exampleValue
+- scenario: assigned-value
+  rationale: Authored property initializers emit attributes without assigned-value evidence.
+  source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
+  authored_syntax:
+  - exampleValue =
+- scenario: namespace-declaration
+  rationale: Authored namespace syntax is scanned but no namespace fact is emitted.
+  source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
+  authored_syntax:
+  - ExampleNamespace
+- scenario: heritage-only-composition-boundary
+  rationale: Implementation heritage is emitted while type-intersection composition is not.
+  source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
+  authored_syntax:
+  - implements ExampleFirst
+  - ExampleFirst & ExampleSecond
+- scenario: non-callable-span-boundary
+  rationale: Callable spans are exact while class declarations have no exact-span identity.
+  source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
+  authored_syntax:
+  - class ExampleAssignedValue
+- scenario: declaration-runtime-semantics-boundary
+  rationale: The authored runtime-base alias is retained without resolving its runtime target.
+  source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
+  authored_syntax:
+  - ExampleRuntimeBase = ExampleAssignedValue
+- scenario: member-runtime-semantics-boundary
+  rationale: Prototype mutation does not fabricate a declared class attribute.
+  source: tests/fixtures/code_map/capability_gaps/typescript/src/example-capability-gaps.ts
+  authored_syntax:
+  - exampleRuntimeMember
+- scenario: type-reference-grammar-boundary
+  rationale: Named generic references are structural while union syntax is explicitly unsupported.
+  source: tests/fixtures/code_map/type_references/typescript/src/type-reference-cases.ts
+  authored_syntax:
+  - Array<string>
+  - string | undefined
 parameter_kinds:
   source: tests/fixtures/code_map/parameter_kinds/typescript/src/params.ts
   present:
-    - positional
-    - variadic_positional
+  - positional
+  - variadic_positional
   not_applicable:
-    - named_only
-    - variadic_named
+  - named_only
+  - variadic_named
 capability_limitations:
   symbols: []
   callables: []
   calls: []
   parameters: []
   type_references:
-    - scenario: type-reference-grammar-boundary
-      present_reference_names:
-        - Array
-        - Map
-        - number
-        - string
-      present_nested_reference_names:
-        - Array
-        - number
-        - string
-      absent_slot_count: 1
-      unsupported_slot_count: 1
+  - scenario: type-reference-grammar-boundary
+    present_reference_names:
+    - Array
+    - Map
+    - number
+    - string
+    present_nested_reference_names:
+    - Array
+    - number
+    - string
+    absent_slot_count: 1
+    unsupported_slot_count: 1
   annotations:
-    - scenario: non-class-decorator-boundary
-      present_annotations:
-        - ExampleClassDecorator
-      absent_annotations:
-        - ExampleMethodDecorator
-      absent_attribute_names: []
+  - scenario: non-class-decorator-boundary
+    present_annotations:
+    - ExampleClassDecorator
+    absent_annotations:
+    - ExampleMethodDecorator
+    absent_attribute_names: []
   modifiers:
-    - scenario: modifier-normalization-boundary
-      present_visibility_intents:
-        - public
-      present_callable_kinds: []
-      present_member_kinds: []
-      unrepresented_authored_modifiers:
-        - readonly
+  - scenario: modifier-normalization-boundary
+    present_visibility_intents:
+    - public
+    present_callable_kinds: []
+    present_member_kinds: []
+    unrepresented_authored_modifiers:
+    - readonly
   attributes: []
   assigned_values:
-    - scenario: assigned-value
-      present_attribute_names:
-        - exampleValue
-      absent_attribute_names: []
-      expected_value_kinds:
-        exampleValue:
-          - unsupported
+  - scenario: assigned-value
+    present_attribute_names:
+    - exampleValue
+    absent_attribute_names: []
+    expected_value_kinds:
+      exampleValue:
+      - unsupported
   namespaces:
-    - scenario: namespace-declaration
-      absent_namespaces:
-        - ExampleNamespace
+  - scenario: namespace-declaration
+    absent_namespaces:
+    - ExampleNamespace
   composition:
-    - scenario: heritage-only-composition-boundary
-      present_relations:
-        - source_declaration_id:
-            source_id: src/example-capability-gaps.ts
-            family: class
-            qualified_name: ExampleAssignedValue
-            ordinal: 462
-          relation: implements
-          target_reference: ExampleFirst
-      absent_endpoints:
-        - source_declaration_id:
-            source_id: src/example-capability-gaps.ts
-            family: type
-            qualified_name: ExampleCombined
-            ordinal: 759
-          target_reference: ExampleFirst
+  - scenario: heritage-only-composition-boundary
+    present_relations:
+    - source_declaration_id:
+        source_id: src/example-capability-gaps.ts
+        family: class
+        qualified_name: ExampleAssignedValue
+        ordinal: 462
+      relation: implements
+      target_reference: ExampleFirst
+    absent_endpoints:
+    - source_declaration_id:
+        source_id: src/example-capability-gaps.ts
+        family: type
+        qualified_name: ExampleCombined
+        ordinal: 759
+      target_reference: ExampleFirst
   dependencies: []
   spans:
-    - scenario: non-callable-span-boundary
-      present_exact_span_owners:
-        - source_id: src/example-capability-gaps.ts
-          family: method
-          qualified_name: ExampleAssignedValue.exampleMethod
-          ordinal: 595
-      absent_exact_span_owners:
-        - source_id: src/example-capability-gaps.ts
-          family: class
-          qualified_name: ExampleAssignedValue
-          ordinal: 462
+  - scenario: non-callable-span-boundary
+    present_exact_span_owners:
+    - source_id: src/example-capability-gaps.ts
+      family: method
+      qualified_name: ExampleAssignedValue.exampleMethod
+      ordinal: 595
+    absent_exact_span_owners:
+    - source_id: src/example-capability-gaps.ts
+      family: class
+      qualified_name: ExampleAssignedValue
+      ordinal: 462
 relationship_limitations:
   declaration_semantics:
-    - scenario: declaration-runtime-semantics-boundary
-      present_relations:
-        - source_declaration_id:
-            source_id: src/example-capability-gaps.ts
-            family: class
-            qualified_name: ExampleRuntime
-            ordinal: 869
-          relation: extends
-          target_reference: ExampleRuntimeBase
-      present_endpoints:
-        - source_declaration_id:
-            source_id: src/example-capability-gaps.ts
-            family: class
-            qualified_name: ExampleRuntime
-            ordinal: 869
-          target_reference: ExampleRuntimeBase
-      absent_endpoints:
-        - source_declaration_id:
-            source_id: src/example-capability-gaps.ts
-            family: class
-            qualified_name: ExampleRuntime
-            ordinal: 869
-          target_reference: ExampleAssignedValue
+  - scenario: declaration-runtime-semantics-boundary
+    present_relations:
+    - source_declaration_id:
+        source_id: src/example-capability-gaps.ts
+        family: class
+        qualified_name: ExampleRuntime
+        ordinal: 869
+      relation: extends
+      target_reference: ExampleRuntimeBase
+    present_endpoints:
+    - source_declaration_id:
+        source_id: src/example-capability-gaps.ts
+        family: class
+        qualified_name: ExampleRuntime
+        ordinal: 869
+      target_reference: ExampleRuntimeBase
+    absent_endpoints:
+    - source_declaration_id:
+        source_id: src/example-capability-gaps.ts
+        family: class
+        qualified_name: ExampleRuntime
+        ordinal: 869
+      target_reference: ExampleAssignedValue
   declaration_inventory: []
   member_semantics:
-    - scenario: member-runtime-semantics-boundary
-      present_attribute_names:
-        - exampleValue
-      absent_attribute_names:
-        - exampleRuntimeMember
-      present_value_kinds: []
-      absent_value_kinds: []
+  - scenario: member-runtime-semantics-boundary
+    present_attribute_names:
+    - exampleValue
+    absent_attribute_names:
+    - exampleRuntimeMember
+    present_value_kinds: []
+    absent_value_kinds: []
   member_inventory:
-    - scenario: assigned-value
-      present_attribute_names:
-        - exampleValue
-      absent_attribute_names: []
-      present_value_kinds:
-        - unsupported
-      absent_value_kinds:
-        - literal
+  - scenario: assigned-value
+    present_attribute_names:
+    - exampleValue
+    absent_attribute_names: []
+    present_value_kinds:
+    - unsupported
+    absent_value_kinds:
+    - literal
   dependency_semantics: []
   dependency_inventory: []
 manifest_expectations:
@@ -539,69 +786,69 @@ manifest_expectations:
     source: canonical/src/example.ts
     namespaces: []
     symbols:
-      - abstract_class:src/example.ExampleAbstract
-      - callable:src/example.ExampleAbstract.exampleRequired
-      - callable:src/example.ExampleContract.exampleRequired
-      - callable:src/example.ExampleImplementation.examplePath
-      - callable:src/example.ExampleImplementation.exampleRequired
-      - callable:src/example.exampleArrow
-      - class:src/example.ExampleImplementation
-      - interface:src/example.ExampleContract
-      - type_alias:src/example.ExampleCallback
-      - value_literal:src/example.EXAMPLE_CONSTANT
+    - abstract_class:src/example.ExampleAbstract
+    - callable:src/example.ExampleAbstract.exampleRequired
+    - callable:src/example.ExampleContract.exampleRequired
+    - callable:src/example.ExampleImplementation.examplePath
+    - callable:src/example.ExampleImplementation.exampleRequired
+    - callable:src/example.exampleArrow
+    - class:src/example.ExampleImplementation
+    - interface:src/example.ExampleContract
+    - type_alias:src/example.ExampleCallback
+    - value_literal:src/example.EXAMPLE_CONSTANT
     callables:
-      - callable_value:exampleArrow
-      - instance_method:ExampleAbstract.exampleRequired
-      - instance_method:ExampleContract.exampleRequired
-      - instance_method:ExampleImplementation.examplePath
-      - instance_method:ExampleImplementation.exampleRequired
+    - callable_value:exampleArrow
+    - instance_method:ExampleAbstract.exampleRequired
+    - instance_method:ExampleContract.exampleRequired
+    - instance_method:ExampleImplementation.examplePath
+    - instance_method:ExampleImplementation.exampleRequired
     parameters:
-      - positional:ExampleAbstract.exampleRequired:exampleValue:0:false
-      - positional:ExampleContract.exampleRequired:exampleValue:0:false
-      - positional:ExampleImplementation.examplePath:exampleRoot:0:false
-      - positional:ExampleImplementation.exampleRequired:exampleValue:0:false
-      - positional:exampleArrow:exampleValue:0:false
+    - positional:ExampleAbstract.exampleRequired:exampleValue:0:false
+    - positional:ExampleContract.exampleRequired:exampleValue:0:false
+    - positional:ExampleImplementation.examplePath:exampleRoot:0:false
+    - positional:ExampleImplementation.exampleRequired:exampleValue:0:false
+    - positional:exampleArrow:exampleValue:0:false
     attributes:
-      - instance:ExampleContract:exampleOptional:true:public:unsupported
-      - instance:ExampleImplementation:exampleOptional:true:public:unsupported
-      - static:ExampleImplementation:exampleStatic:false:public:unsupported
+    - instance:ExampleContract:exampleOptional:true:public:unsupported
+    - instance:ExampleImplementation:exampleOptional:true:public:unsupported
+    - static:ExampleImplementation:exampleStatic:false:public:unsupported
     annotations: []
     calls:
-      - resolved:ExampleImplementation.examplePath:exampleRequired:2:ExampleImplementation.exampleRequired
-      - 'unresolved:ExampleImplementation.examplePath:join:1:'
+    - resolved:ExampleImplementation.examplePath:exampleRequired:2:ExampleImplementation.exampleRequired
+    - 'unresolved:ExampleImplementation.examplePath:join:1:'
     declaration_relations:
-      - extends:ExampleImplementation:ExampleAbstract
-      - implements:ExampleImplementation:ExampleContract
+    - extends:ExampleImplementation:ExampleAbstract
+    - implements:ExampleImplementation:ExampleContract
     dependencies:
-      - imports:external:src/example.ts:external:node:path:node:path
+    - imports:external:src/example.ts:external:node:path:node:path
   calls:
     source: calls/src/example.ts
     namespaces: []
     symbols:
-      - function:src/example.exampleSource
-      - function:src/example.exampleTarget
+    - function:src/example.exampleSource
+    - function:src/example.exampleTarget
     callables:
-      - function:exampleSource
-      - function:exampleTarget
+    - function:exampleSource
+    - function:exampleTarget
     parameters:
-      - positional:exampleSource:exampleValue:0:false
-      - positional:exampleTarget:exampleValue:0:false
+    - positional:exampleSource:exampleValue:0:false
+    - positional:exampleTarget:exampleValue:0:false
     attributes: []
     annotations: []
     calls:
-      - resolved:exampleSource:exampleTarget:1:exampleTarget
-      - resolved:exampleSource:exampleTarget:2:exampleTarget
+    - resolved:exampleSource:exampleTarget:1:exampleTarget
+    - resolved:exampleSource:exampleTarget:2:exampleTarget
     declaration_relations: []
     dependencies: []
   no_calls:
     source: no_calls/src/example.ts
     namespaces: []
     symbols:
-      - function:src/example.exampleWithoutCalls
+    - function:src/example.exampleWithoutCalls
     callables:
-      - function:exampleWithoutCalls
+    - function:exampleWithoutCalls
     parameters:
-      - positional:exampleWithoutCalls:exampleValue:0:false
+    - positional:exampleWithoutCalls:exampleValue:0:false
     attributes: []
     annotations: []
     calls: []
@@ -611,11 +858,11 @@ manifest_expectations:
     source: negative_members/src/example.ts
     namespaces: []
     symbols:
-      - class:src/example.ExampleValue
+    - class:src/example.ExampleValue
     callables: []
     parameters: []
     attributes:
-      - instance:ExampleValue:exampleDeclared:false:public:unsupported
+    - instance:ExampleValue:exampleDeclared:false:public:unsupported
     annotations: []
     calls: []
     declaration_relations: []
@@ -624,25 +871,25 @@ manifest_expectations:
     source: dependencies/src/example.ts
     namespaces: []
     symbols:
-      - function:src/example.examplePath
+    - function:src/example.examplePath
     callables:
-      - function:examplePath
+    - function:examplePath
     parameters:
-      - positional:examplePath:exampleRoot:0:false
+    - positional:examplePath:exampleRoot:0:false
     attributes: []
     annotations: []
     calls:
-      - 'unresolved:examplePath:join:1:'
+    - 'unresolved:examplePath:join:1:'
     declaration_relations: []
     dependencies:
-      - imports:external:src/example.ts:external:node:path:node:path
+    - imports:external:src/example.ts:external:node:path:node:path
   source_edit_before:
     source: source_edit_before/src/example.ts
     namespaces: []
     symbols:
-      - function:src/example.exampleValue
+    - function:src/example.exampleValue
     callables:
-      - function:exampleValue
+    - function:exampleValue
     parameters: []
     attributes: []
     annotations: []
@@ -653,9 +900,9 @@ manifest_expectations:
     source: source_edit_after/src/example.ts
     namespaces: []
     symbols:
-      - function:src/example.exampleValue
+    - function:src/example.exampleValue
     callables:
-      - function:exampleValue
+    - function:exampleValue
     parameters: []
     attributes: []
     annotations: []

@@ -14,63 +14,37 @@ from modwire.application import (
 from ..support.code_map_fixture.capability_evidence import FixtureCapabilityEvidence
 from ..support.code_map_fixture.fixture_contract import PolyglotFixtureContract
 from ..support.code_map_fixture.fixture_contract_error import FixtureContractError
-from ..support.code_map_fixture.language_capability_matrix.expectations.capability import CapabilityExpectation
-from ..support.code_map_fixture.language_capability_matrix.expectations.parameter_kind import ParameterKindExpectation
-from ..support.code_map_fixture.language_capability_matrix.expectations.relationship import RelationshipExpectation
-from ..support.code_map_fixture.language_capability_matrix.expectations.scenario import (
-    LimitationScenarioExpectation,
+from ..support.code_map_fixture.language_capability_matrix.capabilities.coverage import (
+    CapabilityExpectation,
+    ParameterKindExpectation,
 )
-from ..support.code_map_fixture.language_capability_matrix.limits.capability.annotation import (
+from ..support.code_map_fixture.language_capability_matrix.capabilities.limitations import (
     AnnotationLimitationExpectation,
-)
-from ..support.code_map_fixture.language_capability_matrix.limits.capability.attribute import (
+    AssignedValueLimitationExpectation,
     AttributeLimitationExpectation,
-)
-from ..support.code_map_fixture.language_capability_matrix.limits.capability.call import (
-    CallLimitationExpectation,
-)
-from ..support.code_map_fixture.language_capability_matrix.limits.capability.callable import (
     CallableLimitationExpectation,
-)
-from ..support.code_map_fixture.language_capability_matrix.limits.capability.composition import (
+    CallLimitationExpectation,
     CompositionLimitationExpectation,
-)
-from ..support.code_map_fixture.language_capability_matrix.limits.capability.dependency import (
     DependencyLimitationExpectation,
-)
-from ..support.code_map_fixture.language_capability_matrix.limits.capability.modifier import (
     ModifierLimitationExpectation,
-)
-from ..support.code_map_fixture.language_capability_matrix.limits.capability.namespace import (
     NamespaceLimitationExpectation,
-)
-from ..support.code_map_fixture.language_capability_matrix.limits.capability.parameter import (
     ParameterLimitationExpectation,
-)
-from ..support.code_map_fixture.language_capability_matrix.limits.capability.span import (
     SpanLimitationExpectation,
-)
-from ..support.code_map_fixture.language_capability_matrix.limits.capability.symbol import (
     SymbolLimitationExpectation,
-)
-from ..support.code_map_fixture.language_capability_matrix.limits.capability.type_reference import (
     TypeReferenceLimitationExpectation,
 )
-from ..support.code_map_fixture.language_capability_matrix.limits.capability.value import (
-    AssignedValueLimitationExpectation,
+from ..support.code_map_fixture.language_capability_matrix.contract import (
+    LanguageCapabilityMatrix,
+    LanguageCapabilityRow,
+    LimitationScenarioExpectation,
 )
-from ..support.code_map_fixture.language_capability_matrix.limits.relationship.declaration import (
+from ..support.code_map_fixture.language_capability_matrix.reader import LanguageCapabilityMatrixReader
+from ..support.code_map_fixture.language_capability_matrix.relationships.coverage import RelationshipExpectation
+from ..support.code_map_fixture.language_capability_matrix.relationships.limitations import (
     DeclarationRelationshipLimitationExpectation,
-)
-from ..support.code_map_fixture.language_capability_matrix.limits.relationship.dependency import (
     DependencyRelationshipLimitationExpectation,
-)
-from ..support.code_map_fixture.language_capability_matrix.limits.relationship.member import (
     MemberRelationshipLimitationExpectation,
 )
-from ..support.code_map_fixture.language_capability_matrix.matrix import LanguageCapabilityMatrix
-from ..support.code_map_fixture.language_capability_matrix.reader import LanguageCapabilityMatrixReader
-from ..support.code_map_fixture.language_capability_matrix.row import LanguageCapabilityRow
 from ..support.code_map_fixture.projector import FixtureCodeMapProjector
 from .base_test import ApplicationTestCase
 
@@ -81,19 +55,19 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
     )
 
     def capability_gap_root(self, language: str) -> Path:
-        return self.repository / self.capability_matrix.languages[language].fixtures.capability_gap_root
+        return self.repository / self.capability_matrix.languages[language].fixtures.capability_gaps.root.value
 
     def type_reference_root(self, language: str) -> Path:
-        return self.repository / self.capability_matrix.languages[language].fixtures.type_reference_root()
+        return self.repository / self.capability_matrix.languages[language].fixtures.type_references.root.value
 
     def scenario_source(self, scenario: LimitationScenarioExpectation) -> Path:
         return self.repository / scenario.source
 
     def test_missing_language_attack_is_rejected_before_valid_inventory_recovers(self) -> None:
-        contract = PolyglotFixtureContract()
+        contract = PolyglotFixtureContract(self.repository)
         expected = tuple(sorted(self.capability_matrix.languages))
         row = next(iter(self.capability_matrix.languages.values()))
-        root = (self.repository / row.fixtures.reference_root).parent
+        root = (self.repository / row.fixtures.reference.root.value).parent
 
         with pytest.raises(FixtureContractError, match="language inventory mismatch"):
             contract.validate_language_inventory(root, expected[1:])
@@ -101,10 +75,10 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         contract.validate_language_inventory(root, expected)
 
     def test_extra_language_attack_is_rejected_before_valid_inventory_recovers(self) -> None:
-        contract = PolyglotFixtureContract()
+        contract = PolyglotFixtureContract(self.repository)
         expected = tuple(sorted(self.capability_matrix.languages))
         row = next(iter(self.capability_matrix.languages.values()))
-        root = (self.repository / row.fixtures.reference_root).parent
+        root = (self.repository / row.fixtures.reference.root.value).parent
 
         with pytest.raises(FixtureContractError, match="language inventory mismatch"):
             contract.validate_language_inventory(root, (*expected, "attack"))
@@ -112,9 +86,9 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         contract.validate_language_inventory(root, expected)
 
     def test_missing_source_attack_is_rejected_before_valid_inventory_recovers(self) -> None:
-        contract = PolyglotFixtureContract()
+        contract = PolyglotFixtureContract(self.repository)
         row = next(iter(self.capability_matrix.languages.values()))
-        root = self.repository / row.fixtures.reference_root
+        root = self.repository / row.fixtures.reference.root.value
         expected = contract.source_paths(root)
 
         with pytest.raises(FixtureContractError, match="source inventory mismatch"):
@@ -225,7 +199,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         shutil.copyfile(self.repository / "language-capabilities.yaml", index_path)
         shutil.copytree(self.repository / "language-capabilities", document_root)
         relative_document = next(iter(self.capability_matrix.index.languages.values()))
-        attacked_document = self.workspace / relative_document
+        attacked_document = self.workspace / relative_document.value
         attacked_document.unlink()
         attacked_document.mkdir()
 
@@ -233,25 +207,25 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             LanguageCapabilityMatrixReader().read(index_path)
 
         attacked_document.rmdir()
-        shutil.copyfile(self.repository / relative_document, attacked_document)
+        shutil.copyfile(self.repository / relative_document.value, attacked_document)
         LanguageCapabilityMatrixReader().read(index_path)
 
     def test_extra_nested_matrix_field_attack_is_rejected(self) -> None:
         language = next(iter(self.capability_matrix.languages))
         attacked = self.capability_matrix.model_dump(mode="json")
-        attacked["languages"][language]["convention"]["attack"] = True
+        attacked["languages"][language]["fixtures"]["reference"]["attack"] = True
 
         with pytest.raises(ValidationError, match="extra_forbidden"):
             LanguageCapabilityMatrix.model_validate(attacked)
 
     def test_parsed_nested_matrix_model_reassignment_attack_is_rejected(self) -> None:
-        convention = next(iter(self.capability_matrix.languages.values())).convention
-        suffix = convention.suffix
+        fixtures = next(iter(self.capability_matrix.languages.values())).fixtures
+        suffixes = fixtures.source_suffixes
 
         with pytest.raises(ValidationError, match="frozen_instance"):
-            convention.suffix = ".attack"
+            fixtures.source_suffixes = ()
 
-        assert convention.suffix == suffix
+        assert fixtures.source_suffixes == suffixes
 
     def test_limitation_detached_from_its_contract_cell_attack_is_rejected(self) -> None:
         language, row = next(iter(self.capability_matrix.languages.items()))
@@ -269,32 +243,38 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
     def test_non_source_manifest_inventory_attack_is_rejected(self) -> None:
         language = next(iter(self.capability_matrix.languages))
         attacked = self.capability_matrix.model_dump(mode="json")
-        attacked["languages"][language]["fixtures"]["manifest_sources"]["canonical"] = (
+        attacked["languages"][language]["fixtures"]["manifests"]["sources"]["canonical"] = (
             "canonical/src/example.unsupported"
         )
 
-        with pytest.raises(ValidationError, match="manifest inventory contains a non-source path"):
+        with pytest.raises(ValidationError, match="source suffix inventory differs"):
             LanguageCapabilityMatrix.model_validate(attacked)
 
     def test_manifest_source_outside_its_named_scenario_attack_is_rejected(self) -> None:
         language = next(iter(self.capability_matrix.languages))
         attacked = self.capability_matrix.model_dump(mode="json")
-        attacked["languages"][language]["fixtures"]["manifest_sources"]["canonical"] = attacked["languages"][language][
-            "fixtures"
-        ]["manifest_sources"]["calls"]
+        attacked["languages"][language]["fixtures"]["manifests"]["sources"]["canonical"] = attacked["languages"][
+            language
+        ]["fixtures"]["manifests"]["sources"]["calls"]
 
         with pytest.raises(ValidationError, match="manifest source is outside its named scenario"):
             LanguageCapabilityMatrix.model_validate(attacked)
 
-    def test_wrong_filename_attack_is_rejected_before_matrix_conventions_accept_reference_sources(self) -> None:
-        contract = PolyglotFixtureContract()
-
+    def test_every_declared_source_suffix_exactly_covers_every_fixture_source(self) -> None:
+        contract = PolyglotFixtureContract(self.repository)
         for row in self.capability_matrix.languages.values():
-            assert not row.convention.accepts_source_path(f"src/example{row.convention.suffix}.attack")
-            assert all(
-                row.convention.accepts_source_path(path)
-                for path in contract.source_paths(self.repository / row.fixtures.reference_root)
+            fixtures = (
+                row.fixtures.reference,
+                row.fixtures.language_extensions,
+                row.fixtures.capability_gaps,
+                row.fixtures.parameter_kinds,
             )
+            for fixture in fixtures:
+                contract.validate_source_set(fixture)
+                contract.validate_source_suffixes(fixture, row.fixtures.source_suffixes)
+            assert {source.value.suffix for fixture in fixtures for source in fixture.sources} == {
+                suffix.value for suffix in row.fixtures.source_suffixes
+            }
 
     def test_capability_matrix_has_the_exact_supported_language_inventory(self) -> None:
         assert tuple(self.capability_matrix.languages) == self.application.supported_languages()
@@ -308,7 +288,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         )
 
     def test_limitation_fixture_inventory_is_driven_by_scenario_metadata(self) -> None:
-        contract = PolyglotFixtureContract()
+        contract = PolyglotFixtureContract(self.repository)
         fixture_root = self.capability_gap_root(next(iter(self.capability_matrix.languages))).parent
         expected_languages = tuple(
             sorted(language for language, row in self.capability_matrix.languages.items() if row.scenarios)
@@ -319,9 +299,9 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             expected_sources = tuple(
                 sorted(
                     {
-                        Path(scenario.source).relative_to(row.fixtures.capability_gap_root).as_posix()
+                        Path(scenario.source).relative_to(row.fixtures.capability_gaps.root.value).as_posix()
                         for scenario in row.scenarios
-                        if Path(scenario.source).is_relative_to(row.fixtures.capability_gap_root)
+                        if Path(scenario.source).is_relative_to(row.fixtures.capability_gaps.root.value)
                     }
                 )
             )
@@ -329,31 +309,36 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
 
     def test_implementation_manifest_fixture_inventory_covers_every_matrix_language(self) -> None:
         root = self.repository / "tests/fixtures/implementation_manifest"
-        contract = PolyglotFixtureContract()
+        contract = PolyglotFixtureContract(self.repository)
 
         contract.validate_language_inventory(root, tuple(sorted(self.capability_matrix.languages)))
         for language, row in self.capability_matrix.languages.items():
             contract.validate_source_inventory(
-                self.repository / row.fixtures.manifest_root,
-                tuple(sorted(row.fixtures.manifest_sources.values())),
+                self.repository / row.fixtures.manifests.root.value,
+                tuple(sorted(source.value.as_posix() for source in row.fixtures.manifests.sources.values())),
             )
 
     def test_type_reference_fixture_inventory_is_exactly_matrix_driven(self) -> None:
-        contract = PolyglotFixtureContract()
+        contract = PolyglotFixtureContract(self.repository)
         for language, row in self.capability_matrix.languages.items():
             root = self.type_reference_root(language)
-            root_path = row.fixtures.type_reference_root()
             expected = tuple(
-                sorted(Path(path).relative_to(root_path).as_posix() for path in row.fixtures.type_reference_sources())
+                sorted(
+                    (
+                        row.fixtures.type_references.cases.value.as_posix(),
+                        row.fixtures.type_references.empty.value.as_posix(),
+                    )
+                )
             )
             contract.validate_source_inventory(root, expected)
 
     def test_parameter_kind_fixture_inventory_is_exactly_matrix_driven(self) -> None:
-        contract = PolyglotFixtureContract()
-        for expectation in (row.parameter_kinds for row in self.capability_matrix.languages.values()):
-            source = Path(expectation.source)
-            root = self.repository / source.parents[1]
-            contract.validate_source_inventory(root, (source.relative_to(source.parents[1]).as_posix(),))
+        contract = PolyglotFixtureContract(self.repository)
+        for row in self.capability_matrix.languages.values():
+            contract.validate_source_inventory(
+                self.repository / row.fixtures.parameter_kinds.root.value,
+                tuple(source.value.as_posix() for source in row.fixtures.parameter_kinds.sources),
+            )
 
     @pytest.mark.parametrize(
         ("language", "scenario"),
@@ -370,27 +355,16 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         assert all(authored_syntax in source for authored_syntax in scenario.authored_syntax)
 
     def test_reference_projects_have_the_exact_matrix_driven_source_inventory(self) -> None:
-        contract = PolyglotFixtureContract()
+        contract = PolyglotFixtureContract(self.repository)
         master = CodeMap.model_validate_json(
-            (self.repository / self.capability_matrix.reference_projection).read_text(encoding="utf-8")
+            (self.repository / self.capability_matrix.reference_code_map).read_text(encoding="utf-8")
         )
-        declarations = {
-            str(source_id): source.declarations[0].name for source_id, source in master.extraction.files.items()
-        }
-
         for row in self.capability_matrix.languages.values():
-            expected = tuple(
-                sorted(
-                    (
-                        row.convention.source_path("ignored/generated_order", "GeneratedOrder"),
-                        *(
-                            row.convention.source_path(source_id, declaration_name)
-                            for source_id, declaration_name in declarations.items()
-                        ),
-                    )
-                )
+            assert master.extraction.files
+            contract.validate_source_inventory(
+                self.repository / row.fixtures.reference.root.value,
+                tuple(source.value.as_posix() for source in row.fixtures.reference.sources),
             )
-            contract.validate_source_inventory(self.repository / row.fixtures.reference_root, expected)
 
     @pytest.mark.parametrize(
         ("language", "row"),
@@ -403,15 +377,15 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         row: LanguageCapabilityRow,
     ) -> None:
         expected = CodeMap.model_validate_json(
-            (self.repository / self.capability_matrix.reference_projection).read_text(encoding="utf-8")
+            (self.repository / self.capability_matrix.reference_code_map).read_text(encoding="utf-8")
         )
         actual = self.application.generate_map(
             language,
-            self.repository / row.fixtures.reference_root,
+            self.repository / row.fixtures.reference.root.value,
             self.configured_scan_policy(("ignored/**",), False),
         )
 
-        assert FixtureCodeMapProjector().project(actual, expected) == expected
+        assert FixtureCodeMapProjector().project(actual, row.projection, expected) == expected
 
     @pytest.mark.parametrize(
         ("language", "capability", "expectation"),
@@ -430,7 +404,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         row = self.capability_matrix.languages[language]
         code_map = self.application.generate_map(
             language,
-            self.repository / row.fixtures.reference_root,
+            self.repository / row.fixtures.reference.root.value,
             self.scan_policy(),
         )
         declared = {coverage.capability: coverage for coverage in code_map.producer.capabilities}
@@ -453,7 +427,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         row = self.capability_matrix.languages[language]
         code_map = self.application.generate_map(
             language,
-            self.repository / row.fixtures.reference_root,
+            self.repository / row.fixtures.reference.root.value,
             self.scan_policy(),
         )
         coverage = {item.family: item for item in code_map.producer.relationship_capabilities}[family]
@@ -495,7 +469,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
     ) -> None:
         code_map = self.application.generate_map(
             language,
-            self.repository / row.fixtures.reference_root,
+            self.repository / row.fixtures.reference.root.value,
             self.scan_policy(),
         )
 
@@ -558,12 +532,11 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         row: LanguageCapabilityRow,
     ) -> None:
         root = self.type_reference_root(language)
-        cases = Path(row.fixtures.type_reference_cases)
-        root_path = cases.parents[1]
+        cases = row.fixtures.type_references.cases.value
         code_map = self.application.generate_map(
             language,
             root,
-            self.configured_scan_policy((cases.relative_to(root_path).as_posix(),), False),
+            self.configured_scan_policy((cases.as_posix(),), False),
         )
 
         assert len(code_map.extraction.files) == 1

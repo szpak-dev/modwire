@@ -1,29 +1,73 @@
 from pathlib import PurePosixPath
-from typing import Self
+from typing import Literal, Self
 
-from pydantic import model_validator
+from pydantic import Field, model_validator
 
 from modwire.application import CapabilityStatus, FactCapability, RelationshipFamily
 
 from ..model import FixtureModel
-from .document import LanguageCapabilityDocument
-from .expectations.capability import CapabilityExpectation
-from .expectations.manifest import ManifestEvidenceExpectation
-from .expectations.parameter_kind import ParameterKindExpectation
-from .expectations.relationship import RelationshipExpectation
-from .expectations.scenario import LimitationScenarioExpectation
-from .expectations.transition import ManifestTransitionExpectation
-from .index import LanguageCapabilityIndex
-from .row import LanguageCapabilityRow
+from .capabilities.coverage import CapabilityExpectation, ParameterKindExpectation
+from .capabilities.limitations import LanguageCapabilityLimitations
+from .fixtures.inventory import LanguageFixtureInventory
+from .fixtures.projection import ReferenceProjection
+from .manifests.coverage import ManifestEvidenceExpectation, ManifestTransitionExpectation
+from .relationships.coverage import RelationshipExpectation
+from .relationships.limitations import LanguageRelationshipLimitations
+from .values import RepositoryDocumentPath
+
+
+class LimitationScenarioExpectation(FixtureModel):
+    scenario: str = Field(min_length=1)
+    rationale: str = Field(min_length=1)
+    source: str = Field(min_length=1)
+    authored_syntax: tuple[str, ...] = Field(min_length=1)
+
+
+class LanguageCapabilityIndex(FixtureModel):
+    schema_version: Literal[1]
+    reference_code_map: RepositoryDocumentPath
+    parameter_kinds: tuple[str, ...] = Field(min_length=1)
+    manifest_transitions: tuple[ManifestTransitionExpectation, ...] = Field(min_length=1)
+    languages: dict[str, RepositoryDocumentPath] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_contract(self) -> Self:
+        if any(not language for language in self.languages):
+            raise ValueError("language keys must not be empty")
+        if len(set(self.parameter_kinds)) != len(self.parameter_kinds):
+            raise ValueError("parameter-kind vocabulary contains duplicates")
+        paths = tuple(path.value for path in self.languages.values())
+        if len(set(paths)) != len(paths):
+            raise ValueError("language document paths contain duplicates")
+        if any(path.is_absolute() or path.suffix != ".yaml" for path in paths):
+            raise ValueError("language document paths must be relative YAML paths")
+        if len({path.parent for path in paths}) != 1 or any(len(path.parts) != 2 for path in paths):
+            raise ValueError("language documents must share one nested directory")
+        if any(path.name != f"{language}.yaml" for language, path in zip(self.languages, paths, strict=True)):
+            raise ValueError("language document filenames must match their language keys")
+        return self
+
+
+class LanguageCapabilityRow(FixtureModel):
+    language: str = Field(min_length=1)
+    fixtures: LanguageFixtureInventory
+    projection: ReferenceProjection
+    capabilities: dict[FactCapability, CapabilityExpectation]
+    relationships: dict[RelationshipFamily, RelationshipExpectation]
+    scenarios: tuple[LimitationScenarioExpectation, ...]
+    parameter_kinds: ParameterKindExpectation
+    manifest_expectations: dict[str, ManifestEvidenceExpectation]
+    capability_limitations: LanguageCapabilityLimitations
+    relationship_limitations: LanguageRelationshipLimitations
 
 
 class LanguageCapabilityMatrix(FixtureModel):
     index: LanguageCapabilityIndex
-    languages: dict[str, LanguageCapabilityDocument]
+    languages: dict[str, LanguageCapabilityRow]
 
     @property
-    def reference_projection(self) -> str:
-        return self.index.reference_projection
+    def reference_code_map(self) -> PurePosixPath:
+        return self.index.reference_code_map.value
 
     @property
     def parameter_kinds(self) -> tuple[str, ...]:
@@ -86,41 +130,53 @@ class LanguageCapabilityMatrix(FixtureModel):
             self.validate_row_scenarios(language, row)
             if set((*row.parameter_kinds.present, *row.parameter_kinds.not_applicable)) != set(self.parameter_kinds):
                 raise ValueError(f"{language} parameter kinds do not partition the matrix vocabulary")
-            if not row.convention.accepts_source_path(row.parameter_kinds.source):
-                raise ValueError(f"{language} parameter-kind evidence is not a source path")
-            if not all(row.convention.accepts_source_path(path) for path in row.fixtures.manifest_sources.values()):
-                raise ValueError(f"{language} manifest inventory contains a non-source path")
-            if not all(row.convention.accepts_source_path(path) for path in row.fixtures.type_reference_sources()):
-                raise ValueError(f"{language} type-reference inventory contains a non-source path")
-            type_reference_roots = {PurePosixPath(path).parents[1] for path in row.fixtures.type_reference_sources()}
-            if len(type_reference_roots) != 1:
-                raise ValueError(f"{language} type-reference sources do not share one language root")
+            self.validate_source_suffix_coverage(language, row)
             if any(
-                PurePosixPath(path).parts[0] != scenario for scenario, path in row.fixtures.manifest_sources.items()
+                path.value.parts[0] != scenario for scenario, path in row.fixtures.manifests.sources.items()
             ):
                 raise ValueError(f"{language} manifest source is outside its named scenario")
-            if tuple(row.manifest_expectations) != tuple(row.fixtures.manifest_sources):
+            if tuple(row.manifest_expectations) != tuple(row.fixtures.manifests.sources):
                 raise ValueError(f"{language} manifest expectations do not exactly cover fixture scenarios")
             if any(
-                expectation.source != row.fixtures.manifest_sources[scenario]
+                PurePosixPath(expectation.source) != row.fixtures.manifests.sources[scenario].value
                 for scenario, expectation in row.manifest_expectations.items()
             ):
                 raise ValueError(f"{language} manifest expectation source differs from fixture inventory")
             manifest_layouts.add(
                 tuple(
-                    f"{scenario}:{PurePosixPath(path).parent.as_posix()}"
-                    for scenario, path in row.fixtures.manifest_sources.items()
+                    f"{scenario}:{path.value.parent.as_posix()}"
+                    for scenario, path in row.fixtures.manifests.sources.items()
                 )
             )
         if len(manifest_layouts) != 1:
             raise ValueError("language manifest inventories do not share one scenario layout")
-        manifest_scenarios = tuple(next(iter(self.languages.values())).fixtures.manifest_sources)
+        manifest_scenarios = tuple(next(iter(self.languages.values())).fixtures.manifests.sources)
         if any(
             transition.before not in manifest_scenarios or transition.after not in manifest_scenarios
             for transition in self.manifest_transitions
         ):
             raise ValueError("manifest transition names an undeclared scenario")
         return self
+
+    def validate_source_suffix_coverage(self, language: str, row: LanguageCapabilityRow) -> None:
+        suffixes = {suffix.value for suffix in row.fixtures.source_suffixes}
+        source_sets = (
+            row.fixtures.reference,
+            row.fixtures.language_extensions,
+            row.fixtures.capability_gaps,
+            row.fixtures.parameter_kinds,
+        )
+        paths = (
+            *(source.value for source_set in source_sets for source in source_set.sources),
+            row.fixtures.type_references.cases.value,
+            row.fixtures.type_references.empty.value,
+            *(source.value for source in row.fixtures.manifests.sources.values()),
+        )
+        observed = {path.suffix for path in paths}
+        if observed != suffixes:
+            raise ValueError(
+                f"{language} source suffix inventory differs: declared {sorted(suffixes)}, observed {sorted(observed)}"
+            )
 
     def validate_row_inventory(self, language: str, row: LanguageCapabilityRow) -> None:
         if tuple(row.capabilities) != tuple(FactCapability):

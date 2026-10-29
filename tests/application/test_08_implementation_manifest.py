@@ -14,12 +14,12 @@ from modwire.application import (
 )
 
 from ..support.code_map import CodeMapFactory
-from ..support.code_map_fixture.language_capability_matrix.expectations.manifest import ManifestEvidenceExpectation
-from ..support.code_map_fixture.language_capability_matrix.expectations.transition import (
+from ..support.code_map_fixture.language_capability_matrix.contract import LanguageCapabilityRow
+from ..support.code_map_fixture.language_capability_matrix.manifests.coverage import (
+    ManifestEvidenceExpectation,
     ManifestTransitionExpectation,
 )
 from ..support.code_map_fixture.language_capability_matrix.reader import LanguageCapabilityMatrixReader
-from ..support.code_map_fixture.language_capability_matrix.row import LanguageCapabilityRow
 from ..support.code_map_fixture.manifest_evidence import FixtureManifestEvidence
 from .base_test import ApplicationTestCase
 
@@ -30,7 +30,8 @@ class TestImplementationManifest(ApplicationTestCase):
     )
 
     def manifest_scenario_root(self, row: LanguageCapabilityRow, scenario: str) -> Path:
-        return self.repository / row.fixtures.manifest_root / row.fixtures.manifest_scenario_root(scenario)
+        source = row.fixtures.manifests.sources[scenario].value
+        return self.repository / row.fixtures.manifests.root.value / source.parents[1]
 
     def test_public_code_map_rejects_a_non_value_symbol_kind_without_changing_valid_input(self) -> None:
         code_map = (
@@ -134,7 +135,7 @@ class TestImplementationManifest(ApplicationTestCase):
         assert {item.family for item in manifest.producer.relationship_capabilities} == set(RelationshipFamily)
         assert manifest.source_manifest.policy == self.scan_policy()
         assert tuple(item.relative_path for item in manifest.source_manifest.sources) == (
-            str(row.fixtures.manifest_source(scenario).relative_to(scenario)),
+            str(row.fixtures.manifests.sources[scenario].value.relative_to(scenario)),
         )
         assert str(root) not in canonical
         assert FixtureManifestEvidence().observe(manifest, expectation.source) == expectation
@@ -164,10 +165,10 @@ class TestImplementationManifest(ApplicationTestCase):
         before_document = self.application.implementation_manifest(
             self.application.generate_map(language, root, self.scan_policy()), format
         )
-        before_source = row.fixtures.manifest_source(transition.before)
-        after_source = row.fixtures.manifest_source(transition.after)
+        before_source = row.fixtures.manifests.sources[transition.before].value
+        after_source = row.fixtures.manifests.sources[transition.after].value
         shutil.copyfile(
-            self.repository / row.fixtures.manifest_root / after_source,
+            self.repository / row.fixtures.manifests.root.value / after_source,
             root / before_source.relative_to(transition.before),
         )
         after_document = self.application.implementation_manifest(
