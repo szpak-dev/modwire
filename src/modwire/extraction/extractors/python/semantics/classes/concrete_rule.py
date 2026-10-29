@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ......shared.code.models.declarations.declaration_family import DeclarationFamily
+from ......shared.code.models.declaration_family import DeclarationFamily
 from ...observations.class_candidate import PythonClassCandidate
 from .classifier import PythonClassRule
 

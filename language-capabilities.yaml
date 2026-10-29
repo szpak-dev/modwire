@@ -1,4 +1,9 @@
 reference_projection: tests/fixtures/code_map/reference_shop/expected_code_map.json
+parameter_kinds:
+  - positional
+  - variadic_positional
+  - named_only
+  - variadic_named
 languages:
   python:
     convention:

@@ -23,9 +23,9 @@ from ....extraction.extractors.models.extractor_runtime import ExtractorRuntime
 from ....extraction.extractors.models.source_parse_error import SourceParseError
 from ....shared.code.contracts.identity_resolver import IdentityResolver
 from ....shared.code.contracts.path_matcher import PathMatcher
+from ....shared.code.models.scan_policy import ScanPolicy
 from ....shared.code.models.sources.identity import FileId, ImportIdentity
 from ....shared.code.models.sources.identity_kind import IdentityKind
-from ....shared.code.models.sources.scan_policy import ScanPolicy
 from ....shared.code.models.sources.source_extraction import SourceExtraction
 from ....shared.code.models.sources.source_file import SourceFile
 from ..batching.planner import SourceBatchPlanner

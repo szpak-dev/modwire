@@ -1,7 +1,6 @@
 import json
 
 from pydantic import BaseModel, ConfigDict, TypeAdapter
-from pydantic_yaml import to_yaml_str
 
 
 class ValueModel(BaseModel):
@@ -11,7 +10,7 @@ class ValueModel(BaseModel):
         return self.model_dump_json(indent=indent)
 
     def to_yaml(self) -> str:
-        return to_yaml_str(self)
+        return self.model_dump_json(indent=2)
 
     def to_dict(self) -> dict[str, object]:
         return TypeAdapter(dict[str, object]).validate_json(self.model_dump_json())

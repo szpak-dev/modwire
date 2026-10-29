@@ -5,13 +5,13 @@ from typing import Self
 from pydantic import Field, model_validator
 
 from ....values.models.value_model import ValueModel
-from ..failures.code_validation_error import CodeValidationError
-from ..failures.code_violation import CodeViolation
-from .digest_algorithm import DigestAlgorithm
+from ..code_validation_error import CodeValidationError
+from ..code_violation import CodeViolation
+from ..digest_algorithm import DigestAlgorithm
+from ..scan_policy import ScanPolicy
+from ..source_manifest_identity import SourceManifestIdentity
 from .runtime_observation import RuntimeObservation
-from .scan_policy import ScanPolicy
 from .source_artifact import SourceArtifact
-from .source_manifest_identity import SourceManifestIdentity
 
 
 class SourceManifest(ValueModel):

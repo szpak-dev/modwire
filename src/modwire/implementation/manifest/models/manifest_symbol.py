@@ -1,6 +1,6 @@
-from ....shared.code.models.declarations.declaration_identity import DeclarationIdentity
-from ....shared.code.models.declarations.source_symbol_kind import SourceSymbolKind
+from ....shared.code.models.declaration_identity import DeclarationIdentity
 from ....shared.code.models.declarations.source_visibility import SourceVisibility
+from ....shared.code.models.source_symbol_kind import SourceSymbolKind
 from ....shared.values.models.value_model import ValueModel
 
 

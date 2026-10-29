@@ -4,12 +4,12 @@ from pydantic import Field, model_validator
 
 from ..callables.source_class_method import SourceClassMethod
 from ..callables.source_signature import SourceSignature
-from ..failures.code_validation_error import CodeValidationError
-from ..failures.code_violation import CodeViolation
+from ..code_validation_error import CodeValidationError
+from ..code_violation import CodeViolation
+from ..declaration_identity import DeclarationIdentity
+from ..source_symbol_kind import SourceSymbolKind
 from ..values.source_class_property import SourceClassProperty
-from .declaration_identity import DeclarationIdentity
 from .source_symbol import SourceSymbol
-from .source_symbol_kind import SourceSymbolKind
 
 
 class SourceDeclaration(SourceSymbol):

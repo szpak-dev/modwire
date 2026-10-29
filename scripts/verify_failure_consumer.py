@@ -1,7 +1,7 @@
 import argparse
 import json
 
-from modwire.application import ModwireApplicationFactory, ScanPolicy, SourceParseError
+from modwire.application import ModwireApplication, ScanPolicy, SourceParseError
 
 
 class FailureConsumer:
@@ -11,7 +11,7 @@ class FailureConsumer:
         parser.add_argument("--language", required=True)
         arguments = parser.parse_args()
 
-        application = ModwireApplicationFactory().create()
+        application = ModwireApplication.create()
         try:
             application.generate_map(arguments.language, arguments.root, ScanPolicy())
         except SourceParseError as error:

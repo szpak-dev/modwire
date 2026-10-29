@@ -3,7 +3,7 @@ from typing import Self
 
 from pydantic import Field, model_validator
 
-from ....shared.code.models.sources.digest_algorithm import DigestAlgorithm
+from ....shared.code.models.digest_algorithm import DigestAlgorithm
 from ....shared.values.models.value_model import ValueModel
 from .implementation_manifest_validation_error import ImplementationManifestValidationError
 from .implementation_manifest_violation import ImplementationManifestViolation

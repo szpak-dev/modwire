@@ -8,7 +8,6 @@ from modwire.application import (
     CodeMap,
     FactCapability,
     RelationshipFamily,
-    SourceTypeKind,
 )
 
 from ..support.code_map_fixture.capability_evidence import FixtureCapabilityEvidence
@@ -128,6 +127,25 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         attacked["languages"][language]["scenarios"].append(scenario.model_dump(mode="json"))
 
         with pytest.raises(ValidationError, match="duplicate scenario metadata"):
+            LanguageCapabilityMatrix.model_validate(attacked)
+
+    def test_duplicate_parameter_kind_vocabulary_attack_is_rejected(self) -> None:
+        attacked = self.capability_matrix.model_dump(mode="json")
+        attacked["parameter_kinds"].append(attacked["parameter_kinds"][0])
+
+        with pytest.raises(ValidationError, match="parameter-kind vocabulary contains duplicates"):
+            LanguageCapabilityMatrix.model_validate(attacked)
+
+    def test_unobserved_parameter_kind_vocabulary_attack_is_rejected(self) -> None:
+        attacked = self.capability_matrix.model_dump(mode="json")
+        attacked["parameter_kinds"].append("example_unobserved")
+        for row in attacked["languages"].values():
+            row["parameter_kinds"]["not_applicable"].append("example_unobserved")
+
+        with pytest.raises(
+            ValidationError,
+            match="parameter-kind vocabulary contains a kind absent from every language",
+        ):
             LanguageCapabilityMatrix.model_validate(attacked)
 
     def test_extra_nested_matrix_field_attack_is_rejected(self) -> None:
@@ -308,7 +326,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             self.configured_scan_policy(("ignored/**",), False),
         )
 
-        assert FixtureCodeMapProjector().project(actual) == expected
+        assert FixtureCodeMapProjector().project(actual, expected) == expected
 
     @pytest.mark.parametrize(
         ("language", "capability", "expectation"),
@@ -378,7 +396,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             self.scan_policy(),
         )
 
-        assert FixtureCapabilityEvidence().parameter_kinds(code_map) == expectation.present
+        assert FixtureCapabilityEvidence().parameter_kinds(code_map) == tuple(sorted(expectation.present))
 
     @pytest.mark.parametrize(
         ("language", "row"),
@@ -418,12 +436,11 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
     ) -> None:
         code_map = self.application.generate_map(language, self.type_reference_root(language), self.scan_policy())
         evidence = FixtureCapabilityEvidence()
-        slots = evidence.type_slots(code_map)
 
         assert evidence.type_reference_names(code_map) == limitation.present_reference_names
         assert evidence.nested_type_reference_names(code_map) == limitation.present_nested_reference_names
-        assert sum(slot.kind is SourceTypeKind.ABSENT for slot in slots) == limitation.absent_slot_count
-        assert sum(slot.kind is SourceTypeKind.UNSUPPORTED for slot in slots) == limitation.unsupported_slot_count
+        assert evidence.type_kind_count(code_map, "absent") == limitation.absent_slot_count
+        assert evidence.type_kind_count(code_map, "unsupported") == limitation.unsupported_slot_count
 
     @pytest.mark.parametrize(
         ("language", "row"),
@@ -439,10 +456,11 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         row: LanguageCapabilityRow,
     ) -> None:
         code_map = self.application.generate_map(language, self.type_reference_root(language), self.scan_policy())
-        slots = FixtureCapabilityEvidence().type_slots(code_map)
+        evidence = FixtureCapabilityEvidence()
+        slot_count = evidence.type_slot_count(code_map)
 
-        assert slots
-        assert all(slot.kind is SourceTypeKind.ABSENT for slot in slots)
+        assert slot_count > 0
+        assert evidence.type_kind_count(code_map, "absent") == slot_count
 
     @pytest.mark.parametrize(
         ("language", "row"),

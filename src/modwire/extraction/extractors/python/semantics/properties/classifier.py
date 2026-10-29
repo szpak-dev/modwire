@@ -6,13 +6,13 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
-from ......shared.code.models.declarations.source_member_kind import SourceMemberKind
+from ......shared.code.models.declaration_identity import DeclarationIdentity
 from ......shared.code.models.declarations.source_visibility import SourceVisibility
+from ......shared.code.models.source_assigned_value import SourceAssignedValue
+from ......shared.code.models.source_member_kind import SourceMemberKind
 from ......shared.code.models.source_types.absent import SourceTypeAbsent
 from ......shared.code.models.source_types.reference import SourceTypeReference
 from ......shared.code.models.source_types.unsupported import SourceTypeUnsupported
-from ......shared.code.models.values.source_assigned_value import SourceAssignedValue
 from ......shared.code.models.values.source_class_property import SourceClassProperty
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation

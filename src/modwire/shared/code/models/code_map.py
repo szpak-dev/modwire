@@ -2,20 +2,20 @@ from typing import ClassVar, Self
 
 from pydantic import model_validator
 
-from ....values.models.value_model import ValueModel
-from ..callables.source_call_resolution import SourceCallResolution
-from ..capabilities.capability_status import CapabilityStatus
-from ..capabilities.fact_capability import FactCapability
-from ..dependencies.dependency_graph import DependencyGraph
-from ..failures.code_validation_error import CodeValidationError
-from ..failures.code_violation import CodeViolation
-from ..source_types.absent import SourceTypeAbsent
-from ..source_types.kind import SourceTypeKind
-from ..source_types.reference import SourceTypeReference
-from ..source_types.unsupported import SourceTypeUnsupported
-from ..sources.source_extraction import SourceExtraction
-from ..sources.source_file import SourceFile
-from .code_map_producer import CodeMapProducer
+from ...values.models.value_model import ValueModel
+from .capability_status import CapabilityStatus
+from .code_validation_error import CodeValidationError
+from .code_violation import CodeViolation
+from .dependencies.dependency_graph import DependencyGraph
+from .fact_capability import FactCapability
+from .maps.code_map_producer import CodeMapProducer
+from .source_call_resolution import SourceCallResolution
+from .source_types.absent import SourceTypeAbsent
+from .source_types.kind import SourceTypeKind
+from .source_types.reference import SourceTypeReference
+from .source_types.unsupported import SourceTypeUnsupported
+from .sources.source_extraction import SourceExtraction
+from .sources.source_file import SourceFile
 
 
 class CodeMap(ValueModel):
@@ -93,4 +93,38 @@ class CodeMap(ValueModel):
         return (
             slot.kind,
             *(kind for argument in slot.arguments for kind in self.type_kinds(argument)),
+        )
+
+    def type_reference_names(
+        self,
+        slot: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported,
+    ) -> tuple[str, ...]:
+        if slot.kind is not SourceTypeKind.REFERENCE:
+            return ()
+        return (
+            slot.name,
+            *(name for argument in slot.arguments for name in self.type_reference_names(argument)),
+        )
+
+    def nested_type_reference_names(
+        self,
+        slot: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported,
+    ) -> tuple[str, ...]:
+        if slot.kind is not SourceTypeKind.REFERENCE:
+            return ()
+        return tuple(
+            name
+            for argument in slot.arguments
+            for name in self.type_reference_names(argument)
+        )
+
+    def type_tokens(
+        self,
+        slot: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported,
+    ) -> tuple[str, ...]:
+        if slot.kind is not SourceTypeKind.REFERENCE:
+            return (slot.kind.value,)
+        return (
+            f"reference:{slot.name}",
+            *(token for argument in slot.arguments for token in self.type_tokens(argument)),
         )

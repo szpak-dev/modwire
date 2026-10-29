@@ -2,10 +2,10 @@ from typing import Self
 
 from pydantic import Field, model_validator
 
-from ....values.models.value_model import ValueModel
-from ..failures.code_validation_error import CodeValidationError
-from ..failures.code_violation import CodeViolation
+from ...values.models.value_model import ValueModel
 from .capability_status import CapabilityStatus
+from .code_validation_error import CodeValidationError
+from .code_violation import CodeViolation
 from .fact_capability import FactCapability
 from .relationship_family import RelationshipFamily
 

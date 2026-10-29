@@ -1,3 +1,5 @@
+from typing import assert_never
+
 from modwire.application import (
     CodeMap,
     DeclarationIdentity,
@@ -6,11 +8,6 @@ from modwire.application import (
     SourceAssignedValueKind,
     SourceDeclarationRelationKind,
     SourceMemberKind,
-    SourceParameterKind,
-    SourceTypeAbsent,
-    SourceTypeKind,
-    SourceTypeReference,
-    SourceTypeUnsupported,
 )
 
 from .language_capability_matrix.evidence.dependency import DependencyEvidence
@@ -60,7 +57,10 @@ class FixtureCapabilityEvidence:
             )
         elif capability is FactCapability.TYPE_REFERENCES:
             observations = tuple(
-                token for slot in self.type_slots(code_map) for token in self.type_tokens(slot)
+                token
+                for source in code_map.extraction.files.values()
+                for slot in code_map.type_slots(source)
+                for token in code_map.type_tokens(slot)
             )
         elif capability is FactCapability.ANNOTATIONS:
             observations = tuple(
@@ -158,13 +158,15 @@ class FixtureCapabilityEvidence:
                 for source in code_map.extraction.files.values()
                 for item in source.imports
             )
-        else:
+        elif capability is FactCapability.SPANS:
             observations = tuple(
                 f"{item.kind.value}:{item.qualified_name}:{item.line_start}:{item.line_end}"
                 for source in code_map.extraction.files.values()
                 for item in source.canonical_callables()
                 if item.line_start > 0 and item.line_end >= item.line_start
             )
+        else:
+            assert_never(capability)
         return self.evidence_expectation(observations)
 
     def relationship_evidence(
@@ -213,12 +215,14 @@ class FixtureCapabilityEvidence:
                     ),
                 )
             )
-        else:
+        elif family is RelationshipFamily.DEPENDENCY:
             observations = tuple(
                 f"{item.resolution.value}:{item.path}:{item.target_file_id or ''}"
                 for source in code_map.extraction.files.values()
                 for item in source.imports
             )
+        else:
+            assert_never(family)
         return self.evidence_expectation(observations)
 
     def evidence_expectation(self, observations: tuple[str, ...]) -> EvidenceExpectation:
@@ -249,7 +253,6 @@ class FixtureCapabilityEvidence:
                 }
             )
         )
-
     def callable_names(self, code_map: CodeMap) -> tuple[str, ...]:
         return tuple(
             sorted(
@@ -271,14 +274,14 @@ class FixtureCapabilityEvidence:
             sorted({call.target_name for source in code_map.extraction.files.values() for call in source.calls})
         )
 
-    def parameter_kinds(self, code_map: CodeMap) -> tuple[SourceParameterKind, ...]:
+    def parameter_kinds(self, code_map: CodeMap) -> tuple[str, ...]:
         observed = {
-            parameter.kind
+            parameter.kind.value
             for source in code_map.extraction.files.values()
             for callable_fact in source.canonical_callables()
             for parameter in callable_fact.parameters
         }
-        return tuple(kind for kind in SourceParameterKind if kind in observed)
+        return tuple(sorted(observed))
 
     def parameter_names(self, code_map: CodeMap) -> tuple[str, ...]:
         return tuple(
@@ -362,28 +365,52 @@ class FixtureCapabilityEvidence:
         }
         return tuple(member_kind for member_kind in SourceMemberKind if member_kind in observed)
 
-    def type_kinds(self, code_map: CodeMap) -> tuple[SourceTypeKind, ...]:
-        observed = {kind for slot in self.type_slots(code_map) for kind in self.slot_kinds(slot)}
-        return tuple(kind for kind in SourceTypeKind if kind in observed)
+    def type_kinds(self, code_map: CodeMap) -> tuple[str, ...]:
+        observed = {
+            kind.value
+            for source in code_map.extraction.files.values()
+            for slot in code_map.type_slots(source)
+            for kind in code_map.type_kinds(slot)
+        }
+        return tuple(sorted(observed))
 
     def type_reference_names(self, code_map: CodeMap) -> tuple[str, ...]:
-        return tuple(sorted({name for slot in self.type_slots(code_map) for name in self.reference_names(slot)}))
+        return tuple(
+            sorted(
+                {
+                    name
+                    for source in code_map.extraction.files.values()
+                    for slot in code_map.type_slots(source)
+                    for name in code_map.type_reference_names(slot)
+                }
+            )
+        )
 
     def nested_type_reference_names(self, code_map: CodeMap) -> tuple[str, ...]:
         return tuple(
             sorted(
                 {
                     name
-                    for slot in self.type_slots(code_map)
-                    if slot.kind is SourceTypeKind.REFERENCE
-                    for argument in slot.arguments
-                    for name in self.reference_names(argument)
+                    for source in code_map.extraction.files.values()
+                    for slot in code_map.type_slots(source)
+                    for name in code_map.nested_type_reference_names(slot)
                 }
             )
         )
 
     def type_slot_count(self, code_map: CodeMap) -> int:
-        return len(self.type_slots(code_map))
+        return sum(
+            len(code_map.type_slots(source))
+            for source in code_map.extraction.files.values()
+        )
+
+    def type_kind_count(self, code_map: CodeMap, expected: str) -> int:
+        return sum(
+            kind.value == expected
+            for source in code_map.extraction.files.values()
+            for slot in code_map.type_slots(source)
+            for kind in code_map.type_kinds(slot)
+        )
 
     def owned_method_identities(self, code_map: CodeMap) -> tuple[DeclarationIdentity, ...]:
         return tuple(
@@ -462,53 +489,4 @@ class FixtureCapabilityEvidence:
                 ),
                 key=lambda identity: identity.canonical(),
             )
-        )
-
-    def type_slots(
-        self,
-        code_map: CodeMap,
-    ) -> tuple[SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported, ...]:
-        return tuple(
-            slot
-            for source in code_map.extraction.files.values()
-            for slot in (
-                *(callable_fact.return_type for callable_fact in source.canonical_callables()),
-                *(
-                    parameter.type
-                    for callable_fact in source.canonical_callables()
-                    for parameter in callable_fact.parameters
-                ),
-                *(
-                    property_fact.type
-                    for declaration in source.declarations
-                    for property_fact in declaration.properties
-                ),
-            )
-        )
-
-    def slot_kinds(
-        self,
-        slot: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported,
-    ) -> tuple[SourceTypeKind, ...]:
-        if slot.kind is not SourceTypeKind.REFERENCE:
-            return (slot.kind,)
-        return (slot.kind, *(kind for argument in slot.arguments for kind in self.slot_kinds(argument)))
-
-    def reference_names(
-        self,
-        slot: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported,
-    ) -> tuple[str, ...]:
-        if slot.kind is not SourceTypeKind.REFERENCE:
-            return ()
-        return (slot.name, *(name for argument in slot.arguments for name in self.reference_names(argument)))
-
-    def type_tokens(
-        self,
-        slot: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported,
-    ) -> tuple[str, ...]:
-        if slot.kind is not SourceTypeKind.REFERENCE:
-            return (slot.kind.value,)
-        return (
-            f"reference:{slot.name}",
-            *(token for argument in slot.arguments for token in self.type_tokens(argument)),
         )

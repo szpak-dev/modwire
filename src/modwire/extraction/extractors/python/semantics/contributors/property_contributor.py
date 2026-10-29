@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ......shared.code.models.declarations.declaration_family import DeclarationFamily
-from ......shared.code.models.declarations.source_member_kind import SourceMemberKind
+from ......shared.code.models.declaration_family import DeclarationFamily
+from ......shared.code.models.source_member_kind import SourceMemberKind
 from ......shared.code.models.source_types.kind import SourceTypeKind
 from ......shared.code.models.values.source_class_property import SourceClassProperty
 from ...observations.source_context import PythonSourceContext

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ..shared.code.models.maps.code_map import CodeMap
+from ..shared.code.models.code_map import CodeMap
 from .manifest.application import ImplementationApplication
 from .manifest.models.implementation_manifest import ImplementationManifest
 from .manifest.models.implementation_manifest_document import ImplementationManifestDocument

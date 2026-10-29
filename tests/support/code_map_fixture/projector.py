@@ -6,10 +6,6 @@ from pathlib import PurePosixPath
 from modwire.application import (
     CapabilityStatus,
     CodeMap,
-    DeclarationIdentity,
-    SourceCallableKind,
-    SourceClassMethod,
-    SourceTypeUnsupported,
 )
 
 
@@ -18,48 +14,13 @@ class FixtureCodeMapProjector:
         separated = re.sub("([a-z0-9])([A-Z])", r"\1_\2", name.replace("-", "_"))
         return re.sub("([A-Z]+)([A-Z][a-z])", r"\1_\2", separated).lower()
 
-    def project_method(
-        self,
-        method: SourceClassMethod,
-        source_id: str,
-        owner_declaration_id: DeclarationIdentity,
-        ordinal: int,
-    ) -> SourceClassMethod:
-        name = self.canonical_name(method.name)
-        qualified_name = f"{owner_declaration_id.qualified_name}.{name}"
-        return method.model_copy(
-            update={
-                "name": name,
-                "source_id": source_id,
-                "qualified_name": qualified_name,
-                "declaration_id": method.declaration_id.model_copy(
-                    update={
-                        "source_id": source_id,
-                        "qualified_name": qualified_name,
-                        "ordinal": ordinal,
-                    }
-                ),
-                "owner_declaration_id": owner_declaration_id,
-                "parameters": tuple(
-                    parameter.model_copy(
-                        update={
-                            "name": self.canonical_name(parameter.name),
-                            "type": SourceTypeUnsupported(),
-                        }
-                    )
-                    for parameter in method.parameters
-                ),
-                "return_type": SourceTypeUnsupported(),
-                "decorators": (),
-                "docstring": "",
-                "declaration_annotations": (),
-                "line_count": 0,
-                "line_start": 0,
-                "line_end": 0,
-            }
+    def project(self, code_map: CodeMap, reference: CodeMap) -> CodeMap:
+        unsupported_type = next(
+            callable_fact.return_type
+            for source in reference.extraction.files.values()
+            for callable_fact in source.canonical_callables()
+            if callable_fact.return_type.kind.value == "unsupported"
         )
-
-    def project(self, code_map: CodeMap) -> CodeMap:
         source_ids: dict[str, str] = {}
         for source_id in code_map.extraction.files:
             path = PurePosixPath(str(source_id))
@@ -82,28 +43,54 @@ class FixtureCodeMapProjector:
                         "ordinal": ordinal,
                     }
                 )
-                methods = tuple(
-                    self.project_method(method, source_id, identity, method_ordinal)
+                projected_method_groups = []
+                for authored_methods in (declaration.methods, declaration.abstract_methods):
+                    projected_methods = []
                     for method_ordinal, method in enumerate(
                         (
                             method
-                            for method in sorted(declaration.methods, key=lambda item: item.name)
-                            if method.kind is not SourceCallableKind.CONSTRUCTOR
+                            for method in sorted(authored_methods, key=lambda item: item.name)
+                            if method.kind.value != "constructor"
                         ),
                         start=1,
-                    )
-                )
-                abstract_methods = tuple(
-                    self.project_method(method, source_id, identity, method_ordinal)
-                    for method_ordinal, method in enumerate(
-                        (
-                            method
-                            for method in sorted(declaration.abstract_methods, key=lambda item: item.name)
-                            if method.kind is not SourceCallableKind.CONSTRUCTOR
-                        ),
-                        start=1,
-                    )
-                )
+                    ):
+                        name = self.canonical_name(method.name)
+                        qualified_name = f"{identity.qualified_name}.{name}"
+                        projected_methods.append(
+                            method.model_copy(
+                                update={
+                                    "name": name,
+                                    "source_id": source_id,
+                                    "qualified_name": qualified_name,
+                                    "declaration_id": method.declaration_id.model_copy(
+                                        update={
+                                            "source_id": source_id,
+                                            "qualified_name": qualified_name,
+                                            "ordinal": method_ordinal,
+                                        }
+                                    ),
+                                    "owner_declaration_id": identity,
+                                    "parameters": tuple(
+                                        parameter.model_copy(
+                                            update={
+                                                "name": self.canonical_name(parameter.name),
+                                                "type": unsupported_type,
+                                            }
+                                        )
+                                        for parameter in method.parameters
+                                    ),
+                                    "return_type": unsupported_type,
+                                    "decorators": (),
+                                    "docstring": "",
+                                    "declaration_annotations": (),
+                                    "line_count": 0,
+                                    "line_start": 0,
+                                    "line_end": 0,
+                                }
+                            )
+                        )
+                    projected_method_groups.append(tuple(projected_methods))
+                methods, abstract_methods = projected_method_groups
                 declarations.append(
                     declaration.model_copy(
                         update={

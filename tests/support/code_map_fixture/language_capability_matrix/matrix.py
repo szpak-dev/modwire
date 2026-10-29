@@ -17,6 +17,7 @@ from .row import LanguageCapabilityRow
 
 class LanguageCapabilityMatrix(FixtureModel):
     reference_projection: str = Field(min_length=1)
+    parameter_kinds: tuple[str, ...] = Field(min_length=1)
     manifest_transitions: tuple[ManifestTransitionExpectation, ...]
     languages: dict[str, LanguageCapabilityRow]
 
@@ -58,10 +59,21 @@ class LanguageCapabilityMatrix(FixtureModel):
 
     @model_validator(mode="after")
     def validate_contract(self) -> Self:
+        if len(set(self.parameter_kinds)) != len(self.parameter_kinds):
+            raise ValueError("parameter-kind vocabulary contains duplicates")
+        if any(
+            all(kind not in row.parameter_kinds.present for row in self.languages.values())
+            for kind in self.parameter_kinds
+        ):
+            raise ValueError("parameter-kind vocabulary contains a kind absent from every language")
         manifest_layouts: set[tuple[str, ...]] = set()
         for language, row in self.languages.items():
             self.validate_row_inventory(language, row)
             self.validate_row_scenarios(language, row)
+            if set((*row.parameter_kinds.present, *row.parameter_kinds.not_applicable)) != set(
+                self.parameter_kinds
+            ):
+                raise ValueError(f"{language} parameter kinds do not partition the matrix vocabulary")
             if not row.convention.accepts_source_path(row.parameter_kinds.source):
                 raise ValueError(f"{language} parameter-kind evidence is not a source path")
             if not all(row.convention.accepts_source_path(path) for path in row.fixtures.manifest_sources.values()):

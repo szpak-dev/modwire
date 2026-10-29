@@ -1,11 +1,11 @@
 from pathlib import Path
 
-from modwire.application import ModwireApplicationFactory, ScanPolicy
+from modwire.application import ModwireApplication, ScanPolicy
 
 
 def analyze_tutorial() -> tuple[int, int, int]:
     root = Path(__file__).parent / "tutorial"
-    application = ModwireApplicationFactory().create()
+    application = ModwireApplication.create()
     config = application.configure(
         {
             "boundaries": {

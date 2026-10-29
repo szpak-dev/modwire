@@ -4,8 +4,8 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
-from ......shared.code.models.declarations.source_member_kind import SourceMemberKind
+from ......shared.code.models.declaration_identity import DeclarationIdentity
+from ......shared.code.models.source_member_kind import SourceMemberKind
 from ......shared.code.models.source_types.absent import SourceTypeAbsent
 from ......shared.code.models.source_types.reference import SourceTypeReference
 from ......shared.code.models.values.source_class_property import SourceClassProperty

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ......shared.code.models.callables.source_callable_kind import SourceCallableKind
-from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ......shared.code.models.declaration_identity import DeclarationIdentity
 from ...observations.call_candidate import PythonCallCandidate
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation

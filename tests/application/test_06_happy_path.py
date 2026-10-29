@@ -1,13 +1,13 @@
 import json
 
-from modwire.application import ModwireApplicationFactory
+from modwire.application import ModwireApplication
 
 from .base_test import ApplicationTestCase
 
 
 class TestModwireApplication(ApplicationTestCase):
     def test_repeated_construction_returns_independent_applications(self) -> None:
-        application = ModwireApplicationFactory().create()
+        application = ModwireApplication.create()
         assert application is not self.application
         assert application.architecture is not self.application.architecture
         assert application.cli is not self.application.cli

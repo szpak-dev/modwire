@@ -1,11 +1,11 @@
 from pydantic import Field, PrivateAttr
 
 from ....values.models.value_model import ValueModel
+from ..source_dependency_kind import SourceDependencyKind
 from ..sources.identity import FileId, ImportSpecifier
 from .edge import Edge
 from .node import Node
 from .node_kind import NodeKind
-from .source_dependency_kind import SourceDependencyKind
 from .source_dependency_resolution import SourceDependencyResolution
 
 

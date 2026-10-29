@@ -1,4 +1,4 @@
-from ....failures.models.modwire_error import ModwireError
+from ...failures.models.modwire_error import ModwireError
 
 
 class CodeError(ModwireError):

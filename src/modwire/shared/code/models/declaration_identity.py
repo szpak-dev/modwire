@@ -1,8 +1,8 @@
 from pydantic import Field
 
-from ....values.models.value_model import ValueModel
-from ..sources.identity import FileId
+from ...values.models.value_model import ValueModel
 from .declaration_family import DeclarationFamily
+from .sources.identity import FileId
 
 
 class DeclarationIdentity(ValueModel):

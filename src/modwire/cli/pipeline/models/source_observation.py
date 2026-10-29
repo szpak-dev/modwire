@@ -1,8 +1,8 @@
 from pydantic import Field
 
 from ....extraction.extractors.models.extraction_request import ExtractionRequest
+from ....shared.code.models.source_manifest_identity import SourceManifestIdentity
 from ....shared.code.models.sources.source_manifest import SourceManifest
-from ....shared.code.models.sources.source_manifest_identity import SourceManifestIdentity
 from ....shared.values.models.value_model import ValueModel
 from .source_entry import SourceEntry
 

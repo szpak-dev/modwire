@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from ....shared.code.models.maps.code_map import CodeMap
+from ....shared.code.models.code_map import CodeMap
 from ..models.implementation_manifest import ImplementationManifest
 
 
