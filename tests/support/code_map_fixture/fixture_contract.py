@@ -1,6 +1,7 @@
+import hashlib
 from pathlib import Path
 
-from modwire.application import CodeMap, FactCapability, ImplementationManifest, RelationshipFamily
+from modwire.application import CodeMap, FactCapability, ImplementationManifest, ModwireApplication, RelationshipFamily
 
 from .claim_evaluator import FixtureClaimEvaluator
 from .claim_result import ClaimResult
@@ -44,8 +45,14 @@ class PolyglotFixtureContract:
     def runtime_document(self) -> str:
         return self.runtime.document()
 
-    def validate_runtime(self) -> None:
-        self.runtime.validate()
+    def validate_runtime_bindings(self, application: ModwireApplication) -> None:
+        self.runtime.validate_bindings(application, str(self.repository))
+
+    def validate_runtime(self, application: ModwireApplication) -> None:
+        self.runtime.validate(application, str(self.repository))
+
+    def install_runtime_packages(self) -> None:
+        self.runtime.install_packages()
 
     def relationship_cases(
         self,
@@ -88,6 +95,10 @@ class PolyglotFixtureContract:
         scenario: ManifestScenario,
     ) -> tuple[ClaimResult, ...]:
         return tuple(self.evaluator.evaluate_manifest(manifest, claim) for claim in scenario.claims)
+
+    def manifest_facts_digest(self, manifest: ImplementationManifest) -> str:
+        facts = manifest.model_dump_json(exclude={"producer", "source_manifest"})
+        return hashlib.sha256(facts.encode("utf-8")).hexdigest()
 
     def manifest_root(self, language: LanguageId, scenario: ManifestScenario) -> Path:
         root = self.matrix.languages[language].contract.manifests.root.value

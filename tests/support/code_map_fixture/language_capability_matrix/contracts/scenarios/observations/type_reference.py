@@ -1,6 +1,6 @@
 from typing import Literal
 
-from modwire.application import SourceTypeAbsent, SourceTypeReference, SourceTypeUnsupported
+from modwire.application import SourceTypeReference
 
 from .....fixture_model import FixtureModel
 from ....values.enums.type_slot_role import TypeSlotRole
@@ -13,4 +13,4 @@ class TypeReferenceObservation(FixtureModel):
     owner: QualifiedName
     role: TypeSlotRole
     position: SourcePosition
-    type: SourceTypeAbsent | SourceTypeReference | SourceTypeUnsupported
+    type: SourceTypeReference

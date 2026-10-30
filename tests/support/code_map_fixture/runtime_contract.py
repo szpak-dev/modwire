@@ -1,8 +1,9 @@
 import json
-import re
 import shutil
 import subprocess
 from typing import assert_never
+
+from modwire.application import ModwireApplication
 
 from .language_capability_matrix.matrix import LanguageCapabilityMatrix
 from .language_capability_matrix.values.enums.runtime_package_manager import RuntimePackageManager
@@ -26,31 +27,37 @@ class FixtureRuntimeContract:
             ]
             runtimes[language.value] = {
                 "runtime": requirement.runtime.value,
-                "executable": requirement.executable.value,
                 "version": requirement.version.text(),
                 "packages": packages,
             }
         return json.dumps(runtimes, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
 
-    def validate(self) -> None:
+    def validate_bindings(self, application: ModwireApplication, root: str) -> None:
+        for language, bundle in self.matrix.languages.items():
+            descriptor = application.extraction.request(language.value, root).runtime.descriptor
+            if descriptor.runtime != bundle.contract.runtime.runtime.value:
+                raise ValueError(f"{language.value} runtime identity differs from the registered extractor")
+
+    def validate(self, application: ModwireApplication, root: str) -> None:
+        self.validate_bindings(application, root)
         for bundle in self.matrix.languages.values():
             requirement = bundle.contract.runtime
-            executable = shutil.which(requirement.executable.value)
+            executable = shutil.which(requirement.runtime.value)
             if executable is None:
-                raise RuntimeError(f"required runtime is unavailable: {requirement.executable.value}")
+                raise RuntimeError(f"required runtime is unavailable: {requirement.runtime.value}")
             completed = subprocess.run(
-                (executable, "--version"),
+                (executable, *requirement.probe.arguments),
                 capture_output=True,
                 check=True,
                 text=True,
             )
-            observed = re.search(r"\d+\.\d+\.\d+", f"{completed.stdout}\n{completed.stderr}")
+            observed = requirement.probe.pattern.search(f"{completed.stdout}\n{completed.stderr}".strip())
             if observed is None:
-                raise RuntimeError(f"runtime version is unreadable: {requirement.executable.value}")
-            if observed.group() != requirement.version.text():
+                raise RuntimeError(f"runtime identity or version is unreadable: {requirement.runtime.value}")
+            if observed.group(1) != requirement.version.text():
                 raise RuntimeError(
-                    f"{requirement.executable.value} version mismatch: "
-                    f"expected {requirement.version.text()}, observed {observed.group()}"
+                    f"{requirement.runtime.value} version mismatch: "
+                    f"expected {requirement.version.text()}, observed {observed.group(1)}"
                 )
             for package in requirement.packages:
                 if package.manager is RuntimePackageManager.GEM:
@@ -62,6 +69,17 @@ class FixtureRuntimeContract:
                             package.name.value,
                             package.version.text(),
                         ),
+                        check=True,
+                    )
+                else:
+                    assert_never(package.manager)
+
+    def install_packages(self) -> None:
+        for bundle in self.matrix.languages.values():
+            for package in bundle.contract.runtime.packages:
+                if package.manager is RuntimePackageManager.GEM:
+                    subprocess.run(
+                        ("gem", "install", package.name.value, "--version", package.version.text(), "--no-document"),
                         check=True,
                     )
                 else:

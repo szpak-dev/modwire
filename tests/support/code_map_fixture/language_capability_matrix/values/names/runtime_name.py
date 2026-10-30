@@ -1,5 +1,5 @@
 from .identifier import Identifier
 
 
-class ExecutableName(Identifier):
+class RuntimeName(Identifier):
     pass

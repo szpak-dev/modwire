@@ -4,6 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from modwire.application import ModwireApplication
 from tests.support.code_map_fixture.fixture_contract import PolyglotFixtureContract
 
 
@@ -12,7 +13,7 @@ class ExtractorBuildChecks:
         self.repository = repository
 
     def run(self) -> int:
-        PolyglotFixtureContract(self.repository).validate_runtime()
+        PolyglotFixtureContract(self.repository).validate_runtime(ModwireApplication.create())
         resources = self.repository / "src/modwire/extraction/extractors/resources"
         work_root = self.repository / ".dev/native"
         adapters = tuple(sorted(resources.glob("*/build.py")))

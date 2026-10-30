@@ -3,6 +3,7 @@ import json
 import shutil
 
 import pytest
+from pydantic import JsonValue, TypeAdapter
 
 from modwire.application import (
     CodeMap,
@@ -104,6 +105,8 @@ class TestImplementationManifest(ApplicationTestCase):
             assert tuple(format.id for format in formats) == ("canonical-json",), language.value
             assert manifest.schema_version == 10, language.value
             assert manifest.producer.extractor.language == language.value
+            assert manifest.producer == code_map.producer
+            assert manifest.source_manifest == code_map.extraction.manifest
             assert manifest.producer.extractor.version, language.value
             assert {item.capability for item in manifest.producer.capabilities} == set(FactCapability), language.value
             assert {item.family for item in manifest.producer.relationship_capabilities} == set(RelationshipFamily), (
@@ -124,9 +127,37 @@ class TestImplementationManifest(ApplicationTestCase):
             assert document.payload == canonical
             assert document.algorithm is DigestAlgorithm.SHA256
             assert document.digest == hashlib.sha256(canonical.encode()).hexdigest()
-            assert document.digest == scenario.digest
+            assert self.contract.manifest_facts_digest(manifest) == scenario.facts_digest
             assert document.verify_digest()
             assert self.application.implementation_manifest(code_map, formats[0]) == document
+
+            producer = code_map.producer.model_copy(
+                update={"modwire_version": f"{code_map.producer.modwire_version}.example"}
+            )
+            runtime = manifest.source_manifest.runtime.model_copy(
+                update={"version": f"{manifest.source_manifest.runtime.version}.example"}
+            )
+            source_manifest = manifest.source_manifest.model_copy(update={"runtime": runtime})
+            identity = TypeAdapter[JsonValue](JsonValue).validate_json(
+                source_manifest.model_dump_json(exclude={"digest", "digest_algorithm"})
+            )
+            identity_json = json.dumps(identity, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+            source_manifest = source_manifest.model_copy(
+                update={"digest": hashlib.sha256(identity_json.encode("utf-8")).hexdigest()}
+            )
+            for changed in (
+                code_map.model_copy(update={"producer": producer}),
+                code_map.model_copy(
+                    update={"extraction": code_map.extraction.model_copy(update={"manifest": source_manifest})}
+                ),
+            ):
+                changed = CodeMap.model_validate_json(changed.to_json())
+                changed_document = self.application.implementation_manifest(changed, formats[0])
+                changed_manifest = self.application.read_implementation_manifest(changed_document)
+                assert changed_document.digest != document.digest
+                assert changed_manifest.producer == changed.producer
+                assert changed_manifest.source_manifest == changed.extraction.manifest
+                assert self.contract.manifest_facts_digest(changed_manifest) == scenario.facts_digest
 
     def test_every_matrix_manifest_transition_changes_each_declared_identity(self) -> None:
         scenarios = {(language, scenario.name): scenario for language, scenario in self.contract.manifest_cases()}

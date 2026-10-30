@@ -1,7 +1,9 @@
 language: typescript
 runtime:
   runtime: node
-  executable: node
+  probe:
+    arguments: [--version]
+    pattern: '^v(\d+\.\d+\.\d+)'
   version:
     major: 24
     minor: 2
@@ -45,26 +47,26 @@ capabilities:
     explanation: Functions, methods, constructors, and callable values are extracted.
   calls:
     status: supported
-    explanation: Static calls owned by extracted callables are emitted with explicit resolved, 
-      external, unresolved, or dynamic state.
+    explanation: Static calls owned by extracted callables are emitted with explicit resolved, external,
+      unresolved, or dynamic state.
   parameters:
     status: supported
     explanation: Callable parameter order, kind, annotation, and default presence are extracted.
   type_references:
     status: partial
-    explanation: Named references and ordered generic arguments are structural; other authored type 
-      syntax is reported as unsupported.
+    explanation: Named references and ordered generic arguments are structural; other authored type syntax is
+      reported as unsupported.
   annotations:
     status: partial
-    explanation: Class decorator expressions and declared type annotations are extracted; decorators
-      on other declarations are not yet emitted.
+    explanation: Class decorator expressions and declared type annotations are extracted; decorators on other
+      declarations are not yet emitted.
   modifiers:
     status: partial
     explanation: Visibility intent, callable kind, and property member kind are normalized.
   attributes:
     status: supported
-    explanation: Class and type property identity, exact declared type, visibility, optionality, and
-      member kind are extracted.
+    explanation: Class and type property identity, exact declared type, visibility, optionality, and member
+      kind are extracted.
   assigned_values:
     status: unsupported
     explanation: TypeScript property assigned-value evidence is not extracted yet.
@@ -89,25 +91,25 @@ capabilities:
 relationships:
   declaration:
     semantics: partial
-    semantics_explanation: Authored extension and implementation heritage is preserved without 
-      resolving runtime base aliases.
+    semantics_explanation: Authored extension and implementation heritage is preserved without resolving
+      runtime base aliases.
     inventory: supported
-    inventory_explanation: Every authored class and interface heritage clause in included TypeScript
-      sources is emitted deterministically.
+    inventory_explanation: Every authored class and interface heritage clause in included TypeScript sources
+      is emitted deterministically.
   member:
     semantics: partial
-    semantics_explanation: Declared member and callable types and static calls are preserved without
-      resolving runtime types or framework ownership.
+    semantics_explanation: Declared member and callable types and static calls are preserved without resolving
+      runtime types or framework ownership.
     inventory: partial
-    inventory_explanation: Declared type and static-call evidence is emitted, but assigned-value 
-      relationship evidence is not available.
+    inventory_explanation: Declared type and static-call evidence is emitted, but assigned-value relationship
+      evidence is not available.
   dependency:
     semantics: supported
-    semantics_explanation: Authored import dependencies are normalized with explicit resolution 
-      state; dynamic loading is excluded.
+    semantics_explanation: Authored import dependencies are normalized with explicit resolution state; dynamic
+      loading is excluded.
     inventory: supported
-    inventory_explanation: Every authored import declaration in included TypeScript and JavaScript 
-      sources is emitted deterministically.
+    inventory_explanation: Every authored import declaration in included TypeScript and JavaScript sources is
+      emitted deterministically.
 scenarios:
   - name: supported-contract
     fixture: extensions
@@ -115,180 +117,189 @@ scenarios:
     claims:
       - kind: capability
         capability: sources
+        evidence: supported
         state: present
-        observation:
-          kind: source
-          relative_path: src/example-shapes.ts
+        observation: {kind: source, relative_path: src/example-shapes.ts}
       - kind: capability
         capability: symbols
+        evidence: supported
         state: present
-        observation:
-          kind: declaration
-          qualified_name: ExampleContract
-          declaration_kind: interface
+        observation: {kind: declaration, qualified_name: ExampleContract, declaration_kind: interface}
       - kind: capability
         capability: callables
+        evidence: supported
         state: present
-        observation:
-          kind: callable
-          qualified_name: exampleArrow
-          callable_kind: callable_value
+        observation: {kind: callable, qualified_name: exampleArrow, callable_kind: callable_value}
       - kind: capability
         capability: calls
+        evidence: supported
         state: present
-        observation:
-          kind: call
-          owner: ExampleImplementation.examplePath
-          target: exampleRequired
-          resolution: resolved
+        observation: {kind: call, owner: ExampleImplementation.examplePath, target: exampleRequired,
+            resolution: resolved}
       - kind: capability
         capability: attributes
+        evidence: supported
         state: present
-        observation:
-          kind: attribute
-          owner: ExampleImplementation
-          name: exampleOptional
-          member_kind: instance
+        observation: {kind: attribute, owner: ExampleImplementation, name: exampleOptional, member_kind:
+            instance}
       - kind: capability
         capability: inheritance
+        evidence: supported
         state: present
-        observation:
-          kind: declaration_relation
-          source: ExampleImplementation
-          relation: extends
-          target: ExampleAbstract
+        observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
+            ExampleAbstract}
       - kind: capability
         capability: declaration_kinds
+        evidence: supported
         state: present
-        observation:
-          kind: declaration
-          qualified_name: ExampleAbstract
-          declaration_kind: abstract_class
+        observation: {kind: declaration, qualified_name: ExampleAbstract, declaration_kind: abstract_class}
       - kind: capability
         capability: dependencies
+        evidence: supported
         state: present
-        observation:
-          kind: dependency
-          source: src/example-shapes.ts
-          target: node:path
-          resolution: external
+        observation: {kind: dependency, source: src/example-shapes.ts, target: node:path, resolution: external}
       - kind: relationship
         relationship: declaration
         aspect: inventory
+        evidence: supported
         state: present
-        observation:
-          kind: declaration_relation
-          source: ExampleImplementation
-          relation: extends
-          target: ExampleAbstract
+        observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
+            ExampleAbstract}
       - kind: relationship
         relationship: dependency
         aspect: semantics
+        evidence: supported
         state: present
-        observation:
-          kind: dependency
-          source: src/example-shapes.ts
-          target: node:path
-          resolution: external
+        observation: {kind: dependency, source: src/example-shapes.ts, target: node:path, resolution: external}
       - kind: relationship
         relationship: dependency
         aspect: inventory
+        evidence: supported
         state: present
-        observation:
-          kind: dependency
-          source: src/example-shapes.ts
-          target: node:path
-          resolution: external
+        observation: {kind: dependency, source: src/example-shapes.ts, target: node:path, resolution: external}
+      - kind: capability
+        capability: modifiers
+        evidence: supported
+        state: present
+        observation: {kind: modifier, owner: ExampleImplementation.examplePath, visibility: public}
+      - kind: capability
+        capability: composition
+        evidence: supported
+        state: present
+        observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
+            ExampleAbstract}
+      - kind: relationship
+        relationship: declaration
+        aspect: semantics
+        evidence: supported
+        state: present
+        observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
+            ExampleAbstract}
+      - kind: relationship
+        relationship: member
+        aspect: semantics
+        evidence: supported
+        state: present
+        observation: {kind: call, owner: ExampleImplementation.examplePath, target: exampleRequired,
+            resolution: resolved}
+      - kind: capability
+        capability: spans
+        evidence: supported
+        state: present
+        observation: {kind: exact_span, owner: ExampleImplementation.examplePath, start: 33, end: 35}
   - name: empty-source
     fixture: types
     source: src/type-reference-empty.ts
     claims:
       - kind: capability
         capability: sources
+        evidence: supported
         state: present
-        observation:
-          kind: empty_source
-          relative_path: src/type-reference-empty.ts
+        observation: {kind: empty_source, relative_path: src/type-reference-empty.ts}
   - name: non-class-decorator-boundary
     fixture: gaps
     source: src/example-capability-gaps.ts
     claims:
       - kind: capability
         capability: annotations
+        evidence: boundary
         state: absent
-        observation:
-          kind: annotation
-          owner: ExampleAssignedValue
-          expression: ExampleMethodDecorator
+        observation: {kind: annotation, owner: ExampleAssignedValue.exampleMethod, expression:
+            ExampleMethodDecorator}
+      - kind: capability
+        capability: annotations
+        evidence: supported
+        state: present
+        observation: {kind: annotation, owner: ExampleAssignedValue, expression: ExampleClassDecorator}
   - name: modifier-normalization-boundary
     fixture: gaps
     source: src/example-capability-gaps.ts
     claims:
       - kind: capability
         capability: modifiers
-        state: absent
-        observation:
-          kind: modifier
-          owner: ExampleClassDecorator
-          modifier: readonly
+        evidence: boundary
+        state: present
+        observation: {kind: modifier, owner: ExampleAssignedValue.exampleValue, visibility: public}
   - name: assigned-value
     fixture: gaps
     source: src/example-capability-gaps.ts
     claims:
       - kind: capability
         capability: assigned_values
+        evidence: boundary
         state: present
         observation:
           kind: assigned_values
           owner: ExampleAssignedValue
-          attributes:
+          attributes: &id001
             - name: exampleValue
               values:
                 - kind: unsupported
-                  expression: ""
-                  reference: ""
+                  expression: ''
+                  reference: ''
       - kind: relationship
         relationship: member
         aspect: inventory
+        evidence: supported
+        state: present
+        observation: {kind: attribute, owner: ExampleAssignedValue, name: exampleValue, member_kind: instance}
+      - kind: relationship
+        relationship: member
+        aspect: inventory
+        evidence: boundary
         state: present
         observation:
-          kind: attribute
+          kind: assigned_values
           owner: ExampleAssignedValue
-          name: exampleValue
-          member_kind: instance
+          attributes: *id001
   - name: namespace-declaration
     fixture: gaps
     source: src/example-capability-gaps.ts
     claims:
       - kind: capability
         capability: namespaces
+        evidence: boundary
         state: absent
-        observation:
-          kind: namespace
-          qualified_name: ExampleNamespace
-          namespace_kind: namespace
+        observation: {kind: namespace, qualified_name: ExampleNamespace, namespace_kind: namespace}
   - name: heritage-only-composition-boundary
     fixture: gaps
     source: src/example-capability-gaps.ts
     claims:
       - kind: capability
         capability: composition
+        evidence: boundary
         state: absent
-        observation:
-          kind: declaration_relation
-          source: ExampleCombined
-          relation: includes
-          target: ExampleFirst
+        observation: {kind: declaration_relation, source: ExampleCombined, relation: includes, target:
+            ExampleFirst}
   - name: non-callable-span-boundary
     fixture: gaps
     source: src/example-capability-gaps.ts
     claims:
       - kind: capability
         capability: spans
+        evidence: boundary
         state: absent
-        observation:
-          kind: span_owner
-          owner: ExampleAssignedValue
+        observation: {kind: span_owner, owner: ExampleAssignedValue}
   - name: declaration-runtime-semantics-boundary
     fixture: gaps
     source: src/example-capability-gaps.ts
@@ -296,12 +307,10 @@ scenarios:
       - kind: relationship
         relationship: declaration
         aspect: semantics
+        evidence: boundary
         state: absent
-        observation:
-          kind: declaration_relation
-          source: ExampleRuntime
-          relation: includes
-          target: ExampleAssignedValue
+        observation: {kind: declaration_relation, source: ExampleRuntime, relation: includes, target:
+            ExampleAssignedValue}
   - name: member-runtime-semantics-boundary
     fixture: gaps
     source: src/example-capability-gaps.ts
@@ -309,18 +318,17 @@ scenarios:
       - kind: relationship
         relationship: member
         aspect: semantics
+        evidence: boundary
         state: absent
-        observation:
-          kind: attribute
-          owner: ExampleAssignedValue
-          name: exampleRuntimeMember
-          member_kind: instance
+        observation: {kind: attribute, owner: ExampleAssignedValue, name: exampleRuntimeMember, member_kind:
+            instance}
   - name: type-reference-grammar-boundary
     fixture: types
     source: src/type-reference-cases.ts
     claims:
       - kind: capability
         capability: type_references
+        evidence: supported
         state: present
         observation:
           kind: type_reference
@@ -342,156 +350,121 @@ scenarios:
                     arguments: []
       - kind: capability
         capability: type_references
+        evidence: boundary
         state: unsupported
-        observation:
-          kind: type_slot
-          owner: exampleTypes
-          role: parameter
-          position: 1
+        observation: {kind: type_slot, owner: exampleTypes, role: parameter, position: 1}
       - kind: capability
         capability: type_references
+        evidence: boundary
         state: absent
-        observation:
-          kind: type_slot
-          owner: exampleTypes
-          role: parameter
-          position: 2
+        observation: {kind: type_slot, owner: exampleTypes, role: parameter, position: 2}
   - name: parameter-kinds
     fixture: parameters
     source: src/params.ts
     claims:
       - kind: capability
         capability: parameters
+        evidence: supported
         state: present
-        observation:
-          kind: parameter_kinds
-          present:
-            - positional
-            - variadic_positional
+        observation: {kind: parameter_kinds, present: [positional, variadic_positional]}
+  - name: javascript-function
+    fixture: extensions
+    source: src/example-audit.js
+    claims:
+      - kind: capability
+        capability: callables
+        evidence: supported
+        state: present
+        observation: {kind: callable, qualified_name: exampleAudit, callable_kind: function}
+  - name: jsx-callable
+    fixture: extensions
+    source: src/example-panel.jsx
+    claims:
+      - kind: capability
+        capability: callables
+        evidence: supported
+        state: present
+        observation: {kind: callable, qualified_name: ExamplePanel, callable_kind: callable_value}
+  - name: tsx-function
+    fixture: extensions
+    source: src/example-view.tsx
+    claims:
+      - kind: capability
+        capability: callables
+        evidence: supported
+        state: present
+        observation: {kind: callable, qualified_name: ExampleView, callable_kind: function}
 manifests:
   root: tests/fixtures/implementation_manifest/typescript
   scenarios:
     - name: canonical
       source: canonical/src/example.ts
-      digest: 7124d4362dc2653515b644557cfb27a6f876cbe75ebede31500b628057b59f26
+      facts_digest: 9ce704b02214d5f54105f8868fc261a514ef373cca957f99e413f2f34b3c6da9
       claims:
         - state: present
-          observation:
-            kind: source
-            relative_path: src/example.ts
+          observation: {kind: source, relative_path: src/example.ts}
         - state: present
-          observation:
-            kind: symbol
-            qualified_name: src/example.ExampleAbstract
-            symbol_kind: abstract_class
+          observation: {kind: symbol, qualified_name: src/example.ExampleAbstract, symbol_kind: abstract_class}
         - state: present
-          observation:
-            kind: callable
-            qualified_name: exampleArrow
-            callable_kind: callable_value
+          observation: {kind: callable, qualified_name: exampleArrow, callable_kind: callable_value}
         - state: present
-          observation:
-            kind: parameter
-            owner: ExampleContract.exampleRequired
-            name: exampleValue
-            position: 0
-            parameter_kind: positional
-            has_default: false
+          observation: {kind: parameter, owner: ExampleContract.exampleRequired, name: exampleValue, position:
+              0, parameter_kind: positional, has_default: false}
         - state: present
-          observation:
-            kind: attribute
-            owner: ExampleImplementation
-            name: exampleOptional
-            member_kind: instance
+          observation: {kind: attribute, owner: ExampleImplementation, name: exampleOptional, member_kind:
+              instance}
         - state: present
-          observation:
-            kind: call
-            owner: ExampleImplementation.examplePath
-            target: join
-            resolution: unresolved
+          observation: {kind: call, owner: ExampleImplementation.examplePath, target: join, resolution:
+              unresolved}
         - state: present
-          observation:
-            kind: declaration_relation
-            source: ExampleImplementation
-            relation: extends
-            target: ExampleAbstract
+          observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
+              ExampleAbstract}
         - state: present
-          observation:
-            kind: dependency
-            source: src/example.ts
-            target: node:path
-            resolution: external
+          observation: {kind: dependency, source: src/example.ts, target: node:path, resolution: external}
     - name: calls
       source: calls/src/example.ts
-      digest: 432ac280bdccafef41b3e0967a13b552f801e0853e93d18273bbed31876c103f
+      facts_digest: 39b47455ded703134c3d692a30055782247b72904991ac0997e8794cfc3f5d65
       claims:
         - state: present
-          observation:
-            kind: source
-            relative_path: src/example.ts
+          observation: {kind: source, relative_path: src/example.ts}
         - state: present
-          observation:
-            kind: call
-            owner: exampleSource
-            target: exampleTarget
-            resolution: resolved
+          observation: {kind: call, owner: exampleSource, target: exampleTarget, resolution: resolved}
     - name: no_calls
       source: no_calls/src/example.ts
-      digest: e7b7b4a1ab0bd1059a33cb0679b5e485be4c661eb726d7c0e7718b489d7c211f
+      facts_digest: ba7ee473f060121e8d05eb2fb8b54f2a2a3e1101b69782af04b5376a11ed1a87
       claims:
         - state: present
-          observation:
-            kind: source
-            relative_path: src/example.ts
+          observation: {kind: source, relative_path: src/example.ts}
         - state: absent
-          observation:
-            kind: call
-            owner: exampleSource
-            target: exampleTarget
-            resolution: resolved
+          observation: {kind: call, owner: exampleSource, target: exampleTarget, resolution: resolved}
     - name: negative_members
       source: negative_members/src/example.ts
-      digest: 68aa351532316ef029544d288abdad289300773a771e97d7beed6696c5f5cd02
+      facts_digest: d1a7d02babdf316e1f19dc6ac61e6871b470cca293a39a261da9028c6448a5de
       claims:
         - state: present
-          observation:
-            kind: source
-            relative_path: src/example.ts
+          observation: {kind: source, relative_path: src/example.ts}
         - state: absent
-          observation:
-            kind: symbol
-            qualified_name: src/example.ExampleAbstract
-            symbol_kind: abstract_class
+          observation: {kind: symbol, qualified_name: src/example.ExampleAbstract, symbol_kind: abstract_class}
     - name: dependencies
       source: dependencies/src/example.ts
-      digest: ef68bfd27cc864c40c2dc801b90e9ecab7946a9852eb8f70c4d748c45b9fc371
+      facts_digest: 88e84538780939028b02e539d523aeac55287d754b5acc04c77673acb04c5f70
       claims:
         - state: present
-          observation:
-            kind: source
-            relative_path: src/example.ts
+          observation: {kind: source, relative_path: src/example.ts}
         - state: present
-          observation:
-            kind: dependency
-            source: src/example.ts
-            target: node:path
-            resolution: external
+          observation: {kind: dependency, source: src/example.ts, target: node:path, resolution: external}
     - name: source_edit_before
       source: source_edit_before/src/example.ts
-      digest: 48d13a86951c04fa0c8661291d97f399ec4e725b1be7734ef9f31703e5cd95a9
+      facts_digest: 5c3cda2ab24ebdc7868900e303d9da44a3a950bd6f0013c4e8507d3ceca0445f
       claims:
         - state: present
-          observation:
-            kind: source
-            relative_path: src/example.ts
+          observation: {kind: source, relative_path: src/example.ts}
     - name: source_edit_after
       source: source_edit_after/src/example.ts
-      digest: 3c166ad5d13052febbedc59f3421403ca6c9fda66b110fba3a58ed0def159498
+      facts_digest: 5c3cda2ab24ebdc7868900e303d9da44a3a950bd6f0013c4e8507d3ceca0445f
       claims:
         - state: present
-          observation:
-            kind: source
-            relative_path: src/example.ts
+          observation: {kind: source, relative_path: src/example.ts}
   transitions:
     - before: source_edit_before
       after: source_edit_after

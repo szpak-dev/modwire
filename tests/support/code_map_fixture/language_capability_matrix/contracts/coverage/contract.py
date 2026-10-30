@@ -2,10 +2,11 @@ from typing import Self
 
 from pydantic import Field, model_validator
 
-from modwire.application import FactCapability, RelationshipFamily
+from modwire.application import CapabilityStatus, FactCapability, RelationshipFamily
 
 from ....fixture_model import FixtureModel
 from ...values.enums.claim_state import ClaimState
+from ...values.enums.evidence_role import EvidenceRole
 from ...values.enums.fixture_role import FixtureRole
 from ...values.enums.relationship_aspect import RelationshipAspect
 from ...values.names.language_id import LanguageId
@@ -37,11 +38,21 @@ class LanguageContract(FixtureModel):
         names = tuple(scenario.name for scenario in self.scenarios)
         if len(set(names)) != len(names):
             raise ValueError("capability scenario names contain duplicates")
+        evidence_roles: dict[tuple[FixtureRole, str, str], EvidenceRole] = {}
         for scenario in self.scenarios:
             claims = tuple(claim.root for claim in scenario.claims)
-            if any((claim == later for position, claim in enumerate(claims) for later in claims[position + 1 :])):
+            identities = tuple(claim.model_dump_json(exclude={"evidence"}) for claim in claims)
+            if len(set(identities)) != len(identities):
                 raise ValueError(f"{scenario.name.value} contains duplicate atomic claims")
             for claim in claims:
+                identity = (
+                    scenario.fixture,
+                    scenario.source.value.as_posix(),
+                    claim.model_dump_json(exclude={"evidence"}),
+                )
+                if identity in evidence_roles and evidence_roles[identity] is not claim.evidence:
+                    raise ValueError("the same observation cannot prove both supported and boundary evidence")
+                evidence_roles[identity] = claim.evidence
                 if claim.kind == "capability":
                     self.validate_capability_observation(claim)
                 elif claim.kind == "relationship":
@@ -50,6 +61,19 @@ class LanguageContract(FixtureModel):
                     claim.kind != "capability" or claim.observation.root.kind != "type_slot"
                 ):
                     raise ValueError("unsupported claim state requires a type-slot observation")
+                if claim.kind == "capability" and claim.evidence is EvidenceRole.SUPPORTED:
+                    absent_type = (
+                        claim.observation.root.kind == "type_slot"
+                        and claim.state is ClaimState.ABSENT
+                        and self.capabilities[claim.capability].status is CapabilityStatus.SUPPORTED
+                    )
+                    if claim.state is not ClaimState.PRESENT and not absent_type:
+                        raise ValueError("supported evidence must observe a published fact")
+                    if self.capabilities[claim.capability].status is CapabilityStatus.UNSUPPORTED:
+                        raise ValueError("unsupported capability cannot claim supported evidence")
+                if claim.kind == "relationship" and claim.evidence is EvidenceRole.SUPPORTED:
+                    if claim.state is not ClaimState.PRESENT:
+                        raise ValueError("supported relationship evidence must observe a published fact")
                 observation = claim.observation.root
                 if observation.kind == "source" and observation.relative_path != scenario.source:
                     raise ValueError(f"{scenario.name.value} source observation differs from its scenario source")
@@ -66,7 +90,7 @@ class LanguageContract(FixtureModel):
             FactCapability.PARAMETERS: {"parameter", "parameter_kinds"},
             FactCapability.TYPE_REFERENCES: {"type_reference", "type_slot"},
             FactCapability.ANNOTATIONS: {"annotation"},
-            FactCapability.MODIFIERS: {"modifier"},
+            FactCapability.MODIFIERS: {"modifier", "callable", "attribute"},
             FactCapability.ATTRIBUTES: {"attribute"},
             FactCapability.ASSIGNED_VALUES: {"assigned_values"},
             FactCapability.INHERITANCE: {"declaration_relation"},
@@ -81,36 +105,47 @@ class LanguageContract(FixtureModel):
 
     def validate_relationship_observation(self, claim: RelationshipClaim) -> None:
         accepted = {
-            RelationshipFamily.DECLARATION: "declaration_relation",
-            RelationshipFamily.MEMBER: "attribute",
-            RelationshipFamily.DEPENDENCY: "dependency",
+            RelationshipFamily.DECLARATION: {"declaration_relation"},
+            RelationshipFamily.MEMBER: {"attribute", "call", "assigned_values"},
+            RelationshipFamily.DEPENDENCY: {"dependency"},
         }
-        if claim.observation.root.kind != accepted[claim.relationship]:
+        if claim.observation.root.kind not in accepted[claim.relationship]:
             raise ValueError(f"{claim.relationship.value} claim uses an incompatible observation")
 
     def validate_claim_coverage(self) -> None:
         capability_claims = {
-            claim.capability
+            (claim.capability, claim.evidence)
             for scenario in self.scenarios
             for wrapped in scenario.claims
             for claim in (wrapped.root,)
             if claim.kind == "capability"
         }
         relationship_claims = {
-            (claim.relationship, claim.aspect)
+            (claim.relationship, claim.aspect, claim.evidence)
             for scenario in self.scenarios
             for wrapped in scenario.claims
             for claim in (wrapped.root,)
             if claim.kind == "relationship"
         }
-        for capability in self.capabilities:
-            if capability not in capability_claims:
-                raise ValueError(f"{self.language.value} {capability.value} has no executable claim")
-        for relationship in self.relationships:
-            if (relationship, RelationshipAspect.SEMANTICS) not in relationship_claims:
-                raise ValueError(f"{self.language.value} {relationship.value} semantics has no executable claim")
-            if (relationship, RelationshipAspect.INVENTORY) not in relationship_claims:
-                raise ValueError(f"{self.language.value} {relationship.value} inventory has no executable claim")
+        obligations = {
+            CapabilityStatus.SUPPORTED: {EvidenceRole.SUPPORTED},
+            CapabilityStatus.PARTIAL: {EvidenceRole.SUPPORTED, EvidenceRole.BOUNDARY},
+            CapabilityStatus.UNSUPPORTED: {EvidenceRole.BOUNDARY},
+        }
+        for capability, expectation in self.capabilities.items():
+            for role in obligations[expectation.status]:
+                if (capability, role) not in capability_claims:
+                    raise ValueError(f"{self.language.value} {capability.value} lacks {role.value} evidence")
+        for relationship, expectation in self.relationships.items():
+            for aspect, status in (
+                (RelationshipAspect.SEMANTICS, expectation.semantics),
+                (RelationshipAspect.INVENTORY, expectation.inventory),
+            ):
+                for role in obligations[status]:
+                    if (relationship, aspect, role) not in relationship_claims:
+                        raise ValueError(
+                            f"{self.language.value} {relationship.value} {aspect.value} lacks {role.value} evidence"
+                        )
 
     def validate_fixture_ownership(self) -> None:
         fixtures = {
@@ -131,3 +166,16 @@ class LanguageContract(FixtureModel):
         for scenario in self.scenarios:
             if scenario.source not in fixtures[scenario.fixture].sources:
                 raise ValueError(f"{scenario.name.value} source is outside its fixture inventory")
+        for role, fixture in fixtures.items():
+            evidenced = {
+                scenario.source.value
+                for scenario in self.scenarios
+                if scenario.fixture is role
+                and any(
+                    claim.root.observation.root.kind != "source"
+                    and (claim.root.state is ClaimState.PRESENT or claim.root.observation.root.kind == "type_slot")
+                    for claim in scenario.claims
+                )
+            }
+            if evidenced != {source.value for source in fixture.sources}:
+                raise ValueError(f"{self.language.value} {role.value} sources lack behavioral evidence")

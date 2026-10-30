@@ -20,7 +20,7 @@ jobs:
       - run: python3 -m pip install uv
       - run: uv sync --all-groups --locked
       - id: contract
-        run: uv run python -m scripts.language_runtime_contract "$GITHUB_OUTPUT"
+        run: uv run python -m scripts.language_runtime_contract export "$GITHUB_OUTPUT"
 
   package:
     name: Package on Python ${{ matrix.python-version }}
@@ -50,13 +50,9 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ fromJSON(needs.runtime-contract.outputs.contract).ruby.version }}
-      - run: >-
-          gem install
-          "${{ fromJSON(needs.runtime-contract.outputs.contract).ruby.packages[0].name }}"
-          --version "${{ fromJSON(needs.runtime-contract.outputs.contract).ruby.packages[0].version }}"
-          --no-document
       - run: python -m pip install uv
       - run: uv sync --all-groups --locked
+      - run: uv run python -m scripts.language_runtime_contract install-packages
       - run: make host-check
 
   extractors:
@@ -81,11 +77,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ fromJSON(needs.runtime-contract.outputs.contract).ruby.version }}
-      - run: >-
-          gem install
-          "${{ fromJSON(needs.runtime-contract.outputs.contract).ruby.packages[0].name }}"
-          --version "${{ fromJSON(needs.runtime-contract.outputs.contract).ruby.packages[0].version }}"
-          --no-document
       - run: python -m pip install uv
       - run: uv sync --all-groups --locked
+      - run: uv run python -m scripts.language_runtime_contract install-packages
       - run: make extractor-check

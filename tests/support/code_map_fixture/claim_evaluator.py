@@ -13,9 +13,9 @@ from modwire.application import (
 
 from .claim_result import ClaimResult
 from .language_capability_matrix.contracts.manifests.claim import ManifestClaim
-from .language_capability_matrix.contracts.scenarios.claims.capability import CapabilityClaim
-from .language_capability_matrix.contracts.scenarios.claims.relationship import RelationshipClaim
 from .language_capability_matrix.contracts.scenarios.claims.scenario import ScenarioClaim
+from .language_capability_matrix.contracts.scenarios.observations.capability import CapabilityObservation
+from .language_capability_matrix.contracts.scenarios.observations.relationship import RelationshipObservation
 from .language_capability_matrix.values.enums.claim_state import ClaimState
 from .language_capability_matrix.values.enums.type_slot_role import TypeSlotRole
 
@@ -24,14 +24,12 @@ class FixtureClaimEvaluator:
     def evaluate_code_map(self, code_map: CodeMap, source_id: str, wrapped: ScenarioClaim) -> ClaimResult:
         source = code_map.extraction.files[FileId(source_id)]
         claim = wrapped.root
-        if claim.kind == "capability":
-            return self.evaluate_capability(source, claim)
-        if claim.kind == "relationship":
-            return self.evaluate_relationship(source, claim)
-        assert_never(claim)
+        return self.evaluate_observation(source, claim.observation, claim.state)
 
-    def evaluate_capability(self, source: SourceFile, claim: CapabilityClaim) -> ClaimResult:
-        observation = claim.observation.root
+    def evaluate_observation(
+        self, source: SourceFile, wrapped: CapabilityObservation | RelationshipObservation, state: ClaimState
+    ) -> ClaimResult:
+        observation = wrapped.root
         if observation.kind == "source":
             present = str(source.file_id) == observation.relative_path.value.as_posix()
         elif observation.kind == "empty_source":
@@ -93,11 +91,11 @@ class FixtureClaimEvaluator:
             )
         elif observation.kind == "type_slot":
             slots = self.type_slots(source, observation.owner.value, observation.role, observation.position.root)
-            if claim.state is ClaimState.UNSUPPORTED:
+            if state is ClaimState.UNSUPPORTED:
                 return ClaimResult(satisfied=any(slot.kind is SourceTypeKind.UNSUPPORTED for slot in slots))
-            if claim.state is ClaimState.ABSENT:
+            if state is ClaimState.ABSENT:
                 return ClaimResult(satisfied=any(slot.kind is SourceTypeKind.ABSENT for slot in slots))
-            present = bool(slots)
+            present = any(slot.kind is SourceTypeKind.REFERENCE for slot in slots)
         elif observation.kind == "annotation":
             present = any(
                 owner == observation.owner.value and annotation == observation.expression.value
@@ -115,30 +113,16 @@ class FixtureClaimEvaluator:
                 )
             )
         elif observation.kind == "modifier":
-            present = observation.modifier.value in {
-                *(
-                    item.visibility_intent.value
-                    for item in (
-                        *source.declarations,
-                        *source.functions,
-                        *source.values,
-                        *source.callable_values,
-                        *source.anonymous_callables,
-                    )
-                    if item.declaration_id.qualified_name == observation.owner.value
-                ),
-                *(
-                    item.kind.value
-                    for item in source.canonical_callables()
-                    if item.declaration_id.qualified_name == observation.owner.value
-                ),
-                *(
-                    item.member_kind.value
-                    for declaration in source.declarations
-                    for item in declaration.properties
-                    if declaration.declaration_id.qualified_name == observation.owner.value
-                ),
-            }
+            present = any(
+                item.declaration_id.qualified_name == observation.owner.value
+                and item.visibility_intent is observation.visibility
+                for item in (*source.declarations, *source.canonical_callables(), *source.values)
+            ) or any(
+                item.declaration_id.qualified_name == observation.owner.value
+                and item.visibility is observation.visibility
+                for declaration in source.declarations
+                for item in declaration.properties
+            )
         elif observation.kind == "attribute":
             present = any(
                 declaration.declaration_id.qualified_name == observation.owner.value
@@ -206,7 +190,7 @@ class FixtureClaimEvaluator:
             )
         else:
             assert_never(observation)
-        return self.result(present, claim.state)
+        return self.result(present, state)
 
     def type_slots(
         self, source: SourceFile, owner: str, role: TypeSlotRole, position: int
@@ -232,35 +216,6 @@ class FixtureClaimEvaluator:
                 if declaration.declaration_id.qualified_name == owner and attribute_position == position
             )
         assert_never(role)
-
-    def evaluate_relationship(self, source: SourceFile, claim: RelationshipClaim) -> ClaimResult:
-        observation = claim.observation.root
-        if observation.kind == "declaration_relation":
-            present = any(
-                relation.source_declaration_id.qualified_name == observation.source.value
-                and relation.kind is observation.relation
-                and relation.target_reference == observation.target.value
-                for relation in source.declaration_relations
-            )
-        elif observation.kind == "attribute":
-            present = any(
-                declaration.declaration_id.qualified_name == observation.owner.value
-                and attribute.name == observation.name.value
-                and attribute.member_kind is observation.member_kind
-                for declaration in source.declarations
-                for attribute in declaration.properties
-            )
-        elif observation.kind == "dependency":
-            present = any(
-                str(source.file_id) == observation.source.value.as_posix()
-                and (str(dependency.target_file_id) if dependency.target_file_id is not None else str(dependency.path))
-                == observation.target.value
-                and dependency.resolution is observation.resolution
-                for dependency in source.imports
-            )
-        else:
-            assert_never(observation)
-        return self.result(present, claim.state)
 
     def evaluate_manifest(self, manifest: ImplementationManifest, claim: ManifestClaim) -> ClaimResult:
         observation = claim.observation.root

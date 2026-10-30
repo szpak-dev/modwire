@@ -11,7 +11,7 @@ from .claim import ManifestClaim
 class ManifestScenario(FixtureModel):
     name: ManifestScenarioId
     source: RepositorySourcePath
-    digest: str = Field(pattern="^[0-9a-f]{64}$", strict=True)
+    facts_digest: str = Field(pattern="^[0-9a-f]{64}$", strict=True)
     claims: tuple[ManifestClaim, ...] = Field(min_length=1)
 
     @model_validator(mode="after")

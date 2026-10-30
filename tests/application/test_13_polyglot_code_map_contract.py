@@ -3,7 +3,7 @@ import shutil
 import pytest
 from pydantic import ValidationError
 
-from modwire.application import CodeMap, FactCapability, RelationshipFamily
+from modwire.application import CodeMap, CodeValidationError, FactCapability, FileId, RelationshipFamily
 
 from ..support.code_map_fixture.fixture_contract import PolyglotFixtureContract
 from ..support.code_map_fixture.fixture_contract_error import FixtureContractError
@@ -97,7 +97,130 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         contract_path.write_text(original_contract, encoding="utf-8")
         PolyglotFixtureContract(self.workspace)
 
+    def test_runtime_and_evidence_attacks_are_rejected_before_each_contract_recovers(self) -> None:
+        self.copy_contract_documents()
+        for language, bundle in self.contract.matrix.languages.items():
+            pair = self.contract.matrix.index.languages[language]
+            path = self.workspace / pair.contract.value
+            original = path.read_text(encoding="utf-8")
+            document = bundle.contract.model_dump_json()
+            runtime = bundle.contract.runtime
+            other = next(
+                candidate.contract.runtime.runtime
+                for candidate in self.contract.matrix.languages.values()
+                if candidate.contract.runtime.runtime != runtime.runtime
+            )
+            path.write_text(
+                document.replace(f'"runtime":"{runtime.runtime.value}"', f'"runtime":"{other.value}"', 1),
+                encoding="utf-8",
+            )
+            with pytest.raises(ValueError):
+                PolyglotFixtureContract(self.workspace).validate_runtime_bindings(self.application)
+
+            path.write_text(document.replace('"evidence":"supported"', '"evidence":"boundary"'), encoding="utf-8")
+            with pytest.raises(ValidationError, match="lacks supported evidence"):
+                PolyglotFixtureContract(self.workspace)
+
+            if runtime.packages:
+                package = runtime.packages[0].model_dump_json()
+                path.write_text(
+                    document.replace(f'"packages":[{package}]', f'"packages":[{package},{package}]', 1),
+                    encoding="utf-8",
+                )
+                with pytest.raises(ValidationError, match="package identities contain duplicates"):
+                    PolyglotFixtureContract(self.workspace)
+            else:
+                package = next(
+                    package
+                    for candidate in self.contract.matrix.languages.values()
+                    for package in candidate.contract.runtime.packages
+                ).model_dump_json()
+                path.write_text(document.replace('"packages":[]', f'"packages":[{package}]', 1), encoding="utf-8")
+                with pytest.raises(ValidationError, match="gem packages require the Ruby runtime"):
+                    PolyglotFixtureContract(self.workspace)
+
+            path.write_text(original, encoding="utf-8")
+            PolyglotFixtureContract(self.workspace)
+
+    def test_assigned_value_expectations_reject_the_same_invalid_state_as_public_facts(self) -> None:
+        self.copy_contract_documents()
+        for language, bundle in self.contract.matrix.languages.items():
+            original = bundle.contract.model_dump_json()
+            unassigned = '"kind":"unassigned","expression":"","reference":""'
+            if unassigned not in original:
+                continue
+            path = self.workspace / self.contract.matrix.index.languages[language].contract.value
+            path.write_text(
+                original.replace(
+                    unassigned, '"kind":"unassigned","expression":"fabricated","reference":"fabricated"', 1
+                ),
+                encoding="utf-8",
+            )
+            with pytest.raises(CodeValidationError):
+                PolyglotFixtureContract(self.workspace)
+            path.write_text(original, encoding="utf-8")
+            PolyglotFixtureContract(self.workspace)
+
+    def test_each_nonempty_owned_source_has_evidence_that_rejects_erased_facts(self) -> None:
+        extracted: dict[tuple[str, str], CodeMap] = {}
+        for language, scenario in self.contract.scenario_cases():
+            key = (language.value, scenario.fixture.value)
+            if key not in extracted:
+                extracted[key] = self.application.generate_map(
+                    language.value, str(self.contract.fixture_root(language, scenario.fixture)), self.scan_policy()
+                )
+            code_map = extracted[key]
+            source_id = FileId(scenario.source.value.as_posix())
+            source = code_map.extraction.files[source_id]
+            erased = source.model_copy(
+                update={
+                    "declarations": (),
+                    "functions": (),
+                    "values": (),
+                    "callable_values": (),
+                    "anonymous_callables": (),
+                    "calls": (),
+                    "declaration_relations": (),
+                    "namespaces": (),
+                    "imports": [],
+                    "exports": [],
+                }
+            )
+            if source == erased:
+                continue
+            files = dict(code_map.extraction.files)
+            files[source_id] = erased
+            attacked = code_map.model_copy(
+                update={"extraction": code_map.extraction.model_copy(update={"files": files})}
+            )
+            related = (
+                candidate
+                for candidate_language, candidate in self.contract.scenario_cases()
+                if candidate_language == language
+                and candidate.fixture is scenario.fixture
+                and candidate.source == scenario.source
+            )
+            assert any(
+                not result.satisfied
+                for candidate in related
+                for result in self.contract.evaluate_scenario(attacked, candidate)
+            ), f"{language.value}:{scenario.fixture.value}:{source_id}"
+
+    def test_type_slot_presence_never_accepts_absent_or_unsupported_types(self) -> None:
+        for language, scenario in self.contract.scenario_cases():
+            for wrapped in scenario.claims:
+                claim = wrapped.root
+                if claim.observation.root.kind != "type_slot" or claim.state is claim.state.PRESENT:
+                    continue
+                code_map = self.application.generate_map(
+                    language.value, str(self.contract.fixture_root(language, scenario.fixture)), self.scan_policy()
+                )
+                present = claim.model_copy(update={"state": claim.state.PRESENT})
+                attacked = scenario.model_copy(update={"claims": (wrapped.model_copy(update={"root": present}),)})
+                assert not self.contract.evaluate_scenario(code_map, attacked)[0].satisfied
+
     def test_matrix_exactly_covers_the_public_language_and_capability_vocabularies(self) -> None:
+        self.contract.validate_runtime_bindings(self.application)
         languages = tuple(language.value for language in self.contract.matrix.languages)
 
         assert languages == self.application.supported_languages()
