@@ -9,3 +9,6 @@ class Identifier(FixtureRootModel[str]):
     @property
     def value(self) -> str:
         return self.root
+
+    def __str__(self) -> str:
+        return self.root

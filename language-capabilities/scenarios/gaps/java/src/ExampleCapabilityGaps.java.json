@@ -1,0 +1,219 @@
+{
+  "file_id": "java/src/ExampleCapabilityGaps.java",
+  "import_identity": "src/ExampleCapabilityGaps",
+  "imports": [
+    {
+      "path": "java.util.*",
+      "is_relative": false,
+      "normalized_path": "java/util/*",
+      "imported_name": "*",
+      "is_aliased": false,
+      "crossing_type": "module",
+      "file_barrier_crossed": true,
+      "statement_id": 1,
+      "join_key": "java/util/*",
+      "uses_joined_import": false,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "*",
+          "alias": "*",
+          "is_aliased": false,
+          "is_default": false,
+          "is_namespace": false,
+          "is_star": true
+        }
+      ]
+    }
+  ],
+  "namespaces": [
+    {
+      "kind": "package",
+      "qualified_name": "example.capability.gaps"
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleMarker",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "java/src/ExampleCapabilityGaps.java",
+        "family": "interface",
+        "qualified_name": "ExampleMarker",
+        "ordinal": 50001
+      },
+      "kind": "annotation",
+      "abstract_methods": [
+        {
+          "name": "exampleValue",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 1,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/ExampleCapabilityGaps.java",
+            "family": "method",
+            "qualified_name": "ExampleMarker.exampleValue",
+            "ordinal": 60005
+          },
+          "source_id": "java/src/ExampleCapabilityGaps.java",
+          "qualified_name": "ExampleMarker.exampleValue",
+          "kind": "instance_method",
+          "line_start": 6,
+          "line_end": 6,
+          "return_type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleCapabilityGaps.java",
+            "family": "interface",
+            "qualified_name": "ExampleMarker",
+            "ordinal": 50001
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "java/src/ExampleCapabilityGaps.java",
+            "family": "property",
+            "qualified_name": "ExampleMarker.exampleValue",
+            "ordinal": 60005
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleCapabilityGaps.java",
+            "family": "interface",
+            "qualified_name": "ExampleMarker",
+            "ordinal": 50001
+          },
+          "name": "exampleValue",
+          "is_optional": false,
+          "type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExampleBase",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 6,
+      "declaration_annotations": [
+        "@ExampleMarker(exampleValue = \"exampleRuntimeAnnotation\")"
+      ],
+      "declaration_id": {
+        "source_id": "java/src/ExampleCapabilityGaps.java",
+        "family": "class",
+        "qualified_name": "ExampleBase",
+        "ordinal": 90001
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "exampleMethod",
+          "visibility": "internal",
+          "visibility_intent": "internal",
+          "line_count": 1,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/ExampleCapabilityGaps.java",
+            "family": "method",
+            "qualified_name": "ExampleBase.exampleMethod",
+            "ordinal": 130005
+          },
+          "source_id": "java/src/ExampleCapabilityGaps.java",
+          "qualified_name": "ExampleBase.exampleMethod",
+          "kind": "instance_method",
+          "line_start": 13,
+          "line_end": 13,
+          "return_type": {
+            "name": "void",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleCapabilityGaps.java",
+            "family": "class",
+            "qualified_name": "ExampleBase",
+            "ordinal": 90001
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "java/src/ExampleCapabilityGaps.java",
+            "family": "property",
+            "qualified_name": "ExampleBase.exampleValue",
+            "ordinal": 110025
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleCapabilityGaps.java",
+            "family": "class",
+            "qualified_name": "ExampleBase",
+            "ordinal": 90001
+          },
+          "name": "exampleValue",
+          "is_optional": false,
+          "type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "visibility": "internal",
+          "member_kind": "static",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExampleChild",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 1,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "java/src/ExampleCapabilityGaps.java",
+        "family": "class",
+        "qualified_name": "ExampleChild",
+        "ordinal": 160001
+      },
+      "kind": "class"
+    }
+  ],
+  "functions": [],
+  "declaration_relations": [
+    {
+      "source_declaration_id": {
+        "source_id": "java/src/ExampleCapabilityGaps.java",
+        "family": "class",
+        "qualified_name": "ExampleChild",
+        "ordinal": 160001
+      },
+      "kind": "extends",
+      "target_reference": "ExampleBase"
+    }
+  ],
+  "line_count": 17,
+  "code_line_count": 11,
+  "public_symbol_count": 0
+}

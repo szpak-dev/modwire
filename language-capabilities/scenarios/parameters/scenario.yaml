@@ -1,0 +1,45 @@
+producer: observations
+extraction:
+  files:
+    python/src/params.py: language-capabilities/scenarios/parameters/python/src/params.py.json
+    typescript/src/params.ts: language-capabilities/scenarios/parameters/typescript/src/params.ts.json
+    php/src/Params.php: language-capabilities/scenarios/parameters/php/src/Params.php.json
+    java/src/Params.java: language-capabilities/scenarios/parameters/java/src/Params.java.json
+    ruby/src/params.rb: language-capabilities/scenarios/parameters/ruby/src/params.rb.json
+  manifest:
+    policy: {}
+    runtime:
+      version: fixture 1
+      resource_digest: '0000000000000000000000000000000000000000000000000000000000000000'
+    sources:
+    - source_id: java/src/Params.java
+      relative_path: java/src/Params.java
+      content_digest: 94a5efd7eab3f8f79b4e993a3be9b210fe4dc307288986a28bc69e918b09ec2a
+    - source_id: php/src/Params.php
+      relative_path: php/src/Params.php
+      content_digest: 117332ec6487e078c753974c6537393e61aebf4ebc79bf588fece23a74ee2edd
+    - source_id: python/src/params.py
+      relative_path: python/src/params.py
+      content_digest: 923c8c1c8e543b29db32648ffbe62403d3e0e803327b3f5e33db2c9efaa3725d
+    - source_id: ruby/src/params.rb
+      relative_path: ruby/src/params.rb
+      content_digest: 4da2f7deaeeaf4af31ead325fcd06f9414c9f82131de19a9b793a1834a8dc769
+    - source_id: typescript/src/params.ts
+      relative_path: typescript/src/params.ts
+      content_digest: fc69fca8220d451d171fc74a6593003ecf61c85790335bd1e4ce77decba17d04
+    digest_algorithm: sha256
+    digest: 52613412c9ba230e1857ea29996b11885e9da7bfa510c6196e415b68639e2813
+  files_excluded: 0
+  directories_pruned: 0
+dependency_graph:
+  nodes:
+    python/src/params.py:
+      id: python/src/params.py
+    typescript/src/params.ts:
+      id: typescript/src/params.ts
+    php/src/Params.php:
+      id: php/src/Params.php
+    java/src/Params.java:
+      id: java/src/Params.java
+    ruby/src/params.rb:
+      id: ruby/src/params.rb

@@ -1,0 +1,46 @@
+{
+  "file_id": "typescript/src/example-audit.js",
+  "import_identity": "src/example-audit",
+  "imports": [],
+  "exports": [
+    {
+      "name": "exampleAudit",
+      "local_name": "exampleAudit",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "functions": [
+    {
+      "name": "exampleAudit",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-audit.js",
+        "family": "function",
+        "qualified_name": "exampleAudit",
+        "ordinal": 1
+      },
+      "source_id": "typescript/src/example-audit.js",
+      "qualified_name": "exampleAudit",
+      "line_start": 1,
+      "line_end": 3,
+      "return_type": {
+        "kind": "absent"
+      },
+      "kind": "function"
+    }
+  ],
+  "line_count": 4,
+  "code_line_count": 3,
+  "public_symbol_count": 1
+}

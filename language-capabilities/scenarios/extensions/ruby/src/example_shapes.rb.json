@@ -1,0 +1,688 @@
+{
+  "file_id": "ruby/src/example_shapes.rb",
+  "import_identity": "src/example_shapes",
+  "imports": [
+    {
+      "path": "json",
+      "is_relative": false,
+      "normalized_path": "json",
+      "imported_name": "json",
+      "is_aliased": false,
+      "crossing_type": "module",
+      "file_barrier_crossed": true,
+      "statement_id": 1,
+      "join_key": "json",
+      "uses_joined_import": false,
+      "resolution": "external"
+    },
+    {
+      "path": "example_support",
+      "is_relative": true,
+      "normalized_path": "src/example_support",
+      "imported_name": "example_support",
+      "is_aliased": false,
+      "crossing_type": "module",
+      "file_barrier_crossed": true,
+      "statement_id": 2,
+      "join_key": "src/example_support",
+      "uses_joined_import": false,
+      "resolution": "resolved",
+      "target_file_id": "ruby/src/example_support.rb"
+    }
+  ],
+  "namespaces": [
+    {
+      "kind": "module",
+      "qualified_name": "ExampleLogging"
+    },
+    {
+      "kind": "module",
+      "qualified_name": "ExampleValidation"
+    },
+    {
+      "kind": "module",
+      "qualified_name": "ExampleClassMethods"
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleLogging",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 5,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "type",
+        "qualified_name": "ExampleLogging",
+        "ordinal": 52
+      },
+      "kind": "module",
+      "methods": [
+        {
+          "name": "example_log",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "method",
+            "qualified_name": "ExampleLogging.example_log",
+            "ordinal": 76
+          },
+          "source_id": "ruby/src/example_shapes.rb",
+          "qualified_name": "ExampleLogging.example_log",
+          "kind": "instance_method",
+          "line_start": 5,
+          "line_end": 7,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "type",
+            "qualified_name": "ExampleLogging",
+            "ordinal": 52
+          }
+        }
+      ]
+    },
+    {
+      "name": "ExampleValidation",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 2,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "type",
+        "qualified_name": "ExampleValidation",
+        "ordinal": 136
+      },
+      "kind": "module"
+    },
+    {
+      "name": "ExampleClassMethods",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 2,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "type",
+        "qualified_name": "ExampleClassMethods",
+        "ordinal": 166
+      },
+      "kind": "module"
+    },
+    {
+      "name": "ExampleAbstract",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 39,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "class",
+        "qualified_name": "ExampleAbstract",
+        "ordinal": 198
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "initialize",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "method",
+            "qualified_name": "ExampleAbstract.initialize",
+            "ordinal": 403
+          },
+          "source_id": "ruby/src/example_shapes.rb",
+          "qualified_name": "ExampleAbstract.initialize",
+          "kind": "constructor",
+          "line_start": 24,
+          "line_end": 26,
+          "parameters": [
+            {
+              "name": "example_name",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 198
+          }
+        },
+        {
+          "name": "example_required",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 6,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "method",
+            "qualified_name": "ExampleAbstract.example_required",
+            "ordinal": 474
+          },
+          "source_id": "ruby/src/example_shapes.rb",
+          "qualified_name": "ExampleAbstract.example_required",
+          "kind": "instance_method",
+          "line_start": 28,
+          "line_end": 33,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "positional"
+            },
+            {
+              "name": "example_optional",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "positional",
+              "has_default": true
+            },
+            {
+              "name": "example_items",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "variadic_positional"
+            },
+            {
+              "name": "example_named",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "named_only"
+            },
+            {
+              "name": "example_default",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "named_only",
+              "has_default": true
+            },
+            {
+              "name": "example_options",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "variadic_named"
+            },
+            {
+              "name": "example_block",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "named_only"
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 198
+          }
+        },
+        {
+          "name": "example_concrete",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "method",
+            "qualified_name": "ExampleAbstract.example_concrete",
+            "ordinal": 895
+          },
+          "source_id": "ruby/src/example_shapes.rb",
+          "qualified_name": "ExampleAbstract.example_concrete",
+          "kind": "instance_method",
+          "line_start": 35,
+          "line_end": 37,
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 198
+          }
+        },
+        {
+          "name": "example_type_method",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "method",
+            "qualified_name": "ExampleAbstract.example_type_method",
+            "ordinal": 945
+          },
+          "source_id": "ruby/src/example_shapes.rb",
+          "qualified_name": "ExampleAbstract.example_type_method",
+          "kind": "type_method",
+          "line_start": 39,
+          "line_end": 41,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 198
+          }
+        },
+        {
+          "name": "example_protected",
+          "visibility": "protected",
+          "visibility_intent": "protected",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "method",
+            "qualified_name": "ExampleAbstract.example_protected",
+            "ordinal": 1029
+          },
+          "source_id": "ruby/src/example_shapes.rb",
+          "qualified_name": "ExampleAbstract.example_protected",
+          "kind": "instance_method",
+          "line_start": 45,
+          "line_end": 47,
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 198
+          }
+        },
+        {
+          "name": "example_private",
+          "visibility": "private",
+          "visibility_intent": "private",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "method",
+            "qualified_name": "ExampleAbstract.example_private",
+            "ordinal": 1089
+          },
+          "source_id": "ruby/src/example_shapes.rb",
+          "qualified_name": "ExampleAbstract.example_private",
+          "kind": "instance_method",
+          "line_start": 51,
+          "line_end": 53,
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 198
+          }
+        }
+      ]
+    },
+    {
+      "name": "ExampleImplementation",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 10,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 1142
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "example_required",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.example_required",
+            "ordinal": 1190
+          },
+          "source_id": "ruby/src/example_shapes.rb",
+          "qualified_name": "ExampleImplementation.example_required",
+          "kind": "instance_method",
+          "line_start": 57,
+          "line_end": 59,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "positional"
+            },
+            {
+              "name": "example_named",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "named_only",
+              "has_default": true
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 1142
+          }
+        },
+        {
+          "name": "example_execute",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 4,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.example_execute",
+            "ordinal": 1320
+          },
+          "source_id": "ruby/src/example_shapes.rb",
+          "qualified_name": "ExampleImplementation.example_execute",
+          "kind": "instance_method",
+          "line_start": 61,
+          "line_end": 64,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example_shapes.rb",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 1142
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "values": [
+    {
+      "declaration_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "value",
+        "qualified_name": "ExampleAbstract.EXAMPLE_CONSTANT",
+        "ordinal": 305
+      },
+      "name": "ExampleAbstract.EXAMPLE_CONSTANT",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_kind": "constant",
+      "value_kind": "value_literal",
+      "scope": "module"
+    }
+  ],
+  "callable_values": [
+    {
+      "name": "ExampleAbstract.EXAMPLE_CALLBACK",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "value",
+        "qualified_name": "ExampleAbstract.EXAMPLE_CALLBACK",
+        "ordinal": 345
+      },
+      "source_id": "ruby/src/example_shapes.rb",
+      "qualified_name": "ExampleAbstract.EXAMPLE_CALLBACK",
+      "line_start": 22,
+      "line_end": 22,
+      "parameters": [
+        {
+          "name": "example_value",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "kind": "absent"
+      },
+      "declaration_kind": "constant",
+      "scope": "module",
+      "kind": "callable_value"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "method",
+        "qualified_name": "ExampleAbstract.example_required",
+        "ordinal": 474
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "ruby/src/example_shapes.rb",
+      "line": 29,
+      "expression": "example_log(example_value)",
+      "resolution": "unresolved",
+      "target_name": "example_log"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "method",
+        "qualified_name": "ExampleAbstract.example_required",
+        "ordinal": 474
+      },
+      "ordinal": 2,
+      "target_callable_id": null,
+      "source_id": "ruby/src/example_shapes.rb",
+      "line": 30,
+      "expression": "ExampleSupport.example_target(example_named)",
+      "resolution": "unresolved",
+      "target_name": "example_target"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "method",
+        "qualified_name": "ExampleAbstract.example_required",
+        "ordinal": 474
+      },
+      "ordinal": 3,
+      "target_callable_id": null,
+      "source_id": "ruby/src/example_shapes.rb",
+      "line": 31,
+      "expression": "JSON.generate(example_items: example_items, example_default: example_default, example_options: example_options)",
+      "resolution": "unresolved",
+      "target_name": "generate"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "method",
+        "qualified_name": "ExampleAbstract.example_required",
+        "ordinal": 474
+      },
+      "ordinal": 4,
+      "target_callable_id": null,
+      "source_id": "ruby/src/example_shapes.rb",
+      "line": 32,
+      "expression": "example_block.call(@example_name)",
+      "resolution": "dynamic",
+      "target_name": "call"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "method",
+        "qualified_name": "ExampleAbstract.example_private",
+        "ordinal": 1089
+      },
+      "ordinal": 1,
+      "target_callable_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "method",
+        "qualified_name": "ExampleAbstract.example_protected",
+        "ordinal": 1029
+      },
+      "source_id": "ruby/src/example_shapes.rb",
+      "line": 52,
+      "expression": "example_protected",
+      "resolution": "resolved",
+      "target_name": "example_protected"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.example_execute",
+        "ordinal": 1320
+      },
+      "ordinal": 1,
+      "target_callable_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.example_required",
+        "ordinal": 1190
+      },
+      "source_id": "ruby/src/example_shapes.rb",
+      "line": 62,
+      "expression": "example_required(example_value, example_named: example_value)",
+      "resolution": "resolved",
+      "target_name": "example_required"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.example_execute",
+        "ordinal": 1320
+      },
+      "ordinal": 2,
+      "target_callable_id": null,
+      "source_id": "ruby/src/example_shapes.rb",
+      "line": 63,
+      "expression": "example_missing(example_value)",
+      "resolution": "unresolved",
+      "target_name": "example_missing"
+    }
+  ],
+  "declaration_relations": [
+    {
+      "source_declaration_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "class",
+        "qualified_name": "ExampleAbstract",
+        "ordinal": 198
+      },
+      "kind": "includes",
+      "target_reference": "ExampleLogging"
+    },
+    {
+      "source_declaration_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "class",
+        "qualified_name": "ExampleAbstract",
+        "ordinal": 198
+      },
+      "kind": "prepends",
+      "target_reference": "ExampleValidation"
+    },
+    {
+      "source_declaration_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "class",
+        "qualified_name": "ExampleAbstract",
+        "ordinal": 198
+      },
+      "kind": "extends_singleton",
+      "target_reference": "ExampleClassMethods"
+    },
+    {
+      "source_declaration_id": {
+        "source_id": "ruby/src/example_shapes.rb",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 1142
+      },
+      "kind": "extends",
+      "target_reference": "ExampleAbstract"
+    }
+  ],
+  "line_count": 66,
+  "code_line_count": 50,
+  "public_symbol_count": 6
+}

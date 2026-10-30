@@ -1,0 +1,86 @@
+{
+  "file_id": "python/src/params.py",
+  "import_identity": "src/params",
+  "imports": [],
+  "exports": [
+    {
+      "name": "example_parameters",
+      "local_name": "example_parameters",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "functions": [
+    {
+      "name": "example_parameters",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 9,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/params.py",
+        "family": "function",
+        "qualified_name": "example_parameters",
+        "ordinal": 4294967297
+      },
+      "source_id": "python/src/params.py",
+      "qualified_name": "example_parameters",
+      "line_start": 1,
+      "line_end": 9,
+      "parameters": [
+        {
+          "name": "example_positional",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "example_optional",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "positional",
+          "has_default": true
+        },
+        {
+          "name": "example_rest",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "variadic_positional",
+          "has_default": true
+        },
+        {
+          "name": "example_named",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "named_only"
+        },
+        {
+          "name": "example_options",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "variadic_named",
+          "has_default": true
+        }
+      ],
+      "return_type": {
+        "kind": "absent"
+      },
+      "kind": "function"
+    }
+  ],
+  "line_count": 9,
+  "code_line_count": 9,
+  "public_symbol_count": 1
+}

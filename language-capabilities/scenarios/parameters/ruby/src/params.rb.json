@@ -1,0 +1,85 @@
+{
+  "file_id": "ruby/src/params.rb",
+  "import_identity": "src/params",
+  "imports": [],
+  "functions": [
+    {
+      "name": "example_parameters",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/params.rb",
+        "family": "function",
+        "qualified_name": "example_parameters",
+        "ordinal": 1
+      },
+      "source_id": "ruby/src/params.rb",
+      "qualified_name": "example_parameters",
+      "line_start": 1,
+      "line_end": 3,
+      "parameters": [
+        {
+          "name": "example_value",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "example_rest",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "variadic_positional"
+        },
+        {
+          "name": "example_named",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "named_only"
+        },
+        {
+          "name": "example_options",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "variadic_named"
+        },
+        {
+          "name": "example_block",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "named_only"
+        }
+      ],
+      "return_type": {
+        "kind": "absent"
+      },
+      "kind": "function"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "ruby/src/params.rb",
+        "family": "function",
+        "qualified_name": "example_parameters",
+        "ordinal": 1
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "ruby/src/params.rb",
+      "line": 2,
+      "expression": "example_block&.call(example_value, example_rest, example_named, example_options)",
+      "resolution": "dynamic",
+      "target_name": "call"
+    }
+  ],
+  "line_count": 4,
+  "code_line_count": 3,
+  "public_symbol_count": 1
+}

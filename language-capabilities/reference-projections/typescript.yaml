@@ -2,240 +2,352 @@ language: typescript
 fixture:
   root: tests/fixtures/code_map/reference_shop/languages/typescript
   sources:
-    - ignored/generated-order.ts
-    - src/commerce/orders/application/actions/place-order.ts
-    - src/commerce/orders/domain/model/order.ts
-    - src/commerce/orders/domain/services/order-policy.ts
-    - src/commerce/orders/infrastructure/repositories/order-repository.ts
-    - src/commerce/orders/interfaces/http/order-controller.ts
-    - src/commerce/payments/application/actions/capture-payment.ts
-    - src/commerce/payments/domain/model/payment.ts
+  - ignored/generated-order.ts
+  - src/commerce/orders/application/actions/place-order.ts
+  - src/commerce/orders/domain/model/order.ts
+  - src/commerce/orders/domain/services/order-policy.ts
+  - src/commerce/orders/infrastructure/repositories/order-repository.ts
+  - src/commerce/orders/interfaces/http/order-controller.ts
+  - src/commerce/payments/application/actions/capture-payment.ts
+  - src/commerce/payments/domain/model/payment.ts
 mappings:
   sources:
-    - authored: src/commerce/orders/application/actions/place-order.ts
-      canonical: src/commerce/orders/application/actions/place_order
-    - authored: src/commerce/orders/domain/model/order.ts
-      canonical: src/commerce/orders/domain/model/order
-    - authored: src/commerce/orders/domain/services/order-policy.ts
-      canonical: src/commerce/orders/domain/services/order_policy
-    - authored: src/commerce/orders/infrastructure/repositories/order-repository.ts
-      canonical: src/commerce/orders/infrastructure/repositories/order_repository
-    - authored: src/commerce/orders/interfaces/http/order-controller.ts
-      canonical: src/commerce/orders/interfaces/http/order_controller
-    - authored: src/commerce/payments/application/actions/capture-payment.ts
-      canonical: src/commerce/payments/application/actions/capture_payment
-    - authored: src/commerce/payments/domain/model/payment.ts
-      canonical: src/commerce/payments/domain/model/例/payment
+  - authored: src/commerce/orders/application/actions/place-order.ts
+    canonical: src/commerce/orders/application/actions/place_order
+  - authored: src/commerce/orders/domain/model/order.ts
+    canonical: src/commerce/orders/domain/model/order
+  - authored: src/commerce/orders/domain/services/order-policy.ts
+    canonical: src/commerce/orders/domain/services/order_policy
+  - authored: src/commerce/orders/infrastructure/repositories/order-repository.ts
+    canonical: src/commerce/orders/infrastructure/repositories/order_repository
+  - authored: src/commerce/orders/interfaces/http/order-controller.ts
+    canonical: src/commerce/orders/interfaces/http/order_controller
+  - authored: src/commerce/payments/application/actions/capture-payment.ts
+    canonical: src/commerce/payments/application/actions/capture_payment
+  - authored: src/commerce/payments/domain/model/payment.ts
+    canonical: src/commerce/payments/domain/model/例/payment
   declarations:
-    - authored:
-        source_id: src/commerce/orders/application/actions/place-order.ts
-        family: class
-        qualified_name: PlaceOrder
-        ordinal: 118
-      canonical:
-        source_id: src/commerce/orders/application/actions/place_order
-        family: class
-        qualified_name: PlaceOrder
-        ordinal: 1
-    - authored:
-        source_id: src/commerce/orders/domain/model/order.ts
-        family: class
-        qualified_name: Order
-        ordinal: 1
-      canonical:
-        source_id: src/commerce/orders/domain/model/order
-        family: class
-        qualified_name: Order
-        ordinal: 1
-    - authored:
-        source_id: src/commerce/orders/domain/services/order-policy.ts
-        family: class
-        qualified_name: OrderPolicy
-        ordinal: 42
-      canonical:
-        source_id: src/commerce/orders/domain/services/order_policy
-        family: class
-        qualified_name: OrderPolicy
-        ordinal: 1
-    - authored:
-        source_id: src/commerce/orders/infrastructure/repositories/order-repository.ts
-        family: class
-        qualified_name: OrderRepository
-        ordinal: 83
-      canonical:
-        source_id: src/commerce/orders/infrastructure/repositories/order_repository
-        family: class
-        qualified_name: OrderRepository
-        ordinal: 1
-    - authored:
-        source_id: src/commerce/orders/interfaces/http/order-controller.ts
-        family: class
-        qualified_name: OrderController
-        ordinal: 120
-      canonical:
-        source_id: src/commerce/orders/interfaces/http/order_controller
-        family: class
-        qualified_name: OrderController
-        ordinal: 1
-    - authored:
-        source_id: src/commerce/payments/application/actions/capture-payment.ts
-        family: class
-        qualified_name: CapturePayment
-        ordinal: 56
-      canonical:
-        source_id: src/commerce/payments/application/actions/capture_payment
-        family: class
-        qualified_name: CapturePayment
-        ordinal: 1
-    - authored:
-        source_id: src/commerce/payments/domain/model/payment.ts
-        family: class
-        qualified_name: Payment
-        ordinal: 1
-      canonical:
-        source_id: src/commerce/payments/domain/model/例/payment
-        family: class
-        qualified_name: Payment
-        ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/application/actions/place-order.ts
+      family: class
+      qualified_name: PlaceOrder
+      ordinal: 118
+    canonical:
+      source_id: src/commerce/orders/application/actions/place_order
+      family: class
+      qualified_name: PlaceOrder
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/domain/model/order.ts
+      family: class
+      qualified_name: Order
+      ordinal: 1
+    canonical:
+      source_id: src/commerce/orders/domain/model/order
+      family: class
+      qualified_name: Order
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/domain/services/order-policy.ts
+      family: class
+      qualified_name: OrderPolicy
+      ordinal: 42
+    canonical:
+      source_id: src/commerce/orders/domain/services/order_policy
+      family: class
+      qualified_name: OrderPolicy
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/infrastructure/repositories/order-repository.ts
+      family: class
+      qualified_name: OrderRepository
+      ordinal: 83
+    canonical:
+      source_id: src/commerce/orders/infrastructure/repositories/order_repository
+      family: class
+      qualified_name: OrderRepository
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/interfaces/http/order-controller.ts
+      family: class
+      qualified_name: OrderController
+      ordinal: 120
+    canonical:
+      source_id: src/commerce/orders/interfaces/http/order_controller
+      family: class
+      qualified_name: OrderController
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/payments/application/actions/capture-payment.ts
+      family: class
+      qualified_name: CapturePayment
+      ordinal: 56
+    canonical:
+      source_id: src/commerce/payments/application/actions/capture_payment
+      family: class
+      qualified_name: CapturePayment
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/payments/domain/model/payment.ts
+      family: class
+      qualified_name: Payment
+      ordinal: 1
+    canonical:
+      source_id: src/commerce/payments/domain/model/例/payment
+      family: class
+      qualified_name: Payment
+      ordinal: 1
   callables:
-    - authored:
-        source_id: src/commerce/orders/application/actions/place-order.ts
-        family: method
-        qualified_name: PlaceOrder.place
-        ordinal: 206
-      canonical:
-        source_id: src/commerce/orders/application/actions/place_order
-        family: method
-        qualified_name: PlaceOrder.place
-        ordinal: 1
-    - authored:
-        source_id: src/commerce/orders/domain/model/order.ts
-        family: method
-        qualified_name: Order.isPlaced
-        ordinal: 168
-      canonical:
-        source_id: src/commerce/orders/domain/model/order
-        family: method
-        qualified_name: Order.is_placed
-        ordinal: 1
-    - authored:
-        source_id: src/commerce/orders/domain/model/order.ts
-        family: method
-        qualified_name: Order.markPlaced
-        ordinal: 108
-      canonical:
-        source_id: src/commerce/orders/domain/model/order
-        family: method
-        qualified_name: Order.mark_placed
-        ordinal: 2
-    - authored:
-        source_id: src/commerce/orders/domain/services/order-policy.ts
-        family: method
-        qualified_name: OrderPolicy.allows
-        ordinal: 73
-      canonical:
-        source_id: src/commerce/orders/domain/services/order_policy
-        family: method
-        qualified_name: OrderPolicy.allows
-        ordinal: 1
-    - authored:
-        source_id: src/commerce/orders/infrastructure/repositories/order-repository.ts
-        family: method
-        qualified_name: OrderRepository.save
-        ordinal: 169
-      canonical:
-        source_id: src/commerce/orders/infrastructure/repositories/order_repository
-        family: method
-        qualified_name: OrderRepository.save
-        ordinal: 1
-    - authored:
-        source_id: src/commerce/orders/interfaces/http/order-controller.ts
-        family: method
-        qualified_name: OrderController.handle
-        ordinal: 212
-      canonical:
-        source_id: src/commerce/orders/interfaces/http/order_controller
-        family: method
-        qualified_name: OrderController.handle
-        ordinal: 1
-    - authored:
-        source_id: src/commerce/payments/application/actions/capture-payment.ts
-        family: method
-        qualified_name: CapturePayment.capture
-        ordinal: 90
-      canonical:
-        source_id: src/commerce/payments/application/actions/capture_payment
-        family: method
-        qualified_name: CapturePayment.capture
-        ordinal: 1
-    - authored:
-        source_id: src/commerce/payments/domain/model/payment.ts
-        family: method
-        qualified_name: Payment.capture
-        ordinal: 114
-      canonical:
-        source_id: src/commerce/payments/domain/model/例/payment
-        family: method
-        qualified_name: Payment.capture
-        ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/application/actions/place-order.ts
+      family: method
+      qualified_name: PlaceOrder.place
+      ordinal: 206
+    canonical:
+      source_id: src/commerce/orders/application/actions/place_order
+      family: method
+      qualified_name: PlaceOrder.place
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/domain/model/order.ts
+      family: method
+      qualified_name: Order.isPlaced
+      ordinal: 168
+    canonical:
+      source_id: src/commerce/orders/domain/model/order
+      family: method
+      qualified_name: Order.is_placed
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/domain/model/order.ts
+      family: method
+      qualified_name: Order.markPlaced
+      ordinal: 108
+    canonical:
+      source_id: src/commerce/orders/domain/model/order
+      family: method
+      qualified_name: Order.mark_placed
+      ordinal: 2
+  - authored:
+      source_id: src/commerce/orders/domain/services/order-policy.ts
+      family: method
+      qualified_name: OrderPolicy.allows
+      ordinal: 73
+    canonical:
+      source_id: src/commerce/orders/domain/services/order_policy
+      family: method
+      qualified_name: OrderPolicy.allows
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/infrastructure/repositories/order-repository.ts
+      family: method
+      qualified_name: OrderRepository.save
+      ordinal: 169
+    canonical:
+      source_id: src/commerce/orders/infrastructure/repositories/order_repository
+      family: method
+      qualified_name: OrderRepository.save
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/orders/interfaces/http/order-controller.ts
+      family: method
+      qualified_name: OrderController.handle
+      ordinal: 212
+    canonical:
+      source_id: src/commerce/orders/interfaces/http/order_controller
+      family: method
+      qualified_name: OrderController.handle
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/payments/application/actions/capture-payment.ts
+      family: method
+      qualified_name: CapturePayment.capture
+      ordinal: 90
+    canonical:
+      source_id: src/commerce/payments/application/actions/capture_payment
+      family: method
+      qualified_name: CapturePayment.capture
+      ordinal: 1
+  - authored:
+      source_id: src/commerce/payments/domain/model/payment.ts
+      family: method
+      qualified_name: Payment.capture
+      ordinal: 114
+    canonical:
+      source_id: src/commerce/payments/domain/model/例/payment
+      family: method
+      qualified_name: Payment.capture
+      ordinal: 1
   parameters:
-    - authored_callable:
-        source_id: src/commerce/orders/application/actions/place-order.ts
-        family: method
-        qualified_name: PlaceOrder.place
-        ordinal: 206
-      authored: order
-      canonical_callable:
-        source_id: src/commerce/orders/application/actions/place_order
-        family: method
-        qualified_name: PlaceOrder.place
-        ordinal: 1
-      canonical: order
-    - authored_callable:
-        source_id: src/commerce/orders/domain/services/order-policy.ts
-        family: method
-        qualified_name: OrderPolicy.allows
-        ordinal: 73
-      authored: order
-      canonical_callable:
-        source_id: src/commerce/orders/domain/services/order_policy
-        family: method
-        qualified_name: OrderPolicy.allows
-        ordinal: 1
-      canonical: order
-    - authored_callable:
-        source_id: src/commerce/orders/infrastructure/repositories/order-repository.ts
-        family: method
-        qualified_name: OrderRepository.save
-        ordinal: 169
-      authored: order
-      canonical_callable:
-        source_id: src/commerce/orders/infrastructure/repositories/order_repository
-        family: method
-        qualified_name: OrderRepository.save
-        ordinal: 1
-      canonical: order
-    - authored_callable:
-        source_id: src/commerce/orders/interfaces/http/order-controller.ts
-        family: method
-        qualified_name: OrderController.handle
-        ordinal: 212
-      authored: orderId
-      canonical_callable:
-        source_id: src/commerce/orders/interfaces/http/order_controller
-        family: method
-        qualified_name: OrderController.handle
-        ordinal: 1
-      canonical: order_id
-    - authored_callable:
-        source_id: src/commerce/payments/application/actions/capture-payment.ts
-        family: method
-        qualified_name: CapturePayment.capture
-        ordinal: 90
-      authored: payment
-      canonical_callable:
-        source_id: src/commerce/payments/application/actions/capture_payment
-        family: method
-        qualified_name: CapturePayment.capture
-        ordinal: 1
-      canonical: payment
+  - authored_callable:
+      source_id: src/commerce/orders/application/actions/place-order.ts
+      family: method
+      qualified_name: PlaceOrder.place
+      ordinal: 206
+    authored: order
+    canonical_callable:
+      source_id: src/commerce/orders/application/actions/place_order
+      family: method
+      qualified_name: PlaceOrder.place
+      ordinal: 1
+    canonical: order
+  - authored_callable:
+      source_id: src/commerce/orders/domain/services/order-policy.ts
+      family: method
+      qualified_name: OrderPolicy.allows
+      ordinal: 73
+    authored: order
+    canonical_callable:
+      source_id: src/commerce/orders/domain/services/order_policy
+      family: method
+      qualified_name: OrderPolicy.allows
+      ordinal: 1
+    canonical: order
+  - authored_callable:
+      source_id: src/commerce/orders/infrastructure/repositories/order-repository.ts
+      family: method
+      qualified_name: OrderRepository.save
+      ordinal: 169
+    authored: order
+    canonical_callable:
+      source_id: src/commerce/orders/infrastructure/repositories/order_repository
+      family: method
+      qualified_name: OrderRepository.save
+      ordinal: 1
+    canonical: order
+  - authored_callable:
+      source_id: src/commerce/orders/interfaces/http/order-controller.ts
+      family: method
+      qualified_name: OrderController.handle
+      ordinal: 212
+    authored: orderId
+    canonical_callable:
+      source_id: src/commerce/orders/interfaces/http/order_controller
+      family: method
+      qualified_name: OrderController.handle
+      ordinal: 1
+    canonical: order_id
+  - authored_callable:
+      source_id: src/commerce/payments/application/actions/capture-payment.ts
+      family: method
+      qualified_name: CapturePayment.capture
+      ordinal: 90
+    authored: payment
+    canonical_callable:
+      source_id: src/commerce/payments/application/actions/capture_payment
+      family: method
+      qualified_name: CapturePayment.capture
+      ordinal: 1
+    canonical: payment
+reference:
+  scenario: reference-shop
+  state: present
+  evidence: supported
+scenarios:
+- scenario: extensions
+  fixture:
+    kind: capability
+    role: extensions
+  state: present
+  evidence: supported
+  mappings:
+  - authored: src/example-audit.js
+    canonical: typescript/src/example-audit.js
+  - authored: src/example-panel.jsx
+    canonical: typescript/src/example-panel.jsx
+  - authored: src/example-shapes.ts
+    canonical: typescript/src/example-shapes.ts
+  - authored: src/example-view.tsx
+    canonical: typescript/src/example-view.tsx
+- scenario: gaps
+  fixture:
+    kind: capability
+    role: gaps
+  state: present
+  evidence: boundary
+  mappings:
+  - authored: src/example-capability-gaps.ts
+    canonical: typescript/src/example-capability-gaps.ts
+- scenario: types
+  fixture:
+    kind: capability
+    role: types
+  state: present
+  evidence: supported
+  mappings:
+  - authored: src/type-reference-cases.ts
+    canonical: typescript/src/type-reference-cases.ts
+  - authored: src/type-reference-empty.ts
+    canonical: typescript/src/type-reference-empty.ts
+- scenario: parameters
+  fixture:
+    kind: capability
+    role: parameters
+  state: present
+  evidence: supported
+  mappings:
+  - authored: src/params.ts
+    canonical: typescript/src/params.ts
+- scenario: manifest-canonical
+  fixture:
+    kind: manifest
+    scenario: canonical
+  state: present
+  evidence: supported
+  mappings:
+  - authored: src/example.ts
+    canonical: typescript/src/example.ts
+- scenario: manifest-calls
+  fixture:
+    kind: manifest
+    scenario: calls
+  state: present
+  evidence: supported
+  mappings:
+  - authored: src/example.ts
+    canonical: typescript/src/example.ts
+- scenario: manifest-no_calls
+  fixture:
+    kind: manifest
+    scenario: no_calls
+  state: present
+  evidence: supported
+  mappings:
+  - authored: src/example.ts
+    canonical: typescript/src/example.ts
+- scenario: manifest-negative_members
+  fixture:
+    kind: manifest
+    scenario: negative_members
+  state: present
+  evidence: supported
+  mappings:
+  - authored: src/example.ts
+    canonical: typescript/src/example.ts
+- scenario: manifest-dependencies
+  fixture:
+    kind: manifest
+    scenario: dependencies
+  state: present
+  evidence: supported
+  mappings:
+  - authored: src/example.ts
+    canonical: typescript/src/example.ts
+- scenario: manifest-source_edit_before
+  fixture:
+    kind: manifest
+    scenario: source_edit_before
+  state: present
+  evidence: supported
+  mappings:
+  - authored: src/nested/example.ts
+    canonical: typescript/src/nested/example.ts
+- scenario: manifest-source_edit_after
+  fixture:
+    kind: manifest
+    scenario: source_edit_after
+  state: present
+  evidence: supported
+  mappings:
+  - authored: src/example.ts
+    canonical: typescript/src/example.ts

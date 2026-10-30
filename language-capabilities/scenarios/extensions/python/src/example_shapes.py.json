@@ -1,0 +1,909 @@
+{
+  "file_id": "python/src/example_shapes.py",
+  "import_identity": "src/example_shapes",
+  "imports": [
+    {
+      "path": "abc",
+      "is_relative": false,
+      "normalized_path": "abc",
+      "imported_name": "ABC",
+      "is_aliased": false,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 2,
+      "join_key": "abc",
+      "uses_joined_import": true,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "ABC",
+          "alias": "",
+          "is_aliased": false,
+          "is_default": false,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    },
+    {
+      "path": "abc",
+      "is_relative": false,
+      "normalized_path": "abc",
+      "imported_name": "abstractmethod",
+      "is_aliased": false,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 2,
+      "join_key": "abc",
+      "uses_joined_import": true,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "abstractmethod",
+          "alias": "",
+          "is_aliased": false,
+          "is_default": false,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    },
+    {
+      "path": "pathlib",
+      "is_relative": false,
+      "normalized_path": "pathlib",
+      "imported_name": "Path",
+      "is_aliased": false,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 3,
+      "join_key": "pathlib",
+      "uses_joined_import": true,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "Path",
+          "alias": "",
+          "is_aliased": false,
+          "is_default": false,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "name": "ExampleAssignedValues",
+      "local_name": "ExampleAssignedValues",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleContract",
+      "local_name": "ExampleContract",
+      "kind": "abstract_class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleImplementation",
+      "local_name": "ExampleImplementation",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "example_factory",
+      "local_name": "example_factory",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "example_async",
+      "local_name": "example_async",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "example_outer",
+      "local_name": "example_outer",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleAssignedValues",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 12,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "class",
+        "qualified_name": "ExampleAssignedValues",
+        "ordinal": 55834574849
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "__init__",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 5,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "method",
+            "qualified_name": "ExampleAssignedValues.__init__",
+            "ordinal": 85899345925
+          },
+          "source_id": "python/src/example_shapes.py",
+          "qualified_name": "ExampleAssignedValues.__init__",
+          "kind": "constructor",
+          "line_start": 20,
+          "line_end": 24,
+          "parameters": [
+            {
+              "name": "example_input",
+              "type": {
+                "name": "str",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "class",
+            "qualified_name": "ExampleAssignedValues",
+            "ordinal": 55834574849
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "property",
+            "qualified_name": "ExampleAssignedValues.example_unassigned",
+            "ordinal": 60129542149
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "class",
+            "qualified_name": "ExampleAssignedValues",
+            "ordinal": 55834574849
+          },
+          "name": "example_unassigned",
+          "is_optional": false,
+          "type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unassigned",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        },
+        {
+          "declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "property",
+            "qualified_name": "ExampleAssignedValues.example_literal",
+            "ordinal": 64424509445
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "class",
+            "qualified_name": "ExampleAssignedValues",
+            "ordinal": 55834574849
+          },
+          "name": "example_literal",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "static",
+          "assigned_values": [
+            {
+              "kind": "literal",
+              "expression": "1",
+              "reference": ""
+            }
+          ]
+        },
+        {
+          "declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "property",
+            "qualified_name": "ExampleAssignedValues.example_reference",
+            "ordinal": 68719476741
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "class",
+            "qualified_name": "ExampleAssignedValues",
+            "ordinal": 55834574849
+          },
+          "name": "example_reference",
+          "is_optional": false,
+          "type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "reference",
+              "expression": "EXAMPLE_REFERENCE",
+              "reference": "EXAMPLE_REFERENCE"
+            },
+            {
+              "kind": "reference",
+              "expression": "example_input",
+              "reference": "example_input"
+            }
+          ]
+        },
+        {
+          "declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "property",
+            "qualified_name": "ExampleAssignedValues.example_call",
+            "ordinal": 73014444037
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "class",
+            "qualified_name": "ExampleAssignedValues",
+            "ordinal": 55834574849
+          },
+          "name": "example_call",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "static",
+          "assigned_values": [
+            {
+              "kind": "call",
+              "expression": "example_factory()",
+              "reference": "example_factory"
+            }
+          ]
+        },
+        {
+          "declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "property",
+            "qualified_name": "ExampleAssignedValues.example_unresolved",
+            "ordinal": 77309411333
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "class",
+            "qualified_name": "ExampleAssignedValues",
+            "ordinal": 55834574849
+          },
+          "name": "example_unresolved",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "static",
+          "assigned_values": [
+            {
+              "kind": "unresolved",
+              "expression": "1 + 2",
+              "reference": ""
+            }
+          ]
+        },
+        {
+          "declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "property",
+            "qualified_name": "ExampleAssignedValues.example_nested",
+            "ordinal": 98784247821
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "class",
+            "qualified_name": "ExampleAssignedValues",
+            "ordinal": 55834574849
+          },
+          "name": "example_nested",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "literal",
+              "expression": "1",
+              "reference": ""
+            },
+            {
+              "kind": "literal",
+              "expression": "2",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExampleContract",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 9,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "abstract_class",
+        "qualified_name": "ExampleContract",
+        "ordinal": 115964116993
+      },
+      "kind": "abstract_class",
+      "methods": [
+        {
+          "name": "example_concrete",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 2,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "method",
+            "qualified_name": "ExampleContract.example_concrete",
+            "ordinal": 146028888069
+          },
+          "source_id": "python/src/example_shapes.py",
+          "qualified_name": "ExampleContract.example_concrete",
+          "kind": "instance_method",
+          "line_start": 34,
+          "line_end": 35,
+          "return_type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "abstract_class",
+            "qualified_name": "ExampleContract",
+            "ordinal": 115964116993
+          }
+        }
+      ],
+      "abstract_methods": [
+        {
+          "name": "example_required",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 2,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "method",
+            "qualified_name": "ExampleContract.example_required",
+            "ordinal": 133143986181
+          },
+          "source_id": "python/src/example_shapes.py",
+          "qualified_name": "ExampleContract.example_required",
+          "kind": "instance_method",
+          "line_start": 31,
+          "line_end": 32,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "name": "str",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "decorators": [
+            "abstractmethod"
+          ],
+          "owner_declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "abstract_class",
+            "qualified_name": "ExampleContract",
+            "ordinal": 115964116993
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "property",
+            "qualified_name": "ExampleContract.example_shared",
+            "ordinal": 120259084293
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "abstract_class",
+            "qualified_name": "ExampleContract",
+            "ordinal": 115964116993
+          },
+          "name": "example_shared",
+          "is_optional": false,
+          "type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "literal",
+              "expression": "'example'",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExampleImplementation",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 12,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 163208757249
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "example_static",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 2,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.example_static",
+            "ordinal": 180388626437
+          },
+          "source_id": "python/src/example_shapes.py",
+          "qualified_name": "ExampleImplementation.example_static",
+          "kind": "static_method",
+          "line_start": 42,
+          "line_end": 43,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "name": "str",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "decorators": [
+            "staticmethod"
+          ],
+          "owner_declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 163208757249
+          }
+        },
+        {
+          "name": "example_required",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 2,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.example_required",
+            "ordinal": 193273528325
+          },
+          "source_id": "python/src/example_shapes.py",
+          "qualified_name": "ExampleImplementation.example_required",
+          "kind": "instance_method",
+          "line_start": 45,
+          "line_end": 46,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "name": "str",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 163208757249
+          }
+        },
+        {
+          "name": "example_path",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 2,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.example_path",
+            "ordinal": 206158430213
+          },
+          "source_id": "python/src/example_shapes.py",
+          "qualified_name": "ExampleImplementation.example_path",
+          "kind": "instance_method",
+          "line_start": 48,
+          "line_end": 49,
+          "parameters": [
+            {
+              "name": "example_root",
+              "type": {
+                "name": "Path",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 163208757249
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "property",
+            "qualified_name": "ExampleImplementation.example_optional",
+            "ordinal": 167503724549
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example_shapes.py",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 163208757249
+          },
+          "name": "example_optional",
+          "is_optional": true,
+          "type": {
+            "kind": "unsupported"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "literal",
+              "expression": "None",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "name": "example_factory",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 2,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "function",
+        "qualified_name": "example_factory",
+        "ordinal": 38654705665
+      },
+      "source_id": "python/src/example_shapes.py",
+      "qualified_name": "example_factory",
+      "line_start": 9,
+      "line_end": 10,
+      "return_type": {
+        "name": "object",
+        "kind": "reference"
+      },
+      "kind": "function"
+    },
+    {
+      "name": "example_async",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 2,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "function",
+        "qualified_name": "example_async",
+        "ordinal": 223338299393
+      },
+      "source_id": "python/src/example_shapes.py",
+      "qualified_name": "example_async",
+      "line_start": 52,
+      "line_end": 53,
+      "parameters": [
+        {
+          "name": "example_value",
+          "type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "example_suffix",
+          "type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "kind": "named_only",
+          "has_default": true
+        }
+      ],
+      "return_type": {
+        "name": "str",
+        "kind": "reference"
+      },
+      "kind": "function"
+    },
+    {
+      "name": "example_outer",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 5,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "function",
+        "qualified_name": "example_outer",
+        "ordinal": 240518168577
+      },
+      "source_id": "python/src/example_shapes.py",
+      "qualified_name": "example_outer",
+      "line_start": 56,
+      "line_end": 60,
+      "parameters": [
+        {
+          "name": "example_value",
+          "type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "name": "str",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "values": [
+    {
+      "declaration_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "value",
+        "qualified_name": "EXAMPLE_CONSTANT",
+        "ordinal": 17179869185
+      },
+      "name": "EXAMPLE_CONSTANT",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_kind": "constant",
+      "value_kind": "value_literal",
+      "scope": "module"
+    },
+    {
+      "declaration_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "value",
+        "qualified_name": "EXAMPLE_REFERENCE",
+        "ordinal": 21474836481
+      },
+      "name": "EXAMPLE_REFERENCE",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_kind": "constant",
+      "value_kind": "value_literal",
+      "scope": "module"
+    },
+    {
+      "declaration_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "value",
+        "qualified_name": "example_variable",
+        "ordinal": 25769803777
+      },
+      "name": "example_variable",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_kind": "assignment",
+      "value_kind": "value_literal",
+      "scope": "module"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "function",
+        "qualified_name": "example_factory",
+        "ordinal": 38654705665
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "python/src/example_shapes.py",
+      "line": 10,
+      "expression": "object",
+      "resolution": "unresolved",
+      "target_name": "object"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.example_path",
+        "ordinal": 206158430213
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "python/src/example_shapes.py",
+      "line": 49,
+      "expression": "str",
+      "resolution": "unresolved",
+      "target_name": "str"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.example_path",
+        "ordinal": 206158430213
+      },
+      "ordinal": 2,
+      "target_callable_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.example_required",
+        "ordinal": 193273528325
+      },
+      "source_id": "python/src/example_shapes.py",
+      "line": 49,
+      "expression": "self.example_required",
+      "resolution": "resolved",
+      "target_name": "self.example_required"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "function",
+        "qualified_name": "example_outer",
+        "ordinal": 240518168577
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "python/src/example_shapes.py",
+      "line": 60,
+      "expression": "example_inner",
+      "resolution": "unresolved",
+      "target_name": "example_inner"
+    }
+  ],
+  "declaration_relations": [
+    {
+      "source_declaration_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "abstract_class",
+        "qualified_name": "ExampleContract",
+        "ordinal": 115964116993
+      },
+      "kind": "extends",
+      "target_reference": "ABC"
+    },
+    {
+      "source_declaration_id": {
+        "source_id": "python/src/example_shapes.py",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 163208757249
+      },
+      "kind": "extends",
+      "target_reference": "ExampleContract"
+    }
+  ],
+  "line_count": 60,
+  "code_line_count": 40,
+  "public_symbol_count": 6
+}

@@ -1,0 +1,106 @@
+producer: observations
+extraction:
+  files:
+    python/src/example_shapes.py: language-capabilities/scenarios/extensions/python/src/example_shapes.py.json
+    typescript/src/example-audit.js:
+      language-capabilities/scenarios/extensions/typescript/src/example-audit.js.json
+    typescript/src/example-panel.jsx:
+      language-capabilities/scenarios/extensions/typescript/src/example-panel.jsx.json
+    typescript/src/example-shapes.ts:
+      language-capabilities/scenarios/extensions/typescript/src/example-shapes.ts.json
+    typescript/src/example-view.tsx:
+      language-capabilities/scenarios/extensions/typescript/src/example-view.tsx.json
+    php/src/ExampleShapes.php: language-capabilities/scenarios/extensions/php/src/ExampleShapes.php.json
+    java/src/ExampleShapes.java: language-capabilities/scenarios/extensions/java/src/ExampleShapes.java.json
+    ruby/src/example_shapes.rb: language-capabilities/scenarios/extensions/ruby/src/example_shapes.rb.json
+    ruby/src/example_support.rb: language-capabilities/scenarios/extensions/ruby/src/example_support.rb.json
+  manifest:
+    policy: {}
+    runtime:
+      version: fixture 1
+      resource_digest: '0000000000000000000000000000000000000000000000000000000000000000'
+    sources:
+    - source_id: java/src/ExampleShapes.java
+      relative_path: java/src/ExampleShapes.java
+      content_digest: a1af6fe5a825e64ef983692ecb1fa90bd855c7b5ea8b4db107f5df4c22d6de77
+    - source_id: php/src/ExampleShapes.php
+      relative_path: php/src/ExampleShapes.php
+      content_digest: 7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a
+    - source_id: python/src/example_shapes.py
+      relative_path: python/src/example_shapes.py
+      content_digest: 64c028e674e9002ad70fb1a6e35bcf9e33174ede355433c55db3bf2aa1a46b02
+    - source_id: ruby/src/example_shapes.rb
+      relative_path: ruby/src/example_shapes.rb
+      content_digest: db2986d1a8d3c23da9543f562768ee90003ae0631175ef198e206665c0315d6e
+    - source_id: ruby/src/example_support.rb
+      relative_path: ruby/src/example_support.rb
+      content_digest: 18dafb28f57d2547e469b2165243d370fe7c271a91df750313adc1aef7ba1ff4
+    - source_id: typescript/src/example-audit.js
+      relative_path: typescript/src/example-audit.js
+      content_digest: f06eab2ebd2dc28563c76c921382f72007bd17ae3ddc66bad7e0f539b9eae888
+    - source_id: typescript/src/example-panel.jsx
+      relative_path: typescript/src/example-panel.jsx
+      content_digest: bb41a0c6c40afd099a3efbc636f76c3ad847d31eb231b377b4899ff129f258d1
+    - source_id: typescript/src/example-shapes.ts
+      relative_path: typescript/src/example-shapes.ts
+      content_digest: 7a347f2e01dfb38df9ccce1b22d9dc596fb151697e188610fd0878b301732c4c
+    - source_id: typescript/src/example-view.tsx
+      relative_path: typescript/src/example-view.tsx
+      content_digest: bf9cb2f1b0256ab8d2461650a96291e37ea04cb088a5a016baf9c7fdc26eb344
+    digest_algorithm: sha256
+    digest: 37a60e3379869ac7843564c6fedb5fde4be12fd3fb874906ecaabb6b357ecbcb
+  files_excluded: 0
+  directories_pruned: 0
+dependency_graph:
+  nodes:
+    python/src/example_shapes.py:
+      id: python/src/example_shapes.py
+    typescript/src/example-audit.js:
+      id: typescript/src/example-audit.js
+    typescript/src/example-panel.jsx:
+      id: typescript/src/example-panel.jsx
+    typescript/src/example-shapes.ts:
+      id: typescript/src/example-shapes.ts
+    typescript/src/example-view.tsx:
+      id: typescript/src/example-view.tsx
+    php/src/ExampleShapes.php:
+      id: php/src/ExampleShapes.php
+    java/src/ExampleShapes.java:
+      id: java/src/ExampleShapes.java
+    ruby/src/example_shapes.rb:
+      id: ruby/src/example_shapes.rb
+    ruby/src/example_support.rb:
+      id: ruby/src/example_support.rb
+  edges:
+  - from_id: python/src/example_shapes.py
+    to_id:
+    specifier: abc
+    resolution: external
+  - from_id: python/src/example_shapes.py
+    to_id:
+    specifier: abc
+    resolution: external
+  - from_id: python/src/example_shapes.py
+    to_id:
+    specifier: pathlib
+    resolution: external
+  - from_id: typescript/src/example-shapes.ts
+    to_id:
+    specifier: node:path
+    resolution: external
+  - from_id: php/src/ExampleShapes.php
+    to_id:
+    specifier: DateTimeImmutable
+    resolution: external
+  - from_id: java/src/ExampleShapes.java
+    to_id:
+    specifier: java.time.Instant
+    resolution: external
+  - from_id: ruby/src/example_shapes.rb
+    to_id:
+    specifier: json
+    resolution: external
+  - from_id: ruby/src/example_shapes.rb
+    to_id: ruby/src/example_support.rb
+    specifier: example_support
+    resolution: resolved

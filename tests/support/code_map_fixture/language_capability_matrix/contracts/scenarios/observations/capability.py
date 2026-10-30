@@ -16,7 +16,7 @@ from .exact_span import ExactSpanObservation
 from .modifier import ModifierObservation
 from .namespace import NamespaceObservation
 from .parameter import ParameterObservation
-from .parameter_kind import ParameterKindObservation
+from .parameter_list import ParameterListObservation
 from .source import SourceObservation
 from .span_owner import SpanOwnerObservation
 from .type_reference import TypeReferenceObservation
@@ -32,7 +32,7 @@ class CapabilityObservation(
             | CallableObservation
             | CallObservation
             | ParameterObservation
-            | ParameterKindObservation
+            | ParameterListObservation
             | TypeReferenceObservation
             | TypeSlotObservation
             | AnnotationObservation

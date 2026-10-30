@@ -1,0 +1,50 @@
+producer: observations
+extraction:
+  files:
+    python/src/nested/example.py:
+      language-capabilities/scenarios/manifest-source_edit_before/python/src/nested/example.py.json
+    typescript/src/nested/example.ts:
+      language-capabilities/scenarios/manifest-source_edit_before/typescript/src/nested/example.ts.json
+    php/src/nested/Example.php:
+      language-capabilities/scenarios/manifest-source_edit_before/php/src/nested/Example.php.json
+    java/src/nested/Example.java:
+      language-capabilities/scenarios/manifest-source_edit_before/java/src/nested/Example.java.json
+    ruby/src/nested/example.rb:
+      language-capabilities/scenarios/manifest-source_edit_before/ruby/src/nested/example.rb.json
+  manifest:
+    policy: {}
+    runtime:
+      version: fixture 1
+      resource_digest: '0000000000000000000000000000000000000000000000000000000000000000'
+    sources:
+    - source_id: java/src/nested/Example.java
+      relative_path: java/src/nested/Example.java
+      content_digest: 53908a819ffad1f40c8a35176bfd5d1406925cb476c44e068b0f432b1acddf42
+    - source_id: php/src/nested/Example.php
+      relative_path: php/src/nested/Example.php
+      content_digest: 9c80b9a2270adaf5d4bdf02d71a781a8a83c947c8509a891959f1ddac1224155
+    - source_id: python/src/nested/example.py
+      relative_path: python/src/nested/example.py
+      content_digest: 7348774f741eff7d5200409c2fdb5b941c02750f493e967299d28d9f0a1ebfb9
+    - source_id: ruby/src/nested/example.rb
+      relative_path: ruby/src/nested/example.rb
+      content_digest: 058ab16157218dde6e7074bd7b72571c039439345ced145e53c7998a6353e831
+    - source_id: typescript/src/nested/example.ts
+      relative_path: typescript/src/nested/example.ts
+      content_digest: 9d9d32294aad7b23d08b439c66eef082d75bc1d859d44c2bb2eb6346d2fdb98f
+    digest_algorithm: sha256
+    digest: 0de790ee86dd9c5620a3dc6481424d7119eefd885851ed43474d3cf10d964f11
+  files_excluded: 0
+  directories_pruned: 0
+dependency_graph:
+  nodes:
+    python/src/nested/example.py:
+      id: python/src/nested/example.py
+    typescript/src/nested/example.ts:
+      id: typescript/src/nested/example.ts
+    php/src/nested/Example.php:
+      id: php/src/nested/Example.php
+    java/src/nested/Example.java:
+      id: java/src/nested/Example.java
+    ruby/src/nested/example.rb:
+      id: ruby/src/nested/example.rb

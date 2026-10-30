@@ -1,0 +1,81 @@
+{
+  "file_id": "src/commerce/orders/domain/model/order",
+  "import_identity": "src/commerce/orders/domain/model/order",
+  "imports": [],
+  "declarations": [
+    {
+      "name": "Order",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 0,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "src/commerce/orders/domain/model/order",
+        "family": "class",
+        "qualified_name": "Order",
+        "ordinal": 1
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "is_placed",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 0,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "src/commerce/orders/domain/model/order",
+            "family": "method",
+            "qualified_name": "Order.is_placed",
+            "ordinal": 1
+          },
+          "source_id": "src/commerce/orders/domain/model/order",
+          "qualified_name": "Order.is_placed",
+          "kind": "instance_method",
+          "line_start": 0,
+          "line_end": 0,
+          "return_type": {
+            "kind": "unsupported"
+          },
+          "owner_declaration_id": {
+            "source_id": "src/commerce/orders/domain/model/order",
+            "family": "class",
+            "qualified_name": "Order",
+            "ordinal": 1
+          }
+        },
+        {
+          "name": "mark_placed",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 0,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "src/commerce/orders/domain/model/order",
+            "family": "method",
+            "qualified_name": "Order.mark_placed",
+            "ordinal": 2
+          },
+          "source_id": "src/commerce/orders/domain/model/order",
+          "qualified_name": "Order.mark_placed",
+          "kind": "instance_method",
+          "line_start": 0,
+          "line_end": 0,
+          "return_type": {
+            "kind": "unsupported"
+          },
+          "owner_declaration_id": {
+            "source_id": "src/commerce/orders/domain/model/order",
+            "family": "class",
+            "qualified_name": "Order",
+            "ordinal": 1
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "line_count": 0,
+  "code_line_count": 0,
+  "public_symbol_count": 1
+}

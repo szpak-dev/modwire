@@ -4,6 +4,7 @@ from pydantic import Field, model_validator
 
 from ...fixture_model import FixtureModel
 from ..values.names.language_id import LanguageId
+from ..values.names.scenario_id import ScenarioId
 from ..values.paths.document_path import RepositoryDocumentPath
 from ..values.schema_version import CapabilitySchemaVersion
 from .pair import LanguageDocumentPair
@@ -11,7 +12,8 @@ from .pair import LanguageDocumentPair
 
 class LanguageCapabilityIndex(FixtureModel):
     schema_version: CapabilitySchemaVersion
-    reference_code_map: RepositoryDocumentPath
+    scenario_catalog: RepositoryDocumentPath
+    reference_scenario: ScenarioId
     languages: dict[LanguageId, LanguageDocumentPair] = Field(min_length=1)
 
     @model_validator(mode="after")

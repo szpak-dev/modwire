@@ -1,0 +1,47 @@
+{
+  "file_id": "python/src/example.py",
+  "import_identity": "src/example",
+  "imports": [],
+  "exports": [
+    {
+      "name": "example_value",
+      "local_name": "example_value",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "functions": [
+    {
+      "name": "example_value",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 2,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example.py",
+        "family": "function",
+        "qualified_name": "example_value",
+        "ordinal": 4294967297
+      },
+      "source_id": "python/src/example.py",
+      "qualified_name": "example_value",
+      "line_start": 1,
+      "line_end": 2,
+      "return_type": {
+        "name": "int",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "line_count": 2,
+  "code_line_count": 2,
+  "public_symbol_count": 1
+}

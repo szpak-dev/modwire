@@ -1,0 +1,152 @@
+{
+  "file_id": "java/src/TypeReferenceCases.java",
+  "import_identity": "src/TypeReferenceCases",
+  "imports": [
+    {
+      "path": "java.util.List",
+      "is_relative": false,
+      "normalized_path": "java/util/List",
+      "imported_name": "List",
+      "is_aliased": false,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 1,
+      "join_key": "java/util/List",
+      "uses_joined_import": false,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "List",
+          "alias": "List",
+          "is_aliased": false,
+          "is_default": false,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    }
+  ],
+  "declarations": [
+    {
+      "name": "TypeReferenceCases",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 7,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "java/src/TypeReferenceCases.java",
+        "family": "class",
+        "qualified_name": "TypeReferenceCases",
+        "ordinal": 30001
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "constructor",
+          "visibility": "internal",
+          "visibility_intent": "internal",
+          "line_count": 1,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/TypeReferenceCases.java",
+            "family": "method",
+            "qualified_name": "TypeReferenceCases.constructor",
+            "ordinal": 40005
+          },
+          "source_id": "java/src/TypeReferenceCases.java",
+          "qualified_name": "TypeReferenceCases.constructor",
+          "kind": "constructor",
+          "line_start": 4,
+          "line_end": 4,
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/TypeReferenceCases.java",
+            "family": "class",
+            "qualified_name": "TypeReferenceCases",
+            "ordinal": 30001
+          }
+        },
+        {
+          "name": "exampleTypes",
+          "visibility": "internal",
+          "visibility_intent": "internal",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/TypeReferenceCases.java",
+            "family": "method",
+            "qualified_name": "TypeReferenceCases.exampleTypes",
+            "ordinal": 60005
+          },
+          "source_id": "java/src/TypeReferenceCases.java",
+          "qualified_name": "TypeReferenceCases.exampleTypes",
+          "kind": "instance_method",
+          "line_start": 6,
+          "line_end": 8,
+          "parameters": [
+            {
+              "name": "exampleNested",
+              "type": {
+                "name": "List",
+                "arguments": [
+                  {
+                    "name": "String",
+                    "kind": "reference"
+                  }
+                ],
+                "kind": "reference"
+              },
+              "kind": "positional"
+            },
+            {
+              "name": "exampleUnsupported",
+              "type": {
+                "kind": "unsupported"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "List",
+            "arguments": [
+              {
+                "name": "String",
+                "kind": "reference"
+              }
+            ],
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/TypeReferenceCases.java",
+            "family": "class",
+            "qualified_name": "TypeReferenceCases",
+            "ordinal": 30001
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "java/src/TypeReferenceCases.java",
+        "family": "method",
+        "qualified_name": "TypeReferenceCases.exampleTypes",
+        "ordinal": 60005
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "java/src/TypeReferenceCases.java",
+      "line": 7,
+      "expression": "List.of",
+      "resolution": "unresolved",
+      "target_name": "of"
+    }
+  ],
+  "line_count": 10,
+  "code_line_count": 7,
+  "public_symbol_count": 0
+}

@@ -1,0 +1,54 @@
+{
+  "file_id": "src/commerce/payments/domain/model/例/payment",
+  "import_identity": "src/commerce/payments/domain/model/例/payment",
+  "imports": [],
+  "declarations": [
+    {
+      "name": "Payment",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 0,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "src/commerce/payments/domain/model/例/payment",
+        "family": "class",
+        "qualified_name": "Payment",
+        "ordinal": 1
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "capture",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 0,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "src/commerce/payments/domain/model/例/payment",
+            "family": "method",
+            "qualified_name": "Payment.capture",
+            "ordinal": 1
+          },
+          "source_id": "src/commerce/payments/domain/model/例/payment",
+          "qualified_name": "Payment.capture",
+          "kind": "instance_method",
+          "line_start": 0,
+          "line_end": 0,
+          "return_type": {
+            "kind": "unsupported"
+          },
+          "owner_declaration_id": {
+            "source_id": "src/commerce/payments/domain/model/例/payment",
+            "family": "class",
+            "qualified_name": "Payment",
+            "ordinal": 1
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "line_count": 0,
+  "code_line_count": 0,
+  "public_symbol_count": 1
+}

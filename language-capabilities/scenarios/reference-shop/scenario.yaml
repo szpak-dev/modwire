@@ -1,0 +1,99 @@
+producer: reference
+extraction:
+  files:
+    src/commerce/orders/application/actions/place_order:
+      language-capabilities/scenarios/reference-shop/src/commerce/orders/application/actions/place_order.json
+    src/commerce/orders/domain/model/order:
+      language-capabilities/scenarios/reference-shop/src/commerce/orders/domain/model/order.json
+    src/commerce/orders/domain/services/order_policy:
+      language-capabilities/scenarios/reference-shop/src/commerce/orders/domain/services/order_policy.json
+    src/commerce/orders/infrastructure/repositories/order_repository:
+      language-capabilities/scenarios/reference-shop/src/commerce/orders/infrastructure/repositories/order_repository.json
+    src/commerce/orders/interfaces/http/order_controller:
+      language-capabilities/scenarios/reference-shop/src/commerce/orders/interfaces/http/order_controller.json
+    src/commerce/payments/application/actions/capture_payment:
+      language-capabilities/scenarios/reference-shop/src/commerce/payments/application/actions/capture_payment.json
+    src/commerce/payments/domain/model/例/payment:
+      language-capabilities/scenarios/reference-shop/src/commerce/payments/domain/model/例/payment.json
+  manifest:
+    policy:
+      excluded_patterns:
+      - ignored/**
+    runtime:
+      version: fixture 1
+      resource_digest: '0000000000000000000000000000000000000000000000000000000000000000'
+    sources:
+    - source_id: src/commerce/orders/application/actions/place_order
+      relative_path: src/commerce/orders/application/actions/place_order
+      content_digest: 2cbefec70e40f100376fb791b7e3f74a3676a83fc179ddc4633750c8d354b97d
+    - source_id: src/commerce/orders/domain/model/order
+      relative_path: src/commerce/orders/domain/model/order
+      content_digest: bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c
+    - source_id: src/commerce/orders/domain/services/order_policy
+      relative_path: src/commerce/orders/domain/services/order_policy
+      content_digest: d82d07bd9dce9fc1c62477d072e3370ad6b8feed9f4eea2c551c3c63480c3fff
+    - source_id: src/commerce/orders/infrastructure/repositories/order_repository
+      relative_path: src/commerce/orders/infrastructure/repositories/order_repository
+      content_digest: 8a9278a880c844bf505c547b0aaab46c65658407b2cc723b043f74d59380e5f9
+    - source_id: src/commerce/orders/interfaces/http/order_controller
+      relative_path: src/commerce/orders/interfaces/http/order_controller
+      content_digest: 11f683815938f3033acfb9ff0b60fcf560beaecac99ca3c41f5ee109d88bf3a5
+    - source_id: src/commerce/payments/application/actions/capture_payment
+      relative_path: src/commerce/payments/application/actions/capture_payment
+      content_digest: 523b46d792c6200f7ddd9aa36d4c398f63cdd56473d8dc74176abfc2b6b47362
+    - source_id: src/commerce/payments/domain/model/例/payment
+      relative_path: src/commerce/payments/domain/model/例/payment
+      content_digest: bc6cc5364afc862be73da3810fbfeaec32a272b4027c0f3bf0af04cc5cb073e3
+    digest_algorithm: sha256
+    digest: 304735fcc1cd23ca6dca0f2d7e5f61ac4432a615b429808bef95f758e0410f63
+  files_excluded: 0
+  directories_pruned: 1
+dependency_graph:
+  nodes:
+    src/commerce/orders/application/actions/place_order:
+      id: src/commerce/orders/application/actions/place_order
+    src/commerce/orders/domain/model/order:
+      id: src/commerce/orders/domain/model/order
+    src/commerce/orders/domain/services/order_policy:
+      id: src/commerce/orders/domain/services/order_policy
+    src/commerce/orders/infrastructure/repositories/order_repository:
+      id: src/commerce/orders/infrastructure/repositories/order_repository
+    src/commerce/orders/interfaces/http/order_controller:
+      id: src/commerce/orders/interfaces/http/order_controller
+    src/commerce/payments/application/actions/capture_payment:
+      id: src/commerce/payments/application/actions/capture_payment
+    src/commerce/payments/domain/model/例/payment:
+      id: src/commerce/payments/domain/model/例/payment
+  edges:
+  - from_id: src/commerce/orders/application/actions/place_order
+    to_id: src/commerce/orders/domain/model/order
+    specifier: src/commerce/orders/domain/model/order
+    resolution: resolved
+  - from_id: src/commerce/orders/application/actions/place_order
+    to_id: src/commerce/orders/domain/services/order_policy
+    specifier: src/commerce/orders/domain/services/order_policy
+    resolution: resolved
+  - from_id: src/commerce/orders/domain/services/order_policy
+    to_id: src/commerce/orders/domain/model/order
+    specifier: src/commerce/orders/domain/model/order
+    resolution: resolved
+  - from_id: src/commerce/orders/infrastructure/repositories/order_repository
+    to_id:
+    specifier: external:src/commerce/orders/infrastructure/repositories/order_repository
+    resolution: external
+  - from_id: src/commerce/orders/infrastructure/repositories/order_repository
+    to_id: src/commerce/orders/domain/model/order
+    specifier: src/commerce/orders/domain/model/order
+    resolution: resolved
+  - from_id: src/commerce/orders/interfaces/http/order_controller
+    to_id: src/commerce/orders/application/actions/place_order
+    specifier: src/commerce/orders/application/actions/place_order
+    resolution: resolved
+  - from_id: src/commerce/orders/interfaces/http/order_controller
+    to_id: src/commerce/orders/domain/model/order
+    specifier: src/commerce/orders/domain/model/order
+    resolution: resolved
+  - from_id: src/commerce/payments/application/actions/capture_payment
+    to_id: src/commerce/payments/domain/model/例/payment
+    specifier: src/commerce/payments/domain/model/例/payment
+    resolution: resolved

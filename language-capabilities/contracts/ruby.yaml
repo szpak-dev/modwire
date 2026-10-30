@@ -3,39 +3,39 @@ runtime:
   runtime: ruby
   probe:
     arguments: [--version]
-    pattern: '^ruby (\d+\.\d+\.\d+)'
+    pattern: ^ruby (\d+\.\d+\.\d+)
   version:
     major: 4
     minor: 0
     patch: 7
   packages:
-    - manager: gem
-      name: prism
-      version:
-        major: 1
-        minor: 9
-        patch: 0
+  - manager: gem
+    name: prism
+    version:
+      major: 1
+      minor: 9
+      patch: 0
 fixtures:
   source_suffixes:
-    - .rb
+  - .rb
   extensions:
     root: tests/fixtures/code_map/language_extensions/ruby
     sources:
-      - src/example_shapes.rb
-      - src/example_support.rb
+    - src/example_shapes.rb
+    - src/example_support.rb
   gaps:
     root: tests/fixtures/code_map/capability_gaps/ruby
     sources:
-      - src/example_capability_gaps.rb
+    - src/example_capability_gaps.rb
   types:
     root: tests/fixtures/code_map/type_references/ruby
     sources:
-      - src/type_reference_cases.rb
-      - src/type_reference_empty.rb
+    - src/type_reference_cases.rb
+    - src/type_reference_empty.rb
   parameters:
     root: tests/fixtures/code_map/parameter_kinds/ruby
     sources:
-      - src/params.rb
+    - src/params.rb
 capabilities:
   sources:
     status: supported
@@ -45,8 +45,8 @@ capabilities:
     explanation: Classes, modules, and statically named constants are extracted.
   callables:
     status: partial
-    explanation: Instance methods, singleton methods, and constructors owned by statically named classes or
-      modules are extracted; aliases and generated methods are not.
+    explanation: Instance methods, singleton methods, and constructors owned by statically named classes or modules
+      are extracted; aliases and generated methods are not.
   calls:
     status: partial
     explanation: Calls owned by extracted methods are emitted; dynamic dispatch and runtime-generated targets
@@ -56,8 +56,7 @@ capabilities:
     explanation: Positional, keyword, rest, keyword-rest, block, and forwarding parameters are normalized.
   type_references:
     status: supported
-    explanation: Every callable type slot is explicitly reported as absent because Ruby has no inline type
-      syntax.
+    explanation: Every callable type slot is explicitly reported as absent because Ruby has no inline type syntax.
   annotations:
     status: unsupported
     explanation: Ruby source annotations are not inferred.
@@ -84,8 +83,8 @@ capabilities:
     explanation: Literal include, prepend, and extend composition is recorded.
   dependencies:
     status: partial
-    explanation: Literal require and require_relative dependencies are normalized without load-path or
-      framework inference.
+    explanation: Literal require and require_relative dependencies are normalized without load-path or framework
+      inference.
   spans:
     status: partial
     explanation: Callable spans are exact; other declarations expose line counts.
@@ -95,411 +94,394 @@ relationships:
     semantics_explanation: Authored superclass and literal module-composition relations are preserved without
       refinements, metaprogramming, or framework inference.
     inventory: partial
-    inventory_explanation: Superclass, include, prepend, and extend sites are emitted, while dynamic
-      composition and reopened-definition merging are not available.
+    inventory_explanation: Superclass, include, prepend, and extend sites are emitted, while dynamic composition
+      and reopened-definition merging are not available.
   member:
     semantics: partial
     semantics_explanation: Authored methods and bounded same-file call targets are preserved without runtime
       dispatch or generated members.
     inventory: partial
-    inventory_explanation: Declared method and static call evidence is emitted, but attributes and
-      assigned-value relationship evidence are not available.
+    inventory_explanation: Declared method and static call evidence is emitted, but attributes and assigned-value
+      relationship evidence are not available.
   dependency:
     semantics: partial
-    semantics_explanation: Literal require and require_relative calls are normalized without Ruby load-path,
-      Rails, or Zeitwerk inference.
+    semantics_explanation: Literal require and require_relative calls are normalized without Ruby load-path, Rails,
+      or Zeitwerk inference.
     inventory: partial
     inventory_explanation: Authored literal loads are emitted, but dynamic loads and framework-generated
       dependencies are not available.
 scenarios:
-  - name: supported-contract
-    fixture: extensions
-    source: src/example_shapes.rb
-    claims:
-      - kind: capability
-        capability: sources
-        evidence: supported
-        state: present
-        observation: {kind: source, relative_path: src/example_shapes.rb}
-      - kind: capability
-        capability: type_references
-        evidence: supported
-        state: absent
-        observation: {kind: type_slot, owner: ExampleAbstract.example_required, role: parameter, position: 0}
-      - kind: capability
-        capability: inheritance
-        evidence: supported
-        state: present
-        observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
-            ExampleAbstract}
-      - kind: capability
-        capability: declaration_kinds
-        evidence: supported
-        state: present
-        observation: {kind: declaration, qualified_name: ExampleImplementation, declaration_kind: class}
-      - kind: capability
-        capability: modifiers
-        evidence: supported
-        state: present
-        observation: {kind: modifier, owner: ExampleAbstract.example_private, visibility: private}
-      - kind: capability
-        capability: symbols
-        evidence: supported
-        state: present
-        observation: {kind: declaration, qualified_name: ExampleAbstract, declaration_kind: class}
-      - kind: capability
-        capability: callables
-        evidence: supported
-        state: present
-        observation: {kind: callable, qualified_name: ExampleAbstract.example_required, callable_kind:
-            instance_method}
-      - kind: capability
-        capability: calls
-        evidence: supported
-        state: present
-        observation: {kind: call, owner: ExampleAbstract.example_private, target: example_protected,
-            resolution: resolved}
-      - kind: capability
-        capability: namespaces
-        evidence: supported
-        state: present
-        observation: {kind: namespace, qualified_name: ExampleLogging, namespace_kind: module}
-      - kind: capability
-        capability: composition
-        evidence: supported
-        state: present
-        observation: {kind: declaration_relation, source: ExampleAbstract, relation: includes, target:
-            ExampleLogging}
-      - kind: capability
-        capability: dependencies
-        evidence: supported
-        state: present
-        observation: {kind: dependency, source: src/example_shapes.rb, target: json, resolution: external}
-      - kind: capability
-        capability: spans
-        evidence: supported
-        state: present
-        observation: {kind: exact_span, owner: ExampleAbstract.example_required, start: 28, end: 33}
-      - kind: relationship
-        relationship: declaration
-        aspect: semantics
-        evidence: supported
-        state: present
-        observation: {kind: declaration_relation, source: ExampleAbstract, relation: includes, target:
-            ExampleLogging}
-      - kind: relationship
-        relationship: member
-        aspect: semantics
-        evidence: supported
-        state: present
-        observation: {kind: call, owner: ExampleAbstract.example_private, target: example_protected,
-            resolution: resolved}
-      - kind: relationship
-        relationship: dependency
-        aspect: semantics
-        evidence: supported
-        state: present
-        observation: {kind: dependency, source: src/example_shapes.rb, target: json, resolution: external}
-      - kind: relationship
-        relationship: declaration
-        aspect: inventory
-        evidence: supported
-        state: present
-        observation: {kind: declaration_relation, source: ExampleAbstract, relation: includes, target:
-            ExampleLogging}
-      - kind: relationship
-        relationship: member
-        aspect: inventory
-        evidence: supported
-        state: present
-        observation: {kind: call, owner: ExampleAbstract.example_private, target: example_protected,
-            resolution: resolved}
-      - kind: relationship
-        relationship: dependency
-        aspect: inventory
-        evidence: supported
-        state: present
-        observation: {kind: dependency, source: src/example_shapes.rb, target: json, resolution: external}
-  - name: empty-source
-    fixture: types
-    source: src/type_reference_empty.rb
-    claims:
-      - kind: capability
-        capability: sources
-        evidence: supported
-        state: present
-        observation: {kind: empty_source, relative_path: src/type_reference_empty.rb}
-  - name: runtime-generated-symbol
-    fixture: gaps
-    source: src/example_capability_gaps.rb
-    claims:
-      - kind: capability
-        capability: symbols
-        evidence: boundary
-        state: absent
-        observation: {kind: declaration, qualified_name: ExampleGenerated, declaration_kind: class}
-  - name: generated-callable
-    fixture: gaps
-    source: src/example_capability_gaps.rb
-    claims:
-      - kind: capability
-        capability: callables
-        evidence: boundary
-        state: absent
-        observation: {kind: callable, qualified_name: ExampleBase.example_generated_method, callable_kind:
-            instance_method}
-  - name: dynamic-call-resolution
-    fixture: gaps
-    source: src/example_capability_gaps.rb
-    claims:
-      - kind: capability
-        capability: calls
-        evidence: boundary
-        state: absent
-        observation: {kind: call, owner: ExampleBase.example_generated_method, target: example_generated_call,
-            resolution: unresolved}
-  - name: generated-callable-parameters
-    fixture: gaps
-    source: src/example_capability_gaps.rb
-    claims:
-      - kind: capability
-        capability: parameters
-        evidence: boundary
-        state: absent
-        observation: {kind: parameter, owner: ExampleBase.example_generated_method, name:
-            example_generated_parameter, position: 0, parameter_kind: positional, has_default: false}
-  - name: annotation-dsl
-    fixture: gaps
-    source: src/example_capability_gaps.rb
-    claims:
-      - kind: capability
-        capability: annotations
-        evidence: boundary
-        state: absent
-        observation: {kind: annotation, owner: ExampleBase, expression: sig}
-  - name: singleton-visibility
-    fixture: gaps
-    source: src/example_capability_gaps.rb
-    claims:
-      - kind: capability
-        capability: modifiers
-        evidence: boundary
-        state: present
-        observation: {kind: modifier, owner: ExampleBase.example_hidden, visibility: public}
-      - kind: capability
-        capability: modifiers
-        evidence: boundary
-        state: absent
-        observation: {kind: modifier, owner: ExampleBase.example_hidden, visibility: private}
-  - name: generated-attributes
-    fixture: gaps
-    source: src/example_capability_gaps.rb
-    claims:
-      - kind: capability
-        capability: attributes
-        evidence: boundary
-        state: absent
-        observation: {kind: attribute, owner: ExampleBase, name: example_generated_attribute, member_kind:
-            instance}
-      - kind: capability
-        capability: assigned_values
-        evidence: boundary
-        state: present
-        observation:
-          kind: assigned_values
-          owner: ExampleBase
-          attributes: []
-      - kind: relationship
-        relationship: member
-        aspect: semantics
-        evidence: boundary
-        state: absent
-        observation: {kind: attribute, owner: ExampleBase, name: example_generated_attribute, member_kind:
-            instance}
-      - kind: relationship
-        relationship: member
-        aspect: inventory
-        evidence: boundary
-        state: absent
-        observation: {kind: attribute, owner: ExampleBase, name: example_generated_attribute, member_kind:
-            instance}
-  - name: dynamic-namespace
-    fixture: gaps
-    source: src/example_capability_gaps.rb
-    claims:
-      - kind: capability
-        capability: namespaces
-        evidence: boundary
-        state: absent
-        observation: {kind: namespace, qualified_name: ExampleDynamicNamespace, namespace_kind: module}
-  - name: dynamic-composition
-    fixture: gaps
-    source: src/example_capability_gaps.rb
-    claims:
-      - kind: capability
-        capability: composition
-        evidence: boundary
-        state: absent
-        observation: {kind: declaration_relation, source: ExampleRuntime, relation: includes, target:
-            ExampleIncluded}
-      - kind: relationship
-        relationship: declaration
-        aspect: inventory
-        evidence: boundary
-        state: absent
-        observation: {kind: declaration_relation, source: ExampleRuntime, relation: includes, target:
-            ExampleIncluded}
-  - name: dynamic-dependency
-    fixture: gaps
-    source: src/example_capability_gaps.rb
-    claims:
-      - kind: capability
-        capability: dependencies
-        evidence: boundary
-        state: absent
-        observation: {kind: dependency, source: src/example_capability_gaps.rb, target: yaml, resolution:
-            external}
-      - kind: relationship
-        relationship: dependency
-        aspect: semantics
-        evidence: boundary
-        state: absent
-        observation: {kind: dependency, source: src/example_capability_gaps.rb, target: yaml, resolution:
-            external}
-      - kind: relationship
-        relationship: dependency
-        aspect: inventory
-        evidence: boundary
-        state: absent
-        observation: {kind: dependency, source: src/example_capability_gaps.rb, target: yaml, resolution:
-            external}
-  - name: non-callable-span-boundary
-    fixture: gaps
-    source: src/example_capability_gaps.rb
-    claims:
-      - kind: capability
-        capability: spans
-        evidence: boundary
-        state: absent
-        observation: {kind: span_owner, owner: ExampleBase}
-  - name: runtime-superclass-semantics
-    fixture: gaps
-    source: src/example_capability_gaps.rb
-    claims:
-      - kind: relationship
-        relationship: declaration
-        aspect: semantics
-        evidence: boundary
-        state: absent
-        observation: {kind: declaration_relation, source: ExampleRuntime, relation: extends, target:
-            ExampleBase}
-  - name: parameter-kinds
-    fixture: parameters
-    source: src/params.rb
-    claims:
-      - kind: capability
-        capability: parameters
-        evidence: supported
-        state: present
-        observation: {kind: parameter_kinds, present: [positional, variadic_positional, named_only,
-                variadic_named]}
-  - name: support-module
-    fixture: extensions
-    source: src/example_support.rb
-    claims:
-      - kind: capability
-        capability: callables
-        evidence: supported
-        state: present
-        observation: {kind: callable, qualified_name: ExampleSupport.example_target, callable_kind:
-            type_method}
-  - name: untyped-parameter
-    fixture: types
-    source: src/type_reference_cases.rb
-    claims:
-      - kind: capability
-        capability: type_references
-        evidence: supported
-        state: absent
-        observation: {kind: type_slot, owner: example_types, role: parameter, position: 0}
+- name: supported-contract
+  fixture: extensions
+  source: src/example_shapes.rb
+  claims:
+  - kind: capability
+    capability: sources
+    evidence: supported
+    state: present
+    observation: {kind: source, relative_path: src/example_shapes.rb}
+  - kind: capability
+    capability: type_references
+    evidence: supported
+    state: absent
+    observation: {kind: type_slot, owner: ExampleAbstract.example_required, role: parameter, position: 0}
+  - kind: capability
+    capability: inheritance
+    evidence: supported
+    state: present
+    observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
+        ExampleAbstract}
+  - kind: capability
+    capability: declaration_kinds
+    evidence: supported
+    state: present
+    observation: {kind: declaration, qualified_name: ExampleImplementation, declaration_kind: class}
+  - kind: capability
+    capability: modifiers
+    evidence: supported
+    state: present
+    observation: {kind: modifier, owner: ExampleAbstract.example_private, visibility: private}
+  - kind: capability
+    capability: symbols
+    evidence: supported
+    state: present
+    observation: {kind: declaration, qualified_name: ExampleAbstract, declaration_kind: class}
+  - kind: capability
+    capability: callables
+    evidence: supported
+    state: present
+    observation: {kind: callable, qualified_name: ExampleAbstract.example_required, callable_kind: instance_method}
+  - kind: capability
+    capability: calls
+    evidence: supported
+    state: present
+    observation: {kind: call, owner: ExampleAbstract.example_private, target: example_protected, resolution:
+        resolved}
+  - kind: capability
+    capability: namespaces
+    evidence: supported
+    state: present
+    observation: {kind: namespace, qualified_name: ExampleLogging, namespace_kind: module}
+  - kind: capability
+    capability: composition
+    evidence: supported
+    state: present
+    observation: {kind: declaration_relation, source: ExampleAbstract, relation: includes, target: ExampleLogging}
+  - kind: capability
+    capability: dependencies
+    evidence: supported
+    state: present
+    observation: {kind: dependency, source: src/example_shapes.rb, target: json, resolution: external}
+  - kind: capability
+    capability: spans
+    evidence: supported
+    state: present
+    observation: {kind: exact_span, owner: ExampleAbstract.example_required, start: 28, end: 33}
+  - kind: relationship
+    relationship: declaration
+    aspect: semantics
+    evidence: supported
+    state: present
+    observation: {kind: declaration_relation, source: ExampleAbstract, relation: includes, target: ExampleLogging}
+  - kind: relationship
+    relationship: member
+    aspect: semantics
+    evidence: supported
+    state: present
+    observation: {kind: call, owner: ExampleAbstract.example_private, target: example_protected, resolution:
+        resolved}
+  - kind: relationship
+    relationship: dependency
+    aspect: semantics
+    evidence: supported
+    state: present
+    observation: {kind: dependency, source: src/example_shapes.rb, target: json, resolution: external}
+  - kind: relationship
+    relationship: declaration
+    aspect: inventory
+    evidence: supported
+    state: present
+    observation: {kind: declaration_relation, source: ExampleAbstract, relation: includes, target: ExampleLogging}
+  - kind: relationship
+    relationship: member
+    aspect: inventory
+    evidence: supported
+    state: present
+    observation: {kind: call, owner: ExampleAbstract.example_private, target: example_protected, resolution:
+        resolved}
+  - kind: relationship
+    relationship: dependency
+    aspect: inventory
+    evidence: supported
+    state: present
+    observation: {kind: dependency, source: src/example_shapes.rb, target: json, resolution: external}
+- name: empty-source
+  fixture: types
+  source: src/type_reference_empty.rb
+  claims:
+  - kind: capability
+    capability: sources
+    evidence: supported
+    state: present
+    observation: {kind: empty_source, relative_path: src/type_reference_empty.rb}
+- name: runtime-generated-symbol
+  fixture: gaps
+  source: src/example_capability_gaps.rb
+  claims:
+  - kind: capability
+    capability: symbols
+    evidence: boundary
+    state: absent
+    observation: {kind: declaration, qualified_name: ExampleGenerated, declaration_kind: class}
+- name: generated-callable
+  fixture: gaps
+  source: src/example_capability_gaps.rb
+  claims:
+  - kind: capability
+    capability: callables
+    evidence: boundary
+    state: absent
+    observation: {kind: callable, qualified_name: ExampleBase.example_generated_method, callable_kind:
+        instance_method}
+- name: dynamic-call-resolution
+  fixture: gaps
+  source: src/example_capability_gaps.rb
+  claims:
+  - kind: capability
+    capability: calls
+    evidence: boundary
+    state: absent
+    observation: {kind: call, owner: ExampleBase.example_generated_method, target: example_generated_call,
+        resolution: unresolved}
+- name: generated-callable-parameters
+  fixture: gaps
+  source: src/example_capability_gaps.rb
+  claims:
+  - kind: capability
+    capability: parameters
+    evidence: boundary
+    state: absent
+    observation: {kind: parameter, owner: ExampleBase.example_generated_method, position: 0}
+- name: annotation-dsl
+  fixture: gaps
+  source: src/example_capability_gaps.rb
+  claims:
+  - kind: capability
+    capability: annotations
+    evidence: boundary
+    state: absent
+    observation: {kind: annotation, owner: ExampleBase, expression: sig}
+- name: singleton-visibility
+  fixture: gaps
+  source: src/example_capability_gaps.rb
+  claims:
+  - kind: capability
+    capability: modifiers
+    evidence: boundary
+    state: present
+    observation: {kind: modifier, owner: ExampleBase.example_hidden, visibility: public}
+  - kind: capability
+    capability: modifiers
+    evidence: boundary
+    state: absent
+    observation: {kind: modifier, owner: ExampleBase.example_hidden, visibility: private}
+- name: generated-attributes
+  fixture: gaps
+  source: src/example_capability_gaps.rb
+  claims:
+  - kind: capability
+    capability: attributes
+    evidence: boundary
+    state: absent
+    observation: {kind: attribute, owner: ExampleBase, name: example_generated_attribute, member_kind: instance}
+  - kind: capability
+    capability: assigned_values
+    evidence: boundary
+    state: present
+    observation:
+      kind: assigned_values
+      owner: ExampleBase
+  - kind: relationship
+    relationship: member
+    aspect: semantics
+    evidence: boundary
+    state: absent
+    observation: {kind: attribute, owner: ExampleBase, name: example_generated_attribute, member_kind: instance}
+  - kind: relationship
+    relationship: member
+    aspect: inventory
+    evidence: boundary
+    state: absent
+    observation: {kind: attribute, owner: ExampleBase, name: example_generated_attribute, member_kind: instance}
+- name: dynamic-namespace
+  fixture: gaps
+  source: src/example_capability_gaps.rb
+  claims:
+  - kind: capability
+    capability: namespaces
+    evidence: boundary
+    state: absent
+    observation: {kind: namespace, qualified_name: ExampleDynamicNamespace, namespace_kind: module}
+- name: dynamic-composition
+  fixture: gaps
+  source: src/example_capability_gaps.rb
+  claims:
+  - kind: capability
+    capability: composition
+    evidence: boundary
+    state: absent
+    observation: {kind: declaration_relation, source: ExampleRuntime, relation: includes, target: ExampleIncluded}
+  - kind: relationship
+    relationship: declaration
+    aspect: inventory
+    evidence: boundary
+    state: absent
+    observation: {kind: declaration_relation, source: ExampleRuntime, relation: includes, target: ExampleIncluded}
+- name: dynamic-dependency
+  fixture: gaps
+  source: src/example_capability_gaps.rb
+  claims:
+  - kind: capability
+    capability: dependencies
+    evidence: boundary
+    state: absent
+    observation: {kind: dependency, source: src/example_capability_gaps.rb, target: yaml, resolution: external}
+  - kind: relationship
+    relationship: dependency
+    aspect: semantics
+    evidence: boundary
+    state: absent
+    observation: {kind: dependency, source: src/example_capability_gaps.rb, target: yaml, resolution: external}
+  - kind: relationship
+    relationship: dependency
+    aspect: inventory
+    evidence: boundary
+    state: absent
+    observation: {kind: dependency, source: src/example_capability_gaps.rb, target: yaml, resolution: external}
+- name: non-callable-span-boundary
+  fixture: gaps
+  source: src/example_capability_gaps.rb
+  claims:
+  - kind: capability
+    capability: spans
+    evidence: boundary
+    state: absent
+    observation: {kind: span_owner, owner: ExampleBase}
+- name: runtime-superclass-semantics
+  fixture: gaps
+  source: src/example_capability_gaps.rb
+  claims:
+  - kind: relationship
+    relationship: declaration
+    aspect: semantics
+    evidence: boundary
+    state: absent
+    observation: {kind: declaration_relation, source: ExampleRuntime, relation: extends, target: ExampleBase}
+- name: parameter-kinds
+  fixture: parameters
+  source: src/params.rb
+  claims:
+  - kind: capability
+    capability: parameters
+    evidence: supported
+    state: present
+    observation:
+      kind: parameter_list
+      owner: example_parameters
+- name: support-module
+  fixture: extensions
+  source: src/example_support.rb
+  claims:
+  - kind: capability
+    capability: callables
+    evidence: supported
+    state: present
+    observation: {kind: callable, qualified_name: ExampleSupport.example_target, callable_kind: type_method}
+- name: untyped-parameter
+  fixture: types
+  source: src/type_reference_cases.rb
+  claims:
+  - kind: capability
+    capability: type_references
+    evidence: supported
+    state: absent
+    observation: {kind: type_slot, owner: example_types, role: parameter, position: 0}
 manifests:
   root: tests/fixtures/implementation_manifest/ruby
   scenarios:
-    - name: canonical
-      source: canonical/src/example.rb
-      facts_digest: 6c281e644f269a3df877d26414600a0881764dcd07eb3c4dc60cb521d266e97e
-      claims:
-        - state: present
-          observation: {kind: source, relative_path: src/example.rb}
-        - state: present
-          observation: {kind: namespace, qualified_name: ExampleFormatting, namespace_kind: module}
-        - state: present
-          observation: {kind: symbol, qualified_name: ExampleClassMethods.ExampleAbstract, symbol_kind: class}
-        - state: present
-          observation: {kind: callable, qualified_name: ExampleAbstract.initialize, callable_kind: constructor}
-        - state: present
-          observation: {kind: parameter, owner: ExampleAbstract.example_required, name: example_items,
-              position: 2, parameter_kind: variadic_positional, has_default: false}
-        - state: absent
-          observation: {kind: attribute, owner: ExampleAbstract, name: example_name, member_kind: instance}
-        - state: present
-          observation: {kind: call, owner: ExampleAbstract.example_private, target: example_protected,
-              resolution: resolved}
-        - state: present
-          observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
-              ExampleAbstract}
-        - state: present
-          observation: {kind: dependency, source: src/example.rb, target: json, resolution: external}
-    - name: calls
-      source: calls/src/example.rb
-      facts_digest: 1e9a2955fdccf1085918f1b8a89a737c13f81eb18f9bd6ca7d85376d58971456
-      claims:
-        - state: present
-          observation: {kind: source, relative_path: src/example.rb}
-        - state: present
-          observation: {kind: call, owner: ExampleCalls.example_source, target: example_target, resolution:
-              resolved}
-    - name: no_calls
-      source: no_calls/src/example.rb
-      facts_digest: dcb77d05d873e1979ac589b609dfc903058c8e5def6d2d89f8392247a27d1e28
-      claims:
-        - state: present
-          observation: {kind: source, relative_path: src/example.rb}
-        - state: absent
-          observation: {kind: call, owner: ExampleCalls.example_source, target: example_target, resolution:
-              resolved}
-    - name: negative_members
-      source: negative_members/src/example.rb
-      facts_digest: 9573fe4f12809f4feabcb5b79c7bd14ca1b2656dc88f6def10a978670dbf60c0
-      claims:
-        - state: present
-          observation: {kind: source, relative_path: src/example.rb}
-        - state: absent
-          observation: {kind: symbol, qualified_name: src/example.ExampleValue.example_generated_method,
-              symbol_kind: callable}
-    - name: dependencies
-      source: dependencies/src/example.rb
-      facts_digest: d21730cc32cf81078b7b6f6c2cdba3b4539fc7e184b6aef6dcdedb6f07f99094
-      claims:
-        - state: present
-          observation: {kind: source, relative_path: src/example.rb}
-        - state: present
-          observation: {kind: dependency, source: src/example.rb, target: json, resolution: external}
-    - name: source_edit_before
-      source: source_edit_before/src/nested/example.rb
-      facts_digest: a004f2b754646de13b135882a1831a41d1207c4904988601c0386548e79eacad
-      claims:
-        - state: present
-          observation: {kind: source, relative_path: src/nested/example.rb}
-    - name: source_edit_after
-      source: source_edit_after/src/example.rb
-      facts_digest: 9e9c1ce4fba47a3977a7d5733b1839eb3032c681f56cd76aad9c5d1093d2132a
-      claims:
-        - state: present
-          observation: {kind: source, relative_path: src/example.rb}
+  - name: canonical
+    source: canonical/src/example.rb
+    facts_digest: 6c281e644f269a3df877d26414600a0881764dcd07eb3c4dc60cb521d266e97e
+    claims:
+    - state: present
+      observation: {kind: source, relative_path: src/example.rb}
+    - state: present
+      observation: {kind: namespace, qualified_name: ExampleFormatting, namespace_kind: module}
+    - state: present
+      observation: {kind: symbol, qualified_name: ExampleClassMethods.ExampleAbstract, symbol_kind: class}
+    - state: present
+      observation: {kind: callable, qualified_name: ExampleAbstract.initialize, callable_kind: constructor}
+    - state: present
+      observation: {kind: parameter, owner: ExampleAbstract.example_required, name: example_items, position: 2,
+          parameter_kind: variadic_positional, has_default: false}
+    - state: absent
+      observation: {kind: attribute, owner: ExampleAbstract, name: example_name, member_kind: instance}
+    - state: present
+      observation: {kind: call, owner: ExampleAbstract.example_private, target: example_protected, resolution:
+          resolved}
+    - state: present
+      observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
+          ExampleAbstract}
+    - state: present
+      observation: {kind: dependency, source: src/example.rb, target: json, resolution: external}
+  - name: calls
+    source: calls/src/example.rb
+    facts_digest: 1e9a2955fdccf1085918f1b8a89a737c13f81eb18f9bd6ca7d85376d58971456
+    claims:
+    - state: present
+      observation: {kind: source, relative_path: src/example.rb}
+    - state: present
+      observation: {kind: call, owner: ExampleCalls.example_source, target: example_target, resolution: resolved}
+  - name: no_calls
+    source: no_calls/src/example.rb
+    facts_digest: dcb77d05d873e1979ac589b609dfc903058c8e5def6d2d89f8392247a27d1e28
+    claims:
+    - state: present
+      observation: {kind: source, relative_path: src/example.rb}
+    - state: absent
+      observation: {kind: call, owner: ExampleCalls.example_source, target: example_target, resolution: resolved}
+  - name: negative_members
+    source: negative_members/src/example.rb
+    facts_digest: 9573fe4f12809f4feabcb5b79c7bd14ca1b2656dc88f6def10a978670dbf60c0
+    claims:
+    - state: present
+      observation: {kind: source, relative_path: src/example.rb}
+    - state: absent
+      observation: {kind: symbol, qualified_name: src/example.ExampleValue.example_generated_method, symbol_kind:
+          callable}
+  - name: dependencies
+    source: dependencies/src/example.rb
+    facts_digest: d21730cc32cf81078b7b6f6c2cdba3b4539fc7e184b6aef6dcdedb6f07f99094
+    claims:
+    - state: present
+      observation: {kind: source, relative_path: src/example.rb}
+    - state: present
+      observation: {kind: dependency, source: src/example.rb, target: json, resolution: external}
+  - name: source_edit_before
+    source: source_edit_before/src/nested/example.rb
+    facts_digest: a004f2b754646de13b135882a1831a41d1207c4904988601c0386548e79eacad
+    claims:
+    - state: present
+      observation: {kind: source, relative_path: src/nested/example.rb}
+  - name: source_edit_after
+    source: source_edit_after/src/example.rb
+    facts_digest: 9e9c1ce4fba47a3977a7d5733b1839eb3032c681f56cd76aad9c5d1093d2132a
+    claims:
+    - state: present
+      observation: {kind: source, relative_path: src/example.rb}
   transitions:
-    - before: source_edit_before
-      after: source_edit_after
-      changes:
-        - source_identity
-        - implementation_identity
+  - before: source_edit_before
+    after: source_edit_after
+    changes:
+    - source_identity
+    - implementation_identity

@@ -3,16 +3,20 @@ from typing import Self
 from pydantic import model_validator
 
 from ...fixture_model import FixtureModel
+from ..contracts.fixtures.source_set import FixtureSourceSet
+from ..oracle.disposition import ScenarioDisposition
+from ..oracle.document import ScenarioBindingDocument
 from ..values.names.language_id import LanguageId
 from .mappings.identity import DeclarationIdentityKey
 from .mappings.set import ProjectionMappings
-from .reference_fixture import ReferenceFixtureInventory
 
 
 class ReferenceProjection(FixtureModel):
     language: LanguageId
-    fixture: ReferenceFixtureInventory
+    fixture: FixtureSourceSet
     mappings: ProjectionMappings
+    reference: ScenarioDisposition
+    scenarios: tuple[ScenarioBindingDocument, ...]
 
     @model_validator(mode="after")
     def validate_document(self) -> Self:

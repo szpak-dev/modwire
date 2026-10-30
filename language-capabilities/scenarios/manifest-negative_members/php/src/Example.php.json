@@ -1,0 +1,88 @@
+{
+  "file_id": "php/src/Example.php",
+  "import_identity": "src/Example",
+  "imports": [],
+  "exports": [
+    {
+      "name": "ExampleValue",
+      "local_name": "ExampleValue",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleValue",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 4,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "ExampleValue",
+        "ordinal": 7
+      },
+      "kind": "class",
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "property",
+            "qualified_name": "ExampleValue.exampleDeclared",
+            "ordinal": 46
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "ExampleValue",
+            "ordinal": 7
+          },
+          "name": "exampleDeclared",
+          "is_optional": false,
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "values": [
+    {
+      "declaration_id": {
+        "source_id": "php/src/Example.php",
+        "family": "value",
+        "qualified_name": "exampleValue",
+        "ordinal": 80
+      },
+      "name": "exampleValue",
+      "visibility": "private",
+      "visibility_intent": "private",
+      "line_count": 1,
+      "declaration_kind": "assignment",
+      "value_kind": "value_object",
+      "scope": "module"
+    }
+  ],
+  "line_count": 9,
+  "code_line_count": 7,
+  "public_symbol_count": 1
+}

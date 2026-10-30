@@ -1,5 +1,6 @@
 schema_version: 1
-reference_code_map: tests/fixtures/code_map/reference_shop/expected_code_map.json
+scenario_catalog: language-capabilities/scenarios/catalog.yaml
+reference_scenario: reference-shop
 languages:
   python:
     contract: language-capabilities/contracts/python.yaml

@@ -1,0 +1,58 @@
+{
+  "file_id": "typescript/src/example-panel.jsx",
+  "import_identity": "src/example-panel",
+  "imports": [],
+  "exports": [
+    {
+      "name": "ExamplePanel",
+      "local_name": "ExamplePanel",
+      "kind": "value",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "functions": [],
+  "callable_values": [
+    {
+      "name": "ExamplePanel",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-panel.jsx",
+        "family": "value",
+        "qualified_name": "ExamplePanel",
+        "ordinal": 14
+      },
+      "source_id": "typescript/src/example-panel.jsx",
+      "qualified_name": "ExamplePanel",
+      "line_start": 1,
+      "line_end": 1,
+      "parameters": [
+        {
+          "name": "exampleLabel",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "kind": "absent"
+      },
+      "declaration_kind": "constant",
+      "scope": "module",
+      "kind": "callable_value"
+    }
+  ],
+  "line_count": 2,
+  "code_line_count": 1,
+  "public_symbol_count": 1
+}

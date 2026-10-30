@@ -1,0 +1,66 @@
+producer: observations
+extraction:
+  files:
+    python/src/example.py: language-capabilities/scenarios/manifest-dependencies/python/src/example.py.json
+    typescript/src/example.ts: language-capabilities/scenarios/manifest-dependencies/typescript/src/example.ts.json
+    php/src/Example.php: language-capabilities/scenarios/manifest-dependencies/php/src/Example.php.json
+    java/src/Example.java: language-capabilities/scenarios/manifest-dependencies/java/src/Example.java.json
+    ruby/src/example.rb: language-capabilities/scenarios/manifest-dependencies/ruby/src/example.rb.json
+  manifest:
+    policy: {}
+    runtime:
+      version: fixture 1
+      resource_digest: '0000000000000000000000000000000000000000000000000000000000000000'
+    sources:
+    - source_id: java/src/Example.java
+      relative_path: java/src/Example.java
+      content_digest: 5fe228074158f568aa7e361ba130414452d1b778d4a39209c1772b8ee4981613
+    - source_id: php/src/Example.php
+      relative_path: php/src/Example.php
+      content_digest: f5d0f8041bfb9a5eae7534a1a79f3ca306007c7421fdc014c270dd1778f6211b
+    - source_id: python/src/example.py
+      relative_path: python/src/example.py
+      content_digest: 0f97163864f0cc9290da3a8e425929c06d329e26a6b901fc5c438c7c674cc26c
+    - source_id: ruby/src/example.rb
+      relative_path: ruby/src/example.rb
+      content_digest: 169a4ba538dd5a68094caa0f6d5870be9ed0385d59592f09471d327c9c00dcc1
+    - source_id: typescript/src/example.ts
+      relative_path: typescript/src/example.ts
+      content_digest: 5b077a12e055a8500e3066c30acd5e02979d0385f366aed9d3716526c920d889
+    digest_algorithm: sha256
+    digest: 02a4dcf6dddc10d80c599513ad937e49c0025b6f46da734eaf9de99a9e960800
+  files_excluded: 0
+  directories_pruned: 0
+dependency_graph:
+  nodes:
+    python/src/example.py:
+      id: python/src/example.py
+    typescript/src/example.ts:
+      id: typescript/src/example.ts
+    php/src/Example.php:
+      id: php/src/Example.php
+    java/src/Example.java:
+      id: java/src/Example.java
+    ruby/src/example.rb:
+      id: ruby/src/example.rb
+  edges:
+  - from_id: python/src/example.py
+    to_id:
+    specifier: json
+    resolution: external
+  - from_id: typescript/src/example.ts
+    to_id:
+    specifier: node:path
+    resolution: external
+  - from_id: php/src/Example.php
+    to_id:
+    specifier: DateTimeImmutable
+    resolution: external
+  - from_id: java/src/Example.java
+    to_id:
+    specifier: java.util.List
+    resolution: external
+  - from_id: ruby/src/example.rb
+    to_id:
+    specifier: json
+    resolution: external

@@ -1,7 +1,16 @@
 import hashlib
 from pathlib import Path
 
-from modwire.application import CodeMap, FactCapability, ImplementationManifest, ModwireApplication, RelationshipFamily
+from modwire.application import (
+    CodeMap,
+    FactCapability,
+    FileId,
+    ImplementationManifest,
+    ModwireApplication,
+    RelationshipFamily,
+    ScanPolicy,
+    SourceFile,
+)
 
 from .claim_evaluator import FixtureClaimEvaluator
 from .claim_result import ClaimResult
@@ -13,6 +22,9 @@ from .language_capability_matrix.contracts.fixtures.source_set import FixtureSou
 from .language_capability_matrix.contracts.manifests.scenario import ManifestScenario
 from .language_capability_matrix.contracts.manifests.transition import ManifestTransition
 from .language_capability_matrix.contracts.scenarios.capability import CapabilityScenario
+from .language_capability_matrix.oracle.binding import LanguageScenarioBinding
+from .language_capability_matrix.oracle.identities import FixtureSourceIdentities
+from .language_capability_matrix.oracle.projection import ScenarioProjectionKind
 from .language_capability_matrix.projections.reference_projection import ReferenceProjection
 from .language_capability_matrix.reader import LanguageCapabilityMatrixReader
 from .language_capability_matrix.values.enums.fixture_role import FixtureRole
@@ -85,9 +97,51 @@ class PolyglotFixtureContract:
     def projection_cases(self) -> tuple[tuple[LanguageId, ReferenceProjection], ...]:
         return tuple((language, bundle.reference_projection) for language, bundle in self.matrix.languages.items())
 
+    def scenario_bindings(self) -> tuple[tuple[LanguageId, LanguageScenarioBinding], ...]:
+        return tuple(
+            (language, binding) for language, bundle in self.matrix.languages.items() for binding in bundle.scenarios
+        )
+
+    def binding_root(self, binding: LanguageScenarioBinding) -> Path:
+        return self.repository / binding.fixture.root.value
+
+    def binding_policy(self, binding: LanguageScenarioBinding) -> ScanPolicy:
+        return self.matrix.catalog.expected[binding.scenario].extraction.manifest.policy
+
+    def evaluate_binding(
+        self, language: LanguageId, code_map: CodeMap, binding: LanguageScenarioBinding
+    ) -> tuple[ClaimResult, ...]:
+        if binding.projection is ScenarioProjectionKind.COMMON_REFERENCE:
+            code_map = self.project_reference(code_map, self.matrix.languages[language].reference_projection)
+            sources = {
+                FileId(mapping.canonical.value.as_posix()): FileId(mapping.canonical.value.as_posix())
+                for mapping in binding.mappings
+            }
+        else:
+            sources = {
+                FileId(mapping.authored.value.as_posix()): FileId(mapping.canonical.value.as_posix())
+                for mapping in binding.mappings
+            }
+        return self.evaluator.evaluate_binding(code_map, self.matrix.catalog, binding, FixtureSourceIdentities(sources))
+
+    def expected_source(self, language: LanguageId, scenario: CapabilityScenario) -> SourceFile:
+        bundle = self.matrix.languages[language]
+        fixture = bundle.contract.fixtures.source_sets()[scenario.fixture]
+        binding = next(
+            binding
+            for binding in bundle.scenarios
+            if binding.projection is ScenarioProjectionKind.SOURCE_IDENTITIES and binding.fixture == fixture
+        )
+        return binding.expected_source(
+            self.matrix.catalog.expected[binding.scenario], FileId(scenario.source.value.as_posix())
+        )
+
     def evaluate_scenario(self, code_map: CodeMap, scenario: CapabilityScenario) -> tuple[ClaimResult, ...]:
         source_id = scenario.source.value.as_posix()
-        return tuple(self.evaluator.evaluate_code_map(code_map, source_id, claim) for claim in scenario.claims)
+        expected = self.expected_source(LanguageId(code_map.language), scenario)
+        return tuple(
+            self.evaluator.evaluate_code_map(code_map, source_id, claim, expected) for claim in scenario.claims
+        )
 
     def evaluate_manifest(
         self,
@@ -109,24 +163,13 @@ class PolyglotFixtureContract:
 
     def fixture_root(self, language: LanguageId, role: FixtureRole) -> Path:
         fixtures = self.matrix.languages[language].contract.fixtures
-        roots = {
-            FixtureRole.EXTENSIONS: fixtures.extensions.root,
-            FixtureRole.GAPS: fixtures.gaps.root,
-            FixtureRole.TYPES: fixtures.types.root,
-            FixtureRole.PARAMETERS: fixtures.parameters.root,
-        }
-        return self.repository / roots[role].value
+        return self.repository / fixtures.source_sets()[role].root.value
 
     def validate_inventories(self) -> None:
         for bundle in self.matrix.languages.values():
             contract = bundle.contract
             projection = bundle.reference_projection
-            for fixture in (
-                contract.fixtures.extensions,
-                contract.fixtures.gaps,
-                contract.fixtures.types,
-                contract.fixtures.parameters,
-            ):
+            for fixture in contract.fixtures.source_sets().values():
                 self.validate_source_set(fixture)
                 self.validate_source_suffixes(fixture, contract.fixtures.source_suffixes)
             self.validate_source_inventory(

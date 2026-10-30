@@ -1,0 +1,614 @@
+{
+  "file_id": "python/src/example.py",
+  "import_identity": "src/example",
+  "imports": [
+    {
+      "path": "abc",
+      "is_relative": false,
+      "normalized_path": "abc",
+      "imported_name": "ABC",
+      "is_aliased": false,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 2,
+      "join_key": "abc",
+      "uses_joined_import": true,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "ABC",
+          "alias": "",
+          "is_aliased": false,
+          "is_default": false,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    },
+    {
+      "path": "abc",
+      "is_relative": false,
+      "normalized_path": "abc",
+      "imported_name": "abstractmethod",
+      "is_aliased": false,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 2,
+      "join_key": "abc",
+      "uses_joined_import": true,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "abstractmethod",
+          "alias": "",
+          "is_aliased": false,
+          "is_default": false,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    },
+    {
+      "path": "pathlib",
+      "is_relative": false,
+      "normalized_path": "pathlib",
+      "imported_name": "Path",
+      "is_aliased": false,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 3,
+      "join_key": "pathlib",
+      "uses_joined_import": true,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "Path",
+          "alias": "",
+          "is_aliased": false,
+          "is_default": false,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    },
+    {
+      "path": "typing",
+      "is_relative": false,
+      "normalized_path": "typing",
+      "imported_name": "ClassVar",
+      "is_aliased": false,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 4,
+      "join_key": "typing",
+      "uses_joined_import": true,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "ClassVar",
+          "alias": "",
+          "is_aliased": false,
+          "is_default": false,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "name": "ExampleContract",
+      "local_name": "ExampleContract",
+      "kind": "abstract_class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleImplementation",
+      "local_name": "ExampleImplementation",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "example_async",
+      "local_name": "example_async",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleContract",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 6,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example.py",
+        "family": "abstract_class",
+        "qualified_name": "ExampleContract",
+        "ordinal": 34359738369
+      },
+      "kind": "abstract_class",
+      "abstract_methods": [
+        {
+          "name": "example_required",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 2,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "method",
+            "qualified_name": "ExampleContract.example_required",
+            "ordinal": 51539607557
+          },
+          "source_id": "python/src/example.py",
+          "qualified_name": "ExampleContract.example_required",
+          "kind": "instance_method",
+          "line_start": 12,
+          "line_end": 13,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "name": "str",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "decorators": [
+            "abstractmethod"
+          ],
+          "owner_declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "abstract_class",
+            "qualified_name": "ExampleContract",
+            "ordinal": 34359738369
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "property",
+            "qualified_name": "ExampleContract.example_shared",
+            "ordinal": 38654705669
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "abstract_class",
+            "qualified_name": "ExampleContract",
+            "ordinal": 34359738369
+          },
+          "name": "example_shared",
+          "is_optional": false,
+          "type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "literal",
+              "expression": "'shared'",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExampleImplementation",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 16,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 68719476737
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "__init__",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 2,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.__init__",
+            "ordinal": 85899345925
+          },
+          "source_id": "python/src/example.py",
+          "qualified_name": "ExampleImplementation.__init__",
+          "kind": "constructor",
+          "line_start": 20,
+          "line_end": 21,
+          "parameters": [
+            {
+              "name": "example_name",
+              "type": {
+                "name": "str",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 68719476737
+          }
+        },
+        {
+          "name": "example_factory",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 2,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.example_factory",
+            "ordinal": 103079215109
+          },
+          "source_id": "python/src/example.py",
+          "qualified_name": "ExampleImplementation.example_factory",
+          "kind": "static_method",
+          "line_start": 24,
+          "line_end": 25,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "name": "str",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "decorators": [
+            "staticmethod"
+          ],
+          "owner_declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 68719476737
+          }
+        },
+        {
+          "name": "example_required",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 2,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.example_required",
+            "ordinal": 115964116997
+          },
+          "source_id": "python/src/example.py",
+          "qualified_name": "ExampleImplementation.example_required",
+          "kind": "instance_method",
+          "line_start": 27,
+          "line_end": 28,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "name": "str",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 68719476737
+          }
+        },
+        {
+          "name": "example_path",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 2,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.example_path",
+            "ordinal": 128849018885
+          },
+          "source_id": "python/src/example.py",
+          "qualified_name": "ExampleImplementation.example_path",
+          "kind": "instance_method",
+          "line_start": 30,
+          "line_end": 31,
+          "parameters": [
+            {
+              "name": "example_root",
+              "type": {
+                "name": "Path",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 68719476737
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "property",
+            "qualified_name": "ExampleImplementation.example_static",
+            "ordinal": 73014444037
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 68719476737
+          },
+          "name": "example_static",
+          "is_optional": false,
+          "type": {
+            "name": "ClassVar",
+            "arguments": [
+              {
+                "name": "str",
+                "kind": "reference"
+              }
+            ],
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "static",
+          "assigned_values": [
+            {
+              "kind": "literal",
+              "expression": "'static'",
+              "reference": ""
+            }
+          ]
+        },
+        {
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "property",
+            "qualified_name": "ExampleImplementation.example_optional",
+            "ordinal": 77309411333
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 68719476737
+          },
+          "name": "example_optional",
+          "is_optional": true,
+          "type": {
+            "kind": "unsupported"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "literal",
+              "expression": "None",
+              "reference": ""
+            }
+          ]
+        },
+        {
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "property",
+            "qualified_name": "ExampleImplementation.example_name",
+            "ordinal": 90194313225
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 68719476737
+          },
+          "name": "example_name",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "reference",
+              "expression": "example_name",
+              "reference": "example_name"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "name": "example_async",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 2,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example.py",
+        "family": "function",
+        "qualified_name": "example_async",
+        "ordinal": 146028888065
+      },
+      "source_id": "python/src/example.py",
+      "qualified_name": "example_async",
+      "line_start": 34,
+      "line_end": 35,
+      "parameters": [
+        {
+          "name": "example_value",
+          "type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "example_suffix",
+          "type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "kind": "named_only",
+          "has_default": true
+        }
+      ],
+      "return_type": {
+        "name": "str",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "values": [
+    {
+      "declaration_id": {
+        "source_id": "python/src/example.py",
+        "family": "value",
+        "qualified_name": "EXAMPLE_CONSTANT",
+        "ordinal": 21474836481
+      },
+      "name": "EXAMPLE_CONSTANT",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_kind": "constant",
+      "value_kind": "value_literal",
+      "scope": "module"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.example_path",
+        "ordinal": 128849018885
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "python/src/example.py",
+      "line": 31,
+      "expression": "str",
+      "resolution": "unresolved",
+      "target_name": "str"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.example_path",
+        "ordinal": 128849018885
+      },
+      "ordinal": 2,
+      "target_callable_id": {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.example_required",
+        "ordinal": 115964116997
+      },
+      "source_id": "python/src/example.py",
+      "line": 31,
+      "expression": "self.example_required",
+      "resolution": "resolved",
+      "target_name": "self.example_required"
+    }
+  ],
+  "declaration_relations": [
+    {
+      "source_declaration_id": {
+        "source_id": "python/src/example.py",
+        "family": "abstract_class",
+        "qualified_name": "ExampleContract",
+        "ordinal": 34359738369
+      },
+      "kind": "extends",
+      "target_reference": "ABC"
+    },
+    {
+      "source_declaration_id": {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 68719476737
+      },
+      "kind": "extends",
+      "target_reference": "ExampleContract"
+    }
+  ],
+  "line_count": 35,
+  "code_line_count": 23,
+  "public_symbol_count": 3
+}

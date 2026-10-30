@@ -1,0 +1,70 @@
+{
+  "file_id": "typescript/src/example.ts",
+  "import_identity": "src/example",
+  "imports": [],
+  "exports": [
+    {
+      "name": "ExampleValue",
+      "local_name": "ExampleValue",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleValue",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleValue",
+        "ordinal": 1
+      },
+      "kind": "class",
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "typescript/src/example.ts",
+            "family": "property",
+            "qualified_name": "ExampleValue.exampleDeclared",
+            "ordinal": 33
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example.ts",
+            "family": "class",
+            "qualified_name": "ExampleValue",
+            "ordinal": 1
+          },
+          "name": "exampleDeclared",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "line_count": 6,
+  "code_line_count": 4,
+  "public_symbol_count": 1
+}

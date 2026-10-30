@@ -36,6 +36,21 @@ language/capability status, explanation, exact public evidence observation, and
 source-backed limitation. Tests load that file directly and require all capability
 cells in canonical order, so this page deliberately does not copy the matrix.
 
+The root index also selects the shared
+[scenario catalog](../../language-capabilities/scenarios/catalog.yaml). Its typed
+documents assemble expected public `CodeMap` observations for the reference shop,
+capability fixtures, and implementation-manifest inputs. Each language binds every
+scenario to its authored source files through explicit mappings. Language variants
+preserve differences in observed facts. Source observations live in separate files;
+shared producer metadata is defined once in the catalog.
+
+Tests compare complete selected source observations and dependency evidence, including
+ordered parameter counts, names, kinds, defaults, and recursive types. Capability and
+relationship selectors must agree with the catalog before extraction runs. Missing
+bindings, unbound expected facts, and unreferenced data files are rejected. The source
+fixtures remain authored language programs; the catalog defines their expected public
+observations.
+
 The same statuses and explanations travel with every public `CodeMap` in
 `code_map.producer.capabilities`.
 

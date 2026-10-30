@@ -1,0 +1,84 @@
+producer: observations
+extraction:
+  files:
+    python/src/type_reference_cases.py:
+      language-capabilities/scenarios/types/python/src/type_reference_cases.py.json
+    python/src/type_reference_empty.py:
+      language-capabilities/scenarios/types/python/src/type_reference_empty.py.json
+    typescript/src/type-reference-cases.ts:
+      language-capabilities/scenarios/types/typescript/src/type-reference-cases.ts.json
+    typescript/src/type-reference-empty.ts:
+      language-capabilities/scenarios/types/typescript/src/type-reference-empty.ts.json
+    php/src/TypeReferenceCases.php: language-capabilities/scenarios/types/php/src/TypeReferenceCases.php.json
+    php/src/TypeReferenceEmpty.php: language-capabilities/scenarios/types/php/src/TypeReferenceEmpty.php.json
+    java/src/TypeReferenceCases.java: language-capabilities/scenarios/types/java/src/TypeReferenceCases.java.json
+    java/src/TypeReferenceEmpty.java: language-capabilities/scenarios/types/java/src/TypeReferenceEmpty.java.json
+    ruby/src/type_reference_cases.rb: language-capabilities/scenarios/types/ruby/src/type_reference_cases.rb.json
+    ruby/src/type_reference_empty.rb: language-capabilities/scenarios/types/ruby/src/type_reference_empty.rb.json
+  manifest:
+    policy: {}
+    runtime:
+      version: fixture 1
+      resource_digest: '0000000000000000000000000000000000000000000000000000000000000000'
+    sources:
+    - source_id: java/src/TypeReferenceCases.java
+      relative_path: java/src/TypeReferenceCases.java
+      content_digest: 17f1eb2ecd1b3861b9ef1dab187bfed430f7a7195a2616205f8d3e8255232011
+    - source_id: java/src/TypeReferenceEmpty.java
+      relative_path: java/src/TypeReferenceEmpty.java
+      content_digest: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+    - source_id: php/src/TypeReferenceCases.php
+      relative_path: php/src/TypeReferenceCases.php
+      content_digest: ffab96c8df4f862c28dfee2474a88cbc2ec82ab565a7ed36a2db576952cadb42
+    - source_id: php/src/TypeReferenceEmpty.php
+      relative_path: php/src/TypeReferenceEmpty.php
+      content_digest: 00aba3928cd622ad67c0f81ecd5aa8699e07f8f4908c045fe34f6a2dc0067b37
+    - source_id: python/src/type_reference_cases.py
+      relative_path: python/src/type_reference_cases.py
+      content_digest: cb36bf85d24a59879764bb2afb6a4577cc7bf42614a1f2f66c5410570bb0f7de
+    - source_id: python/src/type_reference_empty.py
+      relative_path: python/src/type_reference_empty.py
+      content_digest: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+    - source_id: ruby/src/type_reference_cases.rb
+      relative_path: ruby/src/type_reference_cases.rb
+      content_digest: 05b053b4bad71f23018076233812d44c594cb40e25904fc09cf857365e07dd85
+    - source_id: ruby/src/type_reference_empty.rb
+      relative_path: ruby/src/type_reference_empty.rb
+      content_digest: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+    - source_id: typescript/src/type-reference-cases.ts
+      relative_path: typescript/src/type-reference-cases.ts
+      content_digest: a088ccb834eb1486f8502d6aca1eab1dce1c208f1311bdcab17db43ebd7a82b0
+    - source_id: typescript/src/type-reference-empty.ts
+      relative_path: typescript/src/type-reference-empty.ts
+      content_digest: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+    digest_algorithm: sha256
+    digest: c56ba7d5d0a1d7cb6e44b9caf618a98e63ea950df78b967dd1936b347490886d
+  files_excluded: 0
+  directories_pruned: 0
+dependency_graph:
+  nodes:
+    python/src/type_reference_cases.py:
+      id: python/src/type_reference_cases.py
+    python/src/type_reference_empty.py:
+      id: python/src/type_reference_empty.py
+    typescript/src/type-reference-cases.ts:
+      id: typescript/src/type-reference-cases.ts
+    typescript/src/type-reference-empty.ts:
+      id: typescript/src/type-reference-empty.ts
+    php/src/TypeReferenceCases.php:
+      id: php/src/TypeReferenceCases.php
+    php/src/TypeReferenceEmpty.php:
+      id: php/src/TypeReferenceEmpty.php
+    java/src/TypeReferenceCases.java:
+      id: java/src/TypeReferenceCases.java
+    java/src/TypeReferenceEmpty.java:
+      id: java/src/TypeReferenceEmpty.java
+    ruby/src/type_reference_cases.rb:
+      id: ruby/src/type_reference_cases.rb
+    ruby/src/type_reference_empty.rb:
+      id: ruby/src/type_reference_empty.rb
+  edges:
+  - from_id: java/src/TypeReferenceCases.java
+    to_id:
+    specifier: java.util.List
+    resolution: external

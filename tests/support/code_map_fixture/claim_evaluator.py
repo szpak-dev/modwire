@@ -16,18 +16,63 @@ from .language_capability_matrix.contracts.manifests.claim import ManifestClaim
 from .language_capability_matrix.contracts.scenarios.claims.scenario import ScenarioClaim
 from .language_capability_matrix.contracts.scenarios.observations.capability import CapabilityObservation
 from .language_capability_matrix.contracts.scenarios.observations.relationship import RelationshipObservation
+from .language_capability_matrix.oracle.binding import LanguageScenarioBinding
+from .language_capability_matrix.oracle.catalog import FixtureScenarioCatalog
+from .language_capability_matrix.oracle.identities import FixtureSourceIdentities
 from .language_capability_matrix.values.enums.claim_state import ClaimState
 from .language_capability_matrix.values.enums.type_slot_role import TypeSlotRole
 
 
 class FixtureClaimEvaluator:
-    def evaluate_code_map(self, code_map: CodeMap, source_id: str, wrapped: ScenarioClaim) -> ClaimResult:
+    def evaluate_code_map(
+        self, code_map: CodeMap, source_id: str, wrapped: ScenarioClaim, expected: SourceFile
+    ) -> ClaimResult:
         source = code_map.extraction.files[FileId(source_id)]
         claim = wrapped.root
-        return self.evaluate_observation(source, claim.observation, claim.state)
+        return self.evaluate_observation(source, claim.observation, claim.state, expected)
+
+    def evaluate_binding(
+        self,
+        code_map: CodeMap,
+        catalog: FixtureScenarioCatalog,
+        binding: LanguageScenarioBinding,
+        identities: FixtureSourceIdentities,
+    ) -> tuple[ClaimResult, ...]:
+        sources = set(identities.sources)
+        if set(code_map.extraction.files) != sources or set(code_map.dependency_graph.nodes) != sources:
+            return (ClaimResult(satisfied=False),)
+        expected = catalog.expected[binding.scenario]
+        actual_artifacts = {artifact.source_id: artifact for artifact in code_map.extraction.manifest.sources}
+        expected_artifacts = {artifact.source_id: artifact for artifact in expected.extraction.manifest.sources}
+        provenance = (
+            code_map.extraction.files_found == len(sources)
+            and code_map.extraction.files_excluded == expected.extraction.files_excluded
+            and code_map.extraction.directories_pruned == expected.extraction.directories_pruned
+            and code_map.extraction.manifest.policy == expected.extraction.manifest.policy
+            and set(actual_artifacts) == {str(source) for source in sources}
+            and all(
+                actual_artifacts[str(authored)].relative_path == str(authored)
+                and actual_artifacts[str(authored)].content_digest == expected_artifacts[str(canonical)].content_digest
+                for authored, canonical in identities.sources.items()
+            )
+        )
+        return (
+            ClaimResult(satisfied=provenance),
+            *(
+                self.result(
+                    expectation.fact.read_actual(code_map, identities) == expectation.fact.read_expected(expected),
+                    expectation.state,
+                )
+                for expectation in binding.expectations
+            ),
+        )
 
     def evaluate_observation(
-        self, source: SourceFile, wrapped: CapabilityObservation | RelationshipObservation, state: ClaimState
+        self,
+        source: SourceFile,
+        wrapped: CapabilityObservation | RelationshipObservation,
+        state: ClaimState,
+        expected_source: SourceFile,
     ) -> ClaimResult:
         observation = wrapped.root
         if observation.kind == "source":
@@ -69,25 +114,48 @@ class FixtureClaimEvaluator:
                 if call.source_callable_id == callable_fact.declaration_id
             )
         elif observation.kind == "parameter":
-            present = any(
-                callable_fact.qualified_name == observation.owner.value
-                and position == observation.position.root
-                and parameter.name == observation.name.value
-                and parameter.kind is observation.parameter_kind
-                and parameter.has_default is observation.has_default
-                for callable_fact in source.canonical_callables()
+            expected_parameters = tuple(
+                parameter
+                for callable_fact in expected_source.canonical_callables()
+                if callable_fact.qualified_name == observation.owner.value
                 for position, parameter in enumerate(callable_fact.parameters)
+                if position == observation.position.root
             )
-        elif observation.kind == "parameter_kinds":
-            observed = {
-                parameter.kind
+            actual_parameters = tuple(
+                parameter
                 for callable_fact in source.canonical_callables()
-                for parameter in callable_fact.parameters
-            }
-            present = observed == set(observation.present)
+                if callable_fact.qualified_name == observation.owner.value
+                for position, parameter in enumerate(callable_fact.parameters)
+                if position == observation.position.root
+            )
+            if state is ClaimState.ABSENT:
+                return ClaimResult(satisfied=not actual_parameters)
+            present = bool(expected_parameters) and actual_parameters == expected_parameters
+        elif observation.kind == "parameter_list":
+            expected_callables = tuple(
+                callable_fact
+                for callable_fact in expected_source.canonical_callables()
+                if callable_fact.qualified_name == observation.owner.value
+            )
+            actual_callables = tuple(
+                callable_fact
+                for callable_fact in source.canonical_callables()
+                if callable_fact.qualified_name == observation.owner.value
+            )
+            present = (
+                len(expected_callables) == 1
+                and len(actual_callables) == 1
+                and actual_callables[0].parameters == expected_callables[0].parameters
+            )
         elif observation.kind == "type_reference":
-            present = observation.type in self.type_slots(
-                source, observation.owner.value, observation.role, observation.position.root
+            expected_slots = self.type_slots(
+                expected_source, observation.owner.value, observation.role, observation.position.root
+            )
+            present = (
+                bool(expected_slots)
+                and all(slot.kind is SourceTypeKind.REFERENCE for slot in expected_slots)
+                and self.type_slots(source, observation.owner.value, observation.role, observation.position.root)
+                == expected_slots
             )
         elif observation.kind == "type_slot":
             slots = self.type_slots(source, observation.owner.value, observation.role, observation.position.root)
@@ -145,14 +213,20 @@ class FixtureClaimEvaluator:
                 for declaration in owners
                 for attribute in declaration.properties
             )
+            expected_owners = tuple(
+                declaration
+                for declaration in expected_source.declarations
+                if declaration.declaration_id.qualified_name == observation.owner.value
+            )
             expected = tuple(
                 (
-                    attribute.name.value,
-                    tuple((value.kind, value.expression, value.reference) for value in attribute.values),
+                    attribute.name,
+                    tuple((value.kind, value.expression, value.reference) for value in attribute.assigned_values),
                 )
-                for attribute in observation.attributes
+                for declaration in expected_owners
+                for attribute in declaration.properties
             )
-            present = len(owners) == 1 and observed == expected
+            present = len(owners) == len(expected_owners) == 1 and observed == expected
         elif observation.kind == "declaration_relation":
             present = any(
                 relation.source_declaration_id.qualified_name == observation.source.value

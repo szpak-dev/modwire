@@ -3,7 +3,14 @@ import shutil
 import pytest
 from pydantic import ValidationError
 
-from modwire.application import CodeMap, CodeValidationError, FactCapability, FileId, RelationshipFamily
+from modwire.application import (
+    CodeMap,
+    CodeValidationError,
+    FactCapability,
+    FileId,
+    RelationshipFamily,
+    SourceAssignedValueKind,
+)
 
 from ..support.code_map_fixture.fixture_contract import PolyglotFixtureContract
 from ..support.code_map_fixture.fixture_contract_error import FixtureContractError
@@ -21,12 +28,6 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         shutil.copytree(
             self.repository / "language-capabilities",
             self.workspace / "language-capabilities",
-        )
-        reference = self.workspace / "tests/fixtures/code_map/reference_shop/expected_code_map.json"
-        reference.parent.mkdir(parents=True)
-        shutil.copyfile(
-            self.repository / "tests/fixtures/code_map/reference_shop/expected_code_map.json",
-            reference,
         )
 
     def test_document_inventory_attacks_are_rejected_before_the_complete_graph_recovers(self) -> None:
@@ -144,22 +145,57 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
 
     def test_assigned_value_expectations_reject_the_same_invalid_state_as_public_facts(self) -> None:
         self.copy_contract_documents()
-        for language, bundle in self.contract.matrix.languages.items():
-            original = bundle.contract.model_dump_json()
-            unassigned = '"kind":"unassigned","expression":"","reference":""'
-            if unassigned not in original:
-                continue
-            path = self.workspace / self.contract.matrix.index.languages[language].contract.value
-            path.write_text(
-                original.replace(
-                    unassigned, '"kind":"unassigned","expression":"fabricated","reference":"fabricated"', 1
-                ),
-                encoding="utf-8",
-            )
-            with pytest.raises(CodeValidationError):
+        attacks = 0
+        for scenario, sources in self.contract.matrix.catalog.source_documents.items():
+            for source_id, source_path in sources.items():
+                path = self.workspace / source_path.value
+                original = path.read_text(encoding="utf-8")
+                source = self.contract.matrix.catalog.expected[scenario].extraction.files[source_id]
+                sites = tuple(
+                    (declaration_index, property_index, value_index)
+                    for declaration_index, declaration in enumerate(source.declarations)
+                    for property_index, property_ in enumerate(declaration.properties)
+                    for value_index, value in enumerate(property_.assigned_values)
+                    if value.kind is SourceAssignedValueKind.UNASSIGNED
+                )
+                if not sites:
+                    continue
+                declaration_index, property_index, value_index = sites[0]
+                declaration = source.declarations[declaration_index]
+                property_ = declaration.properties[property_index]
+                attacked_property = property_.model_copy(
+                    update={
+                        "assigned_values": tuple(
+                            value.model_copy(update={"expression": "fabricated", "reference": "fabricated"})
+                            if index == value_index
+                            else value
+                            for index, value in enumerate(property_.assigned_values)
+                        )
+                    }
+                )
+                attacked_declaration = declaration.model_copy(
+                    update={
+                        "properties": tuple(
+                            attacked_property if index == property_index else value
+                            for index, value in enumerate(declaration.properties)
+                        )
+                    }
+                )
+                attacked = source.model_copy(
+                    update={
+                        "declarations": tuple(
+                            attacked_declaration if index == declaration_index else value
+                            for index, value in enumerate(source.declarations)
+                        )
+                    }
+                )
+                path.write_text(attacked.model_dump_json(), encoding="utf-8")
+                with pytest.raises(CodeValidationError):
+                    PolyglotFixtureContract(self.workspace)
+                path.write_text(original, encoding="utf-8")
                 PolyglotFixtureContract(self.workspace)
-            path.write_text(original, encoding="utf-8")
-            PolyglotFixtureContract(self.workspace)
+                attacks += 1
+        assert attacks > 0
 
     def test_each_nonempty_owned_source_has_evidence_that_rejects_erased_facts(self) -> None:
         extracted: dict[tuple[str, str], CodeMap] = {}
@@ -240,8 +276,22 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
     def test_every_capability_and_relationship_claim_matches_public_extraction(self) -> None:
         extracted: dict[tuple[str, str], CodeMap] = {}
 
+        for language, binding in self.contract.scenario_bindings():
+            key = (language.value, binding.fixture.root.value.as_posix())
+            extracted[key] = self.application.generate_map(
+                language.value,
+                str(self.contract.binding_root(binding)),
+                self.contract.binding_policy(binding),
+            )
+            assert all(
+                result.satisfied for result in self.contract.evaluate_binding(language, extracted[key], binding)
+            ), f"{language.value}:{binding.scenario.value}"
+
         for language, scenario in self.contract.scenario_cases():
-            key = (language.value, scenario.fixture.value)
+            key = (
+                language.value,
+                self.contract.fixture_root(language, scenario.fixture).relative_to(self.repository).as_posix(),
+            )
             if key not in extracted:
                 extracted[key] = self.application.generate_map(
                     language.value,

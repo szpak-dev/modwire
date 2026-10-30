@@ -1,0 +1,90 @@
+{
+  "file_id": "java/src/Params.java",
+  "import_identity": "src/Params",
+  "imports": [],
+  "declarations": [
+    {
+      "name": "Params",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 5,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "java/src/Params.java",
+        "family": "class",
+        "qualified_name": "Params",
+        "ordinal": 10001
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "exampleParameters",
+          "visibility": "internal",
+          "visibility_intent": "internal",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/Params.java",
+            "family": "method",
+            "qualified_name": "Params.exampleParameters",
+            "ordinal": 20005
+          },
+          "source_id": "java/src/Params.java",
+          "qualified_name": "Params.exampleParameters",
+          "kind": "instance_method",
+          "line_start": 2,
+          "line_end": 4,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "String",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            },
+            {
+              "name": "exampleRest",
+              "type": {
+                "name": "String",
+                "kind": "reference"
+              },
+              "kind": "variadic_positional"
+            }
+          ],
+          "return_type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/Params.java",
+            "family": "class",
+            "qualified_name": "Params",
+            "ordinal": 10001
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "java/src/Params.java",
+        "family": "method",
+        "qualified_name": "Params.exampleParameters",
+        "ordinal": 20005
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "java/src/Params.java",
+      "line": 3,
+      "expression": "String.join",
+      "resolution": "unresolved",
+      "target_name": "join"
+    }
+  ],
+  "line_count": 6,
+  "code_line_count": 5,
+  "public_symbol_count": 0
+}

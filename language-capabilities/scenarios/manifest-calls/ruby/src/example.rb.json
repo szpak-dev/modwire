@@ -1,0 +1,141 @@
+{
+  "file_id": "ruby/src/example.rb",
+  "import_identity": "src/example",
+  "imports": [],
+  "declarations": [
+    {
+      "name": "ExampleCalls",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 10,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleCalls",
+        "ordinal": 1
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "example_target",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "method",
+            "qualified_name": "ExampleCalls.example_target",
+            "ordinal": 22
+          },
+          "source_id": "ruby/src/example.rb",
+          "qualified_name": "ExampleCalls.example_target",
+          "kind": "instance_method",
+          "line_start": 2,
+          "line_end": 4,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "class",
+            "qualified_name": "ExampleCalls",
+            "ordinal": 1
+          }
+        },
+        {
+          "name": "example_source",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 4,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "method",
+            "qualified_name": "ExampleCalls.example_source",
+            "ordinal": 83
+          },
+          "source_id": "ruby/src/example.rb",
+          "qualified_name": "ExampleCalls.example_source",
+          "kind": "instance_method",
+          "line_start": 6,
+          "line_end": 9,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "class",
+            "qualified_name": "ExampleCalls",
+            "ordinal": 1
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "ruby/src/example.rb",
+        "family": "method",
+        "qualified_name": "ExampleCalls.example_source",
+        "ordinal": 83
+      },
+      "ordinal": 1,
+      "target_callable_id": {
+        "source_id": "ruby/src/example.rb",
+        "family": "method",
+        "qualified_name": "ExampleCalls.example_target",
+        "ordinal": 22
+      },
+      "source_id": "ruby/src/example.rb",
+      "line": 7,
+      "expression": "example_target(example_value)",
+      "resolution": "resolved",
+      "target_name": "example_target"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "ruby/src/example.rb",
+        "family": "method",
+        "qualified_name": "ExampleCalls.example_source",
+        "ordinal": 83
+      },
+      "ordinal": 2,
+      "target_callable_id": {
+        "source_id": "ruby/src/example.rb",
+        "family": "method",
+        "qualified_name": "ExampleCalls.example_target",
+        "ordinal": 22
+      },
+      "source_id": "ruby/src/example.rb",
+      "line": 8,
+      "expression": "example_target(example_value)",
+      "resolution": "resolved",
+      "target_name": "example_target"
+    }
+  ],
+  "line_count": 11,
+  "code_line_count": 9,
+  "public_symbol_count": 1
+}

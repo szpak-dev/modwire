@@ -1,0 +1,133 @@
+{
+  "file_id": "java/src/Example.java",
+  "import_identity": "src/Example",
+  "imports": [],
+  "declarations": [
+    {
+      "name": "ExampleGenerated",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "java/src/Example.java",
+        "family": "interface",
+        "qualified_name": "ExampleGenerated",
+        "ordinal": 10001
+      },
+      "kind": "annotation",
+      "abstract_methods": [
+        {
+          "name": "value",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 1,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/Example.java",
+            "family": "method",
+            "qualified_name": "ExampleGenerated.value",
+            "ordinal": 20005
+          },
+          "source_id": "java/src/Example.java",
+          "qualified_name": "ExampleGenerated.value",
+          "kind": "instance_method",
+          "line_start": 2,
+          "line_end": 2,
+          "return_type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/Example.java",
+            "family": "interface",
+            "qualified_name": "ExampleGenerated",
+            "ordinal": 10001
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "java/src/Example.java",
+            "family": "property",
+            "qualified_name": "ExampleGenerated.value",
+            "ordinal": 20005
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/Example.java",
+            "family": "interface",
+            "qualified_name": "ExampleGenerated",
+            "ordinal": 10001
+          },
+          "name": "value",
+          "is_optional": false,
+          "type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Example",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 4,
+      "declaration_annotations": [
+        "@ExampleGenerated(\"exampleRuntimeMember\")"
+      ],
+      "declaration_id": {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "Example",
+        "ordinal": 50001
+      },
+      "kind": "class",
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "java/src/Example.java",
+            "family": "property",
+            "qualified_name": "Example.exampleDeclared",
+            "ordinal": 70012
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/Example.java",
+            "family": "class",
+            "qualified_name": "Example",
+            "ordinal": 50001
+          },
+          "name": "exampleDeclared",
+          "is_optional": false,
+          "type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "visibility": "internal",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "line_count": 9,
+  "code_line_count": 7,
+  "public_symbol_count": 0
+}

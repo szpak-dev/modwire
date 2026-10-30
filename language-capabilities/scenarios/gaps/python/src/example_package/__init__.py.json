@@ -1,0 +1,215 @@
+{
+  "file_id": "python/src/example_package/__init__.py",
+  "import_identity": "src/example_package/__init__",
+  "imports": [
+    {
+      "path": "typing",
+      "is_relative": false,
+      "normalized_path": "typing",
+      "imported_name": "final",
+      "is_aliased": false,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 2,
+      "join_key": "typing",
+      "uses_joined_import": true,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "final",
+          "alias": "",
+          "is_aliased": false,
+          "is_default": false,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "name": "ExampleBase",
+      "local_name": "ExampleBase",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleRuntime",
+      "local_name": "ExampleRuntime",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "example_annotation",
+      "local_name": "example_annotation",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleBase",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 2,
+      "declaration_annotations": [
+        "example_annotation",
+        "final"
+      ],
+      "declaration_id": {
+        "source_id": "python/src/example_package/__init__.py",
+        "family": "class",
+        "qualified_name": "ExampleBase",
+        "ordinal": 55834574849
+      },
+      "kind": "class",
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "python/src/example_package/__init__.py",
+            "family": "property",
+            "qualified_name": "ExampleBase.example_value",
+            "ordinal": 60129542149
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example_package/__init__.py",
+            "family": "class",
+            "qualified_name": "ExampleBase",
+            "ordinal": 55834574849
+          },
+          "name": "example_value",
+          "is_optional": false,
+          "type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "literal",
+              "expression": "'example_value'",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExampleRuntime",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 2,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example_package/__init__.py",
+        "family": "class",
+        "qualified_name": "ExampleRuntime",
+        "ordinal": 85899345921
+      },
+      "kind": "class"
+    }
+  ],
+  "functions": [
+    {
+      "name": "example_annotation",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example_package/__init__.py",
+        "family": "function",
+        "qualified_name": "example_annotation",
+        "ordinal": 25769803777
+      },
+      "source_id": "python/src/example_package/__init__.py",
+      "qualified_name": "example_annotation",
+      "line_start": 6,
+      "line_end": 8,
+      "parameters": [
+        {
+          "name": "example_declaration",
+          "type": {
+            "name": "type",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "name": "type",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "values": [
+    {
+      "declaration_id": {
+        "source_id": "python/src/example_package/__init__.py",
+        "family": "value",
+        "qualified_name": "EXAMPLE_PACKAGE_VALUE",
+        "ordinal": 12884901889
+      },
+      "name": "EXAMPLE_PACKAGE_VALUE",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_kind": "constant",
+      "value_kind": "value_literal",
+      "scope": "module"
+    },
+    {
+      "declaration_id": {
+        "source_id": "python/src/example_package/__init__.py",
+        "family": "value",
+        "qualified_name": "ExampleAlias",
+        "ordinal": 73014444033
+      },
+      "name": "ExampleAlias",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_kind": "assignment",
+      "value_kind": "value_unknown",
+      "scope": "module"
+    }
+  ],
+  "declaration_relations": [
+    {
+      "source_declaration_id": {
+        "source_id": "python/src/example_package/__init__.py",
+        "family": "class",
+        "qualified_name": "ExampleRuntime",
+        "ordinal": 85899345921
+      },
+      "kind": "extends",
+      "target_reference": "ExampleAlias"
+    }
+  ],
+  "line_count": 24,
+  "code_line_count": 13,
+  "public_symbol_count": 3
+}

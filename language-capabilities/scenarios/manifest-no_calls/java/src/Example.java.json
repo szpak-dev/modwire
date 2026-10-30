@@ -1,0 +1,65 @@
+{
+  "file_id": "java/src/Example.java",
+  "import_identity": "src/Example",
+  "imports": [],
+  "declarations": [
+    {
+      "name": "Example",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 5,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "Example",
+        "ordinal": 10001
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "exampleWithoutCalls",
+          "visibility": "internal",
+          "visibility_intent": "internal",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/Example.java",
+            "family": "method",
+            "qualified_name": "Example.exampleWithoutCalls",
+            "ordinal": 20005
+          },
+          "source_id": "java/src/Example.java",
+          "qualified_name": "Example.exampleWithoutCalls",
+          "kind": "static_method",
+          "line_start": 2,
+          "line_end": 4,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "String",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/Example.java",
+            "family": "class",
+            "qualified_name": "Example",
+            "ordinal": 10001
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "line_count": 6,
+  "code_line_count": 5,
+  "public_symbol_count": 0
+}

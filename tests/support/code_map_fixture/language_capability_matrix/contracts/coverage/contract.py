@@ -89,7 +89,7 @@ class LanguageContract(FixtureModel):
             FactCapability.SYMBOLS: {"declaration"},
             FactCapability.CALLABLES: {"callable"},
             FactCapability.CALLS: {"call"},
-            FactCapability.PARAMETERS: {"parameter", "parameter_kinds"},
+            FactCapability.PARAMETERS: {"parameter", "parameter_list"},
             FactCapability.TYPE_REFERENCES: {"type_reference", "type_slot"},
             FactCapability.ANNOTATIONS: {"annotation"},
             FactCapability.MODIFIERS: {"modifier", "callable", "attribute"},
@@ -150,12 +150,7 @@ class LanguageContract(FixtureModel):
                         )
 
     def validate_fixture_ownership(self) -> None:
-        fixtures = {
-            FixtureRole.EXTENSIONS: self.fixtures.extensions,
-            FixtureRole.GAPS: self.fixtures.gaps,
-            FixtureRole.TYPES: self.fixtures.types,
-            FixtureRole.PARAMETERS: self.fixtures.parameters,
-        }
+        fixtures = self.fixtures.source_sets()
         suffixes = {suffix.value for suffix in self.fixtures.source_suffixes}
         observed_suffixes = {source.value.suffix for fixture in fixtures.values() for source in fixture.sources} | {
             scenario.source.value.suffix for scenario in self.manifests.scenarios

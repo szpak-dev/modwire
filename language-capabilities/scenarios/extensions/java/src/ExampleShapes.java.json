@@ -1,0 +1,555 @@
+{
+  "file_id": "java/src/ExampleShapes.java",
+  "import_identity": "src/ExampleShapes",
+  "imports": [
+    {
+      "path": "java.time.Instant",
+      "is_relative": false,
+      "normalized_path": "java/time/Instant",
+      "imported_name": "Instant",
+      "is_aliased": false,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 1,
+      "join_key": "java/time/Instant",
+      "uses_joined_import": false,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "Instant",
+          "alias": "Instant",
+          "is_aliased": false,
+          "is_default": false,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    }
+  ],
+  "namespaces": [
+    {
+      "kind": "package",
+      "qualified_name": "example.shapes"
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleContract",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "java/src/ExampleShapes.java",
+        "family": "interface",
+        "qualified_name": "ExampleContract",
+        "ordinal": 50001
+      },
+      "kind": "interface",
+      "methods": [
+        {
+          "name": "exampleRequired",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 1,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "method",
+            "qualified_name": "ExampleContract.exampleRequired",
+            "ordinal": 60005
+          },
+          "source_id": "java/src/ExampleShapes.java",
+          "qualified_name": "ExampleContract.exampleRequired",
+          "kind": "instance_method",
+          "line_start": 6,
+          "line_end": 6,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "String",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "interface",
+            "qualified_name": "ExampleContract",
+            "ordinal": 50001
+          }
+        }
+      ]
+    },
+    {
+      "name": "ExampleAbstract",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 7,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "java/src/ExampleShapes.java",
+        "family": "abstract_class",
+        "qualified_name": "ExampleAbstract",
+        "ordinal": 90001
+      },
+      "kind": "abstract_class",
+      "methods": [
+        {
+          "name": "exampleConcrete",
+          "visibility": "internal",
+          "visibility_intent": "internal",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "method",
+            "qualified_name": "ExampleAbstract.exampleConcrete",
+            "ordinal": 120005
+          },
+          "source_id": "java/src/ExampleShapes.java",
+          "qualified_name": "ExampleAbstract.exampleConcrete",
+          "kind": "instance_method",
+          "line_start": 12,
+          "line_end": 14,
+          "return_type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "abstract_class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 90001
+          }
+        }
+      ],
+      "abstract_methods": [
+        {
+          "name": "exampleRequired",
+          "visibility": "internal",
+          "visibility_intent": "internal",
+          "line_count": 1,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "method",
+            "qualified_name": "ExampleAbstract.exampleRequired",
+            "ordinal": 100005
+          },
+          "source_id": "java/src/ExampleShapes.java",
+          "qualified_name": "ExampleAbstract.exampleRequired",
+          "kind": "instance_method",
+          "line_start": 10,
+          "line_end": 10,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "String",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "abstract_class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 90001
+          }
+        }
+      ]
+    },
+    {
+      "name": "ExampleImplementation",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 13,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "java/src/ExampleShapes.java",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 170001
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "exampleRequired",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 4,
+          "declaration_annotations": [
+            "@Override"
+          ],
+          "declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.exampleRequired",
+            "ordinal": 210005
+          },
+          "source_id": "java/src/ExampleShapes.java",
+          "qualified_name": "ExampleImplementation.exampleRequired",
+          "kind": "instance_method",
+          "line_start": 21,
+          "line_end": 24,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "String",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "decorators": [
+            "@Override"
+          ],
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 170001
+          }
+        },
+        {
+          "name": "exampleTimestamp",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.exampleTimestamp",
+            "ordinal": 260005
+          },
+          "source_id": "java/src/ExampleShapes.java",
+          "qualified_name": "ExampleImplementation.exampleTimestamp",
+          "kind": "instance_method",
+          "line_start": 26,
+          "line_end": 28,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "String",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 170001
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "property",
+            "qualified_name": "ExampleImplementation.EXAMPLE_CONSTANT",
+            "ordinal": 180025
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 170001
+          },
+          "name": "EXAMPLE_CONSTANT",
+          "is_optional": false,
+          "type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "visibility": "internal",
+          "member_kind": "static",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        },
+        {
+          "declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "property",
+            "qualified_name": "ExampleImplementation.exampleOptional",
+            "ordinal": 190012
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 170001
+          },
+          "name": "exampleOptional",
+          "is_optional": false,
+          "type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "visibility": "internal",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExampleRecord",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 1,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "java/src/ExampleShapes.java",
+        "family": "class",
+        "qualified_name": "ExampleRecord",
+        "ordinal": 310001
+      },
+      "kind": "record",
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "property",
+            "qualified_name": "ExampleRecord.exampleName",
+            "ordinal": 310022
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "class",
+            "qualified_name": "ExampleRecord",
+            "ordinal": 310001
+          },
+          "name": "exampleName",
+          "is_optional": false,
+          "type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExampleStatus",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "java/src/ExampleShapes.java",
+        "family": "class",
+        "qualified_name": "ExampleStatus",
+        "ordinal": 330001
+      },
+      "kind": "enum",
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "property",
+            "qualified_name": "ExampleStatus.EXAMPLE_READY",
+            "ordinal": 340005
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "class",
+            "qualified_name": "ExampleStatus",
+            "ordinal": 330001
+          },
+          "name": "EXAMPLE_READY",
+          "is_optional": false,
+          "type": {
+            "name": "ExampleStatus",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "static",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExampleAnnotation",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "java/src/ExampleShapes.java",
+        "family": "interface",
+        "qualified_name": "ExampleAnnotation",
+        "ordinal": 370001
+      },
+      "kind": "annotation",
+      "abstract_methods": [
+        {
+          "name": "exampleValue",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 1,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "method",
+            "qualified_name": "ExampleAnnotation.exampleValue",
+            "ordinal": 380005
+          },
+          "source_id": "java/src/ExampleShapes.java",
+          "qualified_name": "ExampleAnnotation.exampleValue",
+          "kind": "instance_method",
+          "line_start": 38,
+          "line_end": 38,
+          "return_type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "interface",
+            "qualified_name": "ExampleAnnotation",
+            "ordinal": 370001
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "property",
+            "qualified_name": "ExampleAnnotation.exampleValue",
+            "ordinal": 380005
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/ExampleShapes.java",
+            "family": "interface",
+            "qualified_name": "ExampleAnnotation",
+            "ordinal": 370001
+          },
+          "name": "exampleValue",
+          "is_optional": false,
+          "type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "java/src/ExampleShapes.java",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.exampleTimestamp",
+        "ordinal": 260005
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "java/src/ExampleShapes.java",
+      "line": 27,
+      "expression": "Instant.now",
+      "resolution": "unresolved",
+      "target_name": "now"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "java/src/ExampleShapes.java",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.exampleTimestamp",
+        "ordinal": 260005
+      },
+      "ordinal": 2,
+      "target_callable_id": null,
+      "source_id": "java/src/ExampleShapes.java",
+      "line": 27,
+      "expression": "exampleRequired",
+      "resolution": "unresolved",
+      "target_name": "exampleRequired"
+    }
+  ],
+  "declaration_relations": [
+    {
+      "source_declaration_id": {
+        "source_id": "java/src/ExampleShapes.java",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 170001
+      },
+      "kind": "extends",
+      "target_reference": "ExampleAbstract"
+    },
+    {
+      "source_declaration_id": {
+        "source_id": "java/src/ExampleShapes.java",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 170001
+      },
+      "kind": "implements",
+      "target_reference": "ExampleContract"
+    }
+  ],
+  "line_count": 40,
+  "code_line_count": 29,
+  "public_symbol_count": 0
+}

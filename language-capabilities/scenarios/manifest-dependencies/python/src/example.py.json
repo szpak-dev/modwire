@@ -1,0 +1,88 @@
+{
+  "file_id": "python/src/example.py",
+  "import_identity": "src/example",
+  "imports": [
+    {
+      "path": "json",
+      "is_relative": false,
+      "normalized_path": "json",
+      "imported_name": "",
+      "is_aliased": false,
+      "crossing_type": "module",
+      "file_barrier_crossed": true,
+      "statement_id": 2,
+      "join_key": "json",
+      "uses_joined_import": false,
+      "resolution": "external"
+    }
+  ],
+  "exports": [
+    {
+      "name": "example_json",
+      "local_name": "example_json",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "functions": [
+    {
+      "name": "example_json",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 2,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example.py",
+        "family": "function",
+        "qualified_name": "example_json",
+        "ordinal": 17179869185
+      },
+      "source_id": "python/src/example.py",
+      "qualified_name": "example_json",
+      "line_start": 4,
+      "line_end": 5,
+      "parameters": [
+        {
+          "name": "example_value",
+          "type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "name": "str",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "python/src/example.py",
+        "family": "function",
+        "qualified_name": "example_json",
+        "ordinal": 17179869185
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "python/src/example.py",
+      "line": 5,
+      "expression": "json.dumps",
+      "resolution": "unresolved",
+      "target_name": "json.dumps"
+    }
+  ],
+  "line_count": 5,
+  "code_line_count": 3,
+  "public_symbol_count": 1
+}

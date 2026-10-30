@@ -1,0 +1,194 @@
+producers:
+  reference:
+    modwire_version: fixture
+    extractor:
+      id: fixture.extractor
+      version: '1'
+      language: fixture
+      runtime: fixture
+    capabilities:
+    - capability: sources
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: symbols
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: callables
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: calls
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: parameters
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: type_references
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: annotations
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: modifiers
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: attributes
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: assigned_values
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: inheritance
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: namespaces
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: declaration_kinds
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: composition
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: dependencies
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: spans
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    relationship_capabilities:
+    - family: declaration
+      evidence_requirements:
+      - symbols
+      - inheritance
+      - declaration_kinds
+      - composition
+      semantics: unsupported
+      semantics_explanation: The common fixture projection does not publish relationship semantics claims.
+      inventory: unsupported
+      inventory_explanation: The common fixture projection does not publish relationship inventory claims.
+    - family: member
+      evidence_requirements:
+      - symbols
+      - callables
+      - calls
+      - parameters
+      - annotations
+      - modifiers
+      - attributes
+      - assigned_values
+      - declaration_kinds
+      semantics: unsupported
+      semantics_explanation: The common fixture projection does not publish relationship semantics claims.
+      inventory: unsupported
+      inventory_explanation: The common fixture projection does not publish relationship inventory claims.
+    - family: dependency
+      evidence_requirements:
+      - sources
+      - dependencies
+      semantics: unsupported
+      semantics_explanation: The common fixture projection does not publish relationship semantics claims.
+      inventory: unsupported
+      inventory_explanation: The common fixture projection does not publish relationship inventory claims.
+  observations:
+    modwire_version: fixture
+    extractor:
+      id: fixture.extractor
+      version: '1'
+      language: fixture
+      runtime: fixture
+    capabilities:
+    - capability: sources
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: symbols
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: callables
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: calls
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: parameters
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: type_references
+      status: partial
+      explanation: The shared scenario oracle includes observed and explicitly unsupported type slots.
+    - capability: annotations
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: modifiers
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: attributes
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: assigned_values
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: inheritance
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: namespaces
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: declaration_kinds
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: composition
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: dependencies
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    - capability: spans
+      status: unsupported
+      explanation: The common fixture projection does not publish adapter capability claims.
+    relationship_capabilities:
+    - family: declaration
+      evidence_requirements:
+      - symbols
+      - inheritance
+      - declaration_kinds
+      - composition
+      semantics: unsupported
+      semantics_explanation: The common fixture projection does not publish relationship semantics claims.
+      inventory: unsupported
+      inventory_explanation: The common fixture projection does not publish relationship inventory claims.
+    - family: member
+      evidence_requirements:
+      - symbols
+      - callables
+      - calls
+      - parameters
+      - annotations
+      - modifiers
+      - attributes
+      - assigned_values
+      - declaration_kinds
+      semantics: unsupported
+      semantics_explanation: The common fixture projection does not publish relationship semantics claims.
+      inventory: unsupported
+      inventory_explanation: The common fixture projection does not publish relationship inventory claims.
+    - family: dependency
+      evidence_requirements:
+      - sources
+      - dependencies
+      semantics: unsupported
+      semantics_explanation: The common fixture projection does not publish relationship semantics claims.
+      inventory: unsupported
+      inventory_explanation: The common fixture projection does not publish relationship inventory claims.
+scenarios:
+  reference-shop: language-capabilities/scenarios/reference-shop/scenario.yaml
+  extensions: language-capabilities/scenarios/extensions/scenario.yaml
+  gaps: language-capabilities/scenarios/gaps/scenario.yaml
+  types: language-capabilities/scenarios/types/scenario.yaml
+  parameters: language-capabilities/scenarios/parameters/scenario.yaml
+  manifest-canonical: language-capabilities/scenarios/manifest-canonical/scenario.yaml
+  manifest-calls: language-capabilities/scenarios/manifest-calls/scenario.yaml
+  manifest-no_calls: language-capabilities/scenarios/manifest-no_calls/scenario.yaml
+  manifest-negative_members: language-capabilities/scenarios/manifest-negative_members/scenario.yaml
+  manifest-dependencies: language-capabilities/scenarios/manifest-dependencies/scenario.yaml
+  manifest-source_edit_before: language-capabilities/scenarios/manifest-source_edit_before/scenario.yaml
+  manifest-source_edit_after: language-capabilities/scenarios/manifest-source_edit_after/scenario.yaml
