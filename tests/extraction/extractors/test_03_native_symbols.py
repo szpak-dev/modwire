@@ -2,7 +2,7 @@ import re
 
 from modwire.application import CapabilityStatus, FactCapability
 
-from ...support.code_map_fixture.language_capability_matrix.reader import LanguageCapabilityMatrixReader
+from ...support.code_map_fixture.fixture_contract import PolyglotFixtureContract
 from ..base_test import ExtractionTestCase
 
 CALL_OCCURRENCE_FIXTURES = ExtractionTestCase.repository / "tests/fixtures/call_occurrences"
@@ -10,9 +10,7 @@ LANGUAGE_EXTENSIONS = ExtractionTestCase.repository / "tests/fixtures/code_map/l
 
 
 class TestNativeSymbols(ExtractionTestCase):
-    capability_matrix = LanguageCapabilityMatrixReader().read(
-        ExtractionTestCase.repository / "language-capabilities.yaml"
-    )
+    contract = PolyglotFixtureContract(ExtractionTestCase.repository)
 
     def normalized_name(self, value: str) -> str:
         return re.sub("[^a-z0-9]", "", value.casefold())
@@ -96,7 +94,7 @@ class TestNativeSymbols(ExtractionTestCase):
             )
             if not members:
                 assert (
-                    self.capability_matrix.languages[language].capabilities[FactCapability.ATTRIBUTES].status
+                    self.contract.capability_expectation(language, FactCapability.ATTRIBUTES).status
                     is CapabilityStatus.UNSUPPORTED
                 ), language
                 continue

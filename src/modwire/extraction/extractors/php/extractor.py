@@ -106,7 +106,9 @@ class PhpExtractor(SourceExtractor):
                 CapabilityCoverage(
                     capability=FactCapability.DECLARATION_KINDS,
                     status=CapabilityStatus.SUPPORTED,
-                    explanation="Classes, abstract classes, interfaces, and traits publish exact shared declaration kinds.",
+                    explanation=(
+                        "Classes, abstract classes, interfaces, and traits publish exact shared declaration kinds."
+                    ),
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.COMPOSITION,

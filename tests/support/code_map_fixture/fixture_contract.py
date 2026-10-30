@@ -1,17 +1,22 @@
 from pathlib import Path
 
-from modwire.application import FactCapability, RelationshipFamily
+from modwire.application import CodeMap, FactCapability, ImplementationManifest, RelationshipFamily
 
 from .claim_evaluator import FixtureClaimEvaluator
+from .claim_result import ClaimResult
 from .fixture_contract_error import FixtureContractError
-from .language_capability_matrix.contracts.coverage import CapabilityExpectation, RelationshipExpectation
-from .language_capability_matrix.contracts.fixtures import FixtureSourceSet
-from .language_capability_matrix.contracts.manifests import ManifestScenario, ManifestTransition
-from .language_capability_matrix.contracts.scenarios import CapabilityScenario
-from .language_capability_matrix.model import LanguageCapabilityBundle
-from .language_capability_matrix.projections.model import ReferenceProjection
+from .language_capability_matrix.bundle import LanguageCapabilityBundle
+from .language_capability_matrix.contracts.coverage.capability import CapabilityExpectation
+from .language_capability_matrix.contracts.coverage.relationship import RelationshipExpectation
+from .language_capability_matrix.contracts.fixtures.source_set import FixtureSourceSet
+from .language_capability_matrix.contracts.manifests.scenario import ManifestScenario
+from .language_capability_matrix.contracts.manifests.transition import ManifestTransition
+from .language_capability_matrix.contracts.scenarios.capability import CapabilityScenario
+from .language_capability_matrix.projections.reference_projection import ReferenceProjection
 from .language_capability_matrix.reader import LanguageCapabilityMatrixReader
-from .language_capability_matrix.values import FixtureRole, LanguageId, SourceSuffix
+from .language_capability_matrix.values.enums.fixture_role import FixtureRole
+from .language_capability_matrix.values.names.language_id import LanguageId
+from .language_capability_matrix.values.names.source_suffix import SourceSuffix
 from .projector import FixtureCodeMapProjector
 
 
@@ -26,6 +31,13 @@ class PolyglotFixtureContract:
         self,
     ) -> tuple[tuple[LanguageId, FactCapability, CapabilityExpectation], ...]:
         return self.matrix.capability_cases()
+
+    def capability_expectation(self, language: str, capability: FactCapability) -> CapabilityExpectation:
+        return next(
+            expectation
+            for candidate, declared_capability, expectation in self.capability_cases()
+            if candidate.value == language and declared_capability is capability
+        )
 
     def relationship_cases(
         self,
@@ -57,6 +69,23 @@ class PolyglotFixtureContract:
 
     def projection_cases(self) -> tuple[tuple[LanguageId, ReferenceProjection], ...]:
         return tuple((language, bundle.reference_projection) for language, bundle in self.matrix.languages.items())
+
+    def evaluate_scenario(self, code_map: CodeMap, scenario: CapabilityScenario) -> tuple[ClaimResult, ...]:
+        return tuple(self.evaluator.evaluate_code_map(code_map, claim) for claim in scenario.claims)
+
+    def evaluate_manifest(
+        self,
+        manifest: ImplementationManifest,
+        scenario: ManifestScenario,
+    ) -> tuple[ClaimResult, ...]:
+        return tuple(self.evaluator.evaluate_manifest(manifest, claim) for claim in scenario.claims)
+
+    def manifest_root(self, language: LanguageId, scenario: ManifestScenario) -> Path:
+        root = self.matrix.languages[language].contract.manifests.root.value
+        return self.repository / root / scenario.source.value.parents[1]
+
+    def project_reference(self, code_map: CodeMap, projection: ReferenceProjection) -> CodeMap:
+        return self.projector.project(code_map, projection, self.matrix.reference_code_map)
 
     def fixture_root(self, language: LanguageId, role: FixtureRole) -> Path:
         fixtures = self.matrix.languages[language].contract.fixtures

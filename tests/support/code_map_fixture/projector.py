@@ -9,7 +9,7 @@ from modwire.application import (
     SourceFile,
 )
 
-from .language_capability_matrix.projections.model import ReferenceProjection
+from .language_capability_matrix.projections.reference_projection import ReferenceProjection
 
 
 class FixtureCodeMapProjector:

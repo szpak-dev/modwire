@@ -8,14 +8,13 @@ from modwire.application import (
     SourceTypeUnsupported,
 )
 
-from .language_capability_matrix.contracts.manifests import ManifestClaim
-from .language_capability_matrix.contracts.scenarios import CapabilityClaim, RelationshipClaim, ScenarioClaim
-from .language_capability_matrix.values import ClaimState, TypeSlotRole
-from .model import FixtureModel
-
-
-class ClaimResult(FixtureModel):
-    satisfied: bool
+from .claim_result import ClaimResult
+from .language_capability_matrix.contracts.manifests.claim import ManifestClaim
+from .language_capability_matrix.contracts.scenarios.claims.capability import CapabilityClaim
+from .language_capability_matrix.contracts.scenarios.claims.relationship import RelationshipClaim
+from .language_capability_matrix.contracts.scenarios.claims.scenario import ScenarioClaim
+from .language_capability_matrix.values.enums.claim_state import ClaimState
+from .language_capability_matrix.values.enums.type_slot_role import TypeSlotRole
 
 
 class FixtureClaimEvaluator:
@@ -47,7 +46,7 @@ class FixtureClaimEvaluator:
             present = any(
                 callable_fact.qualified_name == observation.owner.value
                 and call.target_name == observation.target.value
-                and call.resolution is observation.resolution
+                and (call.resolution is observation.resolution)
                 for source in code_map.extraction.files.values()
                 for callable_fact in source.canonical_callables()
                 for call in source.calls
@@ -55,14 +54,16 @@ class FixtureClaimEvaluator:
             )
         elif observation.kind == "parameter":
             present = any(
-                callable_fact.qualified_name == observation.owner.value
-                and position == observation.position.root
-                and parameter.name == observation.name.value
-                and parameter.kind is observation.parameter_kind
-                and parameter.has_default is observation.has_default
-                for source in code_map.extraction.files.values()
-                for callable_fact in source.canonical_callables()
-                for position, parameter in enumerate(callable_fact.parameters)
+                (
+                    callable_fact.qualified_name == observation.owner.value
+                    and position == observation.position.root
+                    and (parameter.name == observation.name.value)
+                    and (parameter.kind is observation.parameter_kind)
+                    and (parameter.has_default is observation.has_default)
+                    for source in code_map.extraction.files.values()
+                    for callable_fact in source.canonical_callables()
+                    for position, parameter in enumerate(callable_fact.parameters)
+                )
             )
         elif observation.kind == "parameter_kinds":
             observed = {
@@ -74,18 +75,10 @@ class FixtureClaimEvaluator:
             present = observed == set(observation.present)
         elif observation.kind == "type_reference":
             present = observation.type in self.type_slots(
-                code_map,
-                observation.owner.value,
-                observation.role,
-                observation.position.root,
+                code_map, observation.owner.value, observation.role, observation.position.root
             )
         elif observation.kind == "type_slot":
-            slots = self.type_slots(
-                code_map,
-                observation.owner.value,
-                observation.role,
-                observation.position.root,
-            )
+            slots = self.type_slots(code_map, observation.owner.value, observation.role, observation.position.root)
             if claim.state is ClaimState.UNSUPPORTED:
                 return ClaimResult(satisfied=any(slot.kind is SourceTypeKind.UNSUPPORTED for slot in slots))
             if claim.state is ClaimState.ABSENT:
@@ -93,19 +86,21 @@ class FixtureClaimEvaluator:
             present = bool(slots)
         elif observation.kind == "annotation":
             present = any(
-                owner == observation.owner.value and annotation == observation.expression.value
-                for source in code_map.extraction.files.values()
-                for owner, annotation in (
-                    *(
-                        (declaration.declaration_id.qualified_name, item)
-                        for declaration in source.declarations
-                        for item in declaration.declaration_annotations
-                    ),
-                    *(
-                        (callable_fact.qualified_name, item)
-                        for callable_fact in source.canonical_callables()
-                        for item in callable_fact.decorators
-                    ),
+                (
+                    owner == observation.owner.value and annotation == observation.expression.value
+                    for source in code_map.extraction.files.values()
+                    for owner, annotation in (
+                        *(
+                            (declaration.declaration_id.qualified_name, item)
+                            for declaration in source.declarations
+                            for item in declaration.declaration_annotations
+                        ),
+                        *(
+                            (callable_fact.qualified_name, item)
+                            for callable_fact in source.canonical_callables()
+                            for item in callable_fact.decorators
+                        ),
+                    )
                 )
             )
         elif observation.kind == "modifier":
@@ -140,7 +135,7 @@ class FixtureClaimEvaluator:
             present = any(
                 declaration.declaration_id.qualified_name == observation.owner.value
                 and attribute.name == observation.name.value
-                and attribute.member_kind is observation.member_kind
+                and (attribute.member_kind is observation.member_kind)
                 for source in code_map.extraction.files.values()
                 for declaration in source.declarations
                 for attribute in declaration.properties
@@ -165,15 +160,15 @@ class FixtureClaimEvaluator:
             present = (
                 partitions[SourceAssignedValueKind.UNASSIGNED] == {item.value for item in observation.absent}
                 and partitions[SourceAssignedValueKind.LITERAL] == {item.value for item in observation.literal}
-                and partitions[SourceAssignedValueKind.REFERENCE] == {item.value for item in observation.reference}
-                and partitions[SourceAssignedValueKind.CALL] == {item.value for item in observation.call}
-                and partitions[SourceAssignedValueKind.UNRESOLVED] == {item.value for item in observation.unresolved}
+                and (partitions[SourceAssignedValueKind.REFERENCE] == {item.value for item in observation.reference})
+                and (partitions[SourceAssignedValueKind.CALL] == {item.value for item in observation.call})
+                and (partitions[SourceAssignedValueKind.UNRESOLVED] == {item.value for item in observation.unresolved})
             )
         elif observation.kind == "declaration_relation":
             present = any(
                 relation.source_declaration_id.qualified_name == observation.source.value
                 and relation.kind is observation.relation
-                and relation.target_reference == observation.target.value
+                and (relation.target_reference == observation.target.value)
                 for source in code_map.extraction.files.values()
                 for relation in source.declaration_relations
             )
@@ -189,7 +184,7 @@ class FixtureClaimEvaluator:
                 str(source.file_id) == observation.source.value.as_posix()
                 and (str(dependency.target_file_id) if dependency.target_file_id is not None else str(dependency.path))
                 == observation.target.value
-                and dependency.resolution is observation.resolution
+                and (dependency.resolution is observation.resolution)
                 for source in code_map.extraction.files.values()
                 for dependency in source.imports
             )
@@ -197,7 +192,7 @@ class FixtureClaimEvaluator:
             present = any(
                 callable_fact.qualified_name == observation.owner.value
                 and callable_fact.line_start == observation.start.root
-                and callable_fact.line_end == observation.end.root
+                and (callable_fact.line_end == observation.end.root)
                 for source in code_map.extraction.files.values()
                 for callable_fact in source.canonical_callables()
             )
@@ -205,18 +200,14 @@ class FixtureClaimEvaluator:
             present = any(
                 callable_fact.qualified_name == observation.owner.value
                 and callable_fact.line_start > 0
-                and callable_fact.line_end >= callable_fact.line_start
+                and (callable_fact.line_end >= callable_fact.line_start)
                 for source in code_map.extraction.files.values()
                 for callable_fact in source.canonical_callables()
             )
         return self.result(present, claim.state)
 
     def type_slots(
-        self,
-        code_map: CodeMap,
-        owner: str,
-        role: TypeSlotRole,
-        position: int,
+        self, code_map: CodeMap, owner: str, role: TypeSlotRole, position: int
     ) -> tuple[SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported, ...]:
         if role is TypeSlotRole.RETURN:
             return tuple(
@@ -227,18 +218,22 @@ class FixtureClaimEvaluator:
             )
         if role is TypeSlotRole.PARAMETER:
             return tuple(
-                parameter.type
-                for source in code_map.extraction.files.values()
-                for callable_fact in source.canonical_callables()
-                for parameter_position, parameter in enumerate(callable_fact.parameters)
-                if callable_fact.qualified_name == owner and parameter_position == position
+                (
+                    parameter.type
+                    for source in code_map.extraction.files.values()
+                    for callable_fact in source.canonical_callables()
+                    for parameter_position, parameter in enumerate(callable_fact.parameters)
+                    if callable_fact.qualified_name == owner and parameter_position == position
+                )
             )
         return tuple(
-            attribute.type
-            for source in code_map.extraction.files.values()
-            for declaration in source.declarations
-            for attribute_position, attribute in enumerate(declaration.properties)
-            if declaration.declaration_id.qualified_name == owner and attribute_position == position
+            (
+                attribute.type
+                for source in code_map.extraction.files.values()
+                for declaration in source.declarations
+                for attribute_position, attribute in enumerate(declaration.properties)
+                if declaration.declaration_id.qualified_name == owner and attribute_position == position
+            )
         )
 
     def evaluate_relationship(self, code_map: CodeMap, claim: RelationshipClaim) -> ClaimResult:
@@ -247,7 +242,7 @@ class FixtureClaimEvaluator:
             present = any(
                 relation.source_declaration_id.qualified_name == observation.source.value
                 and relation.kind is observation.relation
-                and relation.target_reference == observation.target.value
+                and (relation.target_reference == observation.target.value)
                 for source in code_map.extraction.files.values()
                 for relation in source.declaration_relations
             )
@@ -255,7 +250,7 @@ class FixtureClaimEvaluator:
             present = any(
                 declaration.declaration_id.qualified_name == observation.owner.value
                 and attribute.name == observation.name.value
-                and attribute.member_kind is observation.member_kind
+                and (attribute.member_kind is observation.member_kind)
                 for source in code_map.extraction.files.values()
                 for declaration in source.declarations
                 for attribute in declaration.properties
@@ -265,7 +260,7 @@ class FixtureClaimEvaluator:
                 str(source.file_id) == observation.source.value.as_posix()
                 and (str(dependency.target_file_id) if dependency.target_file_id is not None else str(dependency.path))
                 == observation.target.value
-                and dependency.resolution is observation.resolution
+                and (dependency.resolution is observation.resolution)
                 for source in code_map.extraction.files.values()
                 for dependency in source.imports
             )
@@ -298,37 +293,37 @@ class FixtureClaimEvaluator:
             present = any(
                 item.callable_id.qualified_name == observation.owner.value
                 and item.name == observation.name.value
-                and item.position == observation.position.root
-                and item.kind is observation.parameter_kind
-                and item.has_default is observation.has_default
+                and (item.position == observation.position.root)
+                and (item.kind is observation.parameter_kind)
+                and (item.has_default is observation.has_default)
                 for item in manifest.parameters
             )
         elif observation.kind == "attribute":
             present = any(
                 item.owner_symbol_id.qualified_name == observation.owner.value
                 and item.name == observation.name.value
-                and item.member_kind is observation.member_kind
+                and (item.member_kind is observation.member_kind)
                 for item in manifest.attributes
             )
         elif observation.kind == "call":
             present = any(
                 item.source_callable_id.qualified_name == observation.owner.value
                 and item.target_name == observation.target.value
-                and item.resolution is observation.resolution
+                and (item.resolution is observation.resolution)
                 for item in manifest.calls
             )
         elif observation.kind == "declaration_relation":
             present = any(
                 item.source_symbol_id.qualified_name == observation.source.value
                 and item.kind is observation.relation
-                and item.target_reference == observation.target.value
+                and (item.target_reference == observation.target.value)
                 for item in manifest.declaration_relations
             )
         else:
             present = any(
                 str(item.source_id) == observation.source.value.as_posix()
                 and item.target == observation.target.value
-                and item.resolution is observation.resolution
+                and (item.resolution is observation.resolution)
                 for item in manifest.dependencies
             )
         return self.result(present, claim.state)

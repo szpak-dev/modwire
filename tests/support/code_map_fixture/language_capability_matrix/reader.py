@@ -6,9 +6,11 @@ from pydantic_yaml import parse_yaml_file_as
 from modwire.application import CodeMap
 
 from ..fixture_contract_error import FixtureContractError
-from .contracts.coverage import LanguageContract
-from .model import LanguageCapabilityBundle, LanguageCapabilityIndex, LanguageCapabilityMatrix
-from .projections.model import ReferenceProjection
+from .bundle import LanguageCapabilityBundle
+from .contracts.coverage.contract import LanguageContract
+from .documents.index import LanguageCapabilityIndex
+from .matrix import LanguageCapabilityMatrix
+from .projections.reference_projection import ReferenceProjection
 
 
 @dataclass(frozen=True)

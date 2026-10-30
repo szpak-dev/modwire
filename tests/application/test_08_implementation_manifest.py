@@ -1,7 +1,6 @@
 import hashlib
 import json
 import shutil
-from pathlib import Path
 
 import pytest
 
@@ -14,24 +13,12 @@ from modwire.application import (
 )
 
 from ..support.code_map import CodeMapFactory
-from ..support.code_map_fixture.language_capability_matrix.contract import LanguageCapabilityRow
-from ..support.code_map_fixture.language_capability_matrix.manifests.coverage import (
-    ManifestEvidenceExpectation,
-    ManifestTransitionExpectation,
-)
-from ..support.code_map_fixture.language_capability_matrix.reader import LanguageCapabilityMatrixReader
-from ..support.code_map_fixture.manifest_evidence import FixtureManifestEvidence
+from ..support.code_map_fixture.fixture_contract import PolyglotFixtureContract
 from .base_test import ApplicationTestCase
 
 
 class TestImplementationManifest(ApplicationTestCase):
-    capability_matrix = LanguageCapabilityMatrixReader().read(
-        ApplicationTestCase.repository / "language-capabilities.yaml"
-    )
-
-    def manifest_scenario_root(self, row: LanguageCapabilityRow, scenario: str) -> Path:
-        source = row.fixtures.manifests.sources[scenario].value
-        return self.repository / row.fixtures.manifests.root.value / source.parents[1]
+    contract = PolyglotFixtureContract(ApplicationTestCase.repository)
 
     def test_public_code_map_rejects_a_non_value_symbol_kind_without_changing_valid_input(self) -> None:
         code_map = (
@@ -100,82 +87,71 @@ class TestImplementationManifest(ApplicationTestCase):
             "Example.Shared.ExampleSecond",
         }
 
-    @pytest.mark.parametrize(
-        ("language", "scenario", "expectation"),
-        capability_matrix.manifest_cases(),
-        ids=(
-            f"{language}-{scenario}"
-            for language, scenario, expectation in capability_matrix.manifest_cases()
-        ),
-    )
-    def test_every_matrix_manifest_scenario_has_exact_public_evidence_and_provenance(
-        self,
-        language: str,
-        scenario: str,
-        expectation: ManifestEvidenceExpectation,
-    ) -> None:
-        row = self.capability_matrix.languages[language]
-        root = self.manifest_scenario_root(row, scenario)
-        code_map = self.application.generate_map(language, root, self.scan_policy())
-        formats = self.application.implementation_manifest_formats()
-        document = self.application.implementation_manifest(code_map, formats[0])
-        manifest = self.application.read_implementation_manifest(document)
-        canonical = json.dumps(
-            manifest.model_dump(mode="json"),
-            ensure_ascii=False,
-            separators=(",", ":"),
-            sort_keys=True,
-        )
+    def test_every_matrix_manifest_scenario_has_exact_public_evidence_and_provenance(self) -> None:
+        for language, scenario in self.contract.manifest_cases():
+            root = self.contract.manifest_root(language, scenario)
+            code_map = self.application.generate_map(language.value, root, self.scan_policy())
+            formats = self.application.implementation_manifest_formats()
+            document = self.application.implementation_manifest(code_map, formats[0])
+            manifest = self.application.read_implementation_manifest(document)
+            canonical = json.dumps(
+                manifest.model_dump(mode="json"),
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            )
 
-        assert tuple(format.id for format in formats) == ("canonical-json",)
-        assert manifest.schema_version == 10
-        assert manifest.producer.extractor.language == language
-        assert manifest.producer.extractor.version
-        assert {item.capability for item in manifest.producer.capabilities} == set(FactCapability)
-        assert {item.family for item in manifest.producer.relationship_capabilities} == set(RelationshipFamily)
-        assert manifest.source_manifest.policy == self.scan_policy()
-        assert tuple(item.relative_path for item in manifest.source_manifest.sources) == (
-            str(row.fixtures.manifests.sources[scenario].value.relative_to(scenario)),
-        )
-        assert str(root) not in canonical
-        assert FixtureManifestEvidence().observe(manifest, expectation.source) == expectation
-        assert all("annotation" not in item.model_dump() for item in manifest.attributes)
-        assert "parameter_type" not in document.payload
-        assert "return_type" not in document.payload
-        assert "attribute_type" not in document.payload
-        assert document.payload == canonical
-        assert document.algorithm is DigestAlgorithm.SHA256
-        assert document.digest == hashlib.sha256(canonical.encode()).hexdigest()
-        assert document.verify_digest()
-        assert self.application.implementation_manifest(code_map, formats[0]) == document
+            assert tuple(format.id for format in formats) == ("canonical-json",), language.value
+            assert manifest.schema_version == 10, language.value
+            assert manifest.producer.extractor.language == language.value
+            assert manifest.producer.extractor.version, language.value
+            assert {item.capability for item in manifest.producer.capabilities} == set(FactCapability), language.value
+            assert {item.family for item in manifest.producer.relationship_capabilities} == set(RelationshipFamily), (
+                language.value
+            )
+            assert manifest.source_manifest.policy == self.scan_policy(), language.value
+            assert tuple(item.relative_path for item in manifest.source_manifest.sources) == (
+                scenario.source.value.relative_to(scenario.name.value).as_posix(),
+            )
+            assert all(result.satisfied for result in self.contract.evaluate_manifest(manifest, scenario)), (
+                f"{language.value}:{scenario.name.value}"
+            )
+            assert str(root) not in canonical
+            assert all("annotation" not in item.model_dump() for item in manifest.attributes)
+            assert "parameter_type" not in document.payload
+            assert "return_type" not in document.payload
+            assert "attribute_type" not in document.payload
+            assert document.payload == canonical
+            assert document.algorithm is DigestAlgorithm.SHA256
+            assert document.digest == hashlib.sha256(canonical.encode()).hexdigest()
+            assert document.verify_digest()
+            assert self.application.implementation_manifest(code_map, formats[0]) == document
 
-    @pytest.mark.parametrize(
-        ("language", "row", "transition"),
-        capability_matrix.manifest_transition_cases(),
-    )
-    def test_matrix_manifest_transition_changes_source_and_implementation_identity(
-        self,
-        language: str,
-        row: LanguageCapabilityRow,
-        transition: ManifestTransitionExpectation,
-    ) -> None:
-        root = self.workspace / f"{language}_{transition.before}_{transition.after}"
-        shutil.copytree(self.manifest_scenario_root(row, transition.before), root)
-        format = self.application.implementation_manifest_formats()[0]
-        before_document = self.application.implementation_manifest(
-            self.application.generate_map(language, root, self.scan_policy()), format
-        )
-        before_source = row.fixtures.manifests.sources[transition.before].value
-        after_source = row.fixtures.manifests.sources[transition.after].value
-        shutil.copyfile(
-            self.repository / row.fixtures.manifests.root.value / after_source,
-            root / before_source.relative_to(transition.before),
-        )
-        after_document = self.application.implementation_manifest(
-            self.application.generate_map(language, root, self.scan_policy()), format
-        )
-        before = self.application.read_implementation_manifest(before_document)
-        after = self.application.read_implementation_manifest(after_document)
+    def test_every_matrix_manifest_transition_changes_each_declared_identity(self) -> None:
+        scenarios = {(language, scenario.name): scenario for language, scenario in self.contract.manifest_cases()}
+        for language, bundle, transition in self.contract.manifest_transition_cases():
+            before_scenario = scenarios[(language, transition.before)]
+            after_scenario = scenarios[(language, transition.after)]
+            root = self.workspace / f"{language.value}_{transition.before.value}_{transition.after.value}"
+            shutil.copytree(self.contract.manifest_root(language, before_scenario), root)
+            format = self.application.implementation_manifest_formats()[0]
+            before_document = self.application.implementation_manifest(
+                self.application.generate_map(language.value, root, self.scan_policy()), format
+            )
+            before_source = before_scenario.source.value
+            after_source = after_scenario.source.value
+            shutil.copyfile(
+                self.repository / bundle.contract.manifests.root.value / after_source,
+                root / before_source.relative_to(transition.before.value),
+            )
+            after_document = self.application.implementation_manifest(
+                self.application.generate_map(language.value, root, self.scan_policy()), format
+            )
+            before = self.application.read_implementation_manifest(before_document)
+            after = self.application.read_implementation_manifest(after_document)
 
-        assert before.source_manifest.digest != after.source_manifest.digest
-        assert before_document.digest != after_document.digest
+            observed_changes = {
+                "source_identity": before.source_manifest.digest != after.source_manifest.digest,
+                "implementation_identity": before_document.digest != after_document.digest,
+            }
+            assert all(observed_changes[change.value] for change in transition.changes), language.value
