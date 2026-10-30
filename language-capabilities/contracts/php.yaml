@@ -279,21 +279,21 @@ scenarios:
         capability: composition
         evidence: boundary
         state: absent
-        observation: {kind: declaration_relation, source: ExampleConsumer, relation: extends, target:
+        observation: {kind: declaration_relation, source: ExampleConsumer, relation: uses_trait, target:
             ExampleTrait}
       - kind: relationship
         relationship: declaration
         aspect: semantics
         evidence: boundary
         state: absent
-        observation: {kind: declaration_relation, source: ExampleConsumer, relation: extends, target:
+        observation: {kind: declaration_relation, source: ExampleConsumer, relation: uses_trait, target:
             ExampleTrait}
       - kind: relationship
         relationship: declaration
         aspect: inventory
         evidence: boundary
         state: absent
-        observation: {kind: declaration_relation, source: ExampleConsumer, relation: extends, target:
+        observation: {kind: declaration_relation, source: ExampleConsumer, relation: uses_trait, target:
             ExampleTrait}
   - name: non-callable-span-boundary
     fixture: gaps
@@ -436,11 +436,11 @@ manifests:
           observation: {kind: dependency, source: src/Example.php, target: DateTimeImmutable, resolution:
               external}
     - name: source_edit_before
-      source: source_edit_before/src/Example.php
-      facts_digest: 00a0c9af1fabc6198981a8e7db5b99ab7836375c246119cc87155ee22c5f213d
+      source: source_edit_before/src/nested/Example.php
+      facts_digest: 12eecab6770eec907e0a1ad59eb2566adc03a8bae2482f19ae7fd91aa1f81131
       claims:
         - state: present
-          observation: {kind: source, relative_path: src/Example.php}
+          observation: {kind: source, relative_path: src/nested/Example.php}
     - name: source_edit_after
       source: source_edit_after/src/Example.php
       facts_digest: 00a0c9af1fabc6198981a8e7db5b99ab7836375c246119cc87155ee22c5f213d

@@ -25,7 +25,7 @@ mappings:
     - authored: src/commerce/payments/application/actions/CapturePayment.php
       canonical: src/commerce/payments/application/actions/capture_payment
     - authored: src/commerce/payments/domain/model/Payment.php
-      canonical: src/commerce/payments/domain/model/payment
+      canonical: src/commerce/payments/domain/model/例/payment
   declarations:
     - authored:
         source_id: src/commerce/orders/application/actions/PlaceOrder.php
@@ -93,7 +93,7 @@ mappings:
         qualified_name: Payment
         ordinal: 65
       canonical:
-        source_id: src/commerce/payments/domain/model/payment
+        source_id: src/commerce/payments/domain/model/例/payment
         family: class
         qualified_name: Payment
         ordinal: 1
@@ -174,7 +174,7 @@ mappings:
         qualified_name: Payment.capture
         ordinal: 199
       canonical:
-        source_id: src/commerce/payments/domain/model/payment
+        source_id: src/commerce/payments/domain/model/例/payment
         family: method
         qualified_name: Payment.capture
         ordinal: 1

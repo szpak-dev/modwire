@@ -614,9 +614,9 @@
         "code_line_count": 0,
         "public_symbol_count": 1
       },
-      "src/commerce/payments/domain/model/payment": {
-        "file_id": "src/commerce/payments/domain/model/payment",
-        "import_identity": "src/commerce/payments/domain/model/payment",
+      "src/commerce/payments/domain/model/例/payment": {
+        "file_id": "src/commerce/payments/domain/model/例/payment",
+        "import_identity": "src/commerce/payments/domain/model/例/payment",
         "imports": [],
         "exports": [],
         "namespaces": [],
@@ -628,7 +628,7 @@
             "line_count": 0,
             "declaration_annotations": [],
             "declaration_id": {
-              "source_id": "src/commerce/payments/domain/model/payment",
+              "source_id": "src/commerce/payments/domain/model/例/payment",
               "family": "class",
               "qualified_name": "Payment",
               "ordinal": 1
@@ -642,12 +642,12 @@
                 "line_count": 0,
                 "declaration_annotations": [],
                 "declaration_id": {
-                  "source_id": "src/commerce/payments/domain/model/payment",
+                  "source_id": "src/commerce/payments/domain/model/例/payment",
                   "family": "method",
                   "qualified_name": "Payment.capture",
                   "ordinal": 1
                 },
-                "source_id": "src/commerce/payments/domain/model/payment",
+                "source_id": "src/commerce/payments/domain/model/例/payment",
                 "qualified_name": "Payment.capture",
                 "kind": "instance_method",
                 "line_start": 0,
@@ -659,7 +659,7 @@
                 "decorators": [],
                 "docstring": "",
                 "owner_declaration_id": {
-                  "source_id": "src/commerce/payments/domain/model/payment",
+                  "source_id": "src/commerce/payments/domain/model/例/payment",
                   "family": "class",
                   "qualified_name": "Payment",
                   "ordinal": 1
@@ -689,7 +689,7 @@
       "src/commerce/orders/infrastructure/repositories/order_repository": "src/commerce/orders/infrastructure/repositories/order_repository",
       "src/commerce/orders/interfaces/http/order_controller": "src/commerce/orders/interfaces/http/order_controller",
       "src/commerce/payments/application/actions/capture_payment": "src/commerce/payments/application/actions/capture_payment",
-      "src/commerce/payments/domain/model/payment": "src/commerce/payments/domain/model/payment"
+      "src/commerce/payments/domain/model/例/payment": "src/commerce/payments/domain/model/例/payment"
     },
     "manifest": {
       "policy": {
@@ -734,13 +734,13 @@
           "content_digest": "523b46d792c6200f7ddd9aa36d4c398f63cdd56473d8dc74176abfc2b6b47362"
         },
         {
-          "source_id": "src/commerce/payments/domain/model/payment",
-          "relative_path": "src/commerce/payments/domain/model/payment",
-          "content_digest": "f227fd074780d6ef3477c80293f8cd4ac273984ea0564b71efee230a0c3fb44a"
+          "source_id": "src/commerce/payments/domain/model/例/payment",
+          "relative_path": "src/commerce/payments/domain/model/例/payment",
+          "content_digest": "bc6cc5364afc862be73da3810fbfeaec32a272b4027c0f3bf0af04cc5cb073e3"
         }
       ],
       "digest_algorithm": "sha256",
-      "digest": "b00f8186f7af07d8047d5fcafed9b3aff7e2b654900e7da8b77e2174c968e7cf"
+      "digest": "304735fcc1cd23ca6dca0f2d7e5f61ac4432a615b429808bef95f758e0410f63"
     },
     "files_found": 7,
     "files_excluded": 0,
@@ -772,8 +772,8 @@
         "id": "src/commerce/payments/application/actions/capture_payment",
         "kind": "file"
       },
-      "src/commerce/payments/domain/model/payment": {
-        "id": "src/commerce/payments/domain/model/payment",
+      "src/commerce/payments/domain/model/例/payment": {
+        "id": "src/commerce/payments/domain/model/例/payment",
         "kind": "file"
       }
     },
@@ -829,8 +829,8 @@
       },
       {
         "from_id": "src/commerce/payments/application/actions/capture_payment",
-        "to_id": "src/commerce/payments/domain/model/payment",
-        "specifier": "src/commerce/payments/domain/model/payment",
+        "to_id": "src/commerce/payments/domain/model/例/payment",
+        "specifier": "src/commerce/payments/domain/model/例/payment",
         "resolution": "resolved",
         "kind": "imports"
       }

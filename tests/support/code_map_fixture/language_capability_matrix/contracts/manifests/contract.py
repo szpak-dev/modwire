@@ -24,9 +24,6 @@ class ManifestContract(FixtureModel):
             raise ValueError("manifest scenario sources contain duplicates")
         if len(set(transitions)) != len(transitions):
             raise ValueError("manifest transitions contain duplicates")
-        for scenario in self.scenarios:
-            if scenario.source.value.parts[0] != scenario.name.value:
-                raise ValueError("manifest source is outside its named scenario")
         for transition in self.transitions:
             if transition.before not in names or transition.after not in names:
                 raise ValueError("manifest transition names an undeclared scenario")

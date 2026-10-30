@@ -102,7 +102,7 @@ class PolyglotFixtureContract:
 
     def manifest_root(self, language: LanguageId, scenario: ManifestScenario) -> Path:
         root = self.matrix.languages[language].contract.manifests.root.value
-        return self.repository / root / scenario.source.value.parents[1]
+        return self.repository / root / scenario.name.value
 
     def project_reference(self, code_map: CodeMap, projection: ReferenceProjection) -> CodeMap:
         return self.projector.project(code_map, projection, self.matrix.reference_code_map)

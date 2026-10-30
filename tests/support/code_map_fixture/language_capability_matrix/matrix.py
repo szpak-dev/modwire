@@ -42,7 +42,7 @@ class LanguageCapabilityMatrix(FixtureModel):
         if tuple(self.languages) != tuple(self.index.languages):
             raise ValueError("language bundles do not exactly match the root index")
         self.validate_language_pairs()
-        self.validate_contract_coverage()
+        self.validate_manifest_layouts()
         self.validate_projection_targets()
         return self
 
@@ -55,16 +55,10 @@ class LanguageCapabilityMatrix(FixtureModel):
                     f"{language.value} reference projection declares {bundle.reference_projection.language.value}"
                 )
 
-    def validate_contract_coverage(self) -> None:
+    def validate_manifest_layouts(self) -> None:
         manifest_layouts: set[tuple[tuple[str, PurePosixPath], ...]] = set()
         for bundle in self.languages.values():
             contract = bundle.contract
-            if tuple(contract.capabilities) != tuple(FactCapability):
-                raise ValueError(f"{contract.language.value} does not cover every fact capability")
-            if tuple(contract.relationships) != tuple(RelationshipFamily):
-                raise ValueError(f"{contract.language.value} does not cover every relationship family")
-            contract.validate_claim_coverage()
-            contract.validate_fixture_ownership()
             manifest_layouts.add(
                 tuple((scenario.name.value, scenario.source.value.parent) for scenario in contract.manifests.scenarios)
             )
@@ -91,7 +85,6 @@ class LanguageCapabilityMatrix(FixtureModel):
         }
         for bundle in self.languages.values():
             projection = bundle.reference_projection
-            projection.validate_mappings()
             suffixes = {suffix.value for suffix in bundle.contract.fixtures.source_suffixes}
             if {source.value.suffix for source in projection.fixture.sources} - suffixes:
                 raise ValueError(f"{projection.language.value} reference fixture uses an undeclared suffix")

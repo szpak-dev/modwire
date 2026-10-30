@@ -1,9 +1,9 @@
 import hashlib
-import json
 
 from modwire.application import (
     CapabilityStatus,
     CodeMap,
+    SourceArtifact,
     SourceClassMethod,
     SourceDeclaration,
     SourceFile,
@@ -113,12 +113,8 @@ class FixtureCodeMapProjector:
             )
         files = dict(zip(projected_source_ids, projected_source_files, strict=True))
 
-        runtime = code_map.extraction.manifest.runtime.model_copy(
-            update={"version": "fixture 1", "resource_digest": "0" * 64}
-        )
         source_artifacts = {artifact.source_id: artifact for artifact in code_map.extraction.manifest.sources}
-        artifacts = list(code_map.extraction.manifest.sources)
-        artifacts.clear()
+        artifacts: list[SourceArtifact] = []
         for original_source_id in sorted(code_map.extraction.files):
             source_id = source_ids[str(original_source_id)]
             artifacts.append(
@@ -131,28 +127,10 @@ class FixtureCodeMapProjector:
                 )
             )
 
-        policy = code_map.extraction.manifest.policy
-        patterns = ",".join(json.dumps(pattern, ensure_ascii=False) for pattern in policy.excluded_patterns)
-        follow_symlinks = "true" if policy.follow_symlinks else "false"
-        artifact_documents = [
-            '{"content_digest":'
-            f"{json.dumps(artifact.content_digest)},"
-            f'"relative_path":{json.dumps(artifact.relative_path)},'
-            f'"source_id":{json.dumps(artifact.source_id)}}}'
-            for artifact in artifacts
-        ]
-        manifest_document = (
-            '{"policy":{"excluded_patterns":['
-            f'{patterns}],"follow_symlinks":{follow_symlinks}'
-            '},"runtime":{"resource_digest":'
-            f'{json.dumps(runtime.resource_digest)},"version":{json.dumps(runtime.version)}'
-            f'}},"sources":[{",".join(artifact_documents)}]}}'
-        )
-        manifest = code_map.extraction.manifest.model_copy(
+        manifest = reference.extraction.manifest.model_copy(
             update={
-                "runtime": runtime,
-                "sources": tuple(artifacts),
-                "digest": hashlib.sha256(manifest_document.encode("utf-8")).hexdigest(),
+                "policy": code_map.extraction.manifest.policy,
+                "sources": tuple(sorted(artifacts, key=lambda artifact: (artifact.source_id, artifact.relative_path))),
             }
         )
         extraction = code_map.extraction.model_copy(

@@ -309,7 +309,7 @@ scenarios:
         aspect: semantics
         evidence: boundary
         state: absent
-        observation: {kind: declaration_relation, source: ExampleRuntime, relation: includes, target:
+        observation: {kind: declaration_relation, source: ExampleRuntime, relation: extends, target:
             ExampleAssignedValue}
   - name: member-runtime-semantics-boundary
     fixture: gaps
@@ -454,11 +454,11 @@ manifests:
         - state: present
           observation: {kind: dependency, source: src/example.ts, target: node:path, resolution: external}
     - name: source_edit_before
-      source: source_edit_before/src/example.ts
-      facts_digest: 5c3cda2ab24ebdc7868900e303d9da44a3a950bd6f0013c4e8507d3ceca0445f
+      source: source_edit_before/src/nested/example.ts
+      facts_digest: 49679e76850b6245893ab649fa17d39cbbe383446bcd0fbe3607b540fc280fa3
       claims:
         - state: present
-          observation: {kind: source, relative_path: src/example.ts}
+          observation: {kind: source, relative_path: src/nested/example.ts}
     - name: source_edit_after
       source: source_edit_after/src/example.ts
       facts_digest: 5c3cda2ab24ebdc7868900e303d9da44a3a950bd6f0013c4e8507d3ceca0445f

@@ -200,7 +200,7 @@ scenarios:
         state: present
         observation:
           kind: assigned_values
-          owner: ExampleMarker
+          owner: ExampleBase
           attributes: &id001
             - name: exampleValue
               values:
@@ -225,7 +225,7 @@ scenarios:
         state: present
         observation:
           kind: assigned_values
-          owner: ExampleMarker
+          owner: ExampleBase
           attributes: *id001
   - name: permits-relation
     fixture: gaps
@@ -453,11 +453,11 @@ manifests:
           observation: {kind: dependency, source: src/Example.java, target: java.util.List, resolution:
               external}
     - name: source_edit_before
-      source: source_edit_before/src/Example.java
-      facts_digest: c98f1df8a9f38ae3c09422036100e774d459344a0e8d5d00503cc3bf718cbaa3
+      source: source_edit_before/src/nested/Example.java
+      facts_digest: 688e7afd37fbb3a4409f7727a5f1e359d53c5bba863ab33d0456e2a6194f8f4d
       claims:
         - state: present
-          observation: {kind: source, relative_path: src/Example.java}
+          observation: {kind: source, relative_path: src/nested/Example.java}
     - name: source_edit_after
       source: source_edit_after/src/Example.java
       facts_digest: c98f1df8a9f38ae3c09422036100e774d459344a0e8d5d00503cc3bf718cbaa3

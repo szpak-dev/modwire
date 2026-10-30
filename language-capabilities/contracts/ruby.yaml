@@ -331,7 +331,7 @@ scenarios:
         capability: namespaces
         evidence: boundary
         state: absent
-        observation: {kind: namespace, qualified_name: ExampleDynamicNamespace, namespace_kind: namespace}
+        observation: {kind: namespace, qualified_name: ExampleDynamicNamespace, namespace_kind: module}
   - name: dynamic-composition
     fixture: gaps
     source: src/example_capability_gaps.rb
@@ -391,7 +391,7 @@ scenarios:
         aspect: semantics
         evidence: boundary
         state: absent
-        observation: {kind: declaration_relation, source: ExampleRuntime, relation: includes, target:
+        observation: {kind: declaration_relation, source: ExampleRuntime, relation: extends, target:
             ExampleBase}
   - name: parameter-kinds
     fixture: parameters
@@ -486,11 +486,11 @@ manifests:
         - state: present
           observation: {kind: dependency, source: src/example.rb, target: json, resolution: external}
     - name: source_edit_before
-      source: source_edit_before/src/example.rb
-      facts_digest: 9e9c1ce4fba47a3977a7d5733b1839eb3032c681f56cd76aad9c5d1093d2132a
+      source: source_edit_before/src/nested/example.rb
+      facts_digest: a004f2b754646de13b135882a1831a41d1207c4904988601c0386548e79eacad
       claims:
         - state: present
-          observation: {kind: source, relative_path: src/example.rb}
+          observation: {kind: source, relative_path: src/nested/example.rb}
     - name: source_edit_after
       source: source_edit_after/src/example.rb
       facts_digest: 9e9c1ce4fba47a3977a7d5733b1839eb3032c681f56cd76aad9c5d1093d2132a

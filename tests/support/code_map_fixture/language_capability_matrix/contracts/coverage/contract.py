@@ -79,6 +79,8 @@ class LanguageContract(FixtureModel):
                     raise ValueError(f"{scenario.name.value} source observation differs from its scenario source")
                 if observation.kind == "empty_source" and observation.relative_path != scenario.source:
                     raise ValueError(f"{scenario.name.value} source observation differs from its scenario source")
+        self.validate_claim_coverage()
+        self.validate_fixture_ownership()
         return self
 
     def validate_capability_observation(self, claim: CapabilityClaim) -> None:

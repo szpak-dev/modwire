@@ -443,11 +443,11 @@ manifests:
         - state: present
           observation: {kind: dependency, source: src/example.py, target: json, resolution: external}
     - name: source_edit_before
-      source: source_edit_before/src/example.py
-      facts_digest: 800cb7ac48973f50c322b16dcb7477f96bb02952b1b9b570b329369a42f107bd
+      source: source_edit_before/src/nested/example.py
+      facts_digest: 12b450d875e6e3389f43ba79f0f503fa0274877fda8ae426edbcf4a9067a89ed
       claims:
         - state: present
-          observation: {kind: source, relative_path: src/example.py}
+          observation: {kind: source, relative_path: src/nested/example.py}
     - name: source_edit_after
       source: source_edit_after/src/example.py
       facts_digest: 800cb7ac48973f50c322b16dcb7477f96bb02952b1b9b570b329369a42f107bd
