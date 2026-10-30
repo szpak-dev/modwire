@@ -3,7 +3,7 @@ import shutil
 import pytest
 from pydantic import ValidationError
 
-from modwire.application import FactCapability, RelationshipFamily
+from modwire.application import CodeMap, FactCapability, RelationshipFamily
 
 from ..support.code_map_fixture.fixture_contract import PolyglotFixtureContract
 from ..support.code_map_fixture.fixture_contract_error import FixtureContractError
@@ -74,6 +74,27 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             PolyglotFixtureContract(self.workspace)
 
         contract_path.write_text(original_contract, encoding="utf-8")
+        language, bundle = next(iter(self.contract.matrix.languages.items()))
+        pair = self.contract.matrix.index.languages[language]
+        contract_path = self.workspace / pair.contract.value
+        original_contract = contract_path.read_text(encoding="utf-8")
+        major = bundle.contract.runtime.version.major
+        contract_path.write_text(
+            original_contract.replace(f"major: {major}", f'major: "{major}"', 1),
+            encoding="utf-8",
+        )
+
+        with pytest.raises(ValidationError, match="int_type"):
+            PolyglotFixtureContract(self.workspace)
+
+        contract_path.write_text(
+            original_contract.replace("state: present", "state: unsupported", 1),
+            encoding="utf-8",
+        )
+        with pytest.raises(ValidationError, match="unsupported claim state requires a type-slot observation"):
+            PolyglotFixtureContract(self.workspace)
+
+        contract_path.write_text(original_contract, encoding="utf-8")
         PolyglotFixtureContract(self.workspace)
 
     def test_matrix_exactly_covers_the_public_language_and_capability_vocabularies(self) -> None:
@@ -83,24 +104,25 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         assert len(self.contract.capability_cases()) == len(languages) * len(FactCapability)
         assert len(self.contract.relationship_cases()) == len(languages) * len(RelationshipFamily)
         assert {
-            (language.value, capability) for language, capability, expectation in self.contract.capability_cases()
+            (language.value, capability) for language, capability, _expectation in self.contract.capability_cases()
         } == {(language, capability) for language in languages for capability in FactCapability}
         assert {
-            (language.value, relationship) for language, relationship, expectation in self.contract.relationship_cases()
+            (language.value, relationship)
+            for language, relationship, _expectation in self.contract.relationship_cases()
         } == {(language, relationship) for language in languages for relationship in RelationshipFamily}
 
     def test_every_owned_fixture_inventory_is_exactly_declared_by_the_matrix(self) -> None:
         self.contract.validate_inventories()
 
     def test_every_capability_and_relationship_claim_matches_public_extraction(self) -> None:
-        extracted = {}
+        extracted: dict[tuple[str, str], CodeMap] = {}
 
         for language, scenario in self.contract.scenario_cases():
-            key = (language, scenario.fixture)
+            key = (language.value, scenario.fixture.value)
             if key not in extracted:
                 extracted[key] = self.application.generate_map(
                     language.value,
-                    self.contract.fixture_root(language, scenario.fixture),
+                    str(self.contract.fixture_root(language, scenario.fixture)),
                     self.scan_policy(),
                 )
             results = self.contract.evaluate_scenario(extracted[key], scenario)
@@ -111,7 +133,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         extracted = {
             language: self.application.generate_map(
                 language.value,
-                self.repository / projection.fixture.root.value,
+                str(self.repository / projection.fixture.root.value),
                 self.configured_scan_policy(("ignored/**",), False),
             )
             for language, projection in self.contract.projection_cases()
@@ -143,7 +165,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         for language, projection in self.contract.projection_cases():
             actual = self.application.generate_map(
                 language.value,
-                self.repository / projection.fixture.root.value,
+                str(self.repository / projection.fixture.root.value),
                 self.configured_scan_policy(("ignored/**",), False),
             )
 

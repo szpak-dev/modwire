@@ -102,6 +102,62 @@ relationships:
     inventory_explanation: Authored exact imports are emitted, but wildcard and implicit dependency 
       inventory is incomplete.
 scenarios:
+  - name: supported-contract
+    fixture: extensions
+    source: src/ExampleShapes.java
+    claims:
+      - kind: capability
+        capability: sources
+        state: present
+        observation:
+          kind: source
+          relative_path: src/ExampleShapes.java
+      - kind: capability
+        capability: symbols
+        state: present
+        observation:
+          kind: declaration
+          qualified_name: ExampleRecord
+          declaration_kind: record
+      - kind: capability
+        capability: callables
+        state: present
+        observation:
+          kind: callable
+          qualified_name: ExampleContract.exampleRequired
+          callable_kind: instance_method
+      - kind: capability
+        capability: calls
+        state: present
+        observation:
+          kind: call
+          owner: ExampleImplementation.exampleTimestamp
+          target: exampleRequired
+          resolution: unresolved
+      - kind: capability
+        capability: namespaces
+        state: present
+        observation:
+          kind: namespace
+          qualified_name: example.shapes
+          namespace_kind: package
+      - kind: capability
+        capability: declaration_kinds
+        state: present
+        observation:
+          kind: declaration
+          qualified_name: ExampleAnnotation
+          declaration_kind: annotation
+  - name: empty-source
+    fixture: types
+    source: src/TypeReferenceEmpty.java
+    claims:
+      - kind: capability
+        capability: sources
+        state: present
+        observation:
+          kind: empty_source
+          relative_path: src/TypeReferenceEmpty.java
   - name: annotation-evaluation-boundary
     fixture: gaps
     source: src/ExampleCapabilityGaps.java
@@ -139,14 +195,14 @@ scenarios:
         capability: assigned_values
         state: present
         observation:
-          kind: assigned_value_partition
+          kind: assigned_values
           owner: ExampleMarker
-          absent:
-            - exampleValue
-          literal: []
-          reference: []
-          call: []
-          unresolved: []
+          attributes:
+            - name: exampleValue
+              values:
+                - kind: unsupported
+                  expression: ""
+                  reference: ""
       - kind: capability
         capability: attributes
         state: present
@@ -355,6 +411,7 @@ manifests:
   scenarios:
     - name: canonical
       source: canonical/src/Example.java
+      digest: 8a411cfb975af21fd7babc7e49a795d43c7a30fcc9c019b533b0b9e26354ed79
       claims:
         - state: present
           observation:
@@ -409,6 +466,7 @@ manifests:
             resolution: external
     - name: calls
       source: calls/src/Example.java
+      digest: 3be9558f57c81caf6f6270de3e9d2cf11ff0ec7dcd17567a87d3e2a90bd10dc2
       claims:
         - state: present
           observation:
@@ -422,6 +480,7 @@ manifests:
             resolution: resolved
     - name: no_calls
       source: no_calls/src/Example.java
+      digest: 74c20a79e4206320b27a351a4c5d3f44985166524c38653a0b42cf61168461e6
       claims:
         - state: present
           observation:
@@ -435,6 +494,7 @@ manifests:
             resolution: resolved
     - name: negative_members
       source: negative_members/src/Example.java
+      digest: aec937a3b7e0cdbbe383524abe15deed82b738294e7821d2039feacd39f542cc
       claims:
         - state: present
           observation:
@@ -447,6 +507,7 @@ manifests:
             symbol_kind: abstract_class
     - name: dependencies
       source: dependencies/src/Example.java
+      digest: 21ebcc712d1add36382fb4ae074c87baa6158b018559ad59a2ebffceb686eeab
       claims:
         - state: present
           observation:
@@ -460,6 +521,7 @@ manifests:
             resolution: external
     - name: source_edit_before
       source: source_edit_before/src/Example.java
+      digest: f07f093ba98fd2fb299eeaa3103ff2db412cc67f3de29e78ab2423fdef6856f2
       claims:
         - state: present
           observation:
@@ -467,6 +529,7 @@ manifests:
             relative_path: src/Example.java
     - name: source_edit_after
       source: source_edit_after/src/Example.java
+      digest: 3c2ed400e13c6bff11095bdcaebc20c7e1ad519064188f78533f7b494b88b155
       claims:
         - state: present
           observation:

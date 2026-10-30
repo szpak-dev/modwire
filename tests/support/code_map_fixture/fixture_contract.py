@@ -18,6 +18,7 @@ from .language_capability_matrix.values.enums.fixture_role import FixtureRole
 from .language_capability_matrix.values.names.language_id import LanguageId
 from .language_capability_matrix.values.names.source_suffix import SourceSuffix
 from .projector import FixtureCodeMapProjector
+from .runtime_contract import FixtureRuntimeContract
 
 
 class PolyglotFixtureContract:
@@ -26,6 +27,7 @@ class PolyglotFixtureContract:
         self.matrix = LanguageCapabilityMatrixReader().read(repository / "language-capabilities.yaml")
         self.evaluator = FixtureClaimEvaluator()
         self.projector = FixtureCodeMapProjector()
+        self.runtime = FixtureRuntimeContract(self.matrix)
 
     def capability_cases(
         self,
@@ -38,6 +40,12 @@ class PolyglotFixtureContract:
             for candidate, declared_capability, expectation in self.capability_cases()
             if candidate.value == language and declared_capability is capability
         )
+
+    def runtime_document(self) -> str:
+        return self.runtime.document()
+
+    def validate_runtime(self) -> None:
+        self.runtime.validate()
 
     def relationship_cases(
         self,
@@ -71,7 +79,8 @@ class PolyglotFixtureContract:
         return tuple((language, bundle.reference_projection) for language, bundle in self.matrix.languages.items())
 
     def evaluate_scenario(self, code_map: CodeMap, scenario: CapabilityScenario) -> tuple[ClaimResult, ...]:
-        return tuple(self.evaluator.evaluate_code_map(code_map, claim) for claim in scenario.claims)
+        source_id = scenario.source.value.as_posix()
+        return tuple(self.evaluator.evaluate_code_map(code_map, source_id, claim) for claim in scenario.claims)
 
     def evaluate_manifest(
         self,

@@ -109,6 +109,106 @@ relationships:
     inventory_explanation: Every authored import declaration in included TypeScript and JavaScript 
       sources is emitted deterministically.
 scenarios:
+  - name: supported-contract
+    fixture: extensions
+    source: src/example-shapes.ts
+    claims:
+      - kind: capability
+        capability: sources
+        state: present
+        observation:
+          kind: source
+          relative_path: src/example-shapes.ts
+      - kind: capability
+        capability: symbols
+        state: present
+        observation:
+          kind: declaration
+          qualified_name: ExampleContract
+          declaration_kind: interface
+      - kind: capability
+        capability: callables
+        state: present
+        observation:
+          kind: callable
+          qualified_name: exampleArrow
+          callable_kind: callable_value
+      - kind: capability
+        capability: calls
+        state: present
+        observation:
+          kind: call
+          owner: ExampleImplementation.examplePath
+          target: exampleRequired
+          resolution: resolved
+      - kind: capability
+        capability: attributes
+        state: present
+        observation:
+          kind: attribute
+          owner: ExampleImplementation
+          name: exampleOptional
+          member_kind: instance
+      - kind: capability
+        capability: inheritance
+        state: present
+        observation:
+          kind: declaration_relation
+          source: ExampleImplementation
+          relation: extends
+          target: ExampleAbstract
+      - kind: capability
+        capability: declaration_kinds
+        state: present
+        observation:
+          kind: declaration
+          qualified_name: ExampleAbstract
+          declaration_kind: abstract_class
+      - kind: capability
+        capability: dependencies
+        state: present
+        observation:
+          kind: dependency
+          source: src/example-shapes.ts
+          target: node:path
+          resolution: external
+      - kind: relationship
+        relationship: declaration
+        aspect: inventory
+        state: present
+        observation:
+          kind: declaration_relation
+          source: ExampleImplementation
+          relation: extends
+          target: ExampleAbstract
+      - kind: relationship
+        relationship: dependency
+        aspect: semantics
+        state: present
+        observation:
+          kind: dependency
+          source: src/example-shapes.ts
+          target: node:path
+          resolution: external
+      - kind: relationship
+        relationship: dependency
+        aspect: inventory
+        state: present
+        observation:
+          kind: dependency
+          source: src/example-shapes.ts
+          target: node:path
+          resolution: external
+  - name: empty-source
+    fixture: types
+    source: src/type-reference-empty.ts
+    claims:
+      - kind: capability
+        capability: sources
+        state: present
+        observation:
+          kind: empty_source
+          relative_path: src/type-reference-empty.ts
   - name: non-class-decorator-boundary
     fixture: gaps
     source: src/example-capability-gaps.ts
@@ -139,14 +239,14 @@ scenarios:
         capability: assigned_values
         state: present
         observation:
-          kind: assigned_value_partition
+          kind: assigned_values
           owner: ExampleAssignedValue
-          absent:
-            - exampleValue
-          literal: []
-          reference: []
-          call: []
-          unresolved: []
+          attributes:
+            - name: exampleValue
+              values:
+                - kind: unsupported
+                  expression: ""
+                  reference: ""
       - kind: relationship
         relationship: member
         aspect: inventory
@@ -273,6 +373,7 @@ manifests:
   scenarios:
     - name: canonical
       source: canonical/src/example.ts
+      digest: 7124d4362dc2653515b644557cfb27a6f876cbe75ebede31500b628057b59f26
       claims:
         - state: present
           observation:
@@ -322,6 +423,7 @@ manifests:
             resolution: external
     - name: calls
       source: calls/src/example.ts
+      digest: 432ac280bdccafef41b3e0967a13b552f801e0853e93d18273bbed31876c103f
       claims:
         - state: present
           observation:
@@ -335,6 +437,7 @@ manifests:
             resolution: resolved
     - name: no_calls
       source: no_calls/src/example.ts
+      digest: e7b7b4a1ab0bd1059a33cb0679b5e485be4c661eb726d7c0e7718b489d7c211f
       claims:
         - state: present
           observation:
@@ -348,6 +451,7 @@ manifests:
             resolution: resolved
     - name: negative_members
       source: negative_members/src/example.ts
+      digest: 68aa351532316ef029544d288abdad289300773a771e97d7beed6696c5f5cd02
       claims:
         - state: present
           observation:
@@ -360,6 +464,7 @@ manifests:
             symbol_kind: abstract_class
     - name: dependencies
       source: dependencies/src/example.ts
+      digest: ef68bfd27cc864c40c2dc801b90e9ecab7946a9852eb8f70c4d748c45b9fc371
       claims:
         - state: present
           observation:
@@ -373,6 +478,7 @@ manifests:
             resolution: external
     - name: source_edit_before
       source: source_edit_before/src/example.ts
+      digest: 48d13a86951c04fa0c8661291d97f399ec4e725b1be7734ef9f31703e5cd95a9
       claims:
         - state: present
           observation:
@@ -380,6 +486,7 @@ manifests:
             relative_path: src/example.ts
     - name: source_edit_after
       source: source_edit_after/src/example.ts
+      digest: 3c166ad5d13052febbedc59f3421403ca6c9fda66b110fba3a58ed0def159498
       claims:
         - state: present
           observation:

@@ -17,10 +17,13 @@ class ManifestContract(FixtureModel):
     def validate_contract(self) -> Self:
         names = tuple(scenario.name for scenario in self.scenarios)
         sources = tuple(scenario.source.value for scenario in self.scenarios)
+        transitions = tuple((transition.before, transition.after) for transition in self.transitions)
         if len(set(names)) != len(names):
             raise ValueError("manifest scenario names contain duplicates")
         if len(set(sources)) != len(sources):
             raise ValueError("manifest scenario sources contain duplicates")
+        if len(set(transitions)) != len(transitions):
+            raise ValueError("manifest transitions contain duplicates")
         for scenario in self.scenarios:
             if scenario.source.value.parts[0] != scenario.name.value:
                 raise ValueError("manifest source is outside its named scenario")

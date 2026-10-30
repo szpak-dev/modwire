@@ -2,9 +2,10 @@ from typing import Self
 
 from pydantic import Field, model_validator
 
-from modwire.application import CapabilityStatus, FactCapability, RelationshipFamily
+from modwire.application import FactCapability, RelationshipFamily
 
 from ....fixture_model import FixtureModel
+from ...values.enums.claim_state import ClaimState
 from ...values.enums.fixture_role import FixtureRole
 from ...values.enums.relationship_aspect import RelationshipAspect
 from ...values.names.language_id import LanguageId
@@ -45,11 +46,20 @@ class LanguageContract(FixtureModel):
                     self.validate_capability_observation(claim)
                 elif claim.kind == "relationship":
                     self.validate_relationship_observation(claim)
+                if claim.state is ClaimState.UNSUPPORTED and (
+                    claim.kind != "capability" or claim.observation.root.kind != "type_slot"
+                ):
+                    raise ValueError("unsupported claim state requires a type-slot observation")
+                observation = claim.observation.root
+                if observation.kind == "source" and observation.relative_path != scenario.source:
+                    raise ValueError(f"{scenario.name.value} source observation differs from its scenario source")
+                if observation.kind == "empty_source" and observation.relative_path != scenario.source:
+                    raise ValueError(f"{scenario.name.value} source observation differs from its scenario source")
         return self
 
     def validate_capability_observation(self, claim: CapabilityClaim) -> None:
         accepted = {
-            FactCapability.SOURCES: {"source"},
+            FactCapability.SOURCES: {"source", "empty_source"},
             FactCapability.SYMBOLS: {"declaration"},
             FactCapability.CALLABLES: {"callable"},
             FactCapability.CALLS: {"call"},
@@ -58,7 +68,7 @@ class LanguageContract(FixtureModel):
             FactCapability.ANNOTATIONS: {"annotation"},
             FactCapability.MODIFIERS: {"modifier"},
             FactCapability.ATTRIBUTES: {"attribute"},
-            FactCapability.ASSIGNED_VALUES: {"assigned_value_partition"},
+            FactCapability.ASSIGNED_VALUES: {"assigned_values"},
             FactCapability.INHERITANCE: {"declaration_relation"},
             FactCapability.NAMESPACES: {"namespace"},
             FactCapability.DECLARATION_KINDS: {"declaration"},
@@ -93,19 +103,13 @@ class LanguageContract(FixtureModel):
             for claim in (wrapped.root,)
             if claim.kind == "relationship"
         }
-        for capability, expectation in self.capabilities.items():
-            if expectation.status is not CapabilityStatus.SUPPORTED and capability not in capability_claims:
+        for capability in self.capabilities:
+            if capability not in capability_claims:
                 raise ValueError(f"{self.language.value} {capability.value} has no executable claim")
-        for relationship, expectation in self.relationships.items():
-            if (
-                expectation.semantics is not CapabilityStatus.SUPPORTED
-                and (relationship, RelationshipAspect.SEMANTICS) not in relationship_claims
-            ):
+        for relationship in self.relationships:
+            if (relationship, RelationshipAspect.SEMANTICS) not in relationship_claims:
                 raise ValueError(f"{self.language.value} {relationship.value} semantics has no executable claim")
-            if (
-                expectation.inventory is not CapabilityStatus.SUPPORTED
-                and (relationship, RelationshipAspect.INVENTORY) not in relationship_claims
-            ):
+            if (relationship, RelationshipAspect.INVENTORY) not in relationship_claims:
                 raise ValueError(f"{self.language.value} {relationship.value} inventory has no executable claim")
 
     def validate_fixture_ownership(self) -> None:

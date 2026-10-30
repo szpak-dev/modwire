@@ -4,13 +4,14 @@ from pydantic import Field
 
 from .....fixture_root_model import FixtureRootModel
 from .annotation import AnnotationObservation
-from .assigned_value_partition import AssignedValuePartitionObservation
+from .assigned_values import AssignedValuesObservation
 from .attribute import AttributeObservation
 from .call import CallObservation
 from .callable import CallableObservation
 from .declaration import DeclarationObservation
 from .declaration_relation import DeclarationRelationObservation
 from .dependency import DependencyObservation
+from .empty_source import EmptySourceObservation
 from .exact_span import ExactSpanObservation
 from .modifier import ModifierObservation
 from .namespace import NamespaceObservation
@@ -26,6 +27,7 @@ class CapabilityObservation(
     FixtureRootModel[
         Annotated[
             SourceObservation
+            | EmptySourceObservation
             | DeclarationObservation
             | CallableObservation
             | CallObservation
@@ -36,7 +38,7 @@ class CapabilityObservation(
             | AnnotationObservation
             | ModifierObservation
             | AttributeObservation
-            | AssignedValuePartitionObservation
+            | AssignedValuesObservation
             | DeclarationRelationObservation
             | NamespaceObservation
             | DependencyObservation

@@ -64,7 +64,7 @@ package-check: build
 	uv run twine check $(DIST_DIR)/*
 
 extractor-check:
-	python3 scripts/check_extractors.py
+	uv run python -m scripts.check_extractors
 
 host-check: format-check lint type-check test docs-check package-check
 

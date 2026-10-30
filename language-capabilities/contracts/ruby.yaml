@@ -111,6 +111,49 @@ relationships:
     inventory_explanation: Authored literal loads are emitted, but dynamic loads and 
       framework-generated dependencies are not available.
 scenarios:
+  - name: supported-contract
+    fixture: extensions
+    source: src/example_shapes.rb
+    claims:
+      - kind: capability
+        capability: sources
+        state: present
+        observation:
+          kind: source
+          relative_path: src/example_shapes.rb
+      - kind: capability
+        capability: type_references
+        state: absent
+        observation:
+          kind: type_slot
+          owner: ExampleAbstract.example_required
+          role: parameter
+          position: 0
+      - kind: capability
+        capability: inheritance
+        state: present
+        observation:
+          kind: declaration_relation
+          source: ExampleImplementation
+          relation: extends
+          target: ExampleAbstract
+      - kind: capability
+        capability: declaration_kinds
+        state: present
+        observation:
+          kind: declaration
+          qualified_name: ExampleImplementation
+          declaration_kind: class
+  - name: empty-source
+    fixture: types
+    source: src/type_reference_empty.rb
+    claims:
+      - kind: capability
+        capability: sources
+        state: present
+        observation:
+          kind: empty_source
+          relative_path: src/type_reference_empty.rb
   - name: runtime-generated-symbol
     fixture: gaps
     source: src/example_capability_gaps.rb
@@ -197,13 +240,9 @@ scenarios:
         capability: assigned_values
         state: present
         observation:
-          kind: assigned_value_partition
+          kind: assigned_values
           owner: ExampleBase
-          absent: []
-          literal: []
-          reference: []
-          call: []
-          unresolved: []
+          attributes: []
       - kind: relationship
         relationship: member
         aspect: semantics
@@ -326,6 +365,7 @@ manifests:
   scenarios:
     - name: canonical
       source: canonical/src/example.rb
+      digest: 41ef4bfd6a82df3b2a9b9156d2a2e647ba9752cbbf95964c760d842f196e761c
       claims:
         - state: present
           observation:
@@ -380,6 +420,7 @@ manifests:
             resolution: external
     - name: calls
       source: calls/src/example.rb
+      digest: 374d303c1e0b1b44d31ad603734998127b3c55e22173c5e3b9fb6d89a63302ca
       claims:
         - state: present
           observation:
@@ -393,6 +434,7 @@ manifests:
             resolution: resolved
     - name: no_calls
       source: no_calls/src/example.rb
+      digest: b1a0e54d22988287570abd4968607b63685cc37df9123bbd85deec1cf9ae6fba
       claims:
         - state: present
           observation:
@@ -406,6 +448,7 @@ manifests:
             resolution: resolved
     - name: negative_members
       source: negative_members/src/example.rb
+      digest: dd54f6badb691595457d5e6dd3867dbaf4f3c4bd24cdb5c739f06c51180971f3
       claims:
         - state: present
           observation:
@@ -418,6 +461,7 @@ manifests:
             symbol_kind: callable
     - name: dependencies
       source: dependencies/src/example.rb
+      digest: c28e4842cc03cbafe116c04c46048e86a94b7f6413f352be846e9160ec2d05a0
       claims:
         - state: present
           observation:
@@ -431,6 +475,7 @@ manifests:
             resolution: external
     - name: source_edit_before
       source: source_edit_before/src/example.rb
+      digest: fe6236e7b82330ae19cb9943e6788a898d0908779542152af7d7562aa6c45f0d
       claims:
         - state: present
           observation:
@@ -438,6 +483,7 @@ manifests:
             relative_path: src/example.rb
     - name: source_edit_after
       source: source_edit_after/src/example.rb
+      digest: 993faf531cb9c274bfc94594fa9b352063c12f053930ea8dd9214529e99150ce
       claims:
         - state: present
           observation:

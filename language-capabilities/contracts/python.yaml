@@ -105,6 +105,142 @@ relationships:
     inventory_explanation: Every authored import declaration in included Python sources is emitted 
       deterministically.
 scenarios:
+  - name: supported-contract
+    fixture: extensions
+    source: src/example_shapes.py
+    claims:
+      - kind: capability
+        capability: sources
+        state: present
+        observation:
+          kind: source
+          relative_path: src/example_shapes.py
+      - kind: capability
+        capability: symbols
+        state: present
+        observation:
+          kind: declaration
+          qualified_name: ExampleContract
+          declaration_kind: abstract_class
+      - kind: capability
+        capability: callables
+        state: present
+        observation:
+          kind: callable
+          qualified_name: example_factory
+          callable_kind: function
+      - kind: capability
+        capability: calls
+        state: present
+        observation:
+          kind: call
+          owner: ExampleImplementation.example_path
+          target: self.example_required
+          resolution: resolved
+      - kind: capability
+        capability: assigned_values
+        state: present
+        observation:
+          kind: assigned_values
+          owner: ExampleAssignedValues
+          attributes:
+            - name: example_unassigned
+              values:
+                - kind: unassigned
+                  expression: ""
+                  reference: ""
+            - name: example_literal
+              values:
+                - kind: literal
+                  expression: "1"
+                  reference: ""
+            - name: example_reference
+              values:
+                - kind: reference
+                  expression: EXAMPLE_REFERENCE
+                  reference: EXAMPLE_REFERENCE
+                - kind: reference
+                  expression: example_input
+                  reference: example_input
+            - name: example_call
+              values:
+                - kind: call
+                  expression: example_factory()
+                  reference: example_factory
+            - name: example_unresolved
+              values:
+                - kind: unresolved
+                  expression: 1 + 2
+                  reference: ""
+            - name: example_nested
+              values:
+                - kind: literal
+                  expression: "1"
+                  reference: ""
+                - kind: literal
+                  expression: "2"
+                  reference: ""
+      - kind: capability
+        capability: declaration_kinds
+        state: present
+        observation:
+          kind: declaration
+          qualified_name: ExampleImplementation
+          declaration_kind: class
+      - kind: capability
+        capability: dependencies
+        state: present
+        observation:
+          kind: dependency
+          source: src/example_shapes.py
+          target: abc
+          resolution: external
+      - kind: relationship
+        relationship: declaration
+        aspect: inventory
+        state: present
+        observation:
+          kind: declaration_relation
+          source: ExampleImplementation
+          relation: extends
+          target: ExampleContract
+      - kind: relationship
+        relationship: member
+        aspect: inventory
+        state: present
+        observation:
+          kind: attribute
+          owner: ExampleContract
+          name: example_shared
+          member_kind: instance
+      - kind: relationship
+        relationship: dependency
+        aspect: semantics
+        state: present
+        observation:
+          kind: dependency
+          source: src/example_shapes.py
+          target: abc
+          resolution: external
+      - kind: relationship
+        relationship: dependency
+        aspect: inventory
+        state: present
+        observation:
+          kind: dependency
+          source: src/example_shapes.py
+          target: abc
+          resolution: external
+  - name: empty-source
+    fixture: types
+    source: src/type_reference_empty.py
+    claims:
+      - kind: capability
+        capability: sources
+        state: present
+        observation:
+          kind: empty_source
+          relative_path: src/type_reference_empty.py
   - name: annotation-evaluation-boundary
     fixture: gaps
     source: src/example_package/__init__.py
@@ -293,6 +429,7 @@ manifests:
   scenarios:
     - name: canonical
       source: canonical/src/example.py
+      digest: ea7f5a8de25f1e9d4778a5052f2539744da0e370de1e2a9ef9c9b9650d0b9dde
       claims:
         - state: present
           observation:
@@ -342,6 +479,7 @@ manifests:
             resolution: external
     - name: calls
       source: calls/src/example.py
+      digest: 27c621f8479ede0864093680e9f30382cae342da61671bd5cec290357c29683d
       claims:
         - state: present
           observation:
@@ -355,6 +493,7 @@ manifests:
             resolution: resolved
     - name: no_calls
       source: no_calls/src/example.py
+      digest: d27846b74358bd1fb568fd2d8cfafc007467fe0b6a8e1b6a4dbd64180c528ef1
       claims:
         - state: present
           observation:
@@ -368,6 +507,7 @@ manifests:
             resolution: resolved
     - name: negative_members
       source: negative_members/src/example.py
+      digest: acf0c9c7fbac6a43fd2b887c9db85cf198021c71c4dc279bfaae304886b07ab4
       claims:
         - state: present
           observation:
@@ -380,6 +520,7 @@ manifests:
             symbol_kind: abstract_class
     - name: dependencies
       source: dependencies/src/example.py
+      digest: 8012b12abe368fcb855e8e475b92401a6d457a146497880b0bf4911f248f3a37
       claims:
         - state: present
           observation:
@@ -393,6 +534,7 @@ manifests:
             resolution: external
     - name: source_edit_before
       source: source_edit_before/src/example.py
+      digest: 94cdc164369738b4ebe5f5e2628cea822ed80e23a093b9feda34378143c9ee67
       claims:
         - state: present
           observation:
@@ -400,6 +542,7 @@ manifests:
             relative_path: src/example.py
     - name: source_edit_after
       source: source_edit_after/src/example.py
+      digest: eb95d3967567ac1b9c4ae1eb29b0f756b231a71526208a9d7146c1cbc83e67b0
       claims:
         - state: present
           observation:

@@ -104,6 +104,89 @@ relationships:
     inventory_explanation: Every authored namespace import in included PHP sources is emitted 
       deterministically.
 scenarios:
+  - name: supported-contract
+    fixture: extensions
+    source: src/ExampleShapes.php
+    claims:
+      - kind: capability
+        capability: sources
+        state: present
+        observation:
+          kind: source
+          relative_path: src/ExampleShapes.php
+      - kind: capability
+        capability: symbols
+        state: present
+        observation:
+          kind: declaration
+          qualified_name: ExampleContract
+          declaration_kind: interface
+      - kind: capability
+        capability: callables
+        state: present
+        observation:
+          kind: callable
+          qualified_name: exampleFunction
+          callable_kind: function
+      - kind: capability
+        capability: calls
+        state: present
+        observation:
+          kind: call
+          owner: ExampleImplementation.exampleTimestamp
+          target: exampleRequired
+          resolution: resolved
+      - kind: capability
+        capability: inheritance
+        state: present
+        observation:
+          kind: declaration_relation
+          source: ExampleImplementation
+          relation: extends
+          target: ExampleAbstract
+      - kind: capability
+        capability: declaration_kinds
+        state: present
+        observation:
+          kind: declaration
+          qualified_name: ExampleAbstract
+          declaration_kind: abstract_class
+      - kind: capability
+        capability: dependencies
+        state: present
+        observation:
+          kind: dependency
+          source: src/ExampleShapes.php
+          target: DateTimeImmutable
+          resolution: external
+      - kind: relationship
+        relationship: dependency
+        aspect: semantics
+        state: present
+        observation:
+          kind: dependency
+          source: src/ExampleShapes.php
+          target: DateTimeImmutable
+          resolution: external
+      - kind: relationship
+        relationship: dependency
+        aspect: inventory
+        state: present
+        observation:
+          kind: dependency
+          source: src/ExampleShapes.php
+          target: DateTimeImmutable
+          resolution: external
+  - name: empty-source
+    fixture: types
+    source: src/TypeReferenceEmpty.php
+    claims:
+      - kind: capability
+        capability: sources
+        state: present
+        observation:
+          kind: empty_source
+          relative_path: src/TypeReferenceEmpty.php
   - name: non-type-attribute-boundary
     fixture: gaps
     source: src/ExampleCapabilityGaps.php
@@ -141,13 +224,14 @@ scenarios:
         capability: assigned_values
         state: present
         observation:
-          kind: assigned_value_partition
-          owner: ExampleTypeMarker
-          absent: []
-          literal: []
-          reference: []
-          call: []
-          unresolved: []
+          kind: assigned_values
+          owner: ExampleConsumer
+          attributes:
+            - name: exampleValue
+              values:
+                - kind: unsupported
+                  expression: ""
+                  reference: ""
       - kind: capability
         capability: attributes
         state: present
@@ -302,6 +386,7 @@ manifests:
   scenarios:
     - name: canonical
       source: canonical/src/Example.php
+      digest: f863c4b06f8b678305ad5dfe301e98088b564cd13b224e83bdd7e08949c1fb1a
       claims:
         - state: present
           observation:
@@ -351,6 +436,7 @@ manifests:
             resolution: external
     - name: calls
       source: calls/src/Example.php
+      digest: b5886439c4929a96bbd055389d08ce44560f050f94a77a2e5e00dd88ed27e31d
       claims:
         - state: present
           observation:
@@ -364,6 +450,7 @@ manifests:
             resolution: resolved
     - name: no_calls
       source: no_calls/src/Example.php
+      digest: a97e9e08ccc3e9772ad415aff10e8863cf12891f830bab1cd858887036b53231
       claims:
         - state: present
           observation:
@@ -377,6 +464,7 @@ manifests:
             resolution: resolved
     - name: negative_members
       source: negative_members/src/Example.php
+      digest: cb8f147423477df0dfeb266559814c86909e6db2195713825dd6b90621dfbf25
       claims:
         - state: present
           observation:
@@ -389,6 +477,7 @@ manifests:
             symbol_kind: abstract_class
     - name: dependencies
       source: dependencies/src/Example.php
+      digest: 1d9b8dac4a2296dfb351e370f24512e36b853286bbcc3fc52e3c61c5d250ada6
       claims:
         - state: present
           observation:
@@ -402,6 +491,7 @@ manifests:
             resolution: external
     - name: source_edit_before
       source: source_edit_before/src/Example.php
+      digest: ee8363fd099b71119f9c28961433a1fe83a8079208157a56821edf30ace559f6
       claims:
         - state: present
           observation:
@@ -409,6 +499,7 @@ manifests:
             relative_path: src/Example.php
     - name: source_edit_after
       source: source_edit_after/src/Example.php
+      digest: 1bff0390462fee0881880e38225837904f0564ff676b396f7c2ab6498e2ec59e
       claims:
         - state: present
           observation:

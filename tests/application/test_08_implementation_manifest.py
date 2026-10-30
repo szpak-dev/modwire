@@ -90,7 +90,7 @@ class TestImplementationManifest(ApplicationTestCase):
     def test_every_matrix_manifest_scenario_has_exact_public_evidence_and_provenance(self) -> None:
         for language, scenario in self.contract.manifest_cases():
             root = self.contract.manifest_root(language, scenario)
-            code_map = self.application.generate_map(language.value, root, self.scan_policy())
+            code_map = self.application.generate_map(language.value, str(root), self.scan_policy())
             formats = self.application.implementation_manifest_formats()
             document = self.application.implementation_manifest(code_map, formats[0])
             manifest = self.application.read_implementation_manifest(document)
@@ -124,6 +124,7 @@ class TestImplementationManifest(ApplicationTestCase):
             assert document.payload == canonical
             assert document.algorithm is DigestAlgorithm.SHA256
             assert document.digest == hashlib.sha256(canonical.encode()).hexdigest()
+            assert document.digest == scenario.digest
             assert document.verify_digest()
             assert self.application.implementation_manifest(code_map, formats[0]) == document
 
@@ -136,7 +137,7 @@ class TestImplementationManifest(ApplicationTestCase):
             shutil.copytree(self.contract.manifest_root(language, before_scenario), root)
             format = self.application.implementation_manifest_formats()[0]
             before_document = self.application.implementation_manifest(
-                self.application.generate_map(language.value, root, self.scan_policy()), format
+                self.application.generate_map(language.value, str(root), self.scan_policy()), format
             )
             before_source = before_scenario.source.value
             after_source = after_scenario.source.value
@@ -145,7 +146,7 @@ class TestImplementationManifest(ApplicationTestCase):
                 root / before_source.relative_to(transition.before.value),
             )
             after_document = self.application.implementation_manifest(
-                self.application.generate_map(language.value, root, self.scan_policy()), format
+                self.application.generate_map(language.value, str(root), self.scan_policy()), format
             )
             before = self.application.read_implementation_manifest(before_document)
             after = self.application.read_implementation_manifest(after_document)
