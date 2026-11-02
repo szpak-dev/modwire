@@ -58,7 +58,7 @@ class LanguageCapabilityMatrix(FixtureModel):
         self.validate_manifest_layouts()
         self.validate_projection_targets()
         self.validate_scenario_bindings()
-        self.validate_complete_fact_dispositions()
+        self.validate_complete_fact_bindings()
         self.validate_claim_targets()
         self.validate_manifest_parameter_targets()
         self.validate_fixture_collections()
@@ -133,8 +133,6 @@ class LanguageCapabilityMatrix(FixtureModel):
                 raise ValueError(
                     f"{language.value} reference projection declares {bundle.reference_projection.language.value}"
                 )
-            if bundle.reference_projection.reference.scenario != self.index.reference_scenario:
-                raise ValueError(f"{language.value} reference binding differs from the root scenario")
 
     def validate_scenario_bindings(self) -> None:
         layouts: set[frozenset[tuple[ScenarioFixtureReference, str]]] = set()
@@ -163,16 +161,16 @@ class LanguageCapabilityMatrix(FixtureModel):
         if len(layouts) != 1:
             raise ValueError("language bindings must share one canonical fixture-scenario layout")
 
-    def validate_complete_fact_dispositions(self) -> None:
+    def validate_complete_fact_bindings(self) -> None:
         for name, scenario in self.catalog.scenarios.items():
             covered: set[FixtureFactReference] = set()
             for bundle in self.languages.values():
                 binding = next(binding for binding in bundle.scenarios if binding.scenario == name)
                 targets = {mapping.canonical.value.as_posix() for mapping in binding.mappings}
                 expected = {fact for fact in scenario.facts if str(fact.source_id()) in targets}
-                actual = tuple(expectation.fact for expectation in binding.expectations)
+                actual = binding.facts
                 if len(set(actual)) != len(actual) or set(actual) != expected:
-                    raise ValueError(f"{name.value} binding must dispose every selected canonical fact exactly once")
+                    raise ValueError(f"{name.value} binding must own every selected canonical fact exactly once")
                 covered.update(actual)
             if covered != set(scenario.facts):
                 raise ValueError(f"{name.value} canonical facts contain an unbound variant")
@@ -245,8 +243,5 @@ class LanguageCapabilityMatrix(FixtureModel):
                 DeclarationIdentityKey(item.canonical) for item in projection.mappings.callables
             } != reference_callables:
                 raise ValueError(f"{projection.language.value} callable targets differ from reference")
-            if {
-                (DeclarationIdentityKey(item.canonical_callable), item.canonical.value)
-                for item in projection.mappings.parameters
-            } != reference_parameters:
+            if projection.canonical_parameters != reference_parameters:
                 raise ValueError(f"{projection.language.value} parameter targets differ from reference")

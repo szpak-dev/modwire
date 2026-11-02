@@ -7,5 +7,4 @@ from ...values.names.identifier import Identifier
 class ParameterNameProjection(FixtureModel):
     authored_callable: DeclarationIdentity
     authored: Identifier
-    canonical_callable: DeclarationIdentity
     canonical: Identifier

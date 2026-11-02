@@ -3,10 +3,11 @@ import shutil
 import subprocess
 from typing import assert_never
 
-from modwire.application import ModwireApplication
+from modwire.application import ExtractorDescriptor, ModwireApplication
 
 from .language_capability_matrix.matrix import LanguageCapabilityMatrix
 from .language_capability_matrix.values.enums.runtime_package_manager import RuntimePackageManager
+from .language_capability_matrix.values.names.language_id import LanguageId
 
 
 class FixtureRuntimeContract:
@@ -32,11 +33,17 @@ class FixtureRuntimeContract:
             }
         return json.dumps(runtimes, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
 
+    def descriptor(self, application: ModwireApplication, language: LanguageId, root: str) -> ExtractorDescriptor:
+        descriptor = application.extraction.request(language.value, root).runtime.descriptor
+        if descriptor.language != language.value:
+            raise ValueError(f"{language.value} language identity differs from the registered extractor")
+        if descriptor.runtime != self.matrix.languages[language].contract.runtime.runtime.value:
+            raise ValueError(f"{language.value} runtime identity differs from the registered extractor")
+        return descriptor
+
     def validate_bindings(self, application: ModwireApplication, root: str) -> None:
-        for language, bundle in self.matrix.languages.items():
-            descriptor = application.extraction.request(language.value, root).runtime.descriptor
-            if descriptor.runtime != bundle.contract.runtime.runtime.value:
-                raise ValueError(f"{language.value} runtime identity differs from the registered extractor")
+        for language in self.matrix.languages:
+            self.descriptor(application, language, root)
 
     def validate(self, application: ModwireApplication, root: str) -> None:
         self.validate_bindings(application, root)

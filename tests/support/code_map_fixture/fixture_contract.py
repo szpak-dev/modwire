@@ -109,10 +109,19 @@ class PolyglotFixtureContract:
         return self.matrix.catalog.expected[binding.scenario].extraction.manifest.policy
 
     def evaluate_binding(
-        self, language: LanguageId, code_map: CodeMap, binding: LanguageScenarioBinding
+        self,
+        application: ModwireApplication,
+        language: LanguageId,
+        code_map: CodeMap,
+        binding: LanguageScenarioBinding,
     ) -> tuple[ClaimResult, ...]:
+        producer = self.evaluate_producer(application, language, code_map)
+        if not producer.satisfied:
+            return (producer,)
         if binding.projection is ScenarioProjectionKind.COMMON_REFERENCE:
-            code_map = self.project_reference(code_map, self.matrix.languages[language].reference_projection)
+            code_map = self.projector.project(
+                code_map, self.matrix.languages[language].reference_projection, self.matrix.reference_code_map
+            )
             sources = {
                 FileId(mapping.canonical.value.as_posix()): FileId(mapping.canonical.value.as_posix())
                 for mapping in binding.mappings
@@ -122,7 +131,16 @@ class PolyglotFixtureContract:
                 FileId(mapping.authored.value.as_posix()): FileId(mapping.canonical.value.as_posix())
                 for mapping in binding.mappings
             }
-        return self.evaluator.evaluate_binding(code_map, self.matrix.catalog, binding, FixtureSourceIdentities(sources))
+        return (
+            producer,
+            *self.evaluator.evaluate_binding(code_map, self.matrix.catalog, binding, FixtureSourceIdentities(sources)),
+        )
+
+    def evaluate_producer(
+        self, application: ModwireApplication, language: LanguageId, code_map: CodeMap
+    ) -> ClaimResult:
+        descriptor = self.runtime.descriptor(application, language, str(self.repository))
+        return self.evaluator.evaluate_producer(code_map.producer, self.matrix.languages[language].contract, descriptor)
 
     def expected_source(self, language: LanguageId, scenario: CapabilityScenario) -> SourceFile:
         bundle = self.matrix.languages[language]
@@ -164,7 +182,11 @@ class PolyglotFixtureContract:
         root = self.matrix.languages[language].contract.manifests.root.value
         return self.repository / root / scenario.name.value
 
-    def project_reference(self, code_map: CodeMap, projection: ReferenceProjection) -> CodeMap:
+    def project_reference(
+        self, application: ModwireApplication, code_map: CodeMap, projection: ReferenceProjection
+    ) -> CodeMap:
+        if not self.evaluate_producer(application, projection.language, code_map).satisfied:
+            raise FixtureContractError("reference projection producer differs from its registered language contract")
         return self.projector.project(code_map, projection, self.matrix.reference_code_map)
 
     def fixture_root(self, language: LanguageId, role: FixtureRole) -> Path:

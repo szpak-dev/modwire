@@ -6,19 +6,19 @@ from ..contracts.coverage.contract import LanguageContract
 from ..contracts.fixtures.source_set import FixtureSourceSet
 from ..projections.mappings.source import SourceIdentityProjection
 from ..projections.reference_projection import ReferenceProjection
+from ..values.names.scenario_id import ScenarioId
 from ..values.paths.path import RepositoryPath
 from ..values.paths.source_path import RepositorySourcePath
 from .binding import LanguageScenarioBinding
 from .catalog import FixtureScenarioCatalog
-from .disposition import ScenarioDisposition
 from .document import ScenarioBindingDocument
-from .expectation import ScenarioFactExpectation
 from .projection import ScenarioProjectionKind
 
 
 @dataclass(frozen=True)
 class FixtureScenarioBinder:
     catalog: FixtureScenarioCatalog
+    reference_scenario: ScenarioId
 
     def bind_document(self, contract: LanguageContract, document: ScenarioBindingDocument) -> LanguageScenarioBinding:
         reference = document.fixture.root
@@ -30,11 +30,11 @@ class FixtureScenarioBinder:
                 root=RepositoryPath(contract.manifests.root.value / scenario.name.value),
                 sources=(RepositorySourcePath(scenario.source.value.relative_to(scenario.name.value)),),
             )
-        return self.bind(document, fixture, document.mappings, ScenarioProjectionKind.SOURCE_IDENTITIES)
+        return self.bind(document.scenario, fixture, document.mappings, ScenarioProjectionKind.SOURCE_IDENTITIES)
 
     def bind_reference(self, projection: ReferenceProjection) -> LanguageScenarioBinding:
         return self.bind(
-            projection.reference,
+            self.reference_scenario,
             projection.fixture,
             projection.mappings.sources,
             ScenarioProjectionKind.COMMON_REFERENCE,
@@ -42,25 +42,21 @@ class FixtureScenarioBinder:
 
     def bind(
         self,
-        disposition: ScenarioDisposition,
+        name: ScenarioId,
         fixture: FixtureSourceSet,
         mappings: tuple[SourceIdentityProjection, ...],
         projection: ScenarioProjectionKind,
     ) -> LanguageScenarioBinding:
-        if disposition.scenario not in self.catalog.scenarios:
-            raise ValueError(f"unknown canonical scenario: {disposition.scenario.value}")
-        scenario = self.catalog.scenarios[disposition.scenario]
+        if name not in self.catalog.scenarios:
+            raise ValueError(f"unknown canonical scenario: {name.value}")
+        scenario = self.catalog.scenarios[name]
         targets = {FileId(mapping.canonical.value.as_posix()) for mapping in mappings}
         if not targets <= set(scenario.sources):
-            raise ValueError(f"{disposition.scenario.value} binding names unknown canonical sources")
+            raise ValueError(f"{name.value} binding names unknown canonical sources")
         return LanguageScenarioBinding(
-            scenario=disposition.scenario,
+            scenario=name,
             fixture=fixture,
             mappings=mappings,
             projection=projection,
-            expectations=tuple(
-                ScenarioFactExpectation(fact=fact, state=disposition.state, evidence=disposition.evidence)
-                for fact in scenario.facts
-                if fact.source_id() in targets
-            ),
+            facts=tuple(fact for fact in scenario.facts if fact.source_id() in targets),
         )

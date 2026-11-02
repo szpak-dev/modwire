@@ -6,13 +6,20 @@ completeness. This page states the runtime contract and the capability differenc
 
 ## Runtime and source support
 
-| Language | Extractor identity | Source extensions | Required runtime | Repository CI coverage |
+| Language | Registered extractor descriptor | Source extensions | Required runtime | Repository CI coverage |
 | --- | --- | --- | --- | --- |
-| Python | `modwire.python.ast` version 2 | `.py` | Python 3.12 or newer | Python 3.12, 3.13, and 3.14 |
-| TypeScript | `modwire.typescript.ts-morph` version 2 | `.ts`, `.tsx`, `.js`, `.jsx` | Node.js 20 or 22 and newer | Node.js 20 for extractor-resource checks |
-| PHP | `modwire.php.php-parser` version 2 | `.php` | PHP 8.1 or newer | Runner-provided PHP; the workflow does not pin a version |
-| Java | `modwire.java.javaparser` version 1 | `.java` | Java 17 or newer | Temurin 17 for extractor-resource checks |
-| Ruby | `modwire.ruby.prism` version 1 | `.rb` | Ruby 4.0.x with Prism 1.9.x | Ruby 4.0.7 and Prism 1.9.0 |
+| Python | [modwire.python.ast](../../src/modwire/extraction/extractors/python/extractor.py) | `.py` | Python 3.12 or newer | [Workflow Python matrix](../../.github/workflows/ci.yml) and [extractor runtime pin](../../language-capabilities/contracts/python.yaml) |
+| TypeScript | [modwire.typescript.ts-morph](../../src/modwire/extraction/extractors/typescript/extractor.py) | `.ts`, `.tsx`, `.js`, `.jsx` | Node.js 20 or 22 and newer | [Matrix runtime pin](../../language-capabilities/contracts/typescript.yaml) |
+| PHP | [modwire.php.php-parser](../../src/modwire/extraction/extractors/php/extractor.py) | `.php` | PHP 8.1 or newer | [Matrix runtime pin](../../language-capabilities/contracts/php.yaml) |
+| Java | [modwire.java.javaparser](../../src/modwire/extraction/extractors/java/extractor.py) | `.java` | Java 17 or newer | [Matrix runtime pin](../../language-capabilities/contracts/java.yaml) |
+| Ruby | [modwire.ruby.prism](../../src/modwire/extraction/extractors/ruby/extractor.py) | `.rb` | Ruby 4.0.x with Prism 1.9.x | [Matrix runtime and Prism pins](../../language-capabilities/contracts/ruby.yaml) |
+
+The linked descriptors own each extractor's identity and structural version.
+Both values accompany every public CodeMap in `producer.extractor`.
+
+Both CI jobs obtain exact external runtime and package versions from the root
+capability index through the runtime-contract export. The package job selects
+Python versions from its workflow matrix; the extractor job uses the Python pin.
 
 The Python requirement comes from the Modwire package. The Node.js range comes from
 the bundled TypeScript extractor's package metadata. The PHP extractor uses PHP 8.1
@@ -44,18 +51,35 @@ scenario to its authored source files through explicit mappings. Language varian
 preserve differences in observed facts. Source observations live in separate files;
 shared producer metadata is defined once in the catalog.
 
-Tests compare complete selected source observations and dependency evidence, including
-ordered parameter counts, names, kinds, defaults, and recursive types. Capability and
+Native scenario bindings compare complete source observations and dependency evidence,
+including ordered parameter counts, names, kinds, defaults, and recursive types.
+The common reference compares mapped classes and callables with normalized dependency
+topology. It omits unmapped methods and language-specific properties, signatures,
+functions, values, calls, annotations, imports, and source spans; it normalizes types,
+paths, hashes, and metadata, and collapses equivalent topology edges. Capability and
 relationship selectors must agree with the catalog before extraction runs. Missing
 bindings, unbound expected facts, and unreferenced data files are rejected. The source
 fixtures remain authored language programs; the catalog defines their expected public
 observations.
 
+Duplicate object fields are rejected in both YAML contracts and JSON source observations.
+
 The index declares complete fixture collections and their non-source resources.
 Every fixture source belongs to exactly one scenario binding; extra files and empty
-directories fail inventory validation. Dependency comparisons account for every edge
-and reject endpoints outside the owned sources. Manifest parameter selectors read
+directories fail inventory validation. Native dependency comparisons account for every
+raw edge; both comparison modes reject endpoints outside the owned sources.
+Manifest parameter selectors read
 their expected name, kind, and default state from the same canonical source facts.
+Every binding checks the original producer's complete capability and relationship
+coverage against its language contract and its extractor descriptor against the
+published registry before normalization. Raw artifact paths must agree with their
+source identities. Reference parameter
+aliases derive their canonical callable owner from the callable mappings. Projection
+rejects inconsistent graph node identities and constructs a typed result directly.
+Scenario bindings contain only canonical fact references. Their exact values include
+absence and unsupported states in the public model; unused scenario evidence labels
+and repeated reference selections are not stored. Each atomic capability or
+relationship claim has one scenario owner and a valid evidence role.
 
 The same statuses and explanations travel with every public `CodeMap` in
 `code_map.producer.capabilities`.

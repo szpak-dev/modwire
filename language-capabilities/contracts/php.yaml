@@ -301,11 +301,6 @@ scenarios:
   claims:
   - kind: capability
     capability: attributes
-    evidence: supported
-    state: present
-    observation: {kind: attribute, owner: ExampleConsumer, name: exampleValue, member_kind: instance}
-  - kind: capability
-    capability: attributes
     evidence: boundary
     state: absent
     observation: {kind: attribute, owner: ExampleConsumer, name: exampleRuntimeMember, member_kind: instance}

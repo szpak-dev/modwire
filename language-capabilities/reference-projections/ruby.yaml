@@ -185,11 +185,6 @@ mappings:
       qualified_name: PlaceOrder.place
       ordinal: 172
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/application/actions/place_order
-      family: method
-      qualified_name: PlaceOrder.place
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/domain/services/order_policy.rb
@@ -197,11 +192,6 @@ mappings:
       qualified_name: OrderPolicy.allows
       ordinal: 56
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/domain/services/order_policy
-      family: method
-      qualified_name: OrderPolicy.allows
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/infrastructure/repositories/order_repository.rb
@@ -209,11 +199,6 @@ mappings:
       qualified_name: OrderRepository.save
       ordinal: 132
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/infrastructure/repositories/order_repository
-      family: method
-      qualified_name: OrderRepository.save
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/interfaces/http/order_controller.rb
@@ -221,11 +206,6 @@ mappings:
       qualified_name: OrderController.handle
       ordinal: 180
     authored: order_id
-    canonical_callable:
-      source_id: src/commerce/orders/interfaces/http/order_controller
-      family: method
-      qualified_name: OrderController.handle
-      ordinal: 1
     canonical: order_id
   - authored_callable:
       source_id: src/commerce/payments/application/actions/capture_payment.rb
@@ -233,23 +213,12 @@ mappings:
       qualified_name: CapturePayment.capture
       ordinal: 71
     authored: payment
-    canonical_callable:
-      source_id: src/commerce/payments/application/actions/capture_payment
-      family: method
-      qualified_name: CapturePayment.capture
-      ordinal: 1
     canonical: payment
-reference:
-  scenario: reference-shop
-  state: present
-  evidence: supported
 scenarios:
 - scenario: extensions
   fixture:
     kind: capability
     role: extensions
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example_shapes.rb
     canonical: ruby/src/example_shapes.rb
@@ -259,8 +228,6 @@ scenarios:
   fixture:
     kind: capability
     role: gaps
-  state: present
-  evidence: boundary
   mappings:
   - authored: src/example_capability_gaps.rb
     canonical: ruby/src/example_capability_gaps.rb
@@ -268,8 +235,6 @@ scenarios:
   fixture:
     kind: capability
     role: types
-  state: present
-  evidence: supported
   mappings:
   - authored: src/type_reference_cases.rb
     canonical: ruby/src/type_reference_cases.rb
@@ -279,8 +244,6 @@ scenarios:
   fixture:
     kind: capability
     role: parameters
-  state: present
-  evidence: supported
   mappings:
   - authored: src/params.rb
     canonical: ruby/src/params.rb
@@ -288,8 +251,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: canonical
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.rb
     canonical: ruby/src/example.rb
@@ -297,8 +258,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: calls
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.rb
     canonical: ruby/src/example.rb
@@ -306,8 +265,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: no_calls
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.rb
     canonical: ruby/src/example.rb
@@ -315,8 +272,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: negative_members
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.rb
     canonical: ruby/src/example.rb
@@ -324,8 +279,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: dependencies
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.rb
     canonical: ruby/src/example.rb
@@ -333,8 +286,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: source_edit_before
-  state: present
-  evidence: supported
   mappings:
   - authored: src/nested/example.rb
     canonical: ruby/src/nested/example.rb
@@ -342,8 +293,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: source_edit_after
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.rb
     canonical: ruby/src/example.rb

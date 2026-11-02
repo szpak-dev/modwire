@@ -185,11 +185,6 @@ mappings:
       qualified_name: PlaceOrder.place
       ordinal: 130005
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/application/actions/place_order
-      family: method
-      qualified_name: PlaceOrder.place
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/domain/services/OrderPolicy.java
@@ -197,11 +192,6 @@ mappings:
       qualified_name: OrderPolicy.allows
       ordinal: 60005
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/domain/services/order_policy
-      family: method
-      qualified_name: OrderPolicy.allows
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/infrastructure/repositories/OrderRepository.java
@@ -209,11 +199,6 @@ mappings:
       qualified_name: OrderRepository.save
       ordinal: 130005
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/infrastructure/repositories/order_repository
-      family: method
-      qualified_name: OrderRepository.save
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/interfaces/http/OrderController.java
@@ -221,11 +206,6 @@ mappings:
       qualified_name: OrderController.handle
       ordinal: 130005
     authored: orderId
-    canonical_callable:
-      source_id: src/commerce/orders/interfaces/http/order_controller
-      family: method
-      qualified_name: OrderController.handle
-      ordinal: 1
     canonical: order_id
   - authored_callable:
       source_id: src/commerce/payments/application/actions/CapturePayment.java
@@ -233,23 +213,12 @@ mappings:
       qualified_name: CapturePayment.capture
       ordinal: 60005
     authored: payment
-    canonical_callable:
-      source_id: src/commerce/payments/application/actions/capture_payment
-      family: method
-      qualified_name: CapturePayment.capture
-      ordinal: 1
     canonical: payment
-reference:
-  scenario: reference-shop
-  state: present
-  evidence: supported
 scenarios:
 - scenario: extensions
   fixture:
     kind: capability
     role: extensions
-  state: present
-  evidence: supported
   mappings:
   - authored: src/ExampleShapes.java
     canonical: java/src/ExampleShapes.java
@@ -257,8 +226,6 @@ scenarios:
   fixture:
     kind: capability
     role: gaps
-  state: present
-  evidence: boundary
   mappings:
   - authored: src/ExampleCapabilityGaps.java
     canonical: java/src/ExampleCapabilityGaps.java
@@ -266,8 +233,6 @@ scenarios:
   fixture:
     kind: capability
     role: types
-  state: present
-  evidence: supported
   mappings:
   - authored: src/TypeReferenceCases.java
     canonical: java/src/TypeReferenceCases.java
@@ -277,8 +242,6 @@ scenarios:
   fixture:
     kind: capability
     role: parameters
-  state: present
-  evidence: supported
   mappings:
   - authored: src/Params.java
     canonical: java/src/Params.java
@@ -286,8 +249,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: canonical
-  state: present
-  evidence: supported
   mappings:
   - authored: src/Example.java
     canonical: java/src/Example.java
@@ -295,8 +256,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: calls
-  state: present
-  evidence: supported
   mappings:
   - authored: src/Example.java
     canonical: java/src/Example.java
@@ -304,8 +263,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: no_calls
-  state: present
-  evidence: supported
   mappings:
   - authored: src/Example.java
     canonical: java/src/Example.java
@@ -313,8 +270,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: negative_members
-  state: present
-  evidence: supported
   mappings:
   - authored: src/Example.java
     canonical: java/src/Example.java
@@ -322,8 +277,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: dependencies
-  state: present
-  evidence: supported
   mappings:
   - authored: src/Example.java
     canonical: java/src/Example.java
@@ -331,8 +284,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: source_edit_before
-  state: present
-  evidence: supported
   mappings:
   - authored: src/nested/Example.java
     canonical: java/src/nested/Example.java
@@ -340,8 +291,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: source_edit_after
-  state: present
-  evidence: supported
   mappings:
   - authored: src/Example.java
     canonical: java/src/Example.java

@@ -54,21 +54,23 @@ An implementation manifest records observed source facts and provenance. It does
 claim that the implementation satisfies an intended architecture.
 
 ```python
+from modwire.application import ModwireApplication, ScanPolicy
+
+application = ModwireApplication.create()
+policy = ScanPolicy(excluded_patterns=(".git/**", ".modwire/**"))
 code_map = application.generate_map("python", ".", policy)
 manifest_format = application.implementation_manifest_formats()[0]
 document = application.implementation_manifest(code_map, manifest_format)
 manifest = application.read_implementation_manifest(document)
 
-assert code_map.schema_version == 12
 assert manifest_format.id == "canonical-json"
-assert manifest.schema_version == 9
 assert document.verify_digest()
 
 with open("implementation-manifest.json", "w", encoding="utf-8") as target:
     target.write(document.payload)
 ```
 
-`read_implementation_manifest` validates canonical content and the declared digest
+`read_implementation_manifest` validates the published schema, canonical content, and declared digest
 before returning the typed manifest. Inspect
 `manifest.producer.relationship_capabilities` before treating an empty relationship
 family as evidence of absence.

@@ -185,11 +185,6 @@ mappings:
       qualified_name: PlaceOrder.place
       ordinal: 38654705669
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/application/actions/place_order
-      family: method
-      qualified_name: PlaceOrder.place
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/domain/services/order_policy.py
@@ -197,11 +192,6 @@ mappings:
       qualified_name: OrderPolicy.allows
       ordinal: 21474836485
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/domain/services/order_policy
-      family: method
-      qualified_name: OrderPolicy.allows
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/infrastructure/repositories/order_repository.py
@@ -209,11 +199,6 @@ mappings:
       qualified_name: OrderRepository.save
       ordinal: 42949672965
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/infrastructure/repositories/order_repository
-      family: method
-      qualified_name: OrderRepository.save
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/interfaces/http/order_controller.py
@@ -221,11 +206,6 @@ mappings:
       qualified_name: OrderController.handle
       ordinal: 38654705669
     authored: order_id
-    canonical_callable:
-      source_id: src/commerce/orders/interfaces/http/order_controller
-      family: method
-      qualified_name: OrderController.handle
-      ordinal: 1
     canonical: order_id
   - authored_callable:
       source_id: src/commerce/payments/application/actions/capture_payment.py
@@ -233,23 +213,12 @@ mappings:
       qualified_name: CapturePayment.capture
       ordinal: 21474836485
     authored: payment
-    canonical_callable:
-      source_id: src/commerce/payments/application/actions/capture_payment
-      family: method
-      qualified_name: CapturePayment.capture
-      ordinal: 1
     canonical: payment
-reference:
-  scenario: reference-shop
-  state: present
-  evidence: supported
 scenarios:
 - scenario: extensions
   fixture:
     kind: capability
     role: extensions
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example_shapes.py
     canonical: python/src/example_shapes.py
@@ -257,8 +226,6 @@ scenarios:
   fixture:
     kind: capability
     role: gaps
-  state: present
-  evidence: boundary
   mappings:
   - authored: src/example_package/__init__.py
     canonical: python/src/example_package/__init__.py
@@ -266,8 +233,6 @@ scenarios:
   fixture:
     kind: capability
     role: types
-  state: present
-  evidence: supported
   mappings:
   - authored: src/type_reference_cases.py
     canonical: python/src/type_reference_cases.py
@@ -277,8 +242,6 @@ scenarios:
   fixture:
     kind: capability
     role: parameters
-  state: present
-  evidence: supported
   mappings:
   - authored: src/params.py
     canonical: python/src/params.py
@@ -286,8 +249,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: canonical
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.py
     canonical: python/src/example.py
@@ -295,8 +256,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: calls
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.py
     canonical: python/src/example.py
@@ -304,8 +263,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: no_calls
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.py
     canonical: python/src/example.py
@@ -313,8 +270,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: negative_members
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.py
     canonical: python/src/example.py
@@ -322,8 +277,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: dependencies
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.py
     canonical: python/src/example.py
@@ -331,8 +284,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: source_edit_before
-  state: present
-  evidence: supported
   mappings:
   - authored: src/nested/example.py
     canonical: python/src/nested/example.py
@@ -340,8 +291,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: source_edit_after
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.py
     canonical: python/src/example.py

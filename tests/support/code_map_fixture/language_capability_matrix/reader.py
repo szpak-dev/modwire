@@ -36,7 +36,7 @@ class LanguageCapabilityMatrixReader:
         contracts = tuple(self.read_document(path, LanguageContract) for path in contract_paths)
         projections = tuple(self.read_document(path, ReferenceProjection) for path in projection_paths)
         catalog = self.read_catalog(index_path, index)
-        binder = FixtureScenarioBinder(catalog)
+        binder = FixtureScenarioBinder(catalog, index.reference_scenario)
         bundles = tuple(
             LanguageCapabilityBundle(
                 contract=contract,
@@ -109,7 +109,17 @@ class LanguageCapabilityMatrixReader:
         return model.model_validate_json(json.dumps(document.root), strict=True)
 
     def read_json_document[Document: BaseModel](self, path: Path, model: type[Document]) -> Document:
-        return model.model_validate_json(self.document_text(path), strict=True)
+        text = self.document_text(path)
+        json.loads(text, object_pairs_hook=self.unique_json_object)
+        return model.model_validate_json(text, strict=True)
+
+    def unique_json_object(self, pairs: list[tuple[str, object]]) -> dict[str, object]:
+        result: dict[str, object] = {}
+        for name, value in pairs:
+            if name in result:
+                raise FixtureContractError(f"duplicate JSON object field: {name}")
+            result[name] = value
+        return result
 
     def document_text(self, path: Path) -> str:
         if not path.is_file():

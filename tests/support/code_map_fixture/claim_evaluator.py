@@ -1,9 +1,13 @@
 from typing import assert_never
 
 from modwire.application import (
+    CapabilityCoverage,
     CodeMap,
+    CodeMapProducer,
+    ExtractorDescriptor,
     FileId,
     ImplementationManifest,
+    RelationshipCoverage,
     SourceFile,
     SourceParameter,
     SourceTypeAbsent,
@@ -13,19 +17,44 @@ from modwire.application import (
 )
 
 from .claim_result import ClaimResult
+from .language_capability_matrix.contracts.coverage.contract import LanguageContract
 from .language_capability_matrix.contracts.manifests.claim import ManifestClaim
 from .language_capability_matrix.contracts.scenarios.claims.scenario import ScenarioClaim
 from .language_capability_matrix.contracts.scenarios.observations.capability import CapabilityObservation
 from .language_capability_matrix.contracts.scenarios.observations.relationship import RelationshipObservation
 from .language_capability_matrix.oracle.binding import LanguageScenarioBinding
 from .language_capability_matrix.oracle.catalog import FixtureScenarioCatalog
-from .language_capability_matrix.oracle.graph import FixtureGraphOwnership
 from .language_capability_matrix.oracle.identities import FixtureSourceIdentities
+from .language_capability_matrix.oracle.ownership import FixtureSourceOwnership
 from .language_capability_matrix.values.enums.claim_state import ClaimState
 from .language_capability_matrix.values.enums.type_slot_role import TypeSlotRole
 
 
 class FixtureClaimEvaluator:
+    def evaluate_producer(
+        self, producer: CodeMapProducer, contract: LanguageContract, descriptor: ExtractorDescriptor
+    ) -> ClaimResult:
+        capabilities = tuple(
+            CapabilityCoverage(capability=capability, status=expected.status, explanation=expected.explanation.value)
+            for capability, expected in contract.capabilities.items()
+        )
+        relationships = tuple(
+            RelationshipCoverage(
+                family=family,
+                evidence_requirements=family.evidence_requirements,
+                semantics=expected.semantics,
+                semantics_explanation=expected.semantics_explanation.value,
+                inventory=expected.inventory,
+                inventory_explanation=expected.inventory_explanation.value,
+            )
+            for family, expected in contract.relationships.items()
+        )
+        return ClaimResult(
+            satisfied=producer.extractor == descriptor
+            and producer.capabilities == capabilities
+            and producer.relationship_capabilities == relationships
+        )
+
     def evaluate_code_map(
         self, code_map: CodeMap, source_id: str, wrapped: ScenarioClaim, expected: SourceFile
     ) -> ClaimResult:
@@ -41,8 +70,8 @@ class FixtureClaimEvaluator:
         identities: FixtureSourceIdentities,
     ) -> tuple[ClaimResult, ...]:
         sources = set(identities.sources)
-        if set(code_map.extraction.files) != sources or not FixtureGraphOwnership(frozenset(sources)).accepts(
-            code_map.dependency_graph
+        if set(code_map.extraction.files) != sources or not FixtureSourceOwnership(frozenset(sources)).accepts(
+            code_map.dependency_graph, code_map.extraction.manifest
         ):
             return (ClaimResult(satisfied=False),)
         expected = catalog.expected[binding.scenario]
@@ -63,11 +92,8 @@ class FixtureClaimEvaluator:
         return (
             ClaimResult(satisfied=provenance),
             *(
-                self.result(
-                    expectation.fact.read_actual(code_map, identities) == expectation.fact.read_expected(expected),
-                    expectation.state,
-                )
-                for expectation in binding.expectations
+                ClaimResult(satisfied=fact.read_actual(code_map, identities) == fact.read_expected(expected))
+                for fact in binding.facts
             ),
         )
 

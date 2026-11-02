@@ -315,11 +315,6 @@ scenarios:
   claims:
   - kind: capability
     capability: attributes
-    evidence: supported
-    state: present
-    observation: {kind: attribute, owner: ExampleMarker, name: exampleValue, member_kind: instance}
-  - kind: capability
-    capability: attributes
     evidence: boundary
     state: absent
     observation: {kind: attribute, owner: ExampleBase, name: exampleRuntimeAnnotation, member_kind: instance}

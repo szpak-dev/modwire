@@ -1,28 +1,38 @@
-import hashlib
-
 from modwire.application import (
-    CapabilityStatus,
     CodeMap,
-    SourceArtifact,
+    DependencyGraph,
+    Edge,
+    FileId,
+    ImportIdentity,
+    ImportSpecifier,
     SourceClassMethod,
     SourceDeclaration,
+    SourceDependencyKind,
+    SourceDependencyResolution,
     SourceFile,
+    SourceTypeUnsupported,
 )
 
+from .fixture_contract_error import FixtureContractError
+from .language_capability_matrix.oracle.ownership import FixtureSourceOwnership
 from .language_capability_matrix.projections.reference_projection import ReferenceProjection
 
 
 class FixtureCodeMapProjector:
     def project(self, code_map: CodeMap, projection: ReferenceProjection, reference: CodeMap) -> CodeMap:
-        unsupported_type = next(
-            callable_fact.return_type
-            for source in reference.extraction.files.values()
-            for callable_fact in source.canonical_callables()
-            if callable_fact.return_type.kind.value == "unsupported"
-        )
+        if not FixtureSourceOwnership(frozenset(code_map.extraction.files)).accepts(
+            code_map.dependency_graph, code_map.extraction.manifest
+        ):
+            raise FixtureContractError("reference projection requires consistent source paths and graph identities")
+        unsupported_type = SourceTypeUnsupported()
         source_ids = {
-            item.authored.value.as_posix(): item.canonical.value.as_posix() for item in projection.mappings.sources
+            FileId(item.authored.value.as_posix()): FileId(item.canonical.value.as_posix())
+            for item in projection.mappings.sources
         }
+        if set(code_map.extraction.files) != set(source_ids):
+            raise FixtureContractError("reference projection source inventory differs from its declared aliases")
+        if code_map.extraction.manifest.policy != reference.extraction.manifest.policy:
+            raise FixtureContractError("reference projection scan policy differs from its canonical scenario")
         declaration_ids = {item.authored: item.canonical for item in projection.mappings.declarations}
         callable_ids = {item.authored: item.canonical for item in projection.mappings.callables}
         parameter_names = {
@@ -30,10 +40,10 @@ class FixtureCodeMapProjector:
             for item in projection.mappings.parameters
         }
 
-        projected_source_ids: list[str] = []
+        projected_source_ids: list[FileId] = []
         projected_source_files: list[SourceFile] = []
         for original_source_id, source_file in code_map.extraction.files.items():
-            source_id = source_ids[str(original_source_id)]
+            source_id = source_ids[original_source_id]
             projected_source_ids.append(source_id)
             declarations: list[SourceDeclaration] = []
             for declaration in sorted(source_file.declarations, key=lambda item: item.name):
@@ -78,6 +88,7 @@ class FixtureCodeMapProjector:
                 declarations.append(
                     declaration.model_copy(
                         update={
+                            "name": identity.qualified_name,
                             "declaration_id": identity,
                             "declaration_annotations": (),
                             "line_count": 0,
@@ -92,7 +103,7 @@ class FixtureCodeMapProjector:
                 source_file.model_copy(
                     update={
                         "file_id": source_id,
-                        "import_identity": source_id,
+                        "import_identity": ImportIdentity(source_id),
                         "imports": [],
                         "exports": [],
                         "namespaces": (),
@@ -113,129 +124,55 @@ class FixtureCodeMapProjector:
             )
         files = dict(zip(projected_source_ids, projected_source_files, strict=True))
 
-        source_artifacts = {artifact.source_id: artifact for artifact in code_map.extraction.manifest.sources}
-        artifacts: list[SourceArtifact] = []
-        for original_source_id in sorted(code_map.extraction.files):
-            source_id = source_ids[str(original_source_id)]
-            artifacts.append(
-                source_artifacts[str(original_source_id)].model_copy(
-                    update={
-                        "source_id": source_id,
-                        "relative_path": source_id,
-                        "content_digest": hashlib.sha256(source_id.encode("utf-8")).hexdigest(),
-                    }
-                )
-            )
-
-        manifest = reference.extraction.manifest.model_copy(
-            update={
-                "policy": code_map.extraction.manifest.policy,
-                "sources": tuple(sorted(artifacts, key=lambda artifact: (artifact.source_id, artifact.relative_path))),
-            }
-        )
         extraction = code_map.extraction.model_copy(
             update={
                 "files": files,
                 "import_identities": {
                     source_file.import_identity: source_id for source_id, source_file in files.items()
                 },
-                "manifest": manifest,
-                "files_found": len(files),
-            }
-        )
-
-        extractor = code_map.producer.extractor.model_copy(
-            update={
-                "id": "fixture.extractor",
-                "version": "1",
-                "language": "fixture",
-                "runtime": "fixture",
-            }
-        )
-        capabilities = tuple(
-            coverage.model_copy(
-                update={
-                    "status": CapabilityStatus.UNSUPPORTED,
-                    "explanation": "The common fixture projection does not publish adapter capability claims.",
-                }
-            )
-            for coverage in code_map.producer.capabilities
-        )
-        relationship_capabilities = tuple(
-            coverage.model_copy(
-                update={
-                    "semantics": CapabilityStatus.UNSUPPORTED,
-                    "semantics_explanation": (
-                        "The common fixture projection does not publish relationship semantics claims."
-                    ),
-                    "inventory": CapabilityStatus.UNSUPPORTED,
-                    "inventory_explanation": (
-                        "The common fixture projection does not publish relationship inventory claims."
-                    ),
-                }
-            )
-            for coverage in code_map.producer.relationship_capabilities
-        )
-        producer = code_map.producer.model_copy(
-            update={
-                "modwire_version": "fixture",
-                "extractor": extractor,
-                "capabilities": capabilities,
-                "relationship_capabilities": relationship_capabilities,
+                "manifest": reference.extraction.manifest,
             }
         )
 
         nodes = {
-            source_ids[str(source_id)]: node.model_copy(update={"id": source_ids[str(source_id)]})
+            source_ids[source_id]: node.model_copy(update={"id": source_ids[node.id]})
             for source_id, node in code_map.dependency_graph.nodes.items()
         }
-        edges = {
-            (
-                str(edge.from_id),
-                str(edge.to_id or ""),
-                edge.resolution.value,
-                edge.kind.value,
-            ): edge
-            for edge in code_map.dependency_graph.edges
-        }
-        edges.clear()
+        edges: dict[tuple[FileId, FileId | None, SourceDependencyResolution, SourceDependencyKind], Edge] = {}
         for edge in code_map.dependency_graph.edges:
-            source_id = source_ids[str(edge.from_id)]
-            target_id = source_ids[str(edge.to_id)] if edge.to_id is not None else None
+            source_id = source_ids[edge.from_id]
+            target_id = source_ids[edge.to_id] if edge.to_id is not None else None
             projected_edge = edge.model_copy(
                 update={
                     "from_id": source_id,
                     "to_id": target_id,
-                    "specifier": target_id if target_id is not None else f"external:{source_id}",
+                    "specifier": ImportSpecifier(target_id if target_id is not None else f"external:{source_id}"),
                 }
             )
             identity = (
                 source_id,
-                target_id or "",
-                projected_edge.resolution.value,
-                projected_edge.kind.value,
+                target_id,
+                projected_edge.resolution,
+                projected_edge.kind,
             )
             edges[identity] = projected_edge
-        dependency_graph = code_map.dependency_graph.model_copy(
-            update={
-                "nodes": nodes,
-                "edges": sorted(
-                    edges.values(),
-                    key=lambda edge: (
-                        str(edge.from_id),
-                        str(edge.to_id or ""),
-                        edge.resolution.value,
-                        edge.kind.value,
-                    ),
+        dependency_graph = DependencyGraph(
+            nodes=nodes,
+            edges=sorted(
+                edges.values(),
+                key=lambda edge: (
+                    str(edge.from_id),
+                    str(edge.to_id or ""),
+                    edge.resolution.value,
+                    edge.kind.value,
                 ),
-            }
+            ),
         )
-        projected = code_map.model_copy(
+        return code_map.model_copy(
             update={
-                "language": "fixture",
-                "producer": producer,
+                "language": reference.language,
+                "producer": reference.producer,
                 "extraction": extraction,
                 "dependency_graph": dependency_graph,
             }
         )
-        return CodeMap.model_validate_json(projected.model_dump_json())

@@ -185,11 +185,6 @@ mappings:
       qualified_name: PlaceOrder.place
       ordinal: 206
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/application/actions/place_order
-      family: method
-      qualified_name: PlaceOrder.place
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/domain/services/order-policy.ts
@@ -197,11 +192,6 @@ mappings:
       qualified_name: OrderPolicy.allows
       ordinal: 73
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/domain/services/order_policy
-      family: method
-      qualified_name: OrderPolicy.allows
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/infrastructure/repositories/order-repository.ts
@@ -209,11 +199,6 @@ mappings:
       qualified_name: OrderRepository.save
       ordinal: 169
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/infrastructure/repositories/order_repository
-      family: method
-      qualified_name: OrderRepository.save
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/interfaces/http/order-controller.ts
@@ -221,11 +206,6 @@ mappings:
       qualified_name: OrderController.handle
       ordinal: 212
     authored: orderId
-    canonical_callable:
-      source_id: src/commerce/orders/interfaces/http/order_controller
-      family: method
-      qualified_name: OrderController.handle
-      ordinal: 1
     canonical: order_id
   - authored_callable:
       source_id: src/commerce/payments/application/actions/capture-payment.ts
@@ -233,23 +213,12 @@ mappings:
       qualified_name: CapturePayment.capture
       ordinal: 90
     authored: payment
-    canonical_callable:
-      source_id: src/commerce/payments/application/actions/capture_payment
-      family: method
-      qualified_name: CapturePayment.capture
-      ordinal: 1
     canonical: payment
-reference:
-  scenario: reference-shop
-  state: present
-  evidence: supported
 scenarios:
 - scenario: extensions
   fixture:
     kind: capability
     role: extensions
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example-audit.js
     canonical: typescript/src/example-audit.js
@@ -263,8 +232,6 @@ scenarios:
   fixture:
     kind: capability
     role: gaps
-  state: present
-  evidence: boundary
   mappings:
   - authored: src/example-capability-gaps.ts
     canonical: typescript/src/example-capability-gaps.ts
@@ -272,8 +239,6 @@ scenarios:
   fixture:
     kind: capability
     role: types
-  state: present
-  evidence: supported
   mappings:
   - authored: src/type-reference-cases.ts
     canonical: typescript/src/type-reference-cases.ts
@@ -283,8 +248,6 @@ scenarios:
   fixture:
     kind: capability
     role: parameters
-  state: present
-  evidence: supported
   mappings:
   - authored: src/params.ts
     canonical: typescript/src/params.ts
@@ -292,8 +255,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: canonical
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.ts
     canonical: typescript/src/example.ts
@@ -301,8 +262,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: calls
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.ts
     canonical: typescript/src/example.ts
@@ -310,8 +269,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: no_calls
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.ts
     canonical: typescript/src/example.ts
@@ -319,8 +276,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: negative_members
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.ts
     canonical: typescript/src/example.ts
@@ -328,8 +283,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: dependencies
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.ts
     canonical: typescript/src/example.ts
@@ -337,8 +290,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: source_edit_before
-  state: present
-  evidence: supported
   mappings:
   - authored: src/nested/example.ts
     canonical: typescript/src/nested/example.ts
@@ -346,8 +297,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: source_edit_after
-  state: present
-  evidence: supported
   mappings:
   - authored: src/example.ts
     canonical: typescript/src/example.ts

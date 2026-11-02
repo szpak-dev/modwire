@@ -8,16 +8,16 @@ from ...fixture_model import FixtureModel
 from ..contracts.fixtures.source_set import FixtureSourceSet
 from ..projections.mappings.source import SourceIdentityProjection
 from ..values.names.scenario_id import ScenarioId
-from .expectation import ScenarioFactExpectation
 from .identities import FixtureSourceIdentities
 from .projection import ScenarioProjectionKind
+from .reference import FixtureFactReference
 
 
 class LanguageScenarioBinding(FixtureModel):
     scenario: ScenarioId
     fixture: FixtureSourceSet
     mappings: tuple[SourceIdentityProjection, ...] = Field(min_length=1)
-    expectations: tuple[ScenarioFactExpectation, ...] = Field(min_length=1)
+    facts: tuple[FixtureFactReference, ...] = Field(min_length=1)
     projection: ScenarioProjectionKind
 
     def expected_source(self, code_map: CodeMap, authored: FileId) -> SourceFile:

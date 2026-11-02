@@ -62,7 +62,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         original_index = index.read_text(encoding="utf-8")
         index.write_text(original_index.replace("schema_version: 1", "schema_version: 2", 1), encoding="utf-8")
 
-        with pytest.raises(ValidationError, match="literal_error"):
+        with pytest.raises(ValidationError, match="schema_version"):
             PolyglotFixtureContract(self.workspace)
 
         index.write_text(original_index, encoding="utf-8")
@@ -284,7 +284,8 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
                 self.contract.binding_policy(binding),
             )
             assert all(
-                result.satisfied for result in self.contract.evaluate_binding(language, extracted[key], binding)
+                result.satisfied
+                for result in self.contract.evaluate_binding(self.application, language, extracted[key], binding)
             ), f"{language.value}:{binding.scenario.value}"
 
         for language, scenario in self.contract.scenario_cases():
@@ -302,7 +303,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             for claim, result in zip(scenario.claims, results, strict=True):
                 assert result.satisfied, f"{language.value}:{scenario.name.value}:{claim.model_dump_json()}"
 
-    def test_every_published_coverage_cell_exactly_matches_the_matrix(self) -> None:
+    def test_every_published_producer_matches_the_registered_language_contract(self) -> None:
         extracted = {
             language: self.application.generate_map(
                 language.value,
@@ -312,27 +313,8 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             for language, projection in self.contract.projection_cases()
         }
 
-        for language, capability, expectation in self.contract.capability_cases():
-            declared = {coverage.capability: coverage for coverage in extracted[language].producer.capabilities}[
-                capability
-            ]
-            assert declared.status is expectation.status, f"{language.value}:{capability.value}:status"
-            assert declared.explanation == expectation.explanation.value, (
-                f"{language.value}:{capability.value}:explanation"
-            )
-
-        for language, relationship, expectation in self.contract.relationship_cases():
-            declared = {
-                coverage.family: coverage for coverage in extracted[language].producer.relationship_capabilities
-            }[relationship]
-            assert declared.semantics is expectation.semantics, f"{language.value}:{relationship.value}:semantics"
-            assert declared.semantics_explanation == expectation.semantics_explanation.value, (
-                f"{language.value}:{relationship.value}:semantics_explanation"
-            )
-            assert declared.inventory is expectation.inventory, f"{language.value}:{relationship.value}:inventory"
-            assert declared.inventory_explanation == expectation.inventory_explanation.value, (
-                f"{language.value}:{relationship.value}:inventory_explanation"
-            )
+        for language, code_map in extracted.items():
+            assert self.contract.evaluate_producer(self.application, language, code_map).satisfied, language.value
 
     def test_every_language_exactly_projects_to_the_common_reference_code_map(self) -> None:
         for language, projection in self.contract.projection_cases():
@@ -342,6 +324,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
                 self.configured_scan_policy(("ignored/**",), False),
             )
 
-            assert self.contract.project_reference(actual, projection) == self.contract.matrix.reference_code_map, (
-                language.value
-            )
+            assert (
+                self.contract.project_reference(self.application, actual, projection)
+                == self.contract.matrix.reference_code_map
+            ), language.value

@@ -10,12 +10,14 @@ from ...values.enums.evidence_role import EvidenceRole
 from ...values.enums.fixture_role import FixtureRole
 from ...values.enums.relationship_aspect import RelationshipAspect
 from ...values.names.language_id import LanguageId
+from ...values.paths.source_path import RepositorySourcePath
 from ..fixtures.inventory import LanguageFixtureInventory
 from ..manifests.contract import ManifestContract
 from ..runtime.requirement import RuntimeRequirement
 from ..scenarios.capability import CapabilityScenario
 from ..scenarios.claims.capability import CapabilityClaim
 from ..scenarios.claims.relationship import RelationshipClaim
+from ..scenarios.claims.scenario import ScenarioClaim
 from .capability import CapabilityExpectation
 from .relationship import RelationshipExpectation
 
@@ -38,21 +40,16 @@ class LanguageContract(FixtureModel):
         names = tuple(scenario.name for scenario in self.scenarios)
         if len(set(names)) != len(names):
             raise ValueError("capability scenario names contain duplicates")
-        evidence_roles: dict[tuple[FixtureRole, str, str], EvidenceRole] = {}
+        owned_claims: list[tuple[FixtureRole, RepositorySourcePath, ScenarioClaim]] = []
         for scenario in self.scenarios:
-            claims = tuple(claim.root for claim in scenario.claims)
-            identities = tuple(claim.model_dump_json(exclude={"evidence"}) for claim in claims)
-            if len(set(identities)) != len(identities):
-                raise ValueError(f"{scenario.name.value} contains duplicate atomic claims")
-            for claim in claims:
-                identity = (
-                    scenario.fixture,
-                    scenario.source.value.as_posix(),
-                    claim.model_dump_json(exclude={"evidence"}),
-                )
-                if identity in evidence_roles and evidence_roles[identity] is not claim.evidence:
-                    raise ValueError("the same observation cannot prove both supported and boundary evidence")
-                evidence_roles[identity] = claim.evidence
+            for wrapped in scenario.claims:
+                if any(
+                    role is scenario.fixture and source == scenario.source and wrapped.same_fact(previous)
+                    for role, source, previous in owned_claims
+                ):
+                    raise ValueError("atomic fixture claims must have exactly one scenario owner and evidence role")
+                owned_claims.append((scenario.fixture, scenario.source, wrapped))
+                claim = wrapped.root
                 if claim.kind == "capability":
                     self.validate_capability_observation(claim)
                 elif claim.kind == "relationship":
@@ -74,6 +71,12 @@ class LanguageContract(FixtureModel):
                 if claim.kind == "relationship" and claim.evidence is EvidenceRole.SUPPORTED:
                     if claim.state is not ClaimState.PRESENT:
                         raise ValueError("supported relationship evidence must observe a published fact")
+                    expectation = self.relationships[claim.relationship]
+                    status = (
+                        expectation.semantics if claim.aspect is RelationshipAspect.SEMANTICS else expectation.inventory
+                    )
+                    if status is CapabilityStatus.UNSUPPORTED:
+                        raise ValueError("unsupported relationship aspect cannot claim supported evidence")
                 observation = claim.observation.root
                 if observation.kind == "source" and observation.relative_path != scenario.source:
                     raise ValueError(f"{scenario.name.value} source observation differs from its scenario source")

@@ -185,11 +185,6 @@ mappings:
       qualified_name: PlaceOrder.place
       ordinal: 293
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/application/actions/place_order
-      family: method
-      qualified_name: PlaceOrder.place
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/domain/services/OrderPolicy.php
@@ -197,11 +192,6 @@ mappings:
       qualified_name: OrderPolicy.allows
       ordinal: 152
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/domain/services/order_policy
-      family: method
-      qualified_name: OrderPolicy.allows
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/infrastructure/repositories/OrderRepository.php
@@ -209,11 +199,6 @@ mappings:
       qualified_name: OrderRepository.save
       ordinal: 258
     authored: order
-    canonical_callable:
-      source_id: src/commerce/orders/infrastructure/repositories/order_repository
-      family: method
-      qualified_name: OrderRepository.save
-      ordinal: 1
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/interfaces/http/OrderController.php
@@ -221,11 +206,6 @@ mappings:
       qualified_name: OrderController.handle
       ordinal: 296
     authored: orderId
-    canonical_callable:
-      source_id: src/commerce/orders/interfaces/http/order_controller
-      family: method
-      qualified_name: OrderController.handle
-      ordinal: 1
     canonical: order_id
   - authored_callable:
       source_id: src/commerce/payments/application/actions/CapturePayment.php
@@ -233,23 +213,12 @@ mappings:
       qualified_name: CapturePayment.capture
       ordinal: 165
     authored: payment
-    canonical_callable:
-      source_id: src/commerce/payments/application/actions/capture_payment
-      family: method
-      qualified_name: CapturePayment.capture
-      ordinal: 1
     canonical: payment
-reference:
-  scenario: reference-shop
-  state: present
-  evidence: supported
 scenarios:
 - scenario: extensions
   fixture:
     kind: capability
     role: extensions
-  state: present
-  evidence: supported
   mappings:
   - authored: src/ExampleShapes.php
     canonical: php/src/ExampleShapes.php
@@ -257,8 +226,6 @@ scenarios:
   fixture:
     kind: capability
     role: gaps
-  state: present
-  evidence: boundary
   mappings:
   - authored: src/ExampleCapabilityGaps.php
     canonical: php/src/ExampleCapabilityGaps.php
@@ -266,8 +233,6 @@ scenarios:
   fixture:
     kind: capability
     role: types
-  state: present
-  evidence: supported
   mappings:
   - authored: src/TypeReferenceCases.php
     canonical: php/src/TypeReferenceCases.php
@@ -277,8 +242,6 @@ scenarios:
   fixture:
     kind: capability
     role: parameters
-  state: present
-  evidence: supported
   mappings:
   - authored: src/Params.php
     canonical: php/src/Params.php
@@ -286,8 +249,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: canonical
-  state: present
-  evidence: supported
   mappings:
   - authored: src/Example.php
     canonical: php/src/Example.php
@@ -295,8 +256,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: calls
-  state: present
-  evidence: supported
   mappings:
   - authored: src/Example.php
     canonical: php/src/Example.php
@@ -304,8 +263,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: no_calls
-  state: present
-  evidence: supported
   mappings:
   - authored: src/Example.php
     canonical: php/src/Example.php
@@ -313,8 +270,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: negative_members
-  state: present
-  evidence: supported
   mappings:
   - authored: src/Example.php
     canonical: php/src/Example.php
@@ -322,8 +277,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: dependencies
-  state: present
-  evidence: supported
   mappings:
   - authored: src/Example.php
     canonical: php/src/Example.php
@@ -331,8 +284,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: source_edit_before
-  state: present
-  evidence: supported
   mappings:
   - authored: src/nested/Example.php
     canonical: php/src/nested/Example.php
@@ -340,8 +291,6 @@ scenarios:
   fixture:
     kind: manifest
     scenario: source_edit_after
-  state: present
-  evidence: supported
   mappings:
   - authored: src/Example.php
     canonical: php/src/Example.php
