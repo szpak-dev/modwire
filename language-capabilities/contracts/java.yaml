@@ -385,8 +385,7 @@ manifests:
     - state: present
       observation: {kind: callable, qualified_name: ExampleImplementation.constructor, callable_kind: constructor}
     - state: present
-      observation: {kind: parameter, owner: ExampleAbstract.exampleRequired, name: exampleValue, position: 0,
-          parameter_kind: positional, has_default: false}
+      observation: {kind: parameter, owner: ExampleAbstract.exampleRequired, position: 0}
     - state: present
       observation: {kind: attribute, owner: ExampleImplementation, name: EXAMPLE_CONSTANT, member_kind: static}
     - state: present

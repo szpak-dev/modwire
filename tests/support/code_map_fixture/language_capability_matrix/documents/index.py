@@ -3,6 +3,7 @@ from typing import Self
 from pydantic import Field, model_validator
 
 from ...fixture_model import FixtureModel
+from ..contracts.fixtures.collection import FixtureCollection
 from ..values.names.language_id import LanguageId
 from ..values.names.scenario_id import ScenarioId
 from ..values.paths.document_path import RepositoryDocumentPath
@@ -14,10 +15,18 @@ class LanguageCapabilityIndex(FixtureModel):
     schema_version: CapabilitySchemaVersion
     scenario_catalog: RepositoryDocumentPath
     reference_scenario: ScenarioId
+    fixture_collections: tuple[FixtureCollection, ...] = Field(min_length=1)
     languages: dict[LanguageId, LanguageDocumentPair] = Field(min_length=1)
 
     @model_validator(mode="after")
     def validate_document_pairs(self) -> Self:
+        roots = tuple(collection.root.value for collection in self.fixture_collections)
+        if any(
+            first.is_relative_to(second) or second.is_relative_to(first)
+            for index, first in enumerate(roots)
+            for second in roots[index + 1 :]
+        ):
+            raise ValueError("fixture collection roots must be disjoint")
         documents = tuple(
             path.value for pair in self.languages.values() for path in (pair.contract, pair.reference_projection)
         )

@@ -1,6 +1,12 @@
 schema_version: 1
 scenario_catalog: language-capabilities/scenarios/catalog.yaml
 reference_scenario: reference-shop
+fixture_collections:
+  - root: tests/fixtures/code_map
+    resources:
+      - reference_shop/architecture.yaml
+  - root: tests/fixtures/implementation_manifest
+    resources: []
 languages:
   python:
     contract: language-capabilities/contracts/python.yaml

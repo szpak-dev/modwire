@@ -369,8 +369,7 @@ manifests:
     - state: present
       observation: {kind: callable, qualified_name: ExampleImplementation.__construct, callable_kind: constructor}
     - state: present
-      observation: {kind: parameter, owner: exampleFunction, name: exampleValue, position: 0, parameter_kind:
-          positional, has_default: false}
+      observation: {kind: parameter, owner: exampleFunction, position: 0}
     - state: present
       observation: {kind: attribute, owner: ExampleImplementation, name: exampleOptional, member_kind: instance}
     - state: present

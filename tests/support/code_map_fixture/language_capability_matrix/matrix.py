@@ -10,7 +10,9 @@ from ..fixture_model import FixtureModel
 from .bundle import LanguageCapabilityBundle
 from .contracts.coverage.capability import CapabilityExpectation
 from .contracts.coverage.relationship import RelationshipExpectation
+from .contracts.manifests.scenario import ManifestScenario
 from .documents.index import LanguageCapabilityIndex
+from .oracle.binding import LanguageScenarioBinding
 from .oracle.catalog import FixtureScenarioCatalog
 from .oracle.fixtures.capability import CapabilityFixtureReference
 from .oracle.fixtures.manifest import ManifestFixtureReference
@@ -58,7 +60,70 @@ class LanguageCapabilityMatrix(FixtureModel):
         self.validate_scenario_bindings()
         self.validate_complete_fact_dispositions()
         self.validate_claim_targets()
+        self.validate_manifest_parameter_targets()
+        self.validate_fixture_collections()
         return self
+
+    def fixture_paths(self) -> tuple[PurePosixPath, ...]:
+        return (
+            *(
+                binding.fixture.root.value / source.value
+                for bundle in self.languages.values()
+                for binding in bundle.scenarios
+                for source in binding.fixture.sources
+            ),
+            *(
+                collection.root.value / resource.value
+                for collection in self.index.fixture_collections
+                for resource in collection.resources
+            ),
+        )
+
+    def validate_fixture_collections(self) -> None:
+        paths = self.fixture_paths()
+        suffixes = {
+            suffix.value for bundle in self.languages.values() for suffix in bundle.contract.fixtures.source_suffixes
+        }
+        if any(
+            resource.value.suffix in suffixes
+            for collection in self.index.fixture_collections
+            for resource in collection.resources
+        ):
+            raise ValueError("language source files must belong to scenario bindings, not fixture resources")
+        if len(set(paths)) != len(paths):
+            raise ValueError("fixture files must have exactly one binding or resource owner")
+        for path in paths:
+            if sum(path.is_relative_to(collection.root.value) for collection in self.index.fixture_collections) != 1:
+                raise ValueError("every fixture file must belong to one declared collection")
+        for collection in self.index.fixture_collections:
+            if not any(
+                binding.fixture.root.value.is_relative_to(collection.root.value)
+                for bundle in self.languages.values()
+                for binding in bundle.scenarios
+            ):
+                raise ValueError("fixture collections must own bound sources")
+
+    def manifest_binding(self, language: LanguageId, scenario: ManifestScenario) -> LanguageScenarioBinding:
+        bundle = self.languages[language]
+        reference = ScenarioFixtureReference(ManifestFixtureReference(kind="manifest", scenario=scenario.name))
+        document = next(document for document in bundle.reference_projection.scenarios if document.fixture == reference)
+        return next(binding for binding in bundle.scenarios if binding.scenario == document.scenario)
+
+    def validate_manifest_parameter_targets(self) -> None:
+        evaluator = FixtureClaimEvaluator()
+        for language, bundle in self.languages.items():
+            for scenario in bundle.contract.manifests.scenarios:
+                binding = self.manifest_binding(language, scenario)
+                source = binding.expected_source(
+                    self.catalog.expected[binding.scenario],
+                    FileId(scenario.source.value.relative_to(scenario.name.value).as_posix()),
+                )
+                for claim in scenario.claims:
+                    observation = claim.observation.root
+                    if observation.kind == "parameter":
+                        present = bool(evaluator.parameters(source, observation.owner.value, observation.position.root))
+                        if not evaluator.result(present, claim.state).satisfied:
+                            raise ValueError("manifest parameter selector contradicts its canonical source")
 
     def validate_language_pairs(self) -> None:
         for language, bundle in self.languages.items():

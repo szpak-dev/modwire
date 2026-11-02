@@ -8,6 +8,7 @@ from modwire.application import CodeMap, FileId
 from ...fixture_model import FixtureModel
 from ..values.names.scenario_id import ScenarioId
 from ..values.paths.document_path import RepositoryDocumentPath
+from .graph import FixtureGraphOwnership
 from .reference import FixtureFactReference
 from .scenario import CanonicalFixtureScenario
 from .selectors.dependencies import DependencySelector
@@ -49,14 +50,8 @@ class FixtureScenarioCatalog(FixtureModel):
             code_map = self.expected[name]
             if set(self.source_documents[name]) != set(scenario.sources):
                 raise ValueError("oracle source documents must exactly cover their scenario sources")
-            if set(code_map.dependency_graph.nodes) != set(scenario.sources):
-                raise ValueError("canonical scenario dependency nodes must exactly cover its sources")
-            if any(
-                edge.from_id not in code_map.extraction.files
-                or (edge.to_id is not None and edge.to_id not in code_map.extraction.files)
-                for edge in code_map.dependency_graph.edges
-            ):
-                raise ValueError("canonical dependency edges must reference owned scenario sources")
+            if not FixtureGraphOwnership(frozenset(scenario.sources)).accepts(code_map.dependency_graph):
+                raise ValueError("canonical dependency graph must reference exactly its owned scenario sources")
             for fact in scenario.facts:
                 fact.read_expected(code_map)
         return self

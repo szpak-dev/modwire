@@ -26,13 +26,6 @@ class ReferenceProjection(FixtureModel):
     def validate_mappings(self) -> None:
         authored_sources = tuple(item.authored.value.as_posix() for item in self.mappings.sources)
         canonical_sources = tuple(item.canonical.value.as_posix() for item in self.mappings.sources)
-        fixture_sources = {source.value.as_posix() for source in self.fixture.sources}
-        if not set(authored_sources) <= fixture_sources:
-            raise ValueError("source mappings name files outside the reference fixture")
-        if len(set(authored_sources)) != len(authored_sources):
-            raise ValueError("authored source mappings contain duplicates")
-        if len(set(canonical_sources)) != len(canonical_sources):
-            raise ValueError("canonical source mappings contain duplicates")
         authored_source_ids = set(authored_sources)
         canonical_source_ids = set(canonical_sources)
         declarations = self.mappings.declarations

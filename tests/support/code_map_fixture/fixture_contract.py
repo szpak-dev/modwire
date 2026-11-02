@@ -148,7 +148,13 @@ class PolyglotFixtureContract:
         manifest: ImplementationManifest,
         scenario: ManifestScenario,
     ) -> tuple[ClaimResult, ...]:
-        return tuple(self.evaluator.evaluate_manifest(manifest, claim) for claim in scenario.claims)
+        language = LanguageId(manifest.producer.extractor.language)
+        binding = self.matrix.manifest_binding(language, scenario)
+        expected = binding.expected_source(
+            self.matrix.catalog.expected[binding.scenario],
+            FileId(scenario.source.value.relative_to(scenario.name.value).as_posix()),
+        )
+        return tuple(self.evaluator.evaluate_manifest(manifest, claim, expected) for claim in scenario.claims)
 
     def manifest_facts_digest(self, manifest: ImplementationManifest) -> str:
         facts = manifest.model_dump_json(exclude={"producer", "source_manifest"})
@@ -166,42 +172,22 @@ class PolyglotFixtureContract:
         return self.repository / fixtures.source_sets()[role].root.value
 
     def validate_inventories(self) -> None:
+        paths = self.matrix.fixture_paths()
+        for collection in self.matrix.index.fixture_collections:
+            root = self.repository / collection.root.value
+            expected_files = {self.repository / path for path in paths if path.is_relative_to(collection.root.value)}
+            expected = expected_files | {
+                parent
+                for path in expected_files
+                for parent in path.parents
+                if parent != root and parent.is_relative_to(root)
+            }
+            if not root.is_dir() or set(root.rglob("*")) != expected:
+                raise FixtureContractError(f"fixture collection inventory differs from its complete bindings: {root}")
         for bundle in self.matrix.languages.values():
             contract = bundle.contract
-            projection = bundle.reference_projection
             for fixture in contract.fixtures.source_sets().values():
-                self.validate_source_set(fixture)
                 self.validate_source_suffixes(fixture, contract.fixtures.source_suffixes)
-            self.validate_source_inventory(
-                self.repository / contract.manifests.root.value,
-                tuple(scenario.source.value.as_posix() for scenario in contract.manifests.scenarios),
-            )
-            self.validate_source_inventory(
-                self.repository / projection.fixture.root.value,
-                tuple(source.value.as_posix() for source in projection.fixture.sources),
-            )
-
-    def languages(self, root: Path) -> tuple[str, ...]:
-        return tuple(sorted(path.name for path in root.iterdir() if path.is_dir()))
-
-    def source_paths(self, root: Path) -> tuple[str, ...]:
-        return tuple(sorted(path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file()))
-
-    def validate_language_inventory(self, root: Path, expected: tuple[str, ...]) -> None:
-        actual = self.languages(root)
-        if actual != expected:
-            raise FixtureContractError(f"language inventory mismatch: expected {expected}, observed {actual}")
-
-    def validate_source_inventory(self, root: Path, expected: tuple[str, ...]) -> None:
-        actual = self.source_paths(root)
-        if actual != tuple(sorted(expected)):
-            raise FixtureContractError(f"source inventory mismatch: expected {expected}, observed {actual}")
-
-    def validate_source_set(self, fixture: FixtureSourceSet) -> None:
-        self.validate_source_inventory(
-            self.repository / fixture.root.value,
-            tuple(source.value.as_posix() for source in fixture.sources),
-        )
 
     def validate_source_suffixes(
         self,

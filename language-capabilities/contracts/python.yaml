@@ -345,8 +345,7 @@ manifests:
     - state: present
       observation: {kind: callable, qualified_name: ExampleImplementation.__init__, callable_kind: constructor}
     - state: present
-      observation: {kind: parameter, owner: example_async, name: example_value, position: 0, parameter_kind:
-          positional, has_default: false}
+      observation: {kind: parameter, owner: example_async, position: 0}
     - state: present
       observation: {kind: attribute, owner: ExampleContract, name: example_shared, member_kind: instance}
     - state: present

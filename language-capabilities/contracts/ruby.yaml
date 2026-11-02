@@ -422,8 +422,7 @@ manifests:
     - state: present
       observation: {kind: callable, qualified_name: ExampleAbstract.initialize, callable_kind: constructor}
     - state: present
-      observation: {kind: parameter, owner: ExampleAbstract.example_required, name: example_items, position: 2,
-          parameter_kind: variadic_positional, has_default: false}
+      observation: {kind: parameter, owner: ExampleAbstract.example_required, position: 2}
     - state: absent
       observation: {kind: attribute, owner: ExampleAbstract, name: example_name, member_kind: instance}
     - state: present

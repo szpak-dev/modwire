@@ -51,6 +51,12 @@ bindings, unbound expected facts, and unreferenced data files are rejected. The 
 fixtures remain authored language programs; the catalog defines their expected public
 observations.
 
+The index declares complete fixture collections and their non-source resources.
+Every fixture source belongs to exactly one scenario binding; extra files and empty
+directories fail inventory validation. Dependency comparisons account for every edge
+and reject endpoints outside the owned sources. Manifest parameter selectors read
+their expected name, kind, and default state from the same canonical source facts.
+
 The same statuses and explanations travel with every public `CodeMap` in
 `code_map.producer.capabilities`.
 

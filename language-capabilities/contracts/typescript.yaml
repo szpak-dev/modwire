@@ -386,8 +386,7 @@ manifests:
     - state: present
       observation: {kind: callable, qualified_name: exampleArrow, callable_kind: callable_value}
     - state: present
-      observation: {kind: parameter, owner: ExampleContract.exampleRequired, name: exampleValue, position: 0,
-          parameter_kind: positional, has_default: false}
+      observation: {kind: parameter, owner: ExampleContract.exampleRequired, position: 0}
     - state: present
       observation: {kind: attribute, owner: ExampleImplementation, name: exampleOptional, member_kind: instance}
     - state: present

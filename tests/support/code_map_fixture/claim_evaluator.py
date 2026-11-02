@@ -5,6 +5,7 @@ from modwire.application import (
     FileId,
     ImplementationManifest,
     SourceFile,
+    SourceParameter,
     SourceTypeAbsent,
     SourceTypeKind,
     SourceTypeReference,
@@ -18,6 +19,7 @@ from .language_capability_matrix.contracts.scenarios.observations.capability imp
 from .language_capability_matrix.contracts.scenarios.observations.relationship import RelationshipObservation
 from .language_capability_matrix.oracle.binding import LanguageScenarioBinding
 from .language_capability_matrix.oracle.catalog import FixtureScenarioCatalog
+from .language_capability_matrix.oracle.graph import FixtureGraphOwnership
 from .language_capability_matrix.oracle.identities import FixtureSourceIdentities
 from .language_capability_matrix.values.enums.claim_state import ClaimState
 from .language_capability_matrix.values.enums.type_slot_role import TypeSlotRole
@@ -39,7 +41,9 @@ class FixtureClaimEvaluator:
         identities: FixtureSourceIdentities,
     ) -> tuple[ClaimResult, ...]:
         sources = set(identities.sources)
-        if set(code_map.extraction.files) != sources or set(code_map.dependency_graph.nodes) != sources:
+        if set(code_map.extraction.files) != sources or not FixtureGraphOwnership(frozenset(sources)).accepts(
+            code_map.dependency_graph
+        ):
             return (ClaimResult(satisfied=False),)
         expected = catalog.expected[binding.scenario]
         actual_artifacts = {artifact.source_id: artifact for artifact in code_map.extraction.manifest.sources}
@@ -114,20 +118,8 @@ class FixtureClaimEvaluator:
                 if call.source_callable_id == callable_fact.declaration_id
             )
         elif observation.kind == "parameter":
-            expected_parameters = tuple(
-                parameter
-                for callable_fact in expected_source.canonical_callables()
-                if callable_fact.qualified_name == observation.owner.value
-                for position, parameter in enumerate(callable_fact.parameters)
-                if position == observation.position.root
-            )
-            actual_parameters = tuple(
-                parameter
-                for callable_fact in source.canonical_callables()
-                if callable_fact.qualified_name == observation.owner.value
-                for position, parameter in enumerate(callable_fact.parameters)
-                if position == observation.position.root
-            )
+            expected_parameters = self.parameters(expected_source, observation.owner.value, observation.position.root)
+            actual_parameters = self.parameters(source, observation.owner.value, observation.position.root)
             if state is ClaimState.ABSENT:
                 return ClaimResult(satisfied=not actual_parameters)
             present = bool(expected_parameters) and actual_parameters == expected_parameters
@@ -291,7 +283,18 @@ class FixtureClaimEvaluator:
             )
         assert_never(role)
 
-    def evaluate_manifest(self, manifest: ImplementationManifest, claim: ManifestClaim) -> ClaimResult:
+    def parameters(self, source: SourceFile, owner: str, position: int) -> tuple[SourceParameter, ...]:
+        return tuple(
+            parameter
+            for callable_fact in source.canonical_callables()
+            if callable_fact.qualified_name == owner
+            for index, parameter in enumerate(callable_fact.parameters)
+            if index == position
+        )
+
+    def evaluate_manifest(
+        self, manifest: ImplementationManifest, claim: ManifestClaim, expected: SourceFile
+    ) -> ClaimResult:
         observation = claim.observation.root
         if observation.kind == "source":
             present = any(
@@ -315,13 +318,21 @@ class FixtureClaimEvaluator:
                 for item in manifest.callables
             )
         elif observation.kind == "parameter":
-            present = any(
-                item.callable_id.qualified_name == observation.owner.value
-                and item.name == observation.name.value
-                and item.position == observation.position.root
-                and item.kind is observation.parameter_kind
-                and item.has_default is observation.has_default
+            actual = tuple(
+                item
                 for item in manifest.parameters
+                if item.callable_id.qualified_name == observation.owner.value
+                and item.position == observation.position.root
+            )
+            if claim.state is ClaimState.ABSENT:
+                return ClaimResult(satisfied=not actual)
+            parameters = self.parameters(expected, observation.owner.value, observation.position.root)
+            present = any(
+                item.name == parameter.name
+                and item.kind is parameter.kind
+                and item.has_default is parameter.has_default
+                for item in actual
+                for parameter in parameters
             )
         elif observation.kind == "attribute":
             present = any(
