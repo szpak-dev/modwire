@@ -1,4 +1,6 @@
-from pydantic import field_validator
+from typing import Self
+
+from pydantic import model_validator
 
 from ....shared.values.models.value_model import ValueModel
 from .cache_validation_error import CacheValidationError
@@ -12,16 +14,11 @@ class CacheOptions(ValueModel):
     namespace: str
     max_bytes: int
 
-    @field_validator("directory", "namespace")
-    @classmethod
-    def _non_empty(cls, value: str) -> str:
-        if not value.strip():
-            raise CacheValidationError(CacheViolation.EMPTY_CACHE_LOCATION, value)
-        return value
-
-    @field_validator("max_bytes")
-    @classmethod
-    def _positive_size(cls, value: int) -> int:
-        if value < 1:
-            raise CacheValidationError(CacheViolation.INVALID_CACHE_CAPACITY, str(value))
-        return value
+    @model_validator(mode="after")
+    def validate_state(self) -> Self:
+        for value in (self.directory, self.namespace):
+            if not value.strip():
+                raise CacheValidationError(CacheViolation.EMPTY_CACHE_LOCATION, value)
+        if self.max_bytes < 1:
+            raise CacheValidationError(CacheViolation.INVALID_CACHE_CAPACITY, str(self.max_bytes))
+        return self

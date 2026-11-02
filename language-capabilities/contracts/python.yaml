@@ -1,0 +1,407 @@
+language: python
+runtime:
+  runtime: python
+  probe:
+    arguments: [--version]
+    pattern: ^Python (\d+\.\d+\.\d+)
+  version:
+    major: 3
+    minor: 12
+    patch: 11
+  packages: []
+fixtures:
+  source_suffixes:
+  - .py
+  extensions:
+    root: tests/fixtures/code_map/language_extensions/python
+    sources:
+    - src/example_shapes.py
+  gaps:
+    root: tests/fixtures/code_map/capability_gaps/python
+    sources:
+    - src/example_package/__init__.py
+  types:
+    root: tests/fixtures/code_map/type_references/python
+    sources:
+    - src/type_reference_cases.py
+    - src/type_reference_empty.py
+  parameters:
+    root: tests/fixtures/code_map/parameter_kinds/python
+    sources:
+    - src/params.py
+capabilities:
+  sources:
+    status: supported
+    explanation: Every included Python source is identified and hashed.
+  symbols:
+    status: supported
+    explanation: Classes, abstract classes, functions, and values are extracted.
+  callables:
+    status: supported
+    explanation: Functions, methods, constructors, and lambdas are extracted.
+  calls:
+    status: supported
+    explanation: Static calls owned by extracted callables are emitted with explicit resolved, external,
+      unresolved, or dynamic state.
+  parameters:
+    status: supported
+    explanation: Callable parameter order, kind, annotation, and default presence are extracted.
+  type_references:
+    status: partial
+    explanation: Named references and ordered generic arguments are structural; other authored type syntax is
+      reported as unsupported.
+  annotations:
+    status: partial
+    explanation: Class and callable decorators and declared type annotations are extracted; arbitrary annotations
+      are not evaluated.
+  modifiers:
+    status: partial
+    explanation: Visibility intent, callable kind, and class property member kind are normalized.
+  attributes:
+    status: supported
+    explanation: Class property identity, exact declared type, visibility, optionality, and member kind are
+      extracted.
+  assigned_values:
+    status: supported
+    explanation: Ordered assignment evidence distinguishes calls, references, literals, unresolved expressions, and
+      declarations without an assigned value.
+  inheritance:
+    status: supported
+    explanation: Every declared Python base expression is recorded.
+  namespaces:
+    status: unsupported
+    explanation: Python namespace declarations are not extracted yet.
+  declaration_kinds:
+    status: supported
+    explanation: Classes and abstract classes publish exact shared declaration kinds.
+  composition:
+    status: unsupported
+    explanation: Python base expressions are reported as inheritance; no distinct composition relation syntax is
+      classified.
+  dependencies:
+    status: supported
+    explanation: Imports are normalized and resolved when targets are present.
+  spans:
+    status: partial
+    explanation: Callable spans are exact; other symbol facts expose line counts.
+relationships:
+  declaration:
+    semantics: partial
+    semantics_explanation: Authored base expressions are preserved without interpreting runtime rebinding,
+      metaclasses, or framework conventions.
+    inventory: supported
+    inventory_explanation: Every authored class base expression in included Python sources is emitted
+      deterministically.
+  member:
+    semantics: partial
+    semantics_explanation: Declared member and callable types, static calls, and assigned values are preserved
+      without resolving dynamic types or runtime mutation.
+    inventory: supported
+    inventory_explanation: Every supported static member, callable type, call, and assigned-value fact in included
+      Python sources is emitted deterministically.
+  dependency:
+    semantics: supported
+    semantics_explanation: Authored import dependencies are normalized with explicit resolved, external, or
+      unresolved state; dynamic loading is excluded.
+    inventory: supported
+    inventory_explanation: Every authored import declaration in included Python sources is emitted
+      deterministically.
+scenarios:
+- name: supported-contract
+  fixture: extensions
+  source: src/example_shapes.py
+  claims:
+  - kind: capability
+    capability: sources
+    evidence: supported
+    state: present
+    observation: {kind: source, relative_path: src/example_shapes.py}
+  - kind: capability
+    capability: symbols
+    evidence: supported
+    state: present
+    observation: {kind: declaration, qualified_name: ExampleContract, declaration_kind: abstract_class}
+  - kind: capability
+    capability: callables
+    evidence: supported
+    state: present
+    observation: {kind: callable, qualified_name: example_factory, callable_kind: function}
+  - kind: capability
+    capability: calls
+    evidence: supported
+    state: present
+    observation: {kind: call, owner: ExampleImplementation.example_path, target: self.example_required, resolution:
+        resolved}
+  - kind: capability
+    capability: assigned_values
+    evidence: supported
+    state: present
+    observation:
+      kind: assigned_values
+      owner: ExampleAssignedValues
+  - kind: capability
+    capability: declaration_kinds
+    evidence: supported
+    state: present
+    observation: {kind: declaration, qualified_name: ExampleImplementation, declaration_kind: class}
+  - kind: capability
+    capability: dependencies
+    evidence: supported
+    state: present
+    observation: {kind: dependency, source: src/example_shapes.py, target: abc, resolution: external}
+  - kind: relationship
+    relationship: declaration
+    aspect: inventory
+    evidence: supported
+    state: present
+    observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
+        ExampleContract}
+  - kind: relationship
+    relationship: member
+    aspect: inventory
+    evidence: supported
+    state: present
+    observation: {kind: attribute, owner: ExampleContract, name: example_shared, member_kind: instance}
+  - kind: relationship
+    relationship: dependency
+    aspect: semantics
+    evidence: supported
+    state: present
+    observation: {kind: dependency, source: src/example_shapes.py, target: abc, resolution: external}
+  - kind: relationship
+    relationship: dependency
+    aspect: inventory
+    evidence: supported
+    state: present
+    observation: {kind: dependency, source: src/example_shapes.py, target: abc, resolution: external}
+  - kind: capability
+    capability: modifiers
+    evidence: supported
+    state: present
+    observation: {kind: modifier, owner: ExampleImplementation.example_static, visibility: public}
+  - kind: relationship
+    relationship: declaration
+    aspect: semantics
+    evidence: supported
+    state: present
+    observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
+        ExampleContract}
+  - kind: relationship
+    relationship: member
+    aspect: semantics
+    evidence: supported
+    state: present
+    observation: {kind: call, owner: ExampleImplementation.example_path, target: self.example_required, resolution:
+        resolved}
+- name: empty-source
+  fixture: types
+  source: src/type_reference_empty.py
+  claims:
+  - kind: capability
+    capability: sources
+    evidence: supported
+    state: present
+    observation: {kind: empty_source, relative_path: src/type_reference_empty.py}
+- name: annotation-evaluation-boundary
+  fixture: gaps
+  source: src/example_package/__init__.py
+  claims:
+  - kind: capability
+    capability: annotations
+    evidence: supported
+    state: present
+    observation: {kind: annotation, owner: ExampleBase, expression: example_annotation}
+  - kind: capability
+    capability: annotations
+    evidence: boundary
+    state: absent
+    observation: {kind: annotation, owner: ExampleBase, expression: example_runtime_annotation}
+- name: modifier-normalization-boundary
+  fixture: gaps
+  source: src/example_package/__init__.py
+  claims:
+  - kind: capability
+    capability: modifiers
+    evidence: boundary
+    state: present
+    observation: {kind: modifier, owner: ExampleBase, visibility: public}
+- name: package-namespace
+  fixture: gaps
+  source: src/example_package/__init__.py
+  claims:
+  - kind: capability
+    capability: namespaces
+    evidence: boundary
+    state: absent
+    observation: {kind: namespace, qualified_name: example_package, namespace_kind: package}
+- name: no-distinct-composition-syntax
+  fixture: gaps
+  source: src/example_package/__init__.py
+  claims:
+  - kind: capability
+    capability: composition
+    evidence: boundary
+    state: present
+    observation: {kind: declaration_relation, source: ExampleRuntime, relation: extends, target: ExampleAlias}
+- name: non-callable-span-boundary
+  fixture: gaps
+  source: src/example_package/__init__.py
+  claims:
+  - kind: capability
+    capability: spans
+    evidence: supported
+    state: present
+    observation: {kind: exact_span, owner: example_annotation, start: 6, end: 8}
+  - kind: capability
+    capability: spans
+    evidence: boundary
+    state: absent
+    observation: {kind: span_owner, owner: ExampleBase}
+- name: declaration-runtime-semantics-boundary
+  fixture: gaps
+  source: src/example_package/__init__.py
+  claims:
+  - kind: capability
+    capability: inheritance
+    evidence: supported
+    state: present
+    observation: {kind: declaration_relation, source: ExampleRuntime, relation: extends, target: ExampleAlias}
+  - kind: capability
+    capability: inheritance
+    evidence: boundary
+    state: absent
+    observation: {kind: declaration_relation, source: ExampleRuntime, relation: extends, target: ExampleBase}
+  - kind: relationship
+    relationship: declaration
+    aspect: semantics
+    evidence: boundary
+    state: present
+    observation: {kind: declaration_relation, source: ExampleRuntime, relation: extends, target: ExampleAlias}
+- name: member-runtime-semantics-boundary
+  fixture: gaps
+  source: src/example_package/__init__.py
+  claims:
+  - kind: capability
+    capability: attributes
+    evidence: supported
+    state: present
+    observation: {kind: attribute, owner: ExampleBase, name: example_value, member_kind: instance}
+  - kind: capability
+    capability: attributes
+    evidence: boundary
+    state: absent
+    observation: {kind: attribute, owner: ExampleBase, name: example_runtime_member, member_kind: instance}
+  - kind: relationship
+    relationship: member
+    aspect: semantics
+    evidence: boundary
+    state: present
+    observation: {kind: attribute, owner: ExampleBase, name: example_value, member_kind: instance}
+- name: type-reference-grammar-boundary
+  fixture: types
+  source: src/type_reference_cases.py
+  claims:
+  - kind: capability
+    capability: type_references
+    evidence: supported
+    state: present
+    observation:
+      kind: type_reference
+      owner: example_types
+      role: return
+      position: 0
+  - kind: capability
+    capability: type_references
+    evidence: boundary
+    state: unsupported
+    observation: {kind: type_slot, owner: example_types, role: parameter, position: 1}
+  - kind: capability
+    capability: type_references
+    evidence: boundary
+    state: absent
+    observation: {kind: type_slot, owner: example_types, role: parameter, position: 2}
+- name: parameter-kinds
+  fixture: parameters
+  source: src/params.py
+  claims:
+  - kind: capability
+    capability: parameters
+    evidence: supported
+    state: present
+    observation:
+      kind: parameter_list
+      owner: example_parameters
+manifests:
+  root: tests/fixtures/implementation_manifest/python
+  scenarios:
+  - name: canonical
+    source: canonical/src/example.py
+    facts_digest: a5377f5099138aa119c848c6aa779c2529c8a9596091df3e5370fe7980ec023e
+    claims:
+    - state: present
+      observation: {kind: source, relative_path: src/example.py}
+    - state: present
+      observation: {kind: symbol, qualified_name: src/example.ExampleContract, symbol_kind: abstract_class}
+    - state: present
+      observation: {kind: callable, qualified_name: ExampleImplementation.__init__, callable_kind: constructor}
+    - state: present
+      observation: {kind: parameter, owner: example_async, position: 0}
+    - state: present
+      observation: {kind: attribute, owner: ExampleContract, name: example_shared, member_kind: instance}
+    - state: present
+      observation: {kind: call, owner: ExampleImplementation.example_path, target: self.example_required,
+          resolution: resolved}
+    - state: present
+      observation: {kind: declaration_relation, source: ExampleContract, relation: extends, target: ABC}
+    - state: present
+      observation: {kind: dependency, source: src/example.py, target: abc, resolution: external}
+  - name: calls
+    source: calls/src/example.py
+    facts_digest: f2d6cb2a180fa67a89b7b77e45d3c3addb5c35d9fad75e4b6408d895d6de39b2
+    claims:
+    - state: present
+      observation: {kind: source, relative_path: src/example.py}
+    - state: present
+      observation: {kind: call, owner: example_source, target: example_target, resolution: resolved}
+  - name: no_calls
+    source: no_calls/src/example.py
+    facts_digest: da5f03f2da10c40c094612aeeefbbd1cc215e6f790474a843905e22a9978e292
+    claims:
+    - state: present
+      observation: {kind: source, relative_path: src/example.py}
+    - state: absent
+      observation: {kind: call, owner: example_source, target: example_target, resolution: resolved}
+  - name: negative_members
+    source: negative_members/src/example.py
+    facts_digest: 3c952f9375932c64444d6a1bbce0be70fd8da3e76739339d54e2e3d57ee04369
+    claims:
+    - state: present
+      observation: {kind: source, relative_path: src/example.py}
+    - state: absent
+      observation: {kind: symbol, qualified_name: src/example.ExampleContract, symbol_kind: abstract_class}
+  - name: dependencies
+    source: dependencies/src/example.py
+    facts_digest: ae5df97ff839b33c22e2ee9a486d24e44f923ff5b2bfa75edb976cfd4717f01e
+    claims:
+    - state: present
+      observation: {kind: source, relative_path: src/example.py}
+    - state: present
+      observation: {kind: dependency, source: src/example.py, target: json, resolution: external}
+  - name: source_edit_before
+    source: source_edit_before/src/nested/example.py
+    facts_digest: 12b450d875e6e3389f43ba79f0f503fa0274877fda8ae426edbcf4a9067a89ed
+    claims:
+    - state: present
+      observation: {kind: source, relative_path: src/nested/example.py}
+  - name: source_edit_after
+    source: source_edit_after/src/example.py
+    facts_digest: 800cb7ac48973f50c322b16dcb7477f96bb02952b1b9b570b329369a42f107bd
+    claims:
+    - state: present
+      observation: {kind: source, relative_path: src/example.py}
+  transitions:
+  - before: source_edit_before
+    after: source_edit_after
+    changes:
+    - source_identity
+    - implementation_identity

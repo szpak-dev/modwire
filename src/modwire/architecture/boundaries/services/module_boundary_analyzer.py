@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.source_dependency_resolution import SourceDependencyResolution
+from ....shared.code.models.dependencies.source_dependency_resolution import SourceDependencyResolution
 from ...config.models.boundaries_config import BoundariesConfig
 from ...config.models.boundary_rule import BoundaryRule
 from ...map.models.architecture_map import ArchitectureMap

@@ -1,4 +1,4 @@
-from ....shared.code.models.identity import FileId
+from ....shared.code.models.sources.identity import FileId
 
 
 class ImportIdentityIndex:

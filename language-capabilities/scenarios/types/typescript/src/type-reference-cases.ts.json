@@ -1,0 +1,110 @@
+{
+  "file_id": "typescript/src/type-reference-cases.ts",
+  "import_identity": "src/type-reference-cases",
+  "imports": [],
+  "exports": [
+    {
+      "name": "exampleTypes",
+      "local_name": "exampleTypes",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "functions": [
+    {
+      "name": "exampleTypes",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 7,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/type-reference-cases.ts",
+        "family": "function",
+        "qualified_name": "exampleTypes",
+        "ordinal": 1
+      },
+      "source_id": "typescript/src/type-reference-cases.ts",
+      "qualified_name": "exampleTypes",
+      "line_start": 1,
+      "line_end": 7,
+      "parameters": [
+        {
+          "name": "exampleNested",
+          "type": {
+            "name": "Array",
+            "arguments": [
+              {
+                "name": "string",
+                "kind": "reference"
+              }
+            ],
+            "kind": "reference"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "exampleUnsupported",
+          "type": {
+            "kind": "unsupported"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "exampleAbsent",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "name": "Map",
+        "arguments": [
+          {
+            "name": "string",
+            "kind": "reference"
+          },
+          {
+            "name": "Array",
+            "arguments": [
+              {
+                "name": "number",
+                "kind": "reference"
+              }
+            ],
+            "kind": "reference"
+          }
+        ],
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "typescript/src/type-reference-cases.ts",
+        "family": "function",
+        "qualified_name": "exampleTypes",
+        "ordinal": 1
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "typescript/src/type-reference-cases.ts",
+      "line": 6,
+      "expression": "Map",
+      "resolution": "unresolved",
+      "target_name": "Map"
+    }
+  ],
+  "line_count": 8,
+  "code_line_count": 7,
+  "public_symbol_count": 1
+}

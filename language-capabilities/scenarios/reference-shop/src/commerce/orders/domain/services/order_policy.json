@@ -1,0 +1,63 @@
+{
+  "file_id": "src/commerce/orders/domain/services/order_policy",
+  "import_identity": "src/commerce/orders/domain/services/order_policy",
+  "imports": [],
+  "declarations": [
+    {
+      "name": "OrderPolicy",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 0,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "src/commerce/orders/domain/services/order_policy",
+        "family": "class",
+        "qualified_name": "OrderPolicy",
+        "ordinal": 1
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "allows",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 0,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "src/commerce/orders/domain/services/order_policy",
+            "family": "method",
+            "qualified_name": "OrderPolicy.allows",
+            "ordinal": 1
+          },
+          "source_id": "src/commerce/orders/domain/services/order_policy",
+          "qualified_name": "OrderPolicy.allows",
+          "kind": "instance_method",
+          "line_start": 0,
+          "line_end": 0,
+          "parameters": [
+            {
+              "name": "order",
+              "type": {
+                "kind": "unsupported"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "kind": "unsupported"
+          },
+          "owner_declaration_id": {
+            "source_id": "src/commerce/orders/domain/services/order_policy",
+            "family": "class",
+            "qualified_name": "OrderPolicy",
+            "ordinal": 1
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "line_count": 0,
+  "code_line_count": 0,
+  "public_symbol_count": 1
+}

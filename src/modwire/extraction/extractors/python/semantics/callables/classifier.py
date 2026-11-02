@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ......shared.code.models.source_callable_kind import SourceCallableKind
+from ......shared.code.models.callables.source_callable_kind import SourceCallableKind
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.callable_candidate import PythonCallableCandidate

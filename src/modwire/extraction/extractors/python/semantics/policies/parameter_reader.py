@@ -5,9 +5,10 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.source_parameter import SourceParameter
-from ......shared.code.models.source_parameter_kind import SourceParameterKind
+from ......shared.code.models.callables.source_parameter import SourceParameter
+from ......shared.code.models.callables.source_parameter_kind import SourceParameterKind
 from ...observations.callable_candidate import PythonCallableCandidate
+from .source_type_reader import PythonSourceTypeReader
 
 
 class PythonParameterReader(ABC):
@@ -19,6 +20,8 @@ class PythonParameterReader(ABC):
 @injectable(as_type=PythonParameterReader)
 @dataclass(frozen=True)
 class SyntaxParameterReader(PythonParameterReader):
+    types: PythonSourceTypeReader
+
     def read(self, candidate: PythonCallableCandidate) -> tuple[SourceParameter, ...]:
         parameters = self.visit(candidate.node)
         if self.has_receiver(candidate, parameters):
@@ -72,7 +75,7 @@ class SyntaxParameterReader(PythonParameterReader):
         parameters = [
             SourceParameter(
                 name=argument.arg,
-                annotation=self.argument_annotation(argument),
+                type=self.types.read(argument.annotation),
                 kind=SourceParameterKind.POSITIONAL,
                 has_default=index >= required_count,
             )
@@ -82,7 +85,7 @@ class SyntaxParameterReader(PythonParameterReader):
             parameters.append(
                 SourceParameter(
                     name=arguments.vararg.arg,
-                    annotation=self.argument_annotation(arguments.vararg),
+                    type=self.types.read(arguments.vararg.annotation),
                     kind=SourceParameterKind.VARIADIC_POSITIONAL,
                     has_default=True,
                 )
@@ -90,7 +93,7 @@ class SyntaxParameterReader(PythonParameterReader):
         parameters.extend(
             SourceParameter(
                 name=argument.arg,
-                annotation=self.argument_annotation(argument),
+                type=self.types.read(argument.annotation),
                 kind=SourceParameterKind.NAMED_ONLY,
                 has_default=default is not None,
             )
@@ -100,7 +103,7 @@ class SyntaxParameterReader(PythonParameterReader):
             parameters.append(
                 SourceParameter(
                     name=arguments.kwarg.arg,
-                    annotation=self.argument_annotation(arguments.kwarg),
+                    type=self.types.read(arguments.kwarg.annotation),
                     kind=SourceParameterKind.VARIADIC_NAMED,
                     has_default=True,
                 )
@@ -118,8 +121,3 @@ class SyntaxParameterReader(PythonParameterReader):
     @has_decorator.register
     def async_function_has_decorator(self, node: ast.AsyncFunctionDef, name: str) -> bool:
         return any(ast.unparse(decorator).rsplit(".", 1)[-1] == name for decorator in node.decorator_list)
-
-    def argument_annotation(self, argument: ast.arg) -> str:
-        if argument.annotation is None:
-            return ""
-        return ast.unparse(argument.annotation)

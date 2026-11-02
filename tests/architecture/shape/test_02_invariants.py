@@ -9,12 +9,20 @@ class TestShapeInvariants(ShapeTestCase):
             {
                 "src/example_first.source": {
                     "functions": [
-                        factory.symbol("example_first", line_count=1, declared_args=0, optional_args=0),
-                        factory.symbol("example_second", line_count=1, declared_args=0, optional_args=0),
+                        factory.source_function(
+                            "example_first", line_count=1, parameter_count=0, optional_parameter_count=0
+                        ),
+                        factory.source_function(
+                            "example_second", line_count=1, parameter_count=0, optional_parameter_count=0
+                        ),
                     ]
                 },
                 "src/example_other.source": {
-                    "functions": [factory.symbol("example_other", line_count=1, declared_args=0, optional_args=0)]
+                    "functions": [
+                        factory.source_function(
+                            "example_other", line_count=1, parameter_count=0, optional_parameter_count=0
+                        )
+                    ]
                 },
             },
             (),

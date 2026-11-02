@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from .....shared.code.models.identity import FileId
+from .....shared.code.models.sources.identity import FileId
 
 
 @dataclass(frozen=True)

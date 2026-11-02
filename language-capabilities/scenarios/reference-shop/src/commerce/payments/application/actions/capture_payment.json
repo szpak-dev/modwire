@@ -1,0 +1,63 @@
+{
+  "file_id": "src/commerce/payments/application/actions/capture_payment",
+  "import_identity": "src/commerce/payments/application/actions/capture_payment",
+  "imports": [],
+  "declarations": [
+    {
+      "name": "CapturePayment",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 0,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "src/commerce/payments/application/actions/capture_payment",
+        "family": "class",
+        "qualified_name": "CapturePayment",
+        "ordinal": 1
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "capture",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 0,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "src/commerce/payments/application/actions/capture_payment",
+            "family": "method",
+            "qualified_name": "CapturePayment.capture",
+            "ordinal": 1
+          },
+          "source_id": "src/commerce/payments/application/actions/capture_payment",
+          "qualified_name": "CapturePayment.capture",
+          "kind": "instance_method",
+          "line_start": 0,
+          "line_end": 0,
+          "parameters": [
+            {
+              "name": "payment",
+              "type": {
+                "kind": "unsupported"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "kind": "unsupported"
+          },
+          "owner_declaration_id": {
+            "source_id": "src/commerce/payments/application/actions/capture_payment",
+            "family": "class",
+            "qualified_name": "CapturePayment",
+            "ordinal": 1
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "line_count": 0,
+  "code_line_count": 0,
+  "public_symbol_count": 1
+}

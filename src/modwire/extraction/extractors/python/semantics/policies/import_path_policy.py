@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ......shared.code.models.identity import ImportSpecifier
+from ......shared.code.models.sources.identity import ImportSpecifier
 from ...observations.import_candidate import PythonImportCandidate
 from ...observations.source_context import PythonSourceContext
 

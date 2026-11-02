@@ -1,4 +1,6 @@
-from pydantic import field_validator
+from typing import Self
+
+from pydantic import model_validator
 
 from ....shared.values.models.value_model import ValueModel
 from .cache_outcome import CacheOutcome
@@ -13,15 +15,14 @@ class CachedResult[Result](ValueModel):
     value: Result
     outcomes: tuple[CacheOutcome, ...]
 
-    @field_validator("outcomes")
-    @classmethod
-    def _unique_non_empty_stages(cls, value: tuple[CacheOutcome, ...]) -> tuple[CacheOutcome, ...]:
-        if not value:
+    @model_validator(mode="after")
+    def validate_outcomes(self) -> Self:
+        if not self.outcomes:
             raise CacheValidationError(CacheViolation.MISSING_CACHE_OUTCOME, "cached result")
-        stages = tuple(outcome.stage for outcome in value)
+        stages = tuple(outcome.stage for outcome in self.outcomes)
         if len(stages) != len(set(stages)):
             raise CacheValidationError(CacheViolation.DUPLICATE_CACHE_STAGE_OUTCOME, "cached result")
-        return value
+        return self
 
     def outcome(self, stage: CacheStage) -> CacheOutcome:
         """Return the outcome for one applicable cache stage."""

@@ -1,0 +1,35 @@
+name: Set up exact PHP CLI
+description: Build the capability contract's PHP version and install Composer.
+inputs:
+  version:
+    description: Exact PHP version from the language runtime contract.
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.version }}
+        coverage: none
+    - shell: bash
+      env:
+        PHP_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        cd "$RUNNER_TEMP"
+        curl --fail --silent --show-error --location \
+          "https://www.php.net/releases/index.php?json&version=${PHP_VERSION}" \
+          --output php-release.json
+        archive="$(jq --exit-status --raw-output '.source[] | select(.filename | endswith(".tar.xz")) | .filename' php-release.json)"
+        checksum="$(jq --exit-status --raw-output '.source[] | select(.filename | endswith(".tar.xz")) | .sha256' php-release.json)"
+        curl --fail --silent --show-error --location \
+          "https://www.php.net/distributions/${archive}" --output "$archive"
+        printf '%s  %s\n' "$checksum" "$archive" | sha256sum --check
+        tar --extract --file "$archive"
+        cd "php-${PHP_VERSION}"
+        ./configure --prefix="$RUNNER_TEMP/php-cli" --disable-all --enable-cli \
+          --enable-ctype --enable-filter --enable-phar --enable-tokenizer \
+          --with-openssl --with-iconv --disable-cgi --disable-phpdbg
+        make --jobs="$(nproc)"
+        make install
+        printf '%s\n' "$RUNNER_TEMP/php-cli/bin" >> "$GITHUB_PATH"

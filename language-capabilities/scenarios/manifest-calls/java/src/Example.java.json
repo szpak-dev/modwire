@@ -1,0 +1,145 @@
+{
+  "file_id": "java/src/Example.java",
+  "import_identity": "src/Example",
+  "imports": [],
+  "declarations": [
+    {
+      "name": "Example",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 10,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "Example",
+        "ordinal": 10001
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "exampleTarget",
+          "visibility": "internal",
+          "visibility_intent": "internal",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/Example.java",
+            "family": "method",
+            "qualified_name": "Example.exampleTarget",
+            "ordinal": 20005
+          },
+          "source_id": "java/src/Example.java",
+          "qualified_name": "Example.exampleTarget",
+          "kind": "static_method",
+          "line_start": 2,
+          "line_end": 4,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "String",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/Example.java",
+            "family": "class",
+            "qualified_name": "Example",
+            "ordinal": 10001
+          }
+        },
+        {
+          "name": "exampleSource",
+          "visibility": "internal",
+          "visibility_intent": "internal",
+          "line_count": 4,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/Example.java",
+            "family": "method",
+            "qualified_name": "Example.exampleSource",
+            "ordinal": 60005
+          },
+          "source_id": "java/src/Example.java",
+          "qualified_name": "Example.exampleSource",
+          "kind": "static_method",
+          "line_start": 6,
+          "line_end": 9,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "String",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "String",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/Example.java",
+            "family": "class",
+            "qualified_name": "Example",
+            "ordinal": 10001
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "java/src/Example.java",
+        "family": "method",
+        "qualified_name": "Example.exampleSource",
+        "ordinal": 60005
+      },
+      "ordinal": 1,
+      "target_callable_id": {
+        "source_id": "java/src/Example.java",
+        "family": "method",
+        "qualified_name": "Example.exampleTarget",
+        "ordinal": 20005
+      },
+      "source_id": "java/src/Example.java",
+      "line": 7,
+      "expression": "exampleTarget",
+      "resolution": "resolved",
+      "target_name": "exampleTarget"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "java/src/Example.java",
+        "family": "method",
+        "qualified_name": "Example.exampleSource",
+        "ordinal": 60005
+      },
+      "ordinal": 2,
+      "target_callable_id": {
+        "source_id": "java/src/Example.java",
+        "family": "method",
+        "qualified_name": "Example.exampleTarget",
+        "ordinal": 20005
+      },
+      "source_id": "java/src/Example.java",
+      "line": 8,
+      "expression": "exampleTarget",
+      "resolution": "resolved",
+      "target_name": "exampleTarget"
+    }
+  ],
+  "line_count": 11,
+  "code_line_count": 9,
+  "public_symbol_count": 0
+}

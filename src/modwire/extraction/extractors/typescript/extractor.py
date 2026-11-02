@@ -2,18 +2,18 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.capability_coverage import CapabilityCoverage
-from ....shared.code.models.capability_status import CapabilityStatus
-from ....shared.code.models.extractor_descriptor import ExtractorDescriptor
-from ....shared.code.models.fact_capability import FactCapability
-from ....shared.code.models.identity import FileId, ImportIdentity
-from ....shared.code.models.relationship_coverage import RelationshipCoverage
-from ....shared.code.models.relationship_family import RelationshipFamily
-from ....shared.code.models.source_file import SourceFile
+from ....shared.code.models.capabilities.capability_coverage import CapabilityCoverage
+from ....shared.code.models.capabilities.capability_status import CapabilityStatus
+from ....shared.code.models.capabilities.fact_capability import FactCapability
+from ....shared.code.models.capabilities.relationship_coverage import RelationshipCoverage
+from ....shared.code.models.capabilities.relationship_family import RelationshipFamily
+from ....shared.code.models.maps.extractor_descriptor import ExtractorDescriptor
+from ....shared.code.models.sources.identity import FileId, ImportIdentity
+from ....shared.code.models.sources.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
 from ..models.batch_output_format import BatchOutputFormat
-from ..models.extractor_resource import ExtractorResource
+from ..models.entrypoints.file_entrypoint import FileExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
 
 
@@ -26,7 +26,7 @@ class TypeScriptExtractor(SourceExtractor):
             order=1,
             descriptor=ExtractorDescriptor(
                 id="modwire.typescript.ts-morph",
-                version="2",
+                version="3",
                 language="typescript",
                 runtime="node",
             ),
@@ -58,6 +58,14 @@ class TypeScriptExtractor(SourceExtractor):
                     capability=FactCapability.PARAMETERS,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Callable parameter order, kind, annotation, and default presence are extracted.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.TYPE_REFERENCES,
+                    status=CapabilityStatus.PARTIAL,
+                    explanation=(
+                        "Named references and ordered generic arguments are structural; other authored type syntax "
+                        "is reported as unsupported."
+                    ),
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.ANNOTATIONS,
@@ -162,11 +170,11 @@ class TypeScriptExtractor(SourceExtractor):
             ),
             file_extensions=(".ts", ".tsx", ".js", ".jsx"),
             command=("node",),
-            entrypoint_arguments=(),
             version_arguments=("--version",),
-            entrypoint=ExtractorResource(
+            entrypoint=FileExtractorEntrypoint(
                 package="modwire.extraction.extractors.resources",
                 path="typescript/script.js",
+                arguments=(),
             ),
         )
 

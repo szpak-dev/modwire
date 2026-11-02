@@ -1,127 +1,247 @@
 from pathlib import PurePosixPath
 from typing import Self
 
-from pydantic import Field, model_validator
+from pydantic import model_validator
 
-from modwire.application import CapabilityStatus, FactCapability, RelationshipFamily
+from modwire.application import CodeMap, FactCapability, FileId, RelationshipFamily
 
-from ..model import FixtureModel
-from .expectations.capability import CapabilityExpectation
-from .expectations.relationship import RelationshipExpectation
-from .expectations.scenario import LimitationScenarioExpectation
-from .row import LanguageCapabilityRow
+from ..claim_evaluator import FixtureClaimEvaluator
+from ..fixture_model import FixtureModel
+from .bundle import LanguageCapabilityBundle
+from .contracts.coverage.capability import CapabilityExpectation
+from .contracts.coverage.relationship import RelationshipExpectation
+from .contracts.manifests.scenario import ManifestScenario
+from .documents.index import LanguageCapabilityIndex
+from .oracle.binding import LanguageScenarioBinding
+from .oracle.catalog import FixtureScenarioCatalog
+from .oracle.fixtures.capability import CapabilityFixtureReference
+from .oracle.fixtures.manifest import ManifestFixtureReference
+from .oracle.fixtures.reference import ScenarioFixtureReference
+from .oracle.projection import ScenarioProjectionKind
+from .oracle.reference import FixtureFactReference
+from .projections.mappings.identity import DeclarationIdentityKey
+from .values.names.language_id import LanguageId
 
 
 class LanguageCapabilityMatrix(FixtureModel):
-    reference_projection: str = Field(min_length=1)
-    languages: dict[str, LanguageCapabilityRow]
+    index: LanguageCapabilityIndex
+    catalog: FixtureScenarioCatalog
+    languages: dict[LanguageId, LanguageCapabilityBundle]
 
-    def capability_cases(self) -> tuple[tuple[str, FactCapability, CapabilityExpectation], ...]:
+    @property
+    def reference_code_map(self) -> CodeMap:
+        return self.catalog.expected[self.index.reference_scenario]
+
+    def capability_cases(self) -> tuple[tuple[LanguageId, FactCapability, CapabilityExpectation], ...]:
         return tuple(
-            (language, capability, expectation)
-            for language, row in self.languages.items()
-            for capability, expectation in row.capabilities.items()
+            (
+                (language, capability, expectation)
+                for language, bundle in self.languages.items()
+                for capability, expectation in bundle.contract.capabilities.items()
+            )
         )
 
-    def relationship_cases(self) -> tuple[tuple[str, RelationshipFamily, RelationshipExpectation], ...]:
+    def relationship_cases(self) -> tuple[tuple[LanguageId, RelationshipFamily, RelationshipExpectation], ...]:
         return tuple(
-            (language, family, expectation)
-            for language, row in self.languages.items()
-            for family, expectation in row.relationships.items()
+            (
+                (language, relationship, expectation)
+                for language, bundle in self.languages.items()
+                for relationship, expectation in bundle.contract.relationships.items()
+            )
         )
-
-    def scenario_cases(self) -> tuple[tuple[str, LimitationScenarioExpectation], ...]:
-        return tuple((language, scenario) for language, row in self.languages.items() for scenario in row.scenarios)
 
     @model_validator(mode="after")
-    def validate_contract(self) -> Self:
-        manifest_layouts: set[tuple[str, ...]] = set()
-        for language, row in self.languages.items():
-            self.validate_row_inventory(language, row)
-            self.validate_row_scenarios(language, row)
-            if not all(row.convention.accepts_source_path(path) for path in row.fixtures.manifest_sources.values()):
-                raise ValueError(f"{language} manifest inventory contains a non-source path")
-            if any(
-                PurePosixPath(path).parts[0] != scenario for scenario, path in row.fixtures.manifest_sources.items()
-            ):
-                raise ValueError(f"{language} manifest source is outside its named scenario")
-            manifest_layouts.add(
-                tuple(
-                    f"{scenario}:{PurePosixPath(path).parent.as_posix()}"
-                    for scenario, path in row.fixtures.manifest_sources.items()
-                )
-            )
-        if len(manifest_layouts) != 1:
-            raise ValueError("language manifest inventories do not share one scenario layout")
+    def validate_complete_graph(self) -> Self:
+        if tuple(self.languages) != tuple(self.index.languages):
+            raise ValueError("language bundles do not exactly match the root index")
+        self.validate_language_pairs()
+        self.validate_manifest_layouts()
+        self.validate_projection_targets()
+        self.validate_scenario_bindings()
+        self.validate_complete_fact_bindings()
+        self.validate_claim_targets()
+        self.validate_manifest_parameter_targets()
+        self.validate_fixture_collections()
         return self
 
-    def validate_row_inventory(self, language: str, row: LanguageCapabilityRow) -> None:
-        if tuple(row.capabilities) != tuple(FactCapability):
-            raise ValueError(f"{language} does not cover every fact capability in canonical order")
-        if tuple(row.relationships) != tuple(RelationshipFamily):
-            raise ValueError(f"{language} does not cover every relationship family in canonical order")
+    def fixture_paths(self) -> tuple[PurePosixPath, ...]:
+        return (
+            *(
+                binding.fixture.root.value / source.value
+                for bundle in self.languages.values()
+                for binding in bundle.scenarios
+                for source in binding.fixture.sources
+            ),
+            *(
+                collection.root.value / resource.value
+                for collection in self.index.fixture_collections
+                for resource in collection.resources
+            ),
+        )
 
-    def validate_row_scenarios(self, language: str, row: LanguageCapabilityRow) -> None:
-        metadata_scenarios = tuple(scenario.scenario for scenario in row.scenarios)
-        if len(set(metadata_scenarios)) != len(metadata_scenarios):
-            raise ValueError(f"{language} contains duplicate scenario metadata")
-
-        capability_cases = row.capability_limitations.cases()
-        relationship_cases = row.relationship_limitations.cases()
-        typed_scenarios = {scenario for scenario, contract_cell in (*capability_cases, *relationship_cases)}
-        if typed_scenarios != set(metadata_scenarios):
-            raise ValueError(f"{language} scenario metadata does not exactly cover typed limitations")
-
-        capability_scenarios = {
-            capability.value: tuple(
-                scenario for scenario, contract_cell in capability_cases if contract_cell == capability.value
-            )
-            for capability in FactCapability
+    def validate_fixture_collections(self) -> None:
+        paths = self.fixture_paths()
+        suffixes = {
+            suffix.value for bundle in self.languages.values() for suffix in bundle.contract.fixtures.source_suffixes
         }
-        for capability, expectation in row.capabilities.items():
-            self.validate_status_limitations(
-                language,
-                capability.value,
-                expectation.status,
-                expectation.limitation_scenarios,
-            )
-            if expectation.limitation_scenarios != capability_scenarios[capability.value]:
-                raise ValueError(f"{language} {capability.value} limitations are not owned by that capability")
+        if any(
+            resource.value.suffix in suffixes
+            for collection in self.index.fixture_collections
+            for resource in collection.resources
+        ):
+            raise ValueError("language source files must belong to scenario bindings, not fixture resources")
+        if len(set(paths)) != len(paths):
+            raise ValueError("fixture files must have exactly one binding or resource owner")
+        for path in paths:
+            if sum(path.is_relative_to(collection.root.value) for collection in self.index.fixture_collections) != 1:
+                raise ValueError("every fixture file must belong to one declared collection")
+        for collection in self.index.fixture_collections:
+            if not any(
+                binding.fixture.root.value.is_relative_to(collection.root.value)
+                for bundle in self.languages.values()
+                for binding in bundle.scenarios
+            ):
+                raise ValueError("fixture collections must own bound sources")
 
-        for family, expectation in row.relationships.items():
-            semantics_cell = f"{family.value}_semantics"
-            inventory_cell = f"{family.value}_inventory"
-            semantics_scenarios = tuple(
-                scenario for scenario, contract_cell in relationship_cases if contract_cell == semantics_cell
-            )
-            inventory_scenarios = tuple(
-                scenario for scenario, contract_cell in relationship_cases if contract_cell == inventory_cell
-            )
-            self.validate_status_limitations(
-                language,
-                f"{family.value} semantics",
-                expectation.semantics,
-                expectation.semantics_limitation_scenarios,
-            )
-            self.validate_status_limitations(
-                language,
-                f"{family.value} inventory",
-                expectation.inventory,
-                expectation.inventory_limitation_scenarios,
-            )
-            if expectation.semantics_limitation_scenarios != semantics_scenarios:
-                raise ValueError(f"{language} {family.value} semantics limitations are not owned by that cell")
-            if expectation.inventory_limitation_scenarios != inventory_scenarios:
-                raise ValueError(f"{language} {family.value} inventory limitations are not owned by that cell")
+    def manifest_binding(self, language: LanguageId, scenario: ManifestScenario) -> LanguageScenarioBinding:
+        bundle = self.languages[language]
+        reference = ScenarioFixtureReference(ManifestFixtureReference(kind="manifest", scenario=scenario.name))
+        document = next(document for document in bundle.reference_projection.scenarios if document.fixture == reference)
+        return next(binding for binding in bundle.scenarios if binding.scenario == document.scenario)
 
-    def validate_status_limitations(
-        self,
-        language: str,
-        subject: str,
-        status: CapabilityStatus,
-        scenarios: tuple[str, ...],
-    ) -> None:
-        if status is CapabilityStatus.SUPPORTED and scenarios:
-            raise ValueError(f"{language} supported {subject} has limitation scenarios")
-        if status is not CapabilityStatus.SUPPORTED and not scenarios:
-            raise ValueError(f"{language} non-supported {subject} has no limitation scenario")
+    def validate_manifest_parameter_targets(self) -> None:
+        evaluator = FixtureClaimEvaluator()
+        for language, bundle in self.languages.items():
+            for scenario in bundle.contract.manifests.scenarios:
+                binding = self.manifest_binding(language, scenario)
+                source = binding.expected_source(
+                    self.catalog.expected[binding.scenario],
+                    FileId(scenario.source.value.relative_to(scenario.name.value).as_posix()),
+                )
+                for claim in scenario.claims:
+                    observation = claim.observation.root
+                    if observation.kind == "parameter":
+                        present = bool(evaluator.parameters(source, observation.owner.value, observation.position.root))
+                        if not evaluator.result(present, claim.state).satisfied:
+                            raise ValueError("manifest parameter selector contradicts its canonical source")
+
+    def validate_language_pairs(self) -> None:
+        for language, bundle in self.languages.items():
+            if bundle.contract.language != language:
+                raise ValueError(f"{language.value} contract declares {bundle.contract.language.value}")
+            if bundle.reference_projection.language != language:
+                raise ValueError(
+                    f"{language.value} reference projection declares {bundle.reference_projection.language.value}"
+                )
+
+    def validate_scenario_bindings(self) -> None:
+        layouts: set[frozenset[tuple[ScenarioFixtureReference, str]]] = set()
+        for language, bundle in self.languages.items():
+            names = tuple(binding.scenario for binding in bundle.scenarios)
+            if len(set(names)) != len(names) or set(names) != set(self.catalog.scenarios):
+                raise ValueError(f"{language.value} bindings must cover every canonical scenario exactly once")
+            references = tuple(document.fixture for document in bundle.reference_projection.scenarios)
+            expected = {
+                *(
+                    ScenarioFixtureReference(CapabilityFixtureReference(kind="capability", role=role))
+                    for role in bundle.contract.fixtures.source_sets()
+                ),
+                *(
+                    ScenarioFixtureReference(ManifestFixtureReference(kind="manifest", scenario=scenario.name))
+                    for scenario in bundle.contract.manifests.scenarios
+                ),
+            }
+            if len(set(references)) != len(references) or set(references) != expected:
+                raise ValueError(f"{language.value} bindings must own every fixture family and manifest scenario")
+            layouts.add(
+                frozenset(
+                    (document.fixture, document.scenario.value) for document in bundle.reference_projection.scenarios
+                )
+            )
+        if len(layouts) != 1:
+            raise ValueError("language bindings must share one canonical fixture-scenario layout")
+
+    def validate_complete_fact_bindings(self) -> None:
+        for name, scenario in self.catalog.scenarios.items():
+            covered: set[FixtureFactReference] = set()
+            for bundle in self.languages.values():
+                binding = next(binding for binding in bundle.scenarios if binding.scenario == name)
+                targets = {mapping.canonical.value.as_posix() for mapping in binding.mappings}
+                expected = {fact for fact in scenario.facts if str(fact.source_id()) in targets}
+                actual = binding.facts
+                if len(set(actual)) != len(actual) or set(actual) != expected:
+                    raise ValueError(f"{name.value} binding must own every selected canonical fact exactly once")
+                covered.update(actual)
+            if covered != set(scenario.facts):
+                raise ValueError(f"{name.value} canonical facts contain an unbound variant")
+
+    def validate_claim_targets(self) -> None:
+        evaluator = FixtureClaimEvaluator()
+        for language, bundle in self.languages.items():
+            for scenario in bundle.contract.scenarios:
+                fixture = bundle.contract.fixtures.source_sets()[scenario.fixture]
+                binding = next(
+                    binding
+                    for binding in bundle.scenarios
+                    if binding.projection is ScenarioProjectionKind.SOURCE_IDENTITIES and binding.fixture == fixture
+                )
+                expected = binding.expected_source(
+                    self.catalog.expected[binding.scenario], FileId(scenario.source.value.as_posix())
+                )
+                for wrapped in scenario.claims:
+                    claim = wrapped.root
+                    if not evaluator.evaluate_observation(expected, claim.observation, claim.state, expected).satisfied:
+                        raise ValueError(f"{language.value}:{scenario.name.value} claim contradicts the common CodeMap")
+
+    def validate_manifest_layouts(self) -> None:
+        manifest_layouts: set[tuple[tuple[str, PurePosixPath], ...]] = set()
+        for bundle in self.languages.values():
+            contract = bundle.contract
+            manifest_layouts.add(
+                tuple((scenario.name.value, scenario.source.value.parent) for scenario in contract.manifests.scenarios)
+            )
+        if len(manifest_layouts) != 1:
+            raise ValueError("language manifest contracts do not share one scenario layout")
+
+    def validate_projection_targets(self) -> None:
+        reference_sources = set(self.reference_code_map.extraction.files)
+        reference_declarations = {
+            DeclarationIdentityKey(declaration.declaration_id)
+            for source in self.reference_code_map.extraction.files.values()
+            for declaration in source.declarations
+        }
+        reference_callables = {
+            DeclarationIdentityKey(callable_fact.declaration_id)
+            for source in self.reference_code_map.extraction.files.values()
+            for callable_fact in source.canonical_callables()
+        }
+        reference_parameters = {
+            (DeclarationIdentityKey(callable_fact.declaration_id), parameter.name)
+            for source in self.reference_code_map.extraction.files.values()
+            for callable_fact in source.canonical_callables()
+            for parameter in callable_fact.parameters
+        }
+        for bundle in self.languages.values():
+            projection = bundle.reference_projection
+            suffixes = {suffix.value for suffix in bundle.contract.fixtures.source_suffixes}
+            if {source.value.suffix for source in projection.fixture.sources} - suffixes:
+                raise ValueError(f"{projection.language.value} reference fixture uses an undeclared suffix")
+            authored_sources = {item.authored.value for item in projection.mappings.sources}
+            excluded_sources = {
+                source.value for source in projection.fixture.sources if source.value not in authored_sources
+            }
+            excluded_patterns = self.reference_code_map.extraction.manifest.policy.excluded_patterns
+            if any(not any(source.match(pattern) for pattern in excluded_patterns) for source in excluded_sources):
+                raise ValueError(f"{projection.language.value} projection leaves an included source unmapped")
+            if {item.canonical.value.as_posix() for item in projection.mappings.sources} != reference_sources:
+                raise ValueError(f"{projection.language.value} projection source targets differ from reference")
+            if {
+                DeclarationIdentityKey(item.canonical) for item in projection.mappings.declarations
+            } != reference_declarations:
+                raise ValueError(f"{projection.language.value} declaration targets differ from reference")
+            if {
+                DeclarationIdentityKey(item.canonical) for item in projection.mappings.callables
+            } != reference_callables:
+                raise ValueError(f"{projection.language.value} callable targets differ from reference")
+            if projection.canonical_parameters != reference_parameters:
+                raise ValueError(f"{projection.language.value} parameter targets differ from reference")

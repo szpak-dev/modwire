@@ -43,6 +43,7 @@ class RubySourceExtractor
     @declarations = []
     @namespaces = []
     @values = []
+    @functions = []
     @callable_facts = []
     @relations = []
   end
@@ -53,15 +54,18 @@ class RubySourceExtractor
     raise_parse_failure(parsed.errors.first) unless parsed.success?
 
     collect_body(parsed.value.statements, "", nil, false)
-    callables = @callable_facts.map { |fact| fact.fetch("json") }
+    callable_values = @callable_facts
+                      .map { |fact| fact.fetch("json") }
+                      .select { |callable| callable.fetch("kind") == "callable_value" }
     {
       "imports" => imports(parsed.value),
       "exports" => [],
       "namespaces" => @namespaces,
       "declarations" => @declarations,
-      "functions" => [],
+      "functions" => @functions,
       "values" => @values,
-      "callables" => callables,
+      "callable_values" => callable_values,
+      "anonymous_callables" => [],
       "calls" => calls,
       "declaration_relations" => @relations,
       "line_count" => [1, content.split(/\r\n|\n|\r/, -1).length].max,
@@ -89,8 +93,12 @@ class RubySourceExtractor
     statement_sequence(statements).each do |node|
       if node.is_a?(Prism::ClassNode) || node.is_a?(Prism::ModuleNode)
         collect_declaration(node, owner)
-      elsif node.is_a?(Prism::DefNode) && !owner.empty?
-        collect_method(node, owner, declaration, visibility, singleton)
+      elsif node.is_a?(Prism::DefNode)
+        if owner.empty?
+          collect_function(node, visibility)
+        else
+          collect_method(node, owner, declaration, visibility, singleton)
+        end
       elsif node.is_a?(Prism::SingletonClassNode) && self_receiver?(node.expression)
         collect_body(node.body, owner, declaration, true)
       elsif constant_write?(node)
@@ -164,13 +172,11 @@ class RubySourceExtractor
            end
     qualified_name = "#{owner}.#{name}"
     parameters = parameters(node.parameters)
-    optional_args = parameters.count { |parameter| parameter.fetch("has_default") }
     callable = {
       "declaration_id" => identity("method", qualified_name, ordinal(node)),
       "source_id" => @source_id,
       "name" => name,
       "qualified_name" => qualified_name,
-      "owner_name" => owner,
       "kind" => kind,
       "visibility" => method_visibility,
       "visibility_intent" => method_visibility,
@@ -179,26 +185,42 @@ class RubySourceExtractor
       "line_end" => node.location.end_line,
       "line_count" => line_count(node),
       "parameters" => parameters,
-      "declared_args" => parameters.length,
-      "optional_args" => optional_args,
-      "return_annotation" => "",
+      "return_type" => absent_type,
+      "decorators" => [],
+      "docstring" => "",
+      "owner_declaration_id" => declaration.fetch("declaration_id").dup
+    }
+    declaration.fetch("methods") << callable
+    @callable_facts << {"node" => node, "json" => callable, "owner" => owner}
+  end
+
+  def collect_function(node, visibility)
+    name = node.name.to_s
+    callable = {
+      "declaration_id" => identity("function", name, ordinal(node)),
+      "source_id" => @source_id,
+      "name" => name,
+      "qualified_name" => name,
+      "kind" => "function",
+      "visibility" => visibility,
+      "visibility_intent" => visibility,
+      "declaration_annotations" => [],
+      "line_start" => node.location.start_line,
+      "line_end" => node.location.end_line,
+      "line_count" => line_count(node),
+      "parameters" => parameters(node.parameters),
+      "return_type" => absent_type,
       "decorators" => [],
       "docstring" => ""
     }
-    summary = {
-      "name" => name,
-      "visibility" => callable.fetch("visibility"),
-      "visibility_intent" => callable.fetch("visibility_intent"),
-      "declaration_annotations" => [],
-      "line_count" => callable.fetch("line_count"),
-      "declared_args" => parameters.length,
-      "optional_args" => optional_args
-    }
-    declaration.fetch("methods") << summary
-    @callable_facts << {"node" => node, "json" => callable, "summary" => summary}
+    @functions << callable
+    @callable_facts << {"node" => node, "json" => callable, "owner" => ""}
   end
 
   def parameters(node)
+    return [] if node.nil?
+
+    node = node.parameters if node.is_a?(Prism::BlockParametersNode)
     return [] if node.nil?
 
     result = []
@@ -217,7 +239,7 @@ class RubySourceExtractor
   def parameter_fact(node, kind, has_default)
     {
       "name" => parameter_name(node),
-      "annotation" => "",
+      "type" => absent_type,
       "kind" => kind,
       "has_default" => has_default
     }
@@ -244,15 +266,13 @@ class RubySourceExtractor
   def apply_visibility(owner, names, visibility, singleton)
     @callable_facts.each do |fact|
       callable = fact.fetch("json")
-      next unless callable.fetch("owner_name") == owner && names.include?(callable.fetch("name"))
+      next unless fact.fetch("owner") == owner && names.include?(callable.fetch("name"))
       instance_callable = callable.fetch("kind") == "instance_method" || callable.fetch("kind") == "constructor"
       type_callable = callable.fetch("kind") == "type_method"
       next unless singleton ? type_callable : instance_callable
 
       callable["visibility"] = visibility
       callable["visibility_intent"] = visibility
-      fact.fetch("summary")["visibility"] = visibility
-      fact.fetch("summary")["visibility_intent"] = visibility
     end
   end
 
@@ -281,6 +301,10 @@ class RubySourceExtractor
                  else
                    "value_unknown"
                  end
+    if value.is_a?(Prism::LambdaNode)
+      collect_callable_constant(node, value, name)
+      return
+    end
     @values << {
       "declaration_id" => identity("value", name, ordinal(node)),
       "name" => name,
@@ -289,10 +313,32 @@ class RubySourceExtractor
       "line_count" => line_count(node),
       "declaration_kind" => "constant",
       "value_kind" => value_kind,
-      "scope" => "module",
-      "declared_args" => 0,
-      "optional_args" => 0
+      "scope" => "module"
     }
+  end
+
+  def collect_callable_constant(node, value, name)
+    callable = {
+      "declaration_id" => identity("value", name, ordinal(node)),
+      "source_id" => @source_id,
+      "name" => name,
+      "qualified_name" => name,
+      "kind" => "callable_value",
+      "visibility" => "public",
+      "visibility_intent" => "public",
+      "declaration_annotations" => [],
+      "line_start" => node.location.start_line,
+      "line_end" => node.location.end_line,
+      "line_count" => line_count(node),
+      "parameters" => parameters(value.parameters),
+      "return_type" => absent_type,
+      "decorators" => [],
+      "docstring" => "",
+      "declaration_kind" => "constant",
+      "value_kind" => "value_callable",
+      "scope" => "module"
+    }
+    @callable_facts << {"node" => value, "json" => callable, "owner" => ""}
   end
 
   def imports(program)
@@ -349,7 +395,7 @@ class RubySourceExtractor
         next unless node.is_a?(Prism::CallNode)
 
         ordinal += 1
-        target = call_target(node, callable.fetch("owner_name"))
+        target = call_target(node, source.fetch("owner"))
         candidates = target.nil? ? [] : facts_by_qualified_name.fetch(target, [])
         resolution = if target.nil?
                        "dynamic"
@@ -376,7 +422,11 @@ class RubySourceExtractor
 
   def call_target(node, owner)
     name = node.name.to_s
-    return "#{owner}.#{name}" if node.receiver.nil? || self_receiver?(node.receiver)
+    if node.receiver.nil? || self_receiver?(node.receiver)
+      return name if owner.empty?
+
+      return "#{owner}.#{name}"
+    end
 
     receiver = constant_reference(node.receiver)
     return nil if receiver.nil?
@@ -455,6 +505,10 @@ class RubySourceExtractor
     {"source_id" => @source_id, "family" => family, "qualified_name" => name, "ordinal" => ordinal}
   end
 
+  def absent_type
+    {"kind" => "absent"}
+  end
+
   def relation(identity, kind, target)
     {"source_declaration_id" => identity.dup, "kind" => kind, "target_reference" => target}
   end
@@ -485,8 +539,9 @@ class RubySourceExtractor
 
   def public_symbol_count
     declarations = @declarations.count { |declaration| declaration.fetch("visibility") == "public" }
+    functions = @functions.count { |function| function.fetch("visibility") == "public" }
     values = @values.count { |value| value.fetch("visibility") == "public" }
-    declarations + values
+    declarations + functions + values
   end
 end
 

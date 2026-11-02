@@ -1,0 +1,62 @@
+producer: observations
+extraction:
+  files:
+    python/src/example_package/__init__.py:
+      language-capabilities/scenarios/gaps/python/src/example_package/__init__.py.json
+    typescript/src/example-capability-gaps.ts:
+      language-capabilities/scenarios/gaps/typescript/src/example-capability-gaps.ts.json
+    php/src/ExampleCapabilityGaps.php: language-capabilities/scenarios/gaps/php/src/ExampleCapabilityGaps.php.json
+    java/src/ExampleCapabilityGaps.java:
+      language-capabilities/scenarios/gaps/java/src/ExampleCapabilityGaps.java.json
+    ruby/src/example_capability_gaps.rb:
+      language-capabilities/scenarios/gaps/ruby/src/example_capability_gaps.rb.json
+  manifest:
+    policy: {}
+    runtime:
+      version: fixture 1
+      resource_digest: '0000000000000000000000000000000000000000000000000000000000000000'
+    sources:
+    - source_id: java/src/ExampleCapabilityGaps.java
+      relative_path: java/src/ExampleCapabilityGaps.java
+      content_digest: b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10
+    - source_id: php/src/ExampleCapabilityGaps.php
+      relative_path: php/src/ExampleCapabilityGaps.php
+      content_digest: 7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53
+    - source_id: python/src/example_package/__init__.py
+      relative_path: python/src/example_package/__init__.py
+      content_digest: 3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f
+    - source_id: ruby/src/example_capability_gaps.rb
+      relative_path: ruby/src/example_capability_gaps.rb
+      content_digest: cc140f0b4b7321083421c2abfe9c0cffc221e468f1e3e7750ed565b64630a8a6
+    - source_id: typescript/src/example-capability-gaps.ts
+      relative_path: typescript/src/example-capability-gaps.ts
+      content_digest: 3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc
+    digest_algorithm: sha256
+    digest: 2c80c4d20fa3309f2481b1068f09c6ed7360dfc37e1d49da2f0e11beb595c188
+  files_excluded: 0
+  directories_pruned: 0
+dependency_graph:
+  nodes:
+    python/src/example_package/__init__.py:
+      id: python/src/example_package/__init__.py
+    typescript/src/example-capability-gaps.ts:
+      id: typescript/src/example-capability-gaps.ts
+    php/src/ExampleCapabilityGaps.php:
+      id: php/src/ExampleCapabilityGaps.php
+    java/src/ExampleCapabilityGaps.java:
+      id: java/src/ExampleCapabilityGaps.java
+    ruby/src/example_capability_gaps.rb:
+      id: ruby/src/example_capability_gaps.rb
+  edges:
+  - from_id: python/src/example_package/__init__.py
+    to_id:
+    specifier: typing
+    resolution: external
+  - from_id: java/src/ExampleCapabilityGaps.java
+    to_id:
+    specifier: java.util.*
+    resolution: external
+  - from_id: ruby/src/example_capability_gaps.rb
+    to_id:
+    specifier: json
+    resolution: external

@@ -61,32 +61,88 @@ from .implementation.manifest.models.implementation_manifest_validation_error im
 )
 from .implementation.manifest.models.implementation_manifest_violation import ImplementationManifestViolation
 from .implementation.manifest.models.invalid_implementation_manifest_error import InvalidImplementationManifestError
+from .implementation.manifest.models.manifest_annotation import ManifestAnnotation
+from .implementation.manifest.models.manifest_annotation_role import ManifestAnnotationRole
+from .implementation.manifest.models.manifest_attribute import ManifestAttribute
+from .implementation.manifest.models.manifest_callable import ManifestCallable
+from .implementation.manifest.models.manifest_declaration_relation import ManifestDeclarationRelation
+from .implementation.manifest.models.manifest_dependency import ManifestDependency
+from .implementation.manifest.models.manifest_dependency_target_kind import ManifestDependencyTargetKind
 from .implementation.manifest.models.manifest_format import ManifestFormat
+from .implementation.manifest.models.manifest_namespace import ManifestNamespace
+from .implementation.manifest.models.manifest_parameter import ManifestParameter
+from .implementation.manifest.models.manifest_span import ManifestSpan
+from .implementation.manifest.models.manifest_symbol import ManifestSymbol
 from .implementation.manifest.models.unsupported_manifest_format_error import UnsupportedManifestFormatError
-from .shared.code.models.capability_coverage import CapabilityCoverage
-from .shared.code.models.capability_status import CapabilityStatus
-from .shared.code.models.code_error import CodeError
-from .shared.code.models.code_map import CodeMap
-from .shared.code.models.code_validation_error import CodeValidationError
-from .shared.code.models.code_violation import CodeViolation
-from .shared.code.models.declaration_family import DeclarationFamily
-from .shared.code.models.declaration_identity import DeclarationIdentity
-from .shared.code.models.digest_algorithm import DigestAlgorithm
-from .shared.code.models.fact_capability import FactCapability
-from .shared.code.models.queryable_code_map import QueryableCodeMap
-from .shared.code.models.relationship_coverage import RelationshipCoverage
-from .shared.code.models.relationship_family import RelationshipFamily
-from .shared.code.models.scan_policy import ScanPolicy
-from .shared.code.models.source_assigned_value import SourceAssignedValue
-from .shared.code.models.source_assigned_value_kind import SourceAssignedValueKind
-from .shared.code.models.source_call import SourceCall
-from .shared.code.models.source_call_resolution import SourceCallResolution
-from .shared.code.models.source_declaration_relation_kind import SourceDeclarationRelationKind
-from .shared.code.models.source_dependency_kind import SourceDependencyKind
-from .shared.code.models.source_manifest_identity import SourceManifestIdentity
-from .shared.code.models.source_member_kind import SourceMemberKind
-from .shared.code.models.source_namespace_kind import SourceNamespaceKind
-from .shared.code.models.source_symbol_kind import SourceSymbolKind
+from .shared.code.models.callables.source_anonymous_callable import SourceAnonymousCallable
+from .shared.code.models.callables.source_call import SourceCall
+from .shared.code.models.callables.source_call_resolution import SourceCallResolution
+from .shared.code.models.callables.source_callable import SourceCallable
+from .shared.code.models.callables.source_callable_kind import SourceCallableKind
+from .shared.code.models.callables.source_callable_value import SourceCallableValue
+from .shared.code.models.callables.source_class_method import SourceClassMethod
+from .shared.code.models.callables.source_function import SourceFunction
+from .shared.code.models.callables.source_parameter import SourceParameter
+from .shared.code.models.callables.source_parameter_kind import SourceParameterKind
+from .shared.code.models.callables.source_signature import SourceSignature
+from .shared.code.models.callables.source_signature_kind import SourceSignatureKind
+from .shared.code.models.capabilities.capability_coverage import CapabilityCoverage
+from .shared.code.models.capabilities.capability_status import CapabilityStatus
+from .shared.code.models.capabilities.fact_capability import FactCapability
+from .shared.code.models.capabilities.relationship_coverage import RelationshipCoverage
+from .shared.code.models.capabilities.relationship_family import RelationshipFamily
+from .shared.code.models.declarations.declaration_family import DeclarationFamily
+from .shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from .shared.code.models.declarations.source_declaration import SourceDeclaration
+from .shared.code.models.declarations.source_declaration_relation import SourceDeclarationRelation
+from .shared.code.models.declarations.source_declaration_relation_kind import SourceDeclarationRelationKind
+from .shared.code.models.declarations.source_namespace import SourceNamespace
+from .shared.code.models.declarations.source_namespace_kind import SourceNamespaceKind
+from .shared.code.models.declarations.source_symbol_kind import SourceSymbolKind
+from .shared.code.models.declarations.source_visibility import SourceVisibility
+from .shared.code.models.dependencies.dependency_graph import DependencyGraph
+from .shared.code.models.dependencies.edge import Edge
+from .shared.code.models.dependencies.node import Node
+from .shared.code.models.dependencies.node_kind import NodeKind
+from .shared.code.models.dependencies.source_dependency_kind import SourceDependencyKind
+from .shared.code.models.dependencies.source_dependency_resolution import SourceDependencyResolution
+from .shared.code.models.failures.code_error import CodeError
+from .shared.code.models.failures.code_validation_error import CodeValidationError
+from .shared.code.models.failures.code_violation import CodeViolation
+from .shared.code.models.maps.code_map import CodeMap
+from .shared.code.models.maps.code_map_producer import CodeMapProducer
+from .shared.code.models.maps.extractor_descriptor import ExtractorDescriptor
+from .shared.code.models.maps.queryable_code_map import QueryableCodeMap
+from .shared.code.models.queries.dependency_edge_result import DependencyEdgeResult
+from .shared.code.models.queries.dependency_node_result import DependencyNodeResult
+from .shared.code.models.queries.query_builder import QueryBuilder
+from .shared.code.models.queries.source_file_result import SourceFileResult
+from .shared.code.models.queries.source_item_result import SourceItemResult
+from .shared.code.models.source_types.absent import SourceTypeAbsent
+from .shared.code.models.source_types.kind import SourceTypeKind
+from .shared.code.models.source_types.reference import SourceTypeReference
+from .shared.code.models.source_types.unsupported import SourceTypeUnsupported
+from .shared.code.models.sources.digest_algorithm import DigestAlgorithm
+from .shared.code.models.sources.identity import FileId, ImportIdentity, ImportSpecifier
+from .shared.code.models.sources.import_crossing_type import ImportCrossingType
+from .shared.code.models.sources.runtime_observation import RuntimeObservation
+from .shared.code.models.sources.scan_policy import ScanPolicy
+from .shared.code.models.sources.source_artifact import SourceArtifact
+from .shared.code.models.sources.source_export import SourceExport
+from .shared.code.models.sources.source_export_kind import SourceExportKind
+from .shared.code.models.sources.source_extraction import SourceExtraction
+from .shared.code.models.sources.source_file import SourceFile
+from .shared.code.models.sources.source_import import SourceImport
+from .shared.code.models.sources.source_imported_symbol import SourceImportedSymbol
+from .shared.code.models.sources.source_manifest import SourceManifest
+from .shared.code.models.sources.source_manifest_identity import SourceManifestIdentity
+from .shared.code.models.values.source_assigned_value import SourceAssignedValue
+from .shared.code.models.values.source_assigned_value_kind import SourceAssignedValueKind
+from .shared.code.models.values.source_class_property import SourceClassProperty
+from .shared.code.models.values.source_member_kind import SourceMemberKind
+from .shared.code.models.values.source_value import SourceValue
+from .shared.code.models.values.source_value_declaration_kind import SourceValueDeclarationKind
+from .shared.code.models.values.source_value_scope import SourceValueScope
 from .shared.failures.models.modwire_error import ModwireError
 
 __all__ = [
@@ -137,6 +193,17 @@ __all__ = [
     "InvalidInitializationTargetError",
     "InvalidSourceRootError",
     "ManifestFormat",
+    "ManifestAnnotation",
+    "ManifestAnnotationRole",
+    "ManifestAttribute",
+    "ManifestCallable",
+    "ManifestDeclarationRelation",
+    "ManifestDependency",
+    "ManifestDependencyTargetKind",
+    "ManifestNamespace",
+    "ManifestParameter",
+    "ManifestSpan",
+    "ManifestSymbol",
     "ModwireError",
     "ModwireApplication",
     "PipelineError",
@@ -150,6 +217,8 @@ __all__ = [
     "SourceAssignedValueKind",
     "SourceCall",
     "SourceCallResolution",
+    "SourceCallable",
+    "SourceCallableKind",
     "SourceAccessError",
     "SourceMemberKind",
     "SourceManifestIdentity",
@@ -158,8 +227,53 @@ __all__ = [
     "SourceParseError",
     "SourceDeclarationRelationKind",
     "SourceDependencyKind",
+    "SourceDependencyResolution",
     "SourceNamespaceKind",
+    "SourceParameter",
+    "SourceParameterKind",
     "SourceSymbolKind",
+    "SourceTypeAbsent",
+    "SourceTypeKind",
+    "SourceTypeReference",
+    "SourceTypeUnsupported",
+    "SourceVisibility",
+    "CodeMapProducer",
+    "DependencyEdgeResult",
+    "DependencyGraph",
+    "DependencyNodeResult",
+    "Edge",
+    "ExtractorDescriptor",
+    "FileId",
+    "ImportCrossingType",
+    "ImportIdentity",
+    "ImportSpecifier",
+    "Node",
+    "NodeKind",
+    "QueryBuilder",
+    "RuntimeObservation",
+    "SourceAnonymousCallable",
+    "SourceArtifact",
+    "SourceCallableValue",
+    "SourceClassMethod",
+    "SourceClassProperty",
+    "SourceDeclaration",
+    "SourceDeclarationRelation",
+    "SourceExport",
+    "SourceExportKind",
+    "SourceExtraction",
+    "SourceFile",
+    "SourceFileResult",
+    "SourceFunction",
+    "SourceImport",
+    "SourceImportedSymbol",
+    "SourceItemResult",
+    "SourceManifest",
+    "SourceNamespace",
+    "SourceSignature",
+    "SourceSignatureKind",
+    "SourceValue",
+    "SourceValueDeclarationKind",
+    "SourceValueScope",
     "UnknownFlowAnalyzerError",
     "UnsupportedLanguageError",
     "UnsupportedManifestFormatError",

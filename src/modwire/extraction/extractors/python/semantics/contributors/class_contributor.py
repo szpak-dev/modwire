@@ -4,12 +4,13 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.declaration_family import DeclarationFamily
-from ......shared.code.models.declaration_identity import DeclarationIdentity
-from ......shared.code.models.source_class_method import SourceClassMethod
-from ......shared.code.models.source_declaration import SourceDeclaration
-from ......shared.code.models.source_symbol_kind import SourceSymbolKind
-from ......shared.code.models.source_visibility import SourceVisibility
+from ......shared.code.models.callables.source_class_method import SourceClassMethod
+from ......shared.code.models.declarations.declaration_family import DeclarationFamily
+from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ......shared.code.models.declarations.source_declaration import SourceDeclaration
+from ......shared.code.models.declarations.source_symbol_kind import SourceSymbolKind
+from ......shared.code.models.declarations.source_visibility import SourceVisibility
+from ......shared.code.models.values.source_class_property import SourceClassProperty
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.class_candidate import PythonClassCandidate
@@ -50,14 +51,19 @@ class ClassSemanticContributor(PythonSemanticContributor):
                 candidate.node.lineno,
                 candidate.node.col_offset,
             )
-            property_names: set[str] = set()
+            properties: tuple[SourceClassProperty, ...] = ()
             if str(class_id.ordinal) in catalog.properties:
-                property_names = {item.name for item in catalog.properties[str(class_id.ordinal)]}
-            methods = tuple(item for item in self.class_methods(candidate.node) if item.name not in property_names)
+                properties = catalog.properties[str(class_id.ordinal)]
+            property_names = {item.name for item in properties}
+            methods = tuple(
+                item
+                for item in catalog.methods
+                if item.owner_declaration_id == class_id and item.name not in property_names
+            )
             if family is DeclarationFamily.ABSTRACT_CLASS:
-                declarations.append(self.abstract_class(candidate, class_id, methods))
+                declarations.append(self.abstract_class(candidate, class_id, methods, properties))
             else:
-                declarations.append(self.concrete_class(candidate, class_id, methods))
+                declarations.append(self.concrete_class(candidate, class_id, methods, properties))
         return PythonSemanticContribution(declarations=tuple(declarations))
 
     def concrete_class(
@@ -65,6 +71,7 @@ class ClassSemanticContributor(PythonSemanticContributor):
         candidate: PythonClassCandidate,
         declaration_id: DeclarationIdentity,
         methods: tuple[SourceClassMethod, ...],
+        properties: tuple[SourceClassProperty, ...],
     ) -> SourceDeclaration:
         return SourceDeclaration(
             declaration_id=declaration_id,
@@ -72,9 +79,9 @@ class ClassSemanticContributor(PythonSemanticContributor):
             name=candidate.node.name,
             visibility=SourceVisibility.PUBLIC,
             visibility_intent=self.visibility.classify(candidate.node.name),
-            declaration_annotations=[ast.unparse(item) for item in candidate.node.decorator_list],
-            methods=list(methods),
-            properties=[],
+            declaration_annotations=tuple(ast.unparse(item) for item in candidate.node.decorator_list),
+            methods=methods,
+            properties=properties,
             line_count=self.line_count(candidate.node),
         )
 
@@ -83,6 +90,7 @@ class ClassSemanticContributor(PythonSemanticContributor):
         candidate: PythonClassCandidate,
         declaration_id: DeclarationIdentity,
         methods: tuple[SourceClassMethod, ...],
+        properties: tuple[SourceClassProperty, ...],
     ) -> SourceDeclaration:
         abstract_names: set[str] = set()
         for statement in candidate.node.body:
@@ -95,58 +103,12 @@ class ClassSemanticContributor(PythonSemanticContributor):
             name=candidate.node.name,
             visibility=SourceVisibility.PUBLIC,
             visibility_intent=self.visibility.classify(candidate.node.name),
-            declaration_annotations=[ast.unparse(item) for item in candidate.node.decorator_list],
-            abstract_methods=[item for item in methods if item.name in abstract_names],
-            methods=[item for item in methods if item.name not in abstract_names],
-            properties=[],
+            declaration_annotations=tuple(ast.unparse(item) for item in candidate.node.decorator_list),
+            abstract_methods=tuple(item for item in methods if item.name in abstract_names),
+            methods=tuple(item for item in methods if item.name not in abstract_names),
+            properties=properties,
             line_count=self.line_count(candidate.node),
         )
-
-    def class_methods(self, node: ast.ClassDef) -> tuple[SourceClassMethod, ...]:
-        return tuple(source_method for statement in node.body for source_method in self.class_method(statement))
-
-    @singledispatchmethod
-    def class_method(self, statement: ast.stmt) -> tuple[SourceClassMethod, ...]:
-        return ()
-
-    @class_method.register
-    def function_class_method(self, statement: ast.FunctionDef) -> tuple[SourceClassMethod, ...]:
-        return (self.function_method(statement),)
-
-    @class_method.register
-    def async_function_class_method(self, statement: ast.AsyncFunctionDef) -> tuple[SourceClassMethod, ...]:
-        return (self.function_method(statement),)
-
-    def function_method(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> SourceClassMethod:
-        declared_args, optional_args = self.argument_counts(node)
-        return SourceClassMethod(
-            name=node.name,
-            visibility=SourceVisibility.PUBLIC,
-            visibility_intent=self.visibility.classify(node.name),
-            declaration_annotations=[],
-            line_count=self.function_line_count(node),
-            declared_args=declared_args,
-            optional_args=optional_args,
-        )
-
-    def argument_counts(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> tuple[int, int]:
-        positional = [*node.args.posonlyargs, *node.args.args]
-        required_count = len(positional) - len(node.args.defaults)
-        parameters = [(argument.arg, index >= required_count) for index, argument in enumerate(positional)]
-        parameters.extend(
-            (argument.arg, default is not None)
-            for argument, default in zip(node.args.kwonlyargs, node.args.kw_defaults, strict=True)
-        )
-        if node.args.vararg is not None:
-            parameters.append((node.args.vararg.arg, True))
-        if node.args.kwarg is not None:
-            parameters.append((node.args.kwarg.arg, True))
-        if parameters and parameters[0][0] in {"self", "cls"} and not self.has_decorator(node, "staticmethod"):
-            parameters = parameters[1:]
-        return (len(parameters), sum(is_optional for _, is_optional in parameters))
-
-    def has_decorator(self, node: ast.FunctionDef | ast.AsyncFunctionDef, name: str) -> bool:
-        return any(ast.unparse(item).rsplit(".", 1)[-1] == name for item in node.decorator_list)
 
     @singledispatchmethod
     def abstract_method_name(self, statement: ast.stmt) -> str:
@@ -168,10 +130,4 @@ class ClassSemanticContributor(PythonSemanticContributor):
         line_end = node.end_lineno
         if line_end is None:
             raise ExtractorInvariantError(ExtractorInvariantViolation.MISSING_CLASS_END_LINE, node.name)
-        return line_end - node.lineno + 1
-
-    def function_line_count(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> int:
-        line_end = node.end_lineno
-        if line_end is None:
-            raise ExtractorInvariantError(ExtractorInvariantViolation.MISSING_FUNCTION_END_LINE, node.name)
         return line_end - node.lineno + 1

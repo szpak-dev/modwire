@@ -1,0 +1,71 @@
+{
+  "file_id": "python/src/example.py",
+  "import_identity": "src/example",
+  "imports": [],
+  "exports": [
+    {
+      "name": "ExampleValue",
+      "local_name": "ExampleValue",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleValue",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 2,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleValue",
+        "ordinal": 4294967297
+      },
+      "kind": "class",
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "property",
+            "qualified_name": "ExampleValue.example_declared",
+            "ordinal": 8589934597
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleValue",
+            "ordinal": 4294967297
+          },
+          "name": "example_declared",
+          "is_optional": false,
+          "type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unassigned",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "line_count": 5,
+  "code_line_count": 3,
+  "public_symbol_count": 1
+}

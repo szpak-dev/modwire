@@ -1,10 +1,10 @@
 import json
 from dataclasses import dataclass
 
-from ....shared.code.models.source_call import SourceCall
-from ....shared.code.models.source_call_resolution import SourceCallResolution
-from ....shared.code.models.source_dependency_resolution import SourceDependencyResolution
-from ....shared.code.models.source_manifest import SourceManifest
+from ....shared.code.models.callables.source_call import SourceCall
+from ....shared.code.models.callables.source_call_resolution import SourceCallResolution
+from ....shared.code.models.dependencies.source_dependency_resolution import SourceDependencyResolution
+from ....shared.code.models.sources.source_manifest import SourceManifest
 from .implementation_manifest_validation_error import ImplementationManifestValidationError
 from .implementation_manifest_violation import ImplementationManifestViolation
 from .manifest_annotation import ManifestAnnotation

@@ -1,0 +1,46 @@
+producer: observations
+extraction:
+  files:
+    python/src/example.py: language-capabilities/scenarios/manifest-negative_members/python/src/example.py.json
+    typescript/src/example.ts:
+      language-capabilities/scenarios/manifest-negative_members/typescript/src/example.ts.json
+    php/src/Example.php: language-capabilities/scenarios/manifest-negative_members/php/src/Example.php.json
+    java/src/Example.java: language-capabilities/scenarios/manifest-negative_members/java/src/Example.java.json
+    ruby/src/example.rb: language-capabilities/scenarios/manifest-negative_members/ruby/src/example.rb.json
+  manifest:
+    policy: {}
+    runtime:
+      version: fixture 1
+      resource_digest: '0000000000000000000000000000000000000000000000000000000000000000'
+    sources:
+    - source_id: java/src/Example.java
+      relative_path: java/src/Example.java
+      content_digest: de14559d5bdc1b78cb12e4e6cab23911635469f8fc57aed798f780063fed9dcd
+    - source_id: php/src/Example.php
+      relative_path: php/src/Example.php
+      content_digest: 6facb28cd5a443c673e1f235992ef543dfcf89026d3f067a2b79bd4ffffdf163
+    - source_id: python/src/example.py
+      relative_path: python/src/example.py
+      content_digest: 64c509f74ea974519040bf8ac9a078e1c70dcdf213c027ab30128db3ebb9f22f
+    - source_id: ruby/src/example.rb
+      relative_path: ruby/src/example.rb
+      content_digest: 55ee52b9cfdd6b3078748dccd1aa7048865ae3ea433a23799b32674991eeb35e
+    - source_id: typescript/src/example.ts
+      relative_path: typescript/src/example.ts
+      content_digest: b89425edd495ba0f77ef78c6bf39471c81d0bc05b10f463cba7d0134a127ee2f
+    digest_algorithm: sha256
+    digest: d50b4e2c1cdf64f42549a6e57117aef932585e1a6fd20ca88ea7569a4ed9023d
+  files_excluded: 0
+  directories_pruned: 0
+dependency_graph:
+  nodes:
+    python/src/example.py:
+      id: python/src/example.py
+    typescript/src/example.ts:
+      id: typescript/src/example.ts
+    php/src/Example.php:
+      id: php/src/Example.php
+    java/src/Example.java:
+      id: java/src/Example.java
+    ruby/src/example.rb:
+      id: ruby/src/example.rb

@@ -1,0 +1,102 @@
+{
+  "file_id": "java/src/Example.java",
+  "import_identity": "src/Example",
+  "imports": [
+    {
+      "path": "java.util.List",
+      "is_relative": false,
+      "normalized_path": "java/util/List",
+      "imported_name": "List",
+      "is_aliased": false,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 1,
+      "join_key": "java/util/List",
+      "uses_joined_import": false,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "List",
+          "alias": "List",
+          "is_aliased": false,
+          "is_default": false,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    }
+  ],
+  "declarations": [
+    {
+      "name": "Example",
+      "visibility": "internal",
+      "visibility_intent": "internal",
+      "line_count": 5,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "Example",
+        "ordinal": 30001
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "exampleValues",
+          "visibility": "internal",
+          "visibility_intent": "internal",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "java/src/Example.java",
+            "family": "method",
+            "qualified_name": "Example.exampleValues",
+            "ordinal": 40005
+          },
+          "source_id": "java/src/Example.java",
+          "qualified_name": "Example.exampleValues",
+          "kind": "instance_method",
+          "line_start": 4,
+          "line_end": 6,
+          "return_type": {
+            "name": "List",
+            "arguments": [
+              {
+                "name": "String",
+                "kind": "reference"
+              }
+            ],
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "java/src/Example.java",
+            "family": "class",
+            "qualified_name": "Example",
+            "ordinal": 30001
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "java/src/Example.java",
+        "family": "method",
+        "qualified_name": "Example.exampleValues",
+        "ordinal": 40005
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "java/src/Example.java",
+      "line": 5,
+      "expression": "List.of",
+      "resolution": "unresolved",
+      "target_name": "of"
+    }
+  ],
+  "line_count": 8,
+  "code_line_count": 6,
+  "public_symbol_count": 0
+}

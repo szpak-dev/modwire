@@ -1,5 +1,5 @@
 from ....extraction.extractors.models.extractor_error import ExtractorError
-from ....shared.code.models.identity import FileId
+from ....shared.code.models.sources.identity import FileId
 from .extractor_contract_violation import ExtractorContractViolation
 
 

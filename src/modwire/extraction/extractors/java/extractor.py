@@ -2,19 +2,19 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.capability_coverage import CapabilityCoverage
-from ....shared.code.models.capability_status import CapabilityStatus
-from ....shared.code.models.extractor_descriptor import ExtractorDescriptor
-from ....shared.code.models.fact_capability import FactCapability
-from ....shared.code.models.identity import FileId, ImportIdentity
-from ....shared.code.models.relationship_coverage import RelationshipCoverage
-from ....shared.code.models.relationship_family import RelationshipFamily
-from ....shared.code.models.source_file import SourceFile
-from ....shared.code.models.source_namespace_kind import SourceNamespaceKind
+from ....shared.code.models.capabilities.capability_coverage import CapabilityCoverage
+from ....shared.code.models.capabilities.capability_status import CapabilityStatus
+from ....shared.code.models.capabilities.fact_capability import FactCapability
+from ....shared.code.models.capabilities.relationship_coverage import RelationshipCoverage
+from ....shared.code.models.capabilities.relationship_family import RelationshipFamily
+from ....shared.code.models.declarations.source_namespace_kind import SourceNamespaceKind
+from ....shared.code.models.maps.extractor_descriptor import ExtractorDescriptor
+from ....shared.code.models.sources.identity import FileId, ImportIdentity
+from ....shared.code.models.sources.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
 from ..models.batch_output_format import BatchOutputFormat
-from ..models.extractor_resource import ExtractorResource
+from ..models.entrypoints.file_entrypoint import FileExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
 
 
@@ -27,7 +27,7 @@ class JavaExtractor(SourceExtractor):
             order=3,
             descriptor=ExtractorDescriptor(
                 id="modwire.java.javaparser",
-                version="1",
+                version="2",
                 language="java",
                 runtime="java",
             ),
@@ -59,6 +59,14 @@ class JavaExtractor(SourceExtractor):
                     capability=FactCapability.PARAMETERS,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Callable parameter order, kind, and exact declared type are extracted.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.TYPE_REFERENCES,
+                    status=CapabilityStatus.PARTIAL,
+                    explanation=(
+                        "Named references and ordered generic arguments are structural; wildcards, arrays, and other "
+                        "authored type syntax are reported as unsupported."
+                    ),
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.ANNOTATIONS,
@@ -158,11 +166,11 @@ class JavaExtractor(SourceExtractor):
             ),
             file_extensions=(".java",),
             command=("java",),
-            entrypoint_arguments=("-jar",),
             version_arguments=("--version",),
-            entrypoint=ExtractorResource(
+            entrypoint=FileExtractorEntrypoint(
                 package="modwire.extraction.extractors.resources",
                 path="java/script.jar",
+                arguments=("-jar",),
             ),
         )
 

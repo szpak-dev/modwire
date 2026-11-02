@@ -3,13 +3,13 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.code_map import CodeMap
-from ....shared.code.models.declaration_identity import DeclarationIdentity
-from ....shared.code.models.source_call import SourceCall
-from ....shared.code.models.source_declaration import SourceDeclaration
-from ....shared.code.models.source_dependency_resolution import SourceDependencyResolution
-from ....shared.code.models.source_symbol_kind import SourceSymbolKind
-from ....shared.code.models.source_visibility import SourceVisibility
+from ....shared.code.models.callables.source_call import SourceCall
+from ....shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ....shared.code.models.declarations.source_declaration import SourceDeclaration
+from ....shared.code.models.declarations.source_symbol_kind import SourceSymbolKind
+from ....shared.code.models.declarations.source_visibility import SourceVisibility
+from ....shared.code.models.dependencies.source_dependency_resolution import SourceDependencyResolution
+from ....shared.code.models.maps.code_map import CodeMap
 from ....shared.values.models.value_model import ValueModel
 from ..contracts.manifest_compiler import ManifestCompiler
 from ..models.implementation_manifest import ImplementationManifest
@@ -102,7 +102,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
             for value in source_file.values:
                 symbols.append(self.symbol(value.declaration_id, namespace, value.value_kind, value.visibility))
                 symbol_ids.add(value.declaration_id.canonical())
-            for callable_value in source_file.callables:
+            for callable_value in source_file.canonical_callables():
                 callable_id = callable_value.declaration_id
                 canonical_id = callable_id.canonical()
                 if canonical_id not in symbol_ids:
@@ -131,14 +131,6 @@ class CodeMapManifestCompiler(ManifestCompiler):
                     )
                     for decorator in callable_value.decorators
                 )
-                if callable_value.return_annotation:
-                    annotations.append(
-                        ManifestAnnotation(
-                            target_id=canonical_id,
-                            role=ManifestAnnotationRole.RETURN_TYPE,
-                            expression=callable_value.return_annotation,
-                        )
-                    )
                 for position, parameter in enumerate(callable_value.parameters):
                     parameter_id = f"{canonical_id}::parameter:{position}:{parameter.name}"
                     parameters.append(
@@ -151,14 +143,6 @@ class CodeMapManifestCompiler(ManifestCompiler):
                             has_default=parameter.has_default,
                         )
                     )
-                    if parameter.annotation:
-                        annotations.append(
-                            ManifestAnnotation(
-                                target_id=parameter_id,
-                                role=ManifestAnnotationRole.PARAMETER_TYPE,
-                                expression=parameter.annotation,
-                            )
-                        )
             source_calls.extend(source_file.calls)
             declaration_relations.extend(
                 ManifestDeclarationRelation(
@@ -217,7 +201,6 @@ class CodeMapManifestCompiler(ManifestCompiler):
                 owner_symbol_id=declaration.declaration_id,
                 name=attribute.name,
                 is_optional=attribute.is_optional,
-                annotation=attribute.annotation,
                 visibility=attribute.visibility,
                 member_kind=attribute.member_kind,
                 assigned_values=attribute.assigned_values,
@@ -234,13 +217,4 @@ class CodeMapManifestCompiler(ManifestCompiler):
             )
             for annotation in declaration.declaration_annotations
         ]
-        annotations.extend(
-            ManifestAnnotation(
-                target_id=self.attribute_id(declaration.declaration_id, attribute.name),
-                role=ManifestAnnotationRole.ATTRIBUTE_TYPE,
-                expression=attribute.annotation,
-            )
-            for attribute in declaration.properties
-            if attribute.annotation
-        )
         return tuple(annotations)

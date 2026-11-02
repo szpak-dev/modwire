@@ -1,0 +1,63 @@
+{
+  "file_id": "ruby/src/example.rb",
+  "import_identity": "src/example",
+  "imports": [],
+  "declarations": [
+    {
+      "name": "ExampleNoCalls",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 5,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleNoCalls",
+        "ordinal": 1
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "example_without_calls",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "method",
+            "qualified_name": "ExampleNoCalls.example_without_calls",
+            "ordinal": 24
+          },
+          "source_id": "ruby/src/example.rb",
+          "qualified_name": "ExampleNoCalls.example_without_calls",
+          "kind": "instance_method",
+          "line_start": 2,
+          "line_end": 4,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "class",
+            "qualified_name": "ExampleNoCalls",
+            "ordinal": 1
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "line_count": 6,
+  "code_line_count": 5,
+  "public_symbol_count": 1
+}

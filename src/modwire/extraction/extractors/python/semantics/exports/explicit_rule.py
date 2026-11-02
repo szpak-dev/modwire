@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ......shared.code.models.source_export import SourceExport
+from ......shared.code.models.sources.source_export import SourceExport
 from ...observations.export_candidate import PythonExportCandidate
 from .classifier import PythonExportRule
 

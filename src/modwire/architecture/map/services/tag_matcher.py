@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.domain import PathMatcher
+from ....shared.code.contracts.path_matcher import PathMatcher
 from ...config.models.tag_rule import TagRule
 from ..models.tag_map import TagMap
 from ..models.tag_match import TagMatch

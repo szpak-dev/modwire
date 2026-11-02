@@ -1,0 +1,83 @@
+{
+  "file_id": "php/src/Params.php",
+  "import_identity": "src/Params",
+  "imports": [],
+  "exports": [
+    {
+      "name": "exampleParameters",
+      "local_name": "exampleParameters",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "functions": [
+    {
+      "name": "exampleParameters",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 4,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "php/src/Params.php",
+        "family": "function",
+        "qualified_name": "exampleParameters",
+        "ordinal": 8
+      },
+      "source_id": "php/src/Params.php",
+      "qualified_name": "exampleParameters",
+      "line_start": 3,
+      "line_end": 6,
+      "parameters": [
+        {
+          "name": "exampleValue",
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "exampleRest",
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "kind": "variadic_positional",
+          "has_default": true
+        }
+      ],
+      "return_type": {
+        "name": "string",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "php/src/Params.php",
+        "family": "function",
+        "qualified_name": "exampleParameters",
+        "ordinal": 8
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "php/src/Params.php",
+      "line": 5,
+      "expression": "implode",
+      "resolution": "unresolved",
+      "target_name": "implode"
+    }
+  ],
+  "line_count": 7,
+  "code_line_count": 5,
+  "public_symbol_count": 1
+}

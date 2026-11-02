@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ...shared.code.domain import PathMatcher
+from ...shared.code.contracts.path_matcher import PathMatcher
 from ..config.models.architecture_config import ArchitectureConfig
 from ..config.models.shape_realm import ShapeRealm
 from ..map.models.architecture_map import ArchitectureMap

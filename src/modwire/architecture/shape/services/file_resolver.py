@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.declaration_family import DeclarationFamily
-from ....shared.code.models.identity import FileId
-from ....shared.code.models.source_value_declaration_kind import SourceValueDeclarationKind
-from ....shared.code.models.source_value_scope import SourceValueScope
+from ....shared.code.models.declarations.declaration_family import DeclarationFamily
+from ....shared.code.models.sources.identity import FileId
+from ....shared.code.models.values.source_value_declaration_kind import SourceValueDeclarationKind
+from ....shared.code.models.values.source_value_scope import SourceValueScope
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, ShapeResolverInterface
 from ..models.architecture_shape_validation_error import ArchitectureShapeValidationError

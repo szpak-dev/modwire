@@ -1,0 +1,63 @@
+{
+  "file_id": "src/commerce/orders/interfaces/http/order_controller",
+  "import_identity": "src/commerce/orders/interfaces/http/order_controller",
+  "imports": [],
+  "declarations": [
+    {
+      "name": "OrderController",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 0,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "src/commerce/orders/interfaces/http/order_controller",
+        "family": "class",
+        "qualified_name": "OrderController",
+        "ordinal": 1
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "handle",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 0,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "src/commerce/orders/interfaces/http/order_controller",
+            "family": "method",
+            "qualified_name": "OrderController.handle",
+            "ordinal": 1
+          },
+          "source_id": "src/commerce/orders/interfaces/http/order_controller",
+          "qualified_name": "OrderController.handle",
+          "kind": "instance_method",
+          "line_start": 0,
+          "line_end": 0,
+          "parameters": [
+            {
+              "name": "order_id",
+              "type": {
+                "kind": "unsupported"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "kind": "unsupported"
+          },
+          "owner_declaration_id": {
+            "source_id": "src/commerce/orders/interfaces/http/order_controller",
+            "family": "class",
+            "qualified_name": "OrderController",
+            "ordinal": 1
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "line_count": 0,
+  "code_line_count": 0,
+  "public_symbol_count": 1
+}

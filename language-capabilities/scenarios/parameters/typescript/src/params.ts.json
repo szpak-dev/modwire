@@ -1,0 +1,82 @@
+{
+  "file_id": "typescript/src/params.ts",
+  "import_identity": "src/params",
+  "imports": [],
+  "exports": [
+    {
+      "name": "exampleParameters",
+      "local_name": "exampleParameters",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "functions": [
+    {
+      "name": "exampleParameters",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/params.ts",
+        "family": "function",
+        "qualified_name": "exampleParameters",
+        "ordinal": 1
+      },
+      "source_id": "typescript/src/params.ts",
+      "qualified_name": "exampleParameters",
+      "line_start": 1,
+      "line_end": 3,
+      "parameters": [
+        {
+          "name": "exampleValue",
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "exampleRest",
+          "type": {
+            "kind": "unsupported"
+          },
+          "kind": "variadic_positional",
+          "has_default": true
+        }
+      ],
+      "return_type": {
+        "name": "string",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "typescript/src/params.ts",
+        "family": "function",
+        "qualified_name": "exampleParameters",
+        "ordinal": 1
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "typescript/src/params.ts",
+      "line": 2,
+      "expression": "exampleRest.join",
+      "resolution": "unresolved",
+      "target_name": "join"
+    }
+  ],
+  "line_count": 4,
+  "code_line_count": 3,
+  "public_symbol_count": 1
+}

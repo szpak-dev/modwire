@@ -2,18 +2,18 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.capability_coverage import CapabilityCoverage
-from ....shared.code.models.capability_status import CapabilityStatus
-from ....shared.code.models.extractor_descriptor import ExtractorDescriptor
-from ....shared.code.models.fact_capability import FactCapability
-from ....shared.code.models.identity import FileId, ImportIdentity
-from ....shared.code.models.relationship_coverage import RelationshipCoverage
-from ....shared.code.models.relationship_family import RelationshipFamily
-from ....shared.code.models.source_file import SourceFile
+from ....shared.code.models.capabilities.capability_coverage import CapabilityCoverage
+from ....shared.code.models.capabilities.capability_status import CapabilityStatus
+from ....shared.code.models.capabilities.fact_capability import FactCapability
+from ....shared.code.models.capabilities.relationship_coverage import RelationshipCoverage
+from ....shared.code.models.capabilities.relationship_family import RelationshipFamily
+from ....shared.code.models.maps.extractor_descriptor import ExtractorDescriptor
+from ....shared.code.models.sources.identity import FileId, ImportIdentity
+from ....shared.code.models.sources.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
 from ..models.batch_output_format import BatchOutputFormat
-from ..models.extractor_resource import ExtractorResource
+from ..models.entrypoints.file_entrypoint import FileExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
 
 
@@ -26,7 +26,7 @@ class RubyExtractor(SourceExtractor):
             order=4,
             descriptor=ExtractorDescriptor(
                 id="modwire.ruby.prism",
-                version="1",
+                version="2",
                 language="ruby",
                 runtime="ruby",
             ),
@@ -62,6 +62,14 @@ class RubyExtractor(SourceExtractor):
                     status=CapabilityStatus.PARTIAL,
                     explanation=(
                         "Positional, keyword, rest, keyword-rest, block, and forwarding parameters are normalized."
+                    ),
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.TYPE_REFERENCES,
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation=(
+                        "Every callable type slot is explicitly reported as absent because Ruby has no inline "
+                        "type syntax."
                     ),
                 ),
                 CapabilityCoverage(
@@ -164,7 +172,6 @@ class RubyExtractor(SourceExtractor):
             ),
             file_extensions=(".rb",),
             command=("ruby",),
-            entrypoint_arguments=(),
             version_arguments=(
                 "-rprism",
                 "-e",
@@ -174,9 +181,10 @@ class RubyExtractor(SourceExtractor):
                     'print "ruby #{RUBY_VERSION}; prism #{Prism::VERSION}"'
                 ),
             ),
-            entrypoint=ExtractorResource(
+            entrypoint=FileExtractorEntrypoint(
                 package="modwire.extraction.extractors.resources",
                 path="ruby/script.rb",
+                arguments=(),
             ),
         )
 

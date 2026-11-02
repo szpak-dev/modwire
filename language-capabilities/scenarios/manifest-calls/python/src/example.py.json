@@ -1,0 +1,144 @@
+{
+  "file_id": "python/src/example.py",
+  "import_identity": "src/example",
+  "imports": [],
+  "exports": [
+    {
+      "name": "example_target",
+      "local_name": "example_target",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "example_source",
+      "local_name": "example_source",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "functions": [
+    {
+      "name": "example_target",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 2,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example.py",
+        "family": "function",
+        "qualified_name": "example_target",
+        "ordinal": 4294967297
+      },
+      "source_id": "python/src/example.py",
+      "qualified_name": "example_target",
+      "line_start": 1,
+      "line_end": 2,
+      "parameters": [
+        {
+          "name": "example_value",
+          "type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "name": "str",
+        "kind": "reference"
+      },
+      "kind": "function"
+    },
+    {
+      "name": "example_source",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/example.py",
+        "family": "function",
+        "qualified_name": "example_source",
+        "ordinal": 21474836481
+      },
+      "source_id": "python/src/example.py",
+      "qualified_name": "example_source",
+      "line_start": 5,
+      "line_end": 7,
+      "parameters": [
+        {
+          "name": "example_value",
+          "type": {
+            "name": "str",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "name": "str",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "python/src/example.py",
+        "family": "function",
+        "qualified_name": "example_source",
+        "ordinal": 21474836481
+      },
+      "ordinal": 1,
+      "target_callable_id": {
+        "source_id": "python/src/example.py",
+        "family": "function",
+        "qualified_name": "example_target",
+        "ordinal": 4294967297
+      },
+      "source_id": "python/src/example.py",
+      "line": 6,
+      "expression": "example_target",
+      "resolution": "resolved",
+      "target_name": "example_target"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "python/src/example.py",
+        "family": "function",
+        "qualified_name": "example_source",
+        "ordinal": 21474836481
+      },
+      "ordinal": 2,
+      "target_callable_id": {
+        "source_id": "python/src/example.py",
+        "family": "function",
+        "qualified_name": "example_target",
+        "ordinal": 4294967297
+      },
+      "source_id": "python/src/example.py",
+      "line": 7,
+      "expression": "example_target",
+      "resolution": "resolved",
+      "target_name": "example_target"
+    }
+  ],
+  "line_count": 7,
+  "code_line_count": 5,
+  "public_symbol_count": 2
+}

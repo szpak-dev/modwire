@@ -1,0 +1,330 @@
+{
+  "file_id": "typescript/src/example-capability-gaps.ts",
+  "import_identity": "src/example-capability-gaps",
+  "imports": [],
+  "exports": [
+    {
+      "name": "ExampleAssignedValue",
+      "local_name": "ExampleAssignedValue",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleRuntime",
+      "local_name": "ExampleRuntime",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleFirst",
+      "local_name": "ExampleFirst",
+      "kind": "interface",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleSecond",
+      "local_name": "ExampleSecond",
+      "kind": "interface",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleCombined",
+      "local_name": "ExampleCombined",
+      "kind": "type",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleAssignedValue",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 9,
+      "declaration_annotations": [
+        "ExampleClassDecorator"
+      ],
+      "declaration_id": {
+        "source_id": "typescript/src/example-capability-gaps.ts",
+        "family": "class",
+        "qualified_name": "ExampleAssignedValue",
+        "ordinal": 462
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "exampleMethod",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 4,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "typescript/src/example-capability-gaps.ts",
+            "family": "method",
+            "qualified_name": "ExampleAssignedValue.exampleMethod",
+            "ordinal": 595
+          },
+          "source_id": "typescript/src/example-capability-gaps.ts",
+          "qualified_name": "ExampleAssignedValue.exampleMethod",
+          "kind": "instance_method",
+          "line_start": 25,
+          "line_end": 28,
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example-capability-gaps.ts",
+            "family": "class",
+            "qualified_name": "ExampleAssignedValue",
+            "ordinal": 462
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "typescript/src/example-capability-gaps.ts",
+            "family": "property",
+            "qualified_name": "ExampleAssignedValue.exampleValue",
+            "ordinal": 549
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example-capability-gaps.ts",
+            "family": "class",
+            "qualified_name": "ExampleAssignedValue",
+            "ordinal": 462
+          },
+          "name": "exampleValue",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExampleRuntime",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-capability-gaps.ts",
+        "family": "class",
+        "qualified_name": "ExampleRuntime",
+        "ordinal": 869
+      },
+      "kind": "class"
+    },
+    {
+      "name": "ExampleFirst",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-capability-gaps.ts",
+        "family": "interface",
+        "qualified_name": "ExampleFirst",
+        "ordinal": 692
+      },
+      "kind": "interface"
+    },
+    {
+      "name": "ExampleSecond",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-capability-gaps.ts",
+        "family": "interface",
+        "qualified_name": "ExampleSecond",
+        "ordinal": 725
+      },
+      "kind": "interface"
+    },
+    {
+      "name": "ExampleCombined",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-capability-gaps.ts",
+        "family": "type",
+        "qualified_name": "ExampleCombined",
+        "ordinal": 759
+      },
+      "kind": "type_alias"
+    }
+  ],
+  "functions": [
+    {
+      "name": "ExampleClassDecorator",
+      "visibility": "private",
+      "visibility_intent": "private",
+      "line_count": 5,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-capability-gaps.ts",
+        "family": "function",
+        "qualified_name": "ExampleClassDecorator",
+        "ordinal": 1
+      },
+      "source_id": "typescript/src/example-capability-gaps.ts",
+      "qualified_name": "ExampleClassDecorator",
+      "line_start": 1,
+      "line_end": 5,
+      "parameters": [
+        {
+          "name": "exampleTarget",
+          "type": {
+            "name": "T",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "name": "T",
+        "kind": "reference"
+      },
+      "kind": "function"
+    },
+    {
+      "name": "ExampleMethodDecorator",
+      "visibility": "private",
+      "visibility_intent": "private",
+      "line_count": 9,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-capability-gaps.ts",
+        "family": "function",
+        "qualified_name": "ExampleMethodDecorator",
+        "ordinal": 147
+      },
+      "source_id": "typescript/src/example-capability-gaps.ts",
+      "qualified_name": "ExampleMethodDecorator",
+      "line_start": 7,
+      "line_end": 15,
+      "parameters": [
+        {
+          "name": "exampleTarget",
+          "type": {
+            "name": "object",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "exampleProperty",
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "exampleDescriptor",
+          "type": {
+            "name": "PropertyDescriptor",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "name": "void",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "values": [
+    {
+      "declaration_id": {
+        "source_id": "typescript/src/example-capability-gaps.ts",
+        "family": "value",
+        "qualified_name": "ExampleRuntimeBase",
+        "ordinal": 826
+      },
+      "name": "ExampleRuntimeBase",
+      "visibility": "private",
+      "visibility_intent": "private",
+      "line_count": 1,
+      "declaration_kind": "constant",
+      "value_kind": "value_unknown",
+      "scope": "module"
+    }
+  ],
+  "declaration_relations": [
+    {
+      "source_declaration_id": {
+        "source_id": "typescript/src/example-capability-gaps.ts",
+        "family": "class",
+        "qualified_name": "ExampleAssignedValue",
+        "ordinal": 462
+      },
+      "kind": "implements",
+      "target_reference": "ExampleFirst"
+    },
+    {
+      "source_declaration_id": {
+        "source_id": "typescript/src/example-capability-gaps.ts",
+        "family": "class",
+        "qualified_name": "ExampleRuntime",
+        "ordinal": 869
+      },
+      "kind": "extends",
+      "target_reference": "ExampleRuntimeBase"
+    }
+  ],
+  "line_count": 39,
+  "code_line_count": 31,
+  "public_symbol_count": 5
+}

@@ -1,5 +1,5 @@
-from ....shared.code.models.identity import FileId
-from ....shared.code.models.source_artifact import SourceArtifact
+from ....shared.code.models.sources.identity import FileId
+from ....shared.code.models.sources.source_artifact import SourceArtifact
 from ....shared.values.models.value_model import ValueModel
 
 

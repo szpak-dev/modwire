@@ -1,0 +1,144 @@
+{
+  "file_id": "typescript/src/example.ts",
+  "import_identity": "src/example",
+  "imports": [],
+  "exports": [
+    {
+      "name": "exampleTarget",
+      "local_name": "exampleTarget",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "exampleSource",
+      "local_name": "exampleSource",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "functions": [
+    {
+      "name": "exampleTarget",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example.ts",
+        "family": "function",
+        "qualified_name": "exampleTarget",
+        "ordinal": 1
+      },
+      "source_id": "typescript/src/example.ts",
+      "qualified_name": "exampleTarget",
+      "line_start": 1,
+      "line_end": 3,
+      "parameters": [
+        {
+          "name": "exampleValue",
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "name": "string",
+        "kind": "reference"
+      },
+      "kind": "function"
+    },
+    {
+      "name": "exampleSource",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 4,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example.ts",
+        "family": "function",
+        "qualified_name": "exampleSource",
+        "ordinal": 91
+      },
+      "source_id": "typescript/src/example.ts",
+      "qualified_name": "exampleSource",
+      "line_start": 5,
+      "line_end": 8,
+      "parameters": [
+        {
+          "name": "exampleValue",
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "name": "string",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "typescript/src/example.ts",
+        "family": "function",
+        "qualified_name": "exampleSource",
+        "ordinal": 91
+      },
+      "ordinal": 1,
+      "target_callable_id": {
+        "source_id": "typescript/src/example.ts",
+        "family": "function",
+        "qualified_name": "exampleTarget",
+        "ordinal": 1
+      },
+      "source_id": "typescript/src/example.ts",
+      "line": 6,
+      "expression": "exampleTarget",
+      "resolution": "resolved",
+      "target_name": "exampleTarget"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "typescript/src/example.ts",
+        "family": "function",
+        "qualified_name": "exampleSource",
+        "ordinal": 91
+      },
+      "ordinal": 2,
+      "target_callable_id": {
+        "source_id": "typescript/src/example.ts",
+        "family": "function",
+        "qualified_name": "exampleTarget",
+        "ordinal": 1
+      },
+      "source_id": "typescript/src/example.ts",
+      "line": 7,
+      "expression": "exampleTarget",
+      "resolution": "resolved",
+      "target_name": "exampleTarget"
+    }
+  ],
+  "line_count": 9,
+  "code_line_count": 7,
+  "public_symbol_count": 2
+}

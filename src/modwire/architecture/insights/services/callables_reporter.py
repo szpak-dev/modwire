@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.source_callable import SourceCallable
+from ....shared.code.models.callables.source_callable import SourceCallable
 from ...map.models.architecture_map import ArchitectureMap
 from ..domain import InsightReporterInterface
 from ..models.callable_report_entry import CallableReportEntry

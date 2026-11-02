@@ -1,0 +1,48 @@
+{
+  "file_id": "ruby/src/type_reference_cases.rb",
+  "import_identity": "src/type_reference_cases",
+  "imports": [],
+  "functions": [
+    {
+      "name": "example_types",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/type_reference_cases.rb",
+        "family": "function",
+        "qualified_name": "example_types",
+        "ordinal": 1
+      },
+      "source_id": "ruby/src/type_reference_cases.rb",
+      "qualified_name": "example_types",
+      "line_start": 1,
+      "line_end": 3,
+      "parameters": [
+        {
+          "name": "example_value",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "example_suffix",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "positional",
+          "has_default": true
+        }
+      ],
+      "return_type": {
+        "kind": "absent"
+      },
+      "kind": "function"
+    }
+  ],
+  "line_count": 4,
+  "code_line_count": 3,
+  "public_symbol_count": 1
+}

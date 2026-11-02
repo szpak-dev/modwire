@@ -16,7 +16,7 @@ class ApplicationTestCase(ServiceTestCase):
     def installed_consumer(self, root: Path, language: str) -> subprocess.CompletedProcess[str]:
         distribution = self.workspace / "distribution"
         subprocess.run(
-            ("uv", "build", "--wheel", "--out-dir", str(distribution)),
+            ("uv", "build", "--no-cache", "--wheel", "--out-dir", str(distribution)),
             cwd=self.repository,
             capture_output=True,
             check=True,
@@ -29,6 +29,7 @@ class ApplicationTestCase(ServiceTestCase):
             (
                 "uv",
                 "run",
+                "--no-cache",
                 "--isolated",
                 "--no-project",
                 "--with",
@@ -49,7 +50,7 @@ class ApplicationTestCase(ServiceTestCase):
     def installed_failure_consumer(self, root: Path, language: str) -> subprocess.CompletedProcess[str]:
         distribution = self.workspace / "failure-distribution"
         subprocess.run(
-            ("uv", "build", "--wheel", "--out-dir", str(distribution)),
+            ("uv", "build", "--no-cache", "--wheel", "--out-dir", str(distribution)),
             cwd=self.repository,
             capture_output=True,
             check=True,
@@ -62,6 +63,7 @@ class ApplicationTestCase(ServiceTestCase):
             (
                 "uv",
                 "run",
+                "--no-cache",
                 "--isolated",
                 "--no-project",
                 "--with",

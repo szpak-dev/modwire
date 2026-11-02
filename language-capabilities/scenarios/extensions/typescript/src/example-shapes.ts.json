@@ -1,0 +1,624 @@
+{
+  "file_id": "typescript/src/example-shapes.ts",
+  "import_identity": "src/example-shapes",
+  "imports": [
+    {
+      "path": "node:path",
+      "is_relative": false,
+      "normalized_path": "node:path",
+      "imported_name": "path",
+      "is_aliased": true,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 1,
+      "join_key": "node:path",
+      "uses_joined_import": false,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "default",
+          "alias": "path",
+          "is_aliased": true,
+          "is_default": true,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "name": "ExampleAbstract",
+      "local_name": "ExampleAbstract",
+      "kind": "abstract_class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleImplementation",
+      "local_name": "ExampleImplementation",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleContract",
+      "local_name": "ExampleContract",
+      "kind": "interface",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleCallback",
+      "local_name": "ExampleCallback",
+      "kind": "type",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleCallableObject",
+      "local_name": "ExampleCallableObject",
+      "kind": "type",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "EXAMPLE_CONSTANT",
+      "local_name": "EXAMPLE_CONSTANT",
+      "kind": "value",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "exampleVariable",
+      "local_name": "exampleVariable",
+      "kind": "value",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "exampleArrow",
+      "local_name": "exampleArrow",
+      "kind": "value",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleImplementation",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 12,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-shapes.ts",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 618
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "exampleRequired",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.exampleRequired",
+            "ordinal": 786
+          },
+          "source_id": "typescript/src/example-shapes.ts",
+          "qualified_name": "ExampleImplementation.exampleRequired",
+          "kind": "instance_method",
+          "line_start": 29,
+          "line_end": 31,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "string",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 618
+          }
+        },
+        {
+          "name": "examplePath",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.examplePath",
+            "ordinal": 874
+          },
+          "source_id": "typescript/src/example-shapes.ts",
+          "qualified_name": "ExampleImplementation.examplePath",
+          "kind": "instance_method",
+          "line_start": 33,
+          "line_end": 35,
+          "parameters": [
+            {
+              "name": "exampleRoot",
+              "type": {
+                "name": "string",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 618
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "property",
+            "qualified_name": "ExampleImplementation.exampleStatic",
+            "ordinal": 710
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 618
+          },
+          "name": "exampleStatic",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "static",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        },
+        {
+          "declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "property",
+            "qualified_name": "ExampleImplementation.exampleOptional",
+            "ordinal": 755
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 618
+          },
+          "name": "exampleOptional",
+          "is_optional": true,
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExampleContract",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 4,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-shapes.ts",
+        "family": "interface",
+        "qualified_name": "ExampleContract",
+        "ordinal": 134
+      },
+      "kind": "interface",
+      "methods": [
+        {
+          "name": "exampleRequired",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 1,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "method",
+            "qualified_name": "ExampleContract.exampleRequired",
+            "ordinal": 203
+          },
+          "source_id": "typescript/src/example-shapes.ts",
+          "qualified_name": "ExampleContract.exampleRequired",
+          "kind": "instance_method",
+          "line_start": 8,
+          "line_end": 8,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "string",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "interface",
+            "qualified_name": "ExampleContract",
+            "ordinal": 134
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "property",
+            "qualified_name": "ExampleContract.exampleOptional",
+            "ordinal": 173
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "interface",
+            "qualified_name": "ExampleContract",
+            "ordinal": 134
+          },
+          "name": "exampleOptional",
+          "is_optional": true,
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExampleCallback",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-shapes.ts",
+        "family": "type",
+        "qualified_name": "ExampleCallback",
+        "ordinal": 253
+      },
+      "kind": "type_alias"
+    },
+    {
+      "name": "ExampleCallableObject",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-shapes.ts",
+        "family": "type",
+        "qualified_name": "ExampleCallableObject",
+        "ordinal": 342
+      },
+      "kind": "type_alias",
+      "signatures": [
+        {
+          "kind": "call",
+          "line_count": 1,
+          "declared_args": 2,
+          "optional_args": 1
+        }
+      ]
+    },
+    {
+      "name": "ExampleAbstract",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 7,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-shapes.ts",
+        "family": "abstract_class",
+        "qualified_name": "ExampleAbstract",
+        "ordinal": 444
+      },
+      "kind": "abstract_class",
+      "methods": [
+        {
+          "name": "exampleConcrete",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "method",
+            "qualified_name": "ExampleAbstract.exampleConcrete",
+            "ordinal": 549
+          },
+          "source_id": "typescript/src/example-shapes.ts",
+          "qualified_name": "ExampleAbstract.exampleConcrete",
+          "kind": "instance_method",
+          "line_start": 20,
+          "line_end": 22,
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "abstract_class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 444
+          }
+        }
+      ],
+      "abstract_methods": [
+        {
+          "name": "exampleRequired",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 1,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "method",
+            "qualified_name": "ExampleAbstract.exampleRequired",
+            "ordinal": 488
+          },
+          "source_id": "typescript/src/example-shapes.ts",
+          "qualified_name": "ExampleAbstract.exampleRequired",
+          "kind": "instance_method",
+          "line_start": 18,
+          "line_end": 18,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "string",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example-shapes.ts",
+            "family": "abstract_class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 444
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "values": [
+    {
+      "declaration_id": {
+        "source_id": "typescript/src/example-shapes.ts",
+        "family": "value",
+        "qualified_name": "EXAMPLE_CONSTANT",
+        "ordinal": 45
+      },
+      "name": "EXAMPLE_CONSTANT",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_kind": "constant",
+      "value_kind": "value_literal",
+      "scope": "module"
+    },
+    {
+      "declaration_id": {
+        "source_id": "typescript/src/example-shapes.ts",
+        "family": "value",
+        "qualified_name": "exampleVariable",
+        "ordinal": 95
+      },
+      "name": "exampleVariable",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_kind": "assignment",
+      "value_kind": "value_literal",
+      "scope": "module"
+    }
+  ],
+  "callable_values": [
+    {
+      "name": "exampleArrow",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-shapes.ts",
+        "family": "value",
+        "qualified_name": "exampleArrow",
+        "ordinal": 1011
+      },
+      "source_id": "typescript/src/example-shapes.ts",
+      "qualified_name": "exampleArrow",
+      "line_start": 38,
+      "line_end": 38,
+      "parameters": [
+        {
+          "name": "exampleValue",
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "name": "string",
+        "kind": "reference"
+      },
+      "declaration_kind": "constant",
+      "scope": "module",
+      "kind": "callable_value"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "typescript/src/example-shapes.ts",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.examplePath",
+        "ordinal": 874
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "typescript/src/example-shapes.ts",
+      "line": 34,
+      "expression": "path.join",
+      "resolution": "unresolved",
+      "target_name": "join"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "typescript/src/example-shapes.ts",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.examplePath",
+        "ordinal": 874
+      },
+      "ordinal": 2,
+      "target_callable_id": {
+        "source_id": "typescript/src/example-shapes.ts",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.exampleRequired",
+        "ordinal": 786
+      },
+      "source_id": "typescript/src/example-shapes.ts",
+      "line": 34,
+      "expression": "this.exampleRequired",
+      "resolution": "resolved",
+      "target_name": "exampleRequired"
+    }
+  ],
+  "declaration_relations": [
+    {
+      "source_declaration_id": {
+        "source_id": "typescript/src/example-shapes.ts",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 618
+      },
+      "kind": "extends",
+      "target_reference": "ExampleAbstract"
+    },
+    {
+      "source_declaration_id": {
+        "source_id": "typescript/src/example-shapes.ts",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 618
+      },
+      "kind": "implements",
+      "target_reference": "ExampleContract"
+    }
+  ],
+  "line_count": 39,
+  "code_line_count": 28,
+  "public_symbol_count": 8
+}

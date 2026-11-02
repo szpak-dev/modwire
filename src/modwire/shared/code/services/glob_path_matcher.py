@@ -3,7 +3,7 @@ from fnmatch import fnmatchcase
 
 from wireup import injectable
 
-from ..domain import PathMatcher
+from ..contracts.path_matcher import PathMatcher
 
 
 @injectable(as_type=PathMatcher)
@@ -14,12 +14,12 @@ class GlobPathMatcher(PathMatcher):
         pattern_parts = tuple(pattern.replace("\\", "/").strip("/").split("/"))
         starts = (0,) if scope else range(len(path_parts))
         for start in starts:
-            captures = self._match_parts(path_parts[start:], pattern_parts, ())
+            captures = self.match_parts(path_parts[start:], pattern_parts, ())
             if captures is not None:
                 return captures
         return None
 
-    def _match_parts(
+    def match_parts(
         self, path: tuple[str, ...], pattern: tuple[str, ...], captures: tuple[str, ...]
     ) -> tuple[str, ...] | None:
         if not pattern:
@@ -28,7 +28,7 @@ class GlobPathMatcher(PathMatcher):
         if part == "**":
             for count in range(len(path), -1, -1):
                 captured = "/".join(path[:count])
-                result = self._match_parts(
+                result = self.match_parts(
                     path[count:], tuple(remaining), (*captures, captured) if captured else captures
                 )
                 if result is not None:
@@ -36,6 +36,6 @@ class GlobPathMatcher(PathMatcher):
             return None
         if not path or not path[0] or not fnmatchcase(path[0], part):
             return None
-        return self._match_parts(
+        return self.match_parts(
             path[1:], tuple(remaining), (*captures, path[0]) if any(char in part for char in "*?[") else captures
         )

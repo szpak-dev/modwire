@@ -196,6 +196,20 @@ function type_annotation(Node|Name|string|null $type): string {
     return node_name($type);
 }
 
+function source_type(Node|Name|string|null $type): array {
+    if ($type === null || $type === '') {
+        return ['kind' => 'absent'];
+    }
+    if ($type instanceof Name || $type instanceof Node\Identifier || is_string($type)) {
+        return [
+            'kind' => 'reference',
+            'name' => type_annotation($type),
+            'arguments' => [],
+        ];
+    }
+    return ['kind' => 'unsupported'];
+}
+
 function type_is_optional(Node|Name|string|null $type): bool {
     if ($type instanceof Node\NullableType) {
         return true;
@@ -230,7 +244,7 @@ function declaration_annotations(Stmt\ClassLike $node): array {
 function parameter_definitions(array $params): array {
     return array_map(fn (Param $param): array => [
         'name' => var_name($param->var),
-        'annotation' => type_annotation($param->type),
+        'type' => source_type($param->type),
         'kind' => $param->variadic ? 'variadic_positional' : 'positional',
         'has_default' => $param->default !== null || $param->variadic,
     ], $params);
@@ -256,19 +270,21 @@ function source_callable_entry(
     string $sourceId,
     string $name,
     string $qualifiedName,
-    string $ownerName,
+    ?array $ownerDeclarationId,
     string $kind,
     string $visibility,
     Node $node,
     array $parameters,
-    string $returnAnnotation = ''
+    Node|Name|string|null $returnType = null,
+    string $declarationKind = 'assignment',
+    string $scope = 'module'
 ): array {
     $family = $kind === 'function'
         ? 'function'
         : (in_array($kind, ['instance_method', 'type_method', 'static_method', 'constructor'], true)
             ? 'method'
             : ($kind === 'callable_value' ? 'value' : 'callable'));
-    return [
+    $entry = [
         'declaration_id' => [
             'source_id' => $sourceId,
             'family' => $family,
@@ -278,7 +294,6 @@ function source_callable_entry(
         'source_id' => $sourceId,
         'name' => $name,
         'qualified_name' => $qualifiedName,
-        'owner_name' => $ownerName,
         'kind' => $kind,
         'visibility' => $visibility,
         'visibility_intent' => visibility_intent($name, $visibility),
@@ -287,12 +302,19 @@ function source_callable_entry(
         'line_end' => $node->getEndLine(),
         'line_count' => line_span($node),
         'parameters' => $parameters,
-        'declared_args' => count($parameters),
-        'optional_args' => count(array_filter($parameters, fn (array $parameter): bool => $parameter['has_default'])),
-        'return_annotation' => $returnAnnotation,
+        'return_type' => source_type($returnType),
         'decorators' => [],
         'docstring' => '',
     ];
+    if ($ownerDeclarationId !== null) {
+        $entry['owner_declaration_id'] = $ownerDeclarationId;
+    }
+    if ($kind === 'callable_value') {
+        $entry['declaration_kind'] = $declarationKind;
+        $entry['value_kind'] = 'value_callable';
+        $entry['scope'] = $scope;
+    }
+    return $entry;
 }
 
 function source_value_entry(
@@ -302,8 +324,7 @@ function source_value_entry(
     Node $node,
     string $declarationKind,
     string $valueKind,
-    string $scope,
-    array $parameters = []
+    string $scope
 ): array {
     return [
         'declaration_id' => [
@@ -319,8 +340,37 @@ function source_value_entry(
         'declaration_kind' => $declarationKind,
         'value_kind' => $valueKind,
         'scope' => $scope,
-        'declared_args' => count($parameters),
-        'optional_args' => count(array_filter($parameters, fn (array $parameter): bool => $parameter['has_default'])),
+    ];
+}
+
+function source_property_entry(
+    string $sourceId,
+    array $ownerDeclarationId,
+    string $name,
+    Node $node,
+    Node|Name|string|null $type,
+    bool $isOptional,
+    string $visibility,
+    string $memberKind
+): array {
+    return [
+        'declaration_id' => [
+            'source_id' => $sourceId,
+            'family' => 'property',
+            'qualified_name' => $ownerDeclarationId['qualified_name'] . '.' . $name,
+            'ordinal' => declaration_ordinal($node),
+        ],
+        'owner_declaration_id' => $ownerDeclarationId,
+        'name' => $name,
+        'is_optional' => $isOptional,
+        'type' => source_type($type),
+        'visibility' => $visibility,
+        'member_kind' => $memberKind,
+        'assigned_values' => [[
+            'kind' => 'unsupported',
+            'expression' => '',
+            'reference' => '',
+        ]],
     ];
 }
 
@@ -434,6 +484,7 @@ function collect_imports(array $nodes, string $content): array {
 function collect_definitions(array $nodes, string $sourceId): array {
     $classes = [];
     $interfaces = [];
+    $traits = [];
     $abstractClasses = [];
     $functions = [];
     $exports = [];
@@ -444,6 +495,7 @@ function collect_definitions(array $nodes, string $sourceId): array {
         $sourceId,
         &$classes,
         &$interfaces,
+        &$traits,
         &$abstractClasses,
         &$functions,
         &$exports,
@@ -477,20 +529,19 @@ function collect_definitions(array $nodes, string $sourceId): array {
             $properties = [];
             foreach ($node->getProperties() as $property) {
                 foreach ($property->props as $propertyProperty) {
-                    $properties[$propertyProperty->name->toString()] = [
-                        'name' => $propertyProperty->name->toString(),
-                        'is_optional' => $propertyProperty->default instanceof Expr\ConstFetch
+                    $propertyName = $propertyProperty->name->toString();
+                    $properties[$propertyName] = source_property_entry(
+                        $sourceId,
+                        $declarationId,
+                        $propertyName,
+                        $propertyProperty,
+                        $property->type,
+                        $propertyProperty->default instanceof Expr\ConstFetch
                             && strtolower(node_name($propertyProperty->default->name)) === 'null'
                             || type_is_optional($property->type),
-                        'annotation' => type_annotation($property->type),
-                        'visibility' => member_visibility($property),
-                        'member_kind' => $property->isStatic() ? 'static' : 'instance',
-                        'assigned_values' => [[
-                            'kind' => 'unsupported',
-                            'expression' => '',
-                            'reference' => '',
-                        ]],
-                    ];
+                        member_visibility($property),
+                        $property->isStatic() ? 'static' : 'instance'
+                    );
                 }
             }
             foreach ($node->getMethods() as $method) {
@@ -500,18 +551,16 @@ function collect_definitions(array $nodes, string $sourceId): array {
                 foreach ($method->params as $param) {
                     if (($param->flags ?? 0) !== 0) {
                         $propertyName = var_name($param->var);
-                        $properties[$propertyName] = [
-                            'name' => $propertyName,
-                            'is_optional' => $param->default !== null || type_is_optional($param->type),
-                            'annotation' => type_annotation($param->type),
-                            'visibility' => parameter_visibility($param),
-                            'member_kind' => 'instance',
-                            'assigned_values' => [[
-                                'kind' => 'unsupported',
-                                'expression' => '',
-                                'reference' => '',
-                            ]],
-                        ];
+                        $properties[$propertyName] = source_property_entry(
+                            $sourceId,
+                            $declarationId,
+                            $propertyName,
+                            $param,
+                            $param->type,
+                            $param->default !== null || type_is_optional($param->type),
+                            parameter_visibility($param),
+                            'instance'
+                        );
                     }
                 }
             }
@@ -521,15 +570,19 @@ function collect_definitions(array $nodes, string $sourceId): array {
             foreach ($node->getMethods() as $method) {
                 $methodName = $method->name->toString();
                 $parameters = parameter_definitions($method->params);
-                $entry = [
-                    'name' => $methodName,
-                    'visibility' => member_visibility($method),
-                    'visibility_intent' => visibility_intent($methodName, member_visibility($method)),
-                    'declaration_annotations' => [],
-                    'line_count' => line_span($method),
-                    'declared_args' => count($parameters),
-                    'optional_args' => count(array_filter($parameters, fn (array $parameter): bool => $parameter['has_default'])),
-                ];
+                $entry = source_callable_entry(
+                    $sourceId,
+                    $methodName,
+                    $name . '.' . $methodName,
+                    $declarationId,
+                    $methodName === '__construct'
+                        ? 'constructor'
+                        : ($method->isStatic() ? 'static_method' : 'instance_method'),
+                    member_visibility($method),
+                    $method,
+                    $parameters,
+                    $method->returnType
+                );
                 if ($node->isAbstract()) {
                     if ($method->isAbstract()) {
                         $abstractMethods[] = $entry;
@@ -585,15 +638,18 @@ function collect_definitions(array $nodes, string $sourceId): array {
             $methods = [];
             foreach ($node->getMethods() as $method) {
                 $parameters = parameter_definitions($method->params);
-                $methods[] = [
-                    'name' => $method->name->toString(),
-                    'visibility' => 'public',
-                    'visibility_intent' => visibility_intent($method->name->toString(), 'public'),
-                    'declaration_annotations' => [],
-                    'line_count' => line_span($method),
-                    'declared_args' => count($parameters),
-                    'optional_args' => count(array_filter($parameters, fn (array $parameter): bool => $parameter['has_default'])),
-                ];
+                $methodName = $method->name->toString();
+                $methods[] = source_callable_entry(
+                    $sourceId,
+                    $methodName,
+                    $name . '.' . $methodName,
+                    $declarationId,
+                    $method->isStatic() ? 'static_method' : 'instance_method',
+                    'public',
+                    $method,
+                    $parameters,
+                    $method->returnType
+                );
             }
             $interfaces[] = [
                 'declaration_id' => $declarationId,
@@ -611,30 +667,71 @@ function collect_definitions(array $nodes, string $sourceId): array {
             return;
         }
 
-        if ($node instanceof Stmt\Function_ && function_parent($parents) === null) {
+        if ($node instanceof Stmt\Trait_ && function_parent($parents) === null) {
             $name = node_name($node->name);
-            $parameters = parameter_definitions($node->params);
-            $functions[] = [
-                'declaration_id' => [
-                    'source_id' => $sourceId,
-                    'family' => 'function',
-                    'qualified_name' => $name,
-                    'ordinal' => declaration_ordinal($node),
-                ],
+            $declarationId = [
+                'source_id' => $sourceId,
+                'family' => 'type',
+                'qualified_name' => $name,
+                'ordinal' => declaration_ordinal($node),
+            ];
+            $properties = [];
+            foreach ($node->getProperties() as $property) {
+                foreach ($property->props as $propertyProperty) {
+                    $propertyName = $propertyProperty->name->toString();
+                    $properties[] = source_property_entry(
+                        $sourceId,
+                        $declarationId,
+                        $propertyName,
+                        $propertyProperty,
+                        $property->type,
+                        $propertyProperty->default instanceof Expr\ConstFetch
+                            && strtolower(node_name($propertyProperty->default->name)) === 'null'
+                            || type_is_optional($property->type),
+                        member_visibility($property),
+                        $property->isStatic() ? 'static' : 'instance'
+                    );
+                }
+            }
+            $methods = [];
+            foreach ($node->getMethods() as $method) {
+                $methodName = $method->name->toString();
+                $methods[] = source_callable_entry(
+                    $sourceId,
+                    $methodName,
+                    $name . '.' . $methodName,
+                    $declarationId,
+                    $method->isStatic() ? 'static_method' : 'instance_method',
+                    member_visibility($method),
+                    $method,
+                    parameter_definitions($method->params),
+                    $method->returnType
+                );
+            }
+            $traits[] = [
+                'declaration_id' => $declarationId,
+                'kind' => 'trait',
                 'name' => $name,
                 'visibility' => 'public',
                 'visibility_intent' => visibility_intent($name, 'public'),
-                'declaration_annotations' => [],
+                'declaration_annotations' => declaration_annotations($node),
+                'methods' => $methods,
+                'properties' => $properties,
+                'signatures' => [],
                 'line_count' => line_span($node),
-                'declared_args' => count($parameters),
-                'optional_args' => count(array_filter($parameters, fn (array $parameter): bool => $parameter['has_default'])),
             ];
+            $exports[] = source_export_entry($name, 'type');
+            return;
+        }
+
+        if ($node instanceof Stmt\Function_ && function_parent($parents) === null) {
+            $name = node_name($node->name);
             $exports[] = source_export_entry($name, 'function');
         }
     });
 
     return [
-        'declarations' => [...$classes, ...$interfaces, ...$abstractClasses],
+        'declarations' => [...$classes, ...$interfaces, ...$traits, ...$abstractClasses],
         'functions' => $functions,
         'exports' => $exports,
         'class_names' => $classNames,
@@ -660,11 +757,11 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
     $callables = [];
     $callableRanges = [];
 
-    $addCallable = function (array $entry, Node $node) use (&$callables, &$callableRanges): void {
+    $addCallable = function (array $entry, Node $node, string $ownerName) use (&$callables, &$callableRanges): void {
         $callables[] = $entry;
         $callableRanges[spl_object_id($node)] = [
             'declarationId' => $entry['declaration_id'],
-            'ownerName' => $entry['owner_name'],
+            'ownerName' => $ownerName,
             'node' => $node,
         ];
     };
@@ -675,19 +772,17 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
         $addCallable
     ): void {
         if ($node instanceof Expr\Assign && $node->var instanceof Expr\Variable && is_string($node->var->name)) {
-            $parameters = $node->expr instanceof Expr\Closure || $node->expr instanceof Expr\ArrowFunction
-                ? parameter_definitions($node->expr->params)
-                : [];
-            $values[] = source_value_entry(
-                $sourceId,
-                $node->var->name,
-                'private',
-                $node,
-                'assignment',
-                value_kind($node->expr),
-                function_parent($parents) === null ? 'module' : 'local',
-                $parameters
-            );
+            if (!$node->expr instanceof Expr\Closure && !$node->expr instanceof Expr\ArrowFunction) {
+                $values[] = source_value_entry(
+                    $sourceId,
+                    $node->var->name,
+                    'private',
+                    $node,
+                    'assignment',
+                    value_kind($node->expr),
+                    function_parent($parents) === null ? 'module' : 'local'
+                );
+            }
         }
 
         if ($node instanceof Stmt\Const_) {
@@ -724,32 +819,42 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
                 $sourceId,
                 $name,
                 $name,
-                '',
+                null,
                 'function',
                 'public',
                 $node,
                 parameter_definitions($node->params),
-                $node->returnType instanceof Node ? node_name($node->returnType) : ''
-            ), $node);
+                $node->returnType
+            ), $node, '');
             return;
         }
 
         if ($node instanceof Stmt\ClassMethod && !$node->isAbstract()) {
-            $class = nearest_parent($parents, Stmt\Class_::class);
-            $ownerName = $class instanceof Stmt\Class_ && $class->name !== null ? node_name($class->name) : '';
+            $owner = nearest_parent($parents, Stmt\Class_::class, Stmt\Trait_::class);
+            $ownerName = $owner instanceof Stmt\ClassLike && $owner->name !== null ? node_name($owner->name) : '';
+            $ownerDeclarationId = $owner instanceof Stmt\ClassLike && $owner->name !== null
+                ? [
+                    'source_id' => $sourceId,
+                    'family' => $owner instanceof Stmt\Trait_
+                        ? 'type'
+                        : ($owner->isAbstract() ? 'abstract_class' : 'class'),
+                    'qualified_name' => $ownerName,
+                    'ordinal' => declaration_ordinal($owner),
+                ]
+                : null;
             $name = node_name($node->name);
             $kind = $name === '__construct' ? 'constructor' : ($node->isStatic() ? 'static_method' : 'instance_method');
             $addCallable(source_callable_entry(
                 $sourceId,
                 $name,
                 $ownerName !== '' ? $ownerName . '.' . $name : $name,
-                $ownerName,
+                $ownerDeclarationId,
                 $kind,
                 member_visibility($node),
                 $node,
                 parameter_definitions($node->params),
-                $node->returnType instanceof Node ? node_name($node->returnType) : ''
-            ), $node);
+                $node->returnType
+            ), $node, $ownerName);
             return;
         }
 
@@ -759,13 +864,15 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
                 $sourceId,
                 $name,
                 $qualifiedName,
-                $ownerName,
+                null,
                 str_starts_with($name, '<anonymous>@') ? 'anonymous' : 'callable_value',
                 $visibility,
                 $startNode,
                 parameter_definitions($node->params),
-                $node->returnType instanceof Node ? node_name($node->returnType) : ''
-            ), $node);
+                $node->returnType,
+                'assignment',
+                function_parent($parents) === null ? 'module' : 'local'
+            ), $node, $ownerName);
         }
     });
 
@@ -788,8 +895,9 @@ function collect_calls(array $nodes, string $sourceId, array $callables, array $
         if (in_array($callable['kind'], ['function', 'callable_value'], true)) {
             $byName[$callable['name']][] = $callable['declaration_id'];
         }
-        if ($callable['kind'] === 'constructor' && $callable['owner_name'] !== '') {
-            $constructorsByName[$callable['owner_name']][] = $callable['declaration_id'];
+        if ($callable['kind'] === 'constructor') {
+            $ownerName = $callable['owner_declaration_id']['qualified_name'];
+            $constructorsByName[$ownerName][] = $callable['declaration_id'];
         }
     }
 
@@ -899,9 +1007,19 @@ function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRo
         'exports' => $definitions['exports'],
         'namespaces' => [],
         'declarations' => $definitions['declarations'],
-        'functions' => $definitions['functions'],
+        'functions' => array_values(array_filter(
+            $graph['callables'],
+            fn (array $callable): bool => $callable['kind'] === 'function'
+        )),
         'values' => $graph['values'],
-        'callables' => $graph['callables'],
+        'callable_values' => array_values(array_filter(
+            $graph['callables'],
+            fn (array $callable): bool => $callable['kind'] === 'callable_value'
+        )),
+        'anonymous_callables' => array_values(array_filter(
+            $graph['callables'],
+            fn (array $callable): bool => $callable['kind'] === 'anonymous'
+        )),
         'calls' => collect_calls($nodes, $resolvedSourceId, $graph['callables'], $graph['callable_ranges']),
         'declaration_relations' => $definitions['declaration_relations'],
         'line_count' => line_count_for_content($content),

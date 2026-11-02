@@ -16,9 +16,13 @@ class TestPublicCodeValues(ServiceTestCase):
             .queryable(
                 {
                     source_id: {
-                        "callables": [
-                            CodeMapFactory().source_callable(source_id, "example_target"),
-                            CodeMapFactory().source_callable(source_id, "example_caller"),
+                        "functions": [
+                            CodeMapFactory().source_function(
+                                "example_target", line_count=1, parameter_count=0, optional_parameter_count=0
+                            ),
+                            CodeMapFactory().source_function(
+                                "example_caller", line_count=1, parameter_count=0, optional_parameter_count=0
+                            ),
                         ],
                         "calls": [
                             CodeMapFactory().source_call(
@@ -76,7 +80,7 @@ class TestPublicCodeValues(ServiceTestCase):
         original = CodeMapFactory().queryable({"src/example.source": {}}, ()).code_map
         restored = type(original).model_validate_json(original.to_json())
         assert restored.to_dict() == original.to_dict()
-        assert original.schema_version == 12
+        assert original.schema_version == 13
         assert set(json.loads(original.to_json())) == {
             "language",
             "producer",
@@ -88,7 +92,7 @@ class TestPublicCodeValues(ServiceTestCase):
         original = self.code_map_with_call()
         source_file = original.extraction.files["example.source"]
         repeated_identity = source_file.calls[0].model_copy(update={"line": source_file.calls[0].line + 1})
-        tampered_file = source_file.model_copy(update={"calls": [*source_file.calls, repeated_identity]})
+        tampered_file = source_file.model_copy(update={"calls": (*source_file.calls, repeated_identity)})
         tampered = original.model_copy(
             update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}
         )
@@ -104,7 +108,7 @@ class TestPublicCodeValues(ServiceTestCase):
         call = source_file.calls[0]
         unknown = call.source_callable_id.model_copy(update={"qualified_name": "example_missing"})
         tampered_file = source_file.model_copy(
-            update={"calls": [call.model_copy(update={"source_callable_id": unknown})]}
+            update={"calls": (call.model_copy(update={"source_callable_id": unknown}),)}
         )
         tampered = original.model_copy(
             update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}
@@ -120,7 +124,7 @@ class TestPublicCodeValues(ServiceTestCase):
         source_file = original.extraction.files["example.source"]
         call = source_file.calls[0]
         tampered_file = source_file.model_copy(
-            update={"calls": [call.model_copy(update={"source_id": "example_foreign.source"})]}
+            update={"calls": (call.model_copy(update={"source_id": "example_foreign.source"}),)}
         )
         tampered = original.model_copy(
             update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}
@@ -138,7 +142,7 @@ class TestPublicCodeValues(ServiceTestCase):
         assert call.target_callable_id is not None
         unknown = call.target_callable_id.model_copy(update={"qualified_name": "example_missing"})
         tampered_file = source_file.model_copy(
-            update={"calls": [call.model_copy(update={"target_callable_id": unknown})]}
+            update={"calls": (call.model_copy(update={"target_callable_id": unknown}),)}
         )
         tampered = original.model_copy(
             update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}

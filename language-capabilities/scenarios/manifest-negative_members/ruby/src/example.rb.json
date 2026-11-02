@@ -1,0 +1,54 @@
+{
+  "file_id": "ruby/src/example.rb",
+  "import_identity": "src/example",
+  "imports": [],
+  "declarations": [
+    {
+      "name": "ExampleValue",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 11,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleValue",
+        "ordinal": 1
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "initialize",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "method",
+            "qualified_name": "ExampleValue.initialize",
+            "ordinal": 61
+          },
+          "source_id": "ruby/src/example.rb",
+          "qualified_name": "ExampleValue.initialize",
+          "kind": "constructor",
+          "line_start": 4,
+          "line_end": 6,
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "class",
+            "qualified_name": "ExampleValue",
+            "ordinal": 1
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "line_count": 12,
+  "code_line_count": 9,
+  "public_symbol_count": 1
+}

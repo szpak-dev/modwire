@@ -1,0 +1,98 @@
+{
+  "file_id": "typescript/src/example.ts",
+  "import_identity": "src/example",
+  "imports": [
+    {
+      "path": "node:path",
+      "is_relative": false,
+      "normalized_path": "node:path",
+      "imported_name": "path",
+      "is_aliased": true,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 1,
+      "join_key": "node:path",
+      "uses_joined_import": false,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "default",
+          "alias": "path",
+          "is_aliased": true,
+          "is_default": true,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "name": "examplePath",
+      "local_name": "examplePath",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "functions": [
+    {
+      "name": "examplePath",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example.ts",
+        "family": "function",
+        "qualified_name": "examplePath",
+        "ordinal": 32
+      },
+      "source_id": "typescript/src/example.ts",
+      "qualified_name": "examplePath",
+      "line_start": 3,
+      "line_end": 5,
+      "parameters": [
+        {
+          "name": "exampleRoot",
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "name": "string",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "typescript/src/example.ts",
+        "family": "function",
+        "qualified_name": "examplePath",
+        "ordinal": 32
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "typescript/src/example.ts",
+      "line": 4,
+      "expression": "path.join",
+      "resolution": "unresolved",
+      "target_name": "join"
+    }
+  ],
+  "line_count": 6,
+  "code_line_count": 4,
+  "public_symbol_count": 1
+}

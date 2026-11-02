@@ -1,0 +1,235 @@
+{
+  "file_id": "php/src/ExampleCapabilityGaps.php",
+  "import_identity": "src/ExampleCapabilityGaps",
+  "imports": [],
+  "exports": [
+    {
+      "name": "ExampleTypeMarker",
+      "local_name": "ExampleTypeMarker",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleMethodMarker",
+      "local_name": "ExampleMethodMarker",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleTrait",
+      "local_name": "ExampleTrait",
+      "kind": "type",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleConsumer",
+      "local_name": "ExampleConsumer",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleTypeMarker",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 2,
+      "declaration_annotations": [
+        "\\Attribute"
+      ],
+      "declaration_id": {
+        "source_id": "php/src/ExampleCapabilityGaps.php",
+        "family": "class",
+        "qualified_name": "ExampleTypeMarker",
+        "ordinal": 41
+      },
+      "kind": "class"
+    },
+    {
+      "name": "ExampleMethodMarker",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 2,
+      "declaration_annotations": [
+        "\\Attribute"
+      ],
+      "declaration_id": {
+        "source_id": "php/src/ExampleCapabilityGaps.php",
+        "family": "class",
+        "qualified_name": "ExampleMethodMarker",
+        "ordinal": 89
+      },
+      "kind": "class"
+    },
+    {
+      "name": "ExampleConsumer",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 12,
+      "declaration_annotations": [
+        "ExampleTypeMarker"
+      ],
+      "declaration_id": {
+        "source_id": "php/src/ExampleCapabilityGaps.php",
+        "family": "class",
+        "qualified_name": "ExampleConsumer",
+        "ordinal": 282
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "exampleConsumerValue",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 4,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "method",
+            "qualified_name": "ExampleConsumer.exampleConsumerValue",
+            "ordinal": 412
+          },
+          "source_id": "php/src/ExampleCapabilityGaps.php",
+          "qualified_name": "ExampleConsumer.exampleConsumerValue",
+          "kind": "instance_method",
+          "line_start": 26,
+          "line_end": 29,
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "class",
+            "qualified_name": "ExampleConsumer",
+            "ordinal": 282
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "property",
+            "qualified_name": "ExampleConsumer.exampleValue",
+            "ordinal": 374
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "class",
+            "qualified_name": "ExampleConsumer",
+            "ordinal": 282
+          },
+          "name": "exampleValue",
+          "is_optional": false,
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExampleTrait",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 8,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "php/src/ExampleCapabilityGaps.php",
+        "family": "type",
+        "qualified_name": "ExampleTrait",
+        "ordinal": 139
+      },
+      "kind": "trait",
+      "methods": [
+        {
+          "name": "exampleTraitValue",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 5,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "method",
+            "qualified_name": "ExampleTrait.exampleTraitValue",
+            "ordinal": 164
+          },
+          "source_id": "php/src/ExampleCapabilityGaps.php",
+          "qualified_name": "ExampleTrait.exampleTraitValue",
+          "kind": "instance_method",
+          "line_start": 12,
+          "line_end": 16,
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "type",
+            "qualified_name": "ExampleTrait",
+            "ordinal": 139
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "values": [
+    {
+      "declaration_id": {
+        "source_id": "php/src/ExampleCapabilityGaps.php",
+        "family": "value",
+        "qualified_name": "exampleConsumer",
+        "ordinal": 510
+      },
+      "name": "exampleConsumer",
+      "visibility": "private",
+      "visibility_intent": "private",
+      "line_count": 1,
+      "declaration_kind": "assignment",
+      "value_kind": "value_object",
+      "scope": "module"
+    }
+  ],
+  "line_count": 34,
+  "code_line_count": 22,
+  "public_symbol_count": 4
+}

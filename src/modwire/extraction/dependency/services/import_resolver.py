@@ -3,11 +3,11 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.identity import FileId, ImportIdentity
-from ....shared.code.models.import_crossing_type import ImportCrossingType
-from ....shared.code.models.source_dependency_resolution import SourceDependencyResolution
-from ....shared.code.models.source_file import SourceFile
-from ....shared.code.models.source_import import SourceImport
+from ....shared.code.models.dependencies.source_dependency_resolution import SourceDependencyResolution
+from ....shared.code.models.sources.identity import FileId, ImportIdentity
+from ....shared.code.models.sources.import_crossing_type import ImportCrossingType
+from ....shared.code.models.sources.source_file import SourceFile
+from ....shared.code.models.sources.source_import import SourceImport
 from ..domain import ImportResolver
 from .import_identity_index import ImportIdentityIndex
 

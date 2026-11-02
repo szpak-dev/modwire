@@ -4,13 +4,15 @@ from functools import singledispatchmethod
 
 from wireup import injectable
 
-from ......shared.code.models.source_class_property import SourceClassProperty
-from ......shared.code.models.source_member_kind import SourceMemberKind
+from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ......shared.code.models.values.source_class_property import SourceClassProperty
+from ......shared.code.models.values.source_member_kind import SourceMemberKind
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.property_candidate import PythonPropertyCandidate
 from ...observations.property_scope import PythonPropertyScope
 from ..policies.assigned_value_reader import PythonAssignedValueReader
+from ..policies.source_type_reader import PythonSourceTypeReader
 from ..policies.visibility_policy import PythonVisibilityPolicy
 from .classifier import PythonPropertyRule
 
@@ -20,6 +22,7 @@ from .classifier import PythonPropertyRule
 class AnnotatedInstancePropertyRule(PythonPropertyRule):
     assigned_values: PythonAssignedValueReader
     visibility: PythonVisibilityPolicy
+    types: PythonSourceTypeReader
 
     @property
     def order(self) -> int:
@@ -28,8 +31,13 @@ class AnnotatedInstancePropertyRule(PythonPropertyRule):
     def applies(self, candidate: PythonPropertyCandidate) -> bool:
         return candidate.scope is PythonPropertyScope.METHOD and self.is_annotated(candidate.statement)
 
-    def classify(self, candidate: PythonPropertyCandidate) -> SourceClassProperty:
-        return self.read(candidate.statement, candidate)
+    def classify(
+        self,
+        candidate: PythonPropertyCandidate,
+        declaration_id: DeclarationIdentity,
+        owner_declaration_id: DeclarationIdentity,
+    ) -> SourceClassProperty:
+        return self.read(candidate.statement, candidate, declaration_id, owner_declaration_id)
 
     @singledispatchmethod
     def is_annotated(self, statement: ast.stmt) -> bool:
@@ -40,14 +48,26 @@ class AnnotatedInstancePropertyRule(PythonPropertyRule):
         return True
 
     @singledispatchmethod
-    def read(self, statement: ast.stmt, candidate: PythonPropertyCandidate) -> SourceClassProperty:
+    def read(
+        self,
+        statement: ast.stmt,
+        candidate: PythonPropertyCandidate,
+        declaration_id: DeclarationIdentity,
+        owner_declaration_id: DeclarationIdentity,
+    ) -> SourceClassProperty:
         raise ExtractorInvariantError(
             ExtractorInvariantViolation.ANNOTATED_INSTANCE_PROPERTY_REQUIRES_ANNOTATED_ASSIGNMENT,
             candidate.name,
         )
 
     @read.register
-    def read_annotated(self, statement: ast.AnnAssign, candidate: PythonPropertyCandidate) -> SourceClassProperty:
+    def read_annotated(
+        self,
+        statement: ast.AnnAssign,
+        candidate: PythonPropertyCandidate,
+        declaration_id: DeclarationIdentity,
+        owner_declaration_id: DeclarationIdentity,
+    ) -> SourceClassProperty:
         assigned = self.assigned_values.unassigned()
         value_is_none = False
         if statement.value is not None:
@@ -56,8 +76,10 @@ class AnnotatedInstancePropertyRule(PythonPropertyRule):
         member_kind = SourceMemberKind.INSTANCE if candidate.receiver == "self" else SourceMemberKind.STATIC
         return self.build(
             candidate=candidate,
+            declaration_id=declaration_id,
+            owner_declaration_id=owner_declaration_id,
             is_optional=self.annotation_is_optional(statement.annotation) or value_is_none,
-            annotation=ast.unparse(statement.annotation),
+            type=self.types.read(statement.annotation),
             visibility=self.visibility.classify(candidate.name),
             member_kind=member_kind,
             assigned_value=assigned,

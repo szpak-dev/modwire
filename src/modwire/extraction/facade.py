@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ..shared.code.models.code_map import CodeMap
-from ..shared.code.models.identity import FileId
-from ..shared.code.models.queryable_code_map import QueryableCodeMap
-from ..shared.code.models.source_extraction import SourceExtraction
+from ..shared.code.models.maps.code_map import CodeMap
+from ..shared.code.models.maps.queryable_code_map import QueryableCodeMap
+from ..shared.code.models.sources.identity import FileId
+from ..shared.code.models.sources.source_extraction import SourceExtraction
 from .extractors.application import ExtractorsApplication
 from .extractors.models.extraction_request import ExtractionRequest
 from .extractors.models.parsed_source_file import ParsedSourceFile

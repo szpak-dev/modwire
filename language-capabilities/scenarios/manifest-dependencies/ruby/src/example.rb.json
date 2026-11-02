@@ -1,0 +1,94 @@
+{
+  "file_id": "ruby/src/example.rb",
+  "import_identity": "src/example",
+  "imports": [
+    {
+      "path": "json",
+      "is_relative": false,
+      "normalized_path": "json",
+      "imported_name": "json",
+      "is_aliased": false,
+      "crossing_type": "module",
+      "file_barrier_crossed": true,
+      "statement_id": 1,
+      "join_key": "json",
+      "uses_joined_import": false,
+      "resolution": "external"
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleDependency",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 5,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleDependency",
+        "ordinal": 17
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "example_json",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "method",
+            "qualified_name": "ExampleDependency.example_json",
+            "ordinal": 43
+          },
+          "source_id": "ruby/src/example.rb",
+          "qualified_name": "ExampleDependency.example_json",
+          "kind": "instance_method",
+          "line_start": 4,
+          "line_end": 6,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "class",
+            "qualified_name": "ExampleDependency",
+            "ordinal": 17
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "ruby/src/example.rb",
+        "family": "method",
+        "qualified_name": "ExampleDependency.example_json",
+        "ordinal": 43
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "ruby/src/example.rb",
+      "line": 5,
+      "expression": "JSON.generate(example: example_value)",
+      "resolution": "unresolved",
+      "target_name": "generate"
+    }
+  ],
+  "line_count": 8,
+  "code_line_count": 6,
+  "public_symbol_count": 1
+}

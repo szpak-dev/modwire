@@ -20,6 +20,7 @@ class ExtractorInvariantViolation(StrEnum):
     UNCLASSIFIED_CLASS = "unclassified_class"
     UNCLASSIFIED_EXPORT = "unclassified_export"
     MISSING_CALLABLE_END_LINE = "missing_callable_end_line"
+    MISSING_CALLABLE_OWNER = "missing_callable_owner"
     UNSUPPORTED_IMPORT_CANDIDATE = "unsupported_import_candidate"
     MISSING_VALUE_END_LINE = "missing_value_end_line"
     MISSING_CLASS_END_LINE = "missing_class_end_line"

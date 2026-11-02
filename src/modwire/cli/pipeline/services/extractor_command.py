@@ -6,7 +6,7 @@ from pathlib import Path
 from pydantic import ValidationError
 from wireup import injectable
 
-from ....shared.code.application import CodeApplication
+from ....shared.code.contracts.identity_resolver import IdentityResolver
 from ..models.extractor_batch_input import ExtractorBatchInput
 from ..models.extractor_command_input import ExtractorCommandInput
 from ..models.extractor_source_input import ExtractorSourceInput
@@ -15,7 +15,7 @@ from ..models.extractor_source_input import ExtractorSourceInput
 @injectable
 @dataclass(frozen=True)
 class ExtractorCommand:
-    code: CodeApplication
+    identities: IdentityResolver
 
     def read(self, language: str) -> ExtractorCommandInput | None:
         root = Path(sys.argv[2]).resolve() if len(sys.argv) > 2 else Path.cwd()
@@ -30,7 +30,7 @@ class ExtractorCommand:
                 return None
         else:
             path = Path(sys.argv[1]).resolve()
-            paths = {self.code.file_id(str(root), str(path)): str(path)}
+            paths = {self.identities.file_id(str(root), str(path)): str(path)}
         return ExtractorCommandInput(
             batch=batch,
             sources=tuple(

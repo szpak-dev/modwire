@@ -1,0 +1,144 @@
+{
+  "file_id": "php/src/TypeReferenceCases.php",
+  "import_identity": "src/TypeReferenceCases",
+  "imports": [],
+  "exports": [
+    {
+      "name": "ExampleType",
+      "local_name": "ExampleType",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleResult",
+      "local_name": "ExampleResult",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "exampleTypes",
+      "local_name": "exampleTypes",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleType",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "php/src/TypeReferenceCases.php",
+        "family": "class",
+        "qualified_name": "ExampleType",
+        "ordinal": 8
+      },
+      "kind": "class"
+    },
+    {
+      "name": "ExampleResult",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "php/src/TypeReferenceCases.php",
+        "family": "class",
+        "qualified_name": "ExampleResult",
+        "ordinal": 29
+      },
+      "kind": "class"
+    }
+  ],
+  "functions": [
+    {
+      "name": "exampleTypes",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 4,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "php/src/TypeReferenceCases.php",
+        "family": "function",
+        "qualified_name": "exampleTypes",
+        "ordinal": 53
+      },
+      "source_id": "php/src/TypeReferenceCases.php",
+      "qualified_name": "exampleTypes",
+      "line_start": 6,
+      "line_end": 9,
+      "parameters": [
+        {
+          "name": "exampleNested",
+          "type": {
+            "name": "ExampleType",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "exampleUnsupported",
+          "type": {
+            "kind": "unsupported"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "exampleAbsent",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "name": "ExampleResult",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "php/src/TypeReferenceCases.php",
+        "family": "function",
+        "qualified_name": "exampleTypes",
+        "ordinal": 53
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "php/src/TypeReferenceCases.php",
+      "line": 8,
+      "expression": "ExampleResult",
+      "resolution": "unresolved",
+      "target_name": "ExampleResult"
+    }
+  ],
+  "line_count": 10,
+  "code_line_count": 7,
+  "public_symbol_count": 3
+}

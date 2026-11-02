@@ -1,0 +1,93 @@
+{
+  "file_id": "python/src/type_reference_cases.py",
+  "import_identity": "src/type_reference_cases",
+  "imports": [],
+  "exports": [
+    {
+      "name": "example_types",
+      "local_name": "example_types",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "functions": [
+    {
+      "name": "example_types",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 6,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "python/src/type_reference_cases.py",
+        "family": "function",
+        "qualified_name": "example_types",
+        "ordinal": 4294967297
+      },
+      "source_id": "python/src/type_reference_cases.py",
+      "qualified_name": "example_types",
+      "line_start": 1,
+      "line_end": 6,
+      "parameters": [
+        {
+          "name": "example_nested",
+          "type": {
+            "name": "list",
+            "arguments": [
+              {
+                "name": "str",
+                "kind": "reference"
+              }
+            ],
+            "kind": "reference"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "example_unsupported",
+          "type": {
+            "kind": "unsupported"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "example_absent",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "name": "dict",
+        "arguments": [
+          {
+            "name": "str",
+            "kind": "reference"
+          },
+          {
+            "name": "list",
+            "arguments": [
+              {
+                "name": "int",
+                "kind": "reference"
+              }
+            ],
+            "kind": "reference"
+          }
+        ],
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "line_count": 6,
+  "code_line_count": 6,
+  "public_symbol_count": 1
+}

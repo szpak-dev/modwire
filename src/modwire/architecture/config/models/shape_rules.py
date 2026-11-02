@@ -1,6 +1,6 @@
 from pydantic import Field
 
-from ....shared.code.models.import_crossing_type import ImportCrossingType
+from ....shared.code.models.sources.import_crossing_type import ImportCrossingType
 from .configuration_value import ConfigurationValue
 
 

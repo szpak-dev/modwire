@@ -1,0 +1,47 @@
+{
+  "file_id": "php/src/nested/Example.php",
+  "import_identity": "src/nested/Example",
+  "imports": [],
+  "exports": [
+    {
+      "name": "exampleValue",
+      "local_name": "exampleValue",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "functions": [
+    {
+      "name": "exampleValue",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 4,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "php/src/nested/Example.php",
+        "family": "function",
+        "qualified_name": "exampleValue",
+        "ordinal": 7
+      },
+      "source_id": "php/src/nested/Example.php",
+      "qualified_name": "exampleValue",
+      "line_start": 2,
+      "line_end": 5,
+      "return_type": {
+        "name": "int",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "line_count": 6,
+  "code_line_count": 5,
+  "public_symbol_count": 1
+}

@@ -1,8 +1,8 @@
 import sys
 
-from modwire.autowiring import run_extractor
-from modwire.extraction.extractors.models.extractor_failure_document import ExtractorFailureDocument
-from modwire.extraction.extractors.models.source_parse_error import SourceParseError
+from .....autowiring import run_extractor
+from ...models.extractor_failure_document import ExtractorFailureDocument
+from ...models.source_parse_error import SourceParseError
 
 if __name__ == "__main__":
     try:

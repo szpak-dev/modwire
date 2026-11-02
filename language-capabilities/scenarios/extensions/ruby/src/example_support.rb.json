@@ -1,0 +1,69 @@
+{
+  "file_id": "ruby/src/example_support.rb",
+  "import_identity": "src/example_support",
+  "imports": [],
+  "namespaces": [
+    {
+      "kind": "module",
+      "qualified_name": "ExampleSupport"
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleSupport",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 5,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/example_support.rb",
+        "family": "type",
+        "qualified_name": "ExampleSupport",
+        "ordinal": 1
+      },
+      "kind": "module",
+      "methods": [
+        {
+          "name": "example_target",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "ruby/src/example_support.rb",
+            "family": "method",
+            "qualified_name": "ExampleSupport.example_target",
+            "ordinal": 25
+          },
+          "source_id": "ruby/src/example_support.rb",
+          "qualified_name": "ExampleSupport.example_target",
+          "kind": "type_method",
+          "line_start": 2,
+          "line_end": 4,
+          "parameters": [
+            {
+              "name": "example_value",
+              "type": {
+                "kind": "absent"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example_support.rb",
+            "family": "type",
+            "qualified_name": "ExampleSupport",
+            "ordinal": 1
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [],
+  "line_count": 6,
+  "code_line_count": 5,
+  "public_symbol_count": 1
+}

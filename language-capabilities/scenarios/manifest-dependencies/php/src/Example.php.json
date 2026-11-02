@@ -1,0 +1,103 @@
+{
+  "file_id": "php/src/Example.php",
+  "import_identity": "src/Example",
+  "imports": [
+    {
+      "path": "DateTimeImmutable",
+      "is_relative": false,
+      "normalized_path": "DateTimeImmutable",
+      "imported_name": "",
+      "is_aliased": false,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 1,
+      "join_key": "",
+      "uses_joined_import": false,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "DateTimeImmutable",
+          "alias": "",
+          "is_aliased": false,
+          "is_default": false,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "name": "exampleTimestamp",
+      "local_name": "exampleTimestamp",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "functions": [
+    {
+      "name": "exampleTimestamp",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 4,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "php/src/Example.php",
+        "family": "function",
+        "qualified_name": "exampleTimestamp",
+        "ordinal": 31
+      },
+      "source_id": "php/src/Example.php",
+      "qualified_name": "exampleTimestamp",
+      "line_start": 4,
+      "line_end": 7,
+      "return_type": {
+        "name": "string",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "php/src/Example.php",
+        "family": "function",
+        "qualified_name": "exampleTimestamp",
+        "ordinal": 31
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "php/src/Example.php",
+      "line": 6,
+      "expression": "DateTimeImmutable->format",
+      "resolution": "unresolved",
+      "target_name": "format"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "php/src/Example.php",
+        "family": "function",
+        "qualified_name": "exampleTimestamp",
+        "ordinal": 31
+      },
+      "ordinal": 2,
+      "target_callable_id": null,
+      "source_id": "php/src/Example.php",
+      "line": 6,
+      "expression": "DateTimeImmutable",
+      "resolution": "unresolved",
+      "target_name": "DateTimeImmutable"
+    }
+  ],
+  "line_count": 8,
+  "code_line_count": 6,
+  "public_symbol_count": 1
+}

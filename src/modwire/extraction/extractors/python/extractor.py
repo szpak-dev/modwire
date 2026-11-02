@@ -3,18 +3,18 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ....shared.code.models.capability_coverage import CapabilityCoverage
-from ....shared.code.models.capability_status import CapabilityStatus
-from ....shared.code.models.extractor_descriptor import ExtractorDescriptor
-from ....shared.code.models.fact_capability import FactCapability
-from ....shared.code.models.identity import FileId, ImportIdentity
-from ....shared.code.models.relationship_coverage import RelationshipCoverage
-from ....shared.code.models.relationship_family import RelationshipFamily
-from ....shared.code.models.source_file import SourceFile
+from ....shared.code.models.capabilities.capability_coverage import CapabilityCoverage
+from ....shared.code.models.capabilities.capability_status import CapabilityStatus
+from ....shared.code.models.capabilities.fact_capability import FactCapability
+from ....shared.code.models.capabilities.relationship_coverage import RelationshipCoverage
+from ....shared.code.models.capabilities.relationship_family import RelationshipFamily
+from ....shared.code.models.maps.extractor_descriptor import ExtractorDescriptor
+from ....shared.code.models.sources.identity import FileId, ImportIdentity
+from ....shared.code.models.sources.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
 from ..models.batch_output_format import BatchOutputFormat
-from ..models.extractor_resource import ExtractorResource
+from ..models.entrypoints.module_entrypoint import ModuleExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
 from .semantics.policies.import_identity_policy import PythonImportIdentityPolicy
 
@@ -30,7 +30,7 @@ class PythonExtractor(SourceExtractor):
             order=0,
             descriptor=ExtractorDescriptor(
                 id="modwire.python.ast",
-                version="2",
+                version="3",
                 language="python",
                 runtime="python",
             ),
@@ -62,6 +62,14 @@ class PythonExtractor(SourceExtractor):
                     capability=FactCapability.PARAMETERS,
                     status=CapabilityStatus.SUPPORTED,
                     explanation="Callable parameter order, kind, annotation, and default presence are extracted.",
+                ),
+                CapabilityCoverage(
+                    capability=FactCapability.TYPE_REFERENCES,
+                    status=CapabilityStatus.PARTIAL,
+                    explanation=(
+                        "Named references and ordered generic arguments are structural; other authored type syntax "
+                        "is reported as unsupported."
+                    ),
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.ANNOTATIONS,
@@ -170,11 +178,11 @@ class PythonExtractor(SourceExtractor):
             ),
             file_extensions=(".py",),
             command=(sys.executable,),
-            entrypoint_arguments=(),
             version_arguments=("--version",),
-            entrypoint=ExtractorResource(
+            entrypoint=ModuleExtractorEntrypoint(
                 package="modwire.extraction.extractors.resources",
                 path="python/script.py",
+                module="modwire.extraction.extractors.resources.python.script",
             ),
         )
 

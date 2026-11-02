@@ -1,0 +1,580 @@
+{
+  "file_id": "php/src/Example.php",
+  "import_identity": "src/Example",
+  "imports": [
+    {
+      "path": "DateTimeImmutable",
+      "is_relative": false,
+      "normalized_path": "DateTimeImmutable",
+      "imported_name": "",
+      "is_aliased": false,
+      "crossing_type": "symbol",
+      "file_barrier_crossed": true,
+      "statement_id": 1,
+      "join_key": "",
+      "uses_joined_import": false,
+      "resolution": "external",
+      "imported_symbols": [
+        {
+          "name": "DateTimeImmutable",
+          "alias": "",
+          "is_aliased": false,
+          "is_default": false,
+          "is_namespace": false,
+          "is_star": false
+        }
+      ]
+    }
+  ],
+  "exports": [
+    {
+      "name": "ExampleContract",
+      "local_name": "ExampleContract",
+      "kind": "interface",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleFormatting",
+      "local_name": "ExampleFormatting",
+      "kind": "type",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleAbstract",
+      "local_name": "ExampleAbstract",
+      "kind": "abstract_class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "ExampleImplementation",
+      "local_name": "ExampleImplementation",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    },
+    {
+      "name": "exampleFunction",
+      "local_name": "exampleFunction",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0
+    }
+  ],
+  "declarations": [
+    {
+      "name": "ExampleImplementation",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 19,
+      "declaration_annotations": [
+        "\\Attribute"
+      ],
+      "declaration_id": {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 416
+      },
+      "kind": "class",
+      "methods": [
+        {
+          "name": "__construct",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 1,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.__construct",
+            "ordinal": 602
+          },
+          "source_id": "php/src/Example.php",
+          "qualified_name": "ExampleImplementation.__construct",
+          "kind": "constructor",
+          "line_start": 31,
+          "line_end": 31,
+          "parameters": [
+            {
+              "name": "exampleOptional",
+              "type": {
+                "kind": "unsupported"
+              },
+              "kind": "positional",
+              "has_default": true
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 416
+          }
+        },
+        {
+          "name": "exampleRequired",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 4,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.exampleRequired",
+            "ordinal": 678
+          },
+          "source_id": "php/src/Example.php",
+          "qualified_name": "ExampleImplementation.exampleRequired",
+          "kind": "instance_method",
+          "line_start": 33,
+          "line_end": 36,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "string",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 416
+          }
+        },
+        {
+          "name": "exampleTimestamp",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 4,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.exampleTimestamp",
+            "ordinal": 787
+          },
+          "source_id": "php/src/Example.php",
+          "qualified_name": "ExampleImplementation.exampleTimestamp",
+          "kind": "instance_method",
+          "line_start": 38,
+          "line_end": 41,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "string",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 416
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "property",
+            "qualified_name": "ExampleImplementation.exampleStatic",
+            "ordinal": 570
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 416
+          },
+          "name": "exampleStatic",
+          "is_optional": false,
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "static",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        },
+        {
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "property",
+            "qualified_name": "ExampleImplementation.exampleOptional",
+            "ordinal": 630
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 416
+          },
+          "name": "exampleOptional",
+          "is_optional": true,
+          "type": {
+            "kind": "unsupported"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ExampleContract",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 4,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "php/src/Example.php",
+        "family": "interface",
+        "qualified_name": "ExampleContract",
+        "ordinal": 59
+      },
+      "kind": "interface",
+      "methods": [
+        {
+          "name": "exampleRequired",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 1,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "method",
+            "qualified_name": "ExampleContract.exampleRequired",
+            "ordinal": 91
+          },
+          "source_id": "php/src/Example.php",
+          "qualified_name": "ExampleContract.exampleRequired",
+          "kind": "instance_method",
+          "line_start": 8,
+          "line_end": 8,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "string",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "interface",
+            "qualified_name": "ExampleContract",
+            "ordinal": 59
+          }
+        }
+      ]
+    },
+    {
+      "name": "ExampleFormatting",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 7,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "php/src/Example.php",
+        "family": "type",
+        "qualified_name": "ExampleFormatting",
+        "ordinal": 157
+      },
+      "kind": "trait",
+      "methods": [
+        {
+          "name": "exampleFormat",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 4,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "method",
+            "qualified_name": "ExampleFormatting.exampleFormat",
+            "ordinal": 187
+          },
+          "source_id": "php/src/Example.php",
+          "qualified_name": "ExampleFormatting.exampleFormat",
+          "kind": "instance_method",
+          "line_start": 13,
+          "line_end": 16,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "string",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "type",
+            "qualified_name": "ExampleFormatting",
+            "ordinal": 157
+          }
+        }
+      ]
+    },
+    {
+      "name": "ExampleAbstract",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 4,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "php/src/Example.php",
+        "family": "abstract_class",
+        "qualified_name": "ExampleAbstract",
+        "ordinal": 304
+      },
+      "kind": "abstract_class",
+      "abstract_methods": [
+        {
+          "name": "exampleRequired",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 1,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "method",
+            "qualified_name": "ExampleAbstract.exampleRequired",
+            "ordinal": 341
+          },
+          "source_id": "php/src/Example.php",
+          "qualified_name": "ExampleAbstract.exampleRequired",
+          "kind": "instance_method",
+          "line_start": 21,
+          "line_end": 21,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "string",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "abstract_class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 304
+          }
+        }
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "name": "exampleFunction",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 4,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "php/src/Example.php",
+        "family": "function",
+        "qualified_name": "exampleFunction",
+        "ordinal": 958
+      },
+      "source_id": "php/src/Example.php",
+      "qualified_name": "exampleFunction",
+      "line_start": 44,
+      "line_end": 47,
+      "parameters": [
+        {
+          "name": "exampleValue",
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "kind": "positional"
+        },
+        {
+          "name": "exampleSuffix",
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "kind": "positional",
+          "has_default": true
+        }
+      ],
+      "return_type": {
+        "name": "string",
+        "kind": "reference"
+      },
+      "kind": "function"
+    }
+  ],
+  "calls": [
+    {
+      "source_callable_id": {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "ExampleFormatting.exampleFormat",
+        "ordinal": 187
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "php/src/Example.php",
+      "line": 15,
+      "expression": "strtoupper",
+      "resolution": "unresolved",
+      "target_name": "strtoupper"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.exampleTimestamp",
+        "ordinal": 787
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "php/src/Example.php",
+      "line": 40,
+      "expression": "DateTimeImmutable->format",
+      "resolution": "unresolved",
+      "target_name": "format"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.exampleTimestamp",
+        "ordinal": 787
+      },
+      "ordinal": 2,
+      "target_callable_id": null,
+      "source_id": "php/src/Example.php",
+      "line": 40,
+      "expression": "DateTimeImmutable",
+      "resolution": "unresolved",
+      "target_name": "DateTimeImmutable"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "ExampleImplementation.exampleTimestamp",
+        "ordinal": 787
+      },
+      "ordinal": 3,
+      "target_callable_id": null,
+      "source_id": "php/src/Example.php",
+      "line": 40,
+      "expression": "$this->exampleFormat",
+      "resolution": "unresolved",
+      "target_name": "exampleFormat"
+    }
+  ],
+  "declaration_relations": [
+    {
+      "source_declaration_id": {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 416
+      },
+      "kind": "extends",
+      "target_reference": "ExampleAbstract"
+    },
+    {
+      "source_declaration_id": {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 416
+      },
+      "kind": "implements",
+      "target_reference": "ExampleContract"
+    }
+  ],
+  "line_count": 48,
+  "code_line_count": 36,
+  "public_symbol_count": 5
+}

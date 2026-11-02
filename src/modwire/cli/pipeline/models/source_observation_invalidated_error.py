@@ -1,5 +1,5 @@
 from ....extraction.extractors.models.extraction_error import ExtractionError
-from ....shared.code.models.identity import FileId
+from ....shared.code.models.sources.identity import FileId
 
 
 class SourceObservationInvalidatedError(ExtractionError):

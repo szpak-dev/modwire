@@ -2,8 +2,8 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
-from ......shared.code.models.declaration_identity import DeclarationIdentity
-from ......shared.code.models.source_callable_kind import SourceCallableKind
+from ......shared.code.models.callables.source_callable_kind import SourceCallableKind
+from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
 from ...observations.call_candidate import PythonCallCandidate
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
@@ -34,7 +34,7 @@ class CallSemanticContributor(PythonSemanticContributor):
         by_name: dict[str, list[DeclarationIdentity]] = {}
         constructors_by_name: dict[str, list[DeclarationIdentity]] = {}
         by_ordinal: dict[int, DeclarationIdentity] = {}
-        for item in catalog.callables:
+        for item in catalog.canonical_callables():
             if item.qualified_name not in by_qualified_name:
                 by_qualified_name[item.qualified_name] = []
             by_qualified_name[item.qualified_name].append(item.declaration_id)
@@ -42,11 +42,13 @@ class CallSemanticContributor(PythonSemanticContributor):
                 if item.name not in by_name:
                     by_name[item.name] = []
                 by_name[item.name].append(item.declaration_id)
-            if item.kind is SourceCallableKind.CONSTRUCTOR:
-                if item.owner_name not in constructors_by_name:
-                    constructors_by_name[item.owner_name] = []
-                constructors_by_name[item.owner_name].append(item.declaration_id)
             by_ordinal[item.declaration_id.ordinal] = item.declaration_id
+        for item in catalog.methods:
+            if item.kind is SourceCallableKind.CONSTRUCTOR:
+                owner_name = item.owner_declaration_id.qualified_name.rsplit(".", 1)[-1]
+                if owner_name not in constructors_by_name:
+                    constructors_by_name[owner_name] = []
+                constructors_by_name[owner_name].append(item.declaration_id)
         candidates = tuple(
             PythonCallCandidate(
                 node=call.node,
