@@ -44,9 +44,9 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ fromJSON(needs.runtime-contract.outputs.contract).java.version }}
-      - uses: shivammathur/setup-php@v2
+      - uses: ./.github/actions/setup-php
         with:
-          php-version: ${{ fromJSON(needs.runtime-contract.outputs.contract).php.version }}
+          version: ${{ fromJSON(needs.runtime-contract.outputs.contract).php.version }}
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ fromJSON(needs.runtime-contract.outputs.contract).ruby.version }}
@@ -71,9 +71,9 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ fromJSON(needs.runtime-contract.outputs.contract).java.version }}
-      - uses: shivammathur/setup-php@v2
+      - uses: ./.github/actions/setup-php
         with:
-          php-version: ${{ fromJSON(needs.runtime-contract.outputs.contract).php.version }}
+          version: ${{ fromJSON(needs.runtime-contract.outputs.contract).php.version }}
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ fromJSON(needs.runtime-contract.outputs.contract).ruby.version }}
