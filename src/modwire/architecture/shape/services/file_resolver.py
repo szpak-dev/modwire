@@ -3,13 +3,10 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ....shared.code.models.declarations.declaration_family import DeclarationFamily
-from ....shared.code.models.sources.identity import FileId
 from ....shared.code.models.values.source_value_declaration_kind import SourceValueDeclarationKind
 from ....shared.code.models.values.source_value_scope import SourceValueScope
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, ShapeResolverInterface
-from ..models.architecture_shape_validation_error import ArchitectureShapeValidationError
-from ..models.architecture_shape_violation import ArchitectureShapeViolation
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
 from ..models.shape_violation import ShapeViolation
 
@@ -28,10 +25,8 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
     def resolve(self, architecture_map: ShapeRealmArchitectureMap, config: ShapeRules) -> tuple[ShapeViolation, ...]:
         violations: list[ShapeViolation | None] = []
         code_map = architecture_map.code_map
-        for source_id in self.realm_source_ids(architecture_map):
-            source_result = code_map.source_file(FileId(source_id))
-            if source_result is None:
-                raise ArchitectureShapeValidationError(ArchitectureShapeViolation.MISSING_REALM_SOURCE, source_id)
+        for source_result in self.realm_results(architecture_map, code_map.source_files().all()):
+            source_id = source_result.source_id
             source_file = source_result.file
             violations.extend(
                 [

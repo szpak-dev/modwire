@@ -29,13 +29,6 @@ class SymbolShapeResolverInterface(ShapeResolverInterface):
 
 
 class BaseShapeResolver(ABC):
-    def realm_source_ids(self, architecture_map: ShapeRealmArchitectureMap) -> Iterator[str]:
-        return (
-            source_id
-            for source_id in architecture_map.code_map.source_ids()
-            if self.source_is_in_realm(architecture_map, source_id)
-        )
-
     def realm_results[RealmResult: SourceFileResult](
         self, architecture_map: ShapeRealmArchitectureMap, results: Iterable[RealmResult]
     ) -> Iterator[RealmResult]:

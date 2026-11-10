@@ -5,13 +5,13 @@ from wireup import injectable
 from ....shared.code.models.dependencies.source_dependency_resolution import SourceDependencyResolution
 from ....shared.code.models.sources.identity import FileId
 from ...map.models.architecture_map import ArchitectureMap
-from ..domain import InsightReporterInterface
+from ..domain import InsightReporter
 from ..models.coherence_report import CoherenceReport
 
 
-@injectable(as_type=InsightReporterInterface, qualifier="coherence")
+@injectable(as_type=InsightReporter, qualifier="coherence")
 @dataclass(frozen=True)
-class CoherenceReporter(InsightReporterInterface):
+class CoherenceReporter(InsightReporter):
     @property
     def name(self) -> str:
         return "coherence"

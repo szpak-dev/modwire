@@ -4,14 +4,14 @@ from wireup import injectable
 
 from ....shared.code.models.sources.identity import FileId
 from ...map.models.architecture_map import ArchitectureMap
-from ..domain import InsightReporterInterface
+from ..domain import InsightReporter
 from ..models.hotspots_report import HotspotsReport
 from ..models.hotspots_report_item import HotspotsReportItem
 
 
-@injectable(as_type=InsightReporterInterface, qualifier="hotspots")
+@injectable(as_type=InsightReporter, qualifier="hotspots")
 @dataclass(frozen=True)
-class HotspotsReporter(InsightReporterInterface):
+class HotspotsReporter(InsightReporter):
     @property
     def name(self) -> str:
         return "hotspots"

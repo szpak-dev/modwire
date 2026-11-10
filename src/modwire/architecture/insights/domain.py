@@ -4,7 +4,7 @@ from ..map.models.architecture_map import ArchitectureMap
 from ..report.models.report_item import ReportItem
 
 
-class InsightReporterInterface(abc.ABC):
+class InsightReporter(abc.ABC):
     @property
     @abc.abstractmethod
     def name(self) -> str:

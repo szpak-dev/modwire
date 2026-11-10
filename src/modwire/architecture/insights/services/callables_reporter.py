@@ -5,14 +5,14 @@ from wireup import injectable
 
 from ....shared.code.models.callables.source_callable import SourceCallable
 from ...map.models.architecture_map import ArchitectureMap
-from ..domain import InsightReporterInterface
+from ..domain import InsightReporter
 from ..models.callable_report_entry import CallableReportEntry
 from ..models.callables_report import CallablesReport
 
 
-@injectable(as_type=InsightReporterInterface, qualifier="callables")
+@injectable(as_type=InsightReporter, qualifier="callables")
 @dataclass(frozen=True)
-class CallablesReporter(InsightReporterInterface):
+class CallablesReporter(InsightReporter):
     @property
     def name(self) -> str:
         return "callables"
