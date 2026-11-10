@@ -6,31 +6,14 @@ from .base_test import ShapeTestCase
 
 class TestShapeLimits(ShapeTestCase):
     @pytest.mark.parametrize(
-        ("language", "path", "source"),
+        ("language", "path"),
         (
-            (
-                "ruby",
-                "src/example.rb",
-                "module ExampleModule\n"
-                "  def example_method(example_first, example_second = 1)\n"
-                "    example_first\n"
-                "  end\n"
-                "end\n",
-            ),
-            (
-                "php",
-                "src/example.php",
-                "<?php\n"
-                "trait ExampleTrait {\n"
-                "    public function example_method($example_first, $example_second = 1) {\n"
-                "        return $example_first;\n"
-                "    }\n"
-                "}\n",
-            ),
+            ("ruby", "src/example.rb"),
+            ("php", "src/example.php"),
         ),
     )
-    def test_module_and_trait_methods_obey_method_limits(self, language: str, path: str, source: str) -> None:
-        root = self.project({path: source})
+    def test_module_and_trait_methods_obey_method_limits(self, language: str, path: str) -> None:
+        root = self.repository / "tests/fixtures/shape" / language
         code_map = self.application.generate_queryable_map(language, str(root), self.scan_policy())
         config = self.application.configure(
             {
