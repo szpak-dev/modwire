@@ -7,7 +7,7 @@ from ..config.models.architecture_config import ArchitectureConfig
 from ..map.models.architecture_map import ArchitectureMap
 from ..report.domain import ReportCollector
 from ..report.models.report_item import ReportItem
-from .domain import InsightReporterInterface
+from .domain import InsightReporter
 from .models.insight_report import InsightReport
 from .services.insight_report_field_map import InsightReportFieldMap
 
@@ -19,7 +19,7 @@ class InsightsApplication(ReportCollector):
     def report_type(self) -> type[InsightReport]:
         return InsightReport
 
-    reporters: Sequence[InsightReporterInterface]
+    reporters: Sequence[InsightReporter]
     field_map: InsightReportFieldMap
 
     def _field_for(self, name: str):

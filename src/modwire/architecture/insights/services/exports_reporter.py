@@ -3,14 +3,14 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ...map.models.architecture_map import ArchitectureMap
-from ..domain import InsightReporterInterface
+from ..domain import InsightReporter
 from ..models.exports_report import ExportsReport
 from ..models.exports_report_item import ExportsReportItem
 
 
-@injectable(as_type=InsightReporterInterface, qualifier="exports")
+@injectable(as_type=InsightReporter, qualifier="exports")
 @dataclass(frozen=True)
-class ExportsReporter(InsightReporterInterface):
+class ExportsReporter(InsightReporter):
     @property
     def name(self) -> str:
         return "unused-exports"

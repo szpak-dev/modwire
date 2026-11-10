@@ -5,14 +5,14 @@ from wireup import injectable
 
 from ....shared.code.models.sources.identity import FileId
 from ...map.models.architecture_map import ArchitectureMap
-from ..domain import InsightReporterInterface
+from ..domain import InsightReporter
 from ..models.clusters_report import ClustersReport
 from ..models.clusters_report_item import ClustersReportItem
 
 
-@injectable(as_type=InsightReporterInterface, qualifier="clusters")
+@injectable(as_type=InsightReporter, qualifier="clusters")
 @dataclass(frozen=True)
-class ClustersReporter(InsightReporterInterface):
+class ClustersReporter(InsightReporter):
     @property
     def name(self) -> str:
         return "clusters"

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from wireup import injectable
 
 from ....shared.code.models.callables.source_callable import SourceCallable
+from ....shared.code.models.callables.source_callable_kind import SourceCallableKind
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, SymbolShapeResolverInterface
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
@@ -22,56 +23,32 @@ class CallableResolver(SymbolShapeResolverInterface, BaseShapeResolver):
 
     def resolve(self, architecture_map: ShapeRealmArchitectureMap, config: ShapeRules) -> tuple[ShapeViolation, ...]:
         violations: list[ShapeViolation] = []
-        for function_result in self.realm_results(architecture_map, architecture_map.code_map.functions().all()):
+        for result in self.realm_results(architecture_map, architecture_map.code_map.callables().all()):
+            if result.item.kind is SourceCallableKind.FUNCTION:
+                symbol_kind = "function"
+                line_limit = config.max_function_lines
+                allow_optional_args = config.allow_optional_function_args
+            elif result.item.kind in (
+                SourceCallableKind.INSTANCE_METHOD,
+                SourceCallableKind.TYPE_METHOD,
+                SourceCallableKind.STATIC_METHOD,
+                SourceCallableKind.CONSTRUCTOR,
+            ):
+                symbol_kind = "method"
+                line_limit = config.max_method_lines
+                allow_optional_args = config.allow_optional_method_args
+            else:
+                continue
             violations.extend(
                 self.callable_violations(
-                    source_id=function_result.source_id,
-                    symbol_kind="function",
-                    symbol=function_result.item,
-                    line_limit=config.max_function_lines,
-                    allow_optional_args=config.allow_optional_function_args,
+                    source_id=result.source_id,
+                    symbol_kind=symbol_kind,
+                    symbol=result.item,
+                    line_limit=line_limit,
+                    allow_optional_args=allow_optional_args,
                     config=config,
                 )
             )
-        for class_result in self.realm_results(architecture_map, architecture_map.code_map.classes().all()):
-            for method in class_result.item.methods:
-                violations.extend(
-                    self.callable_violations(
-                        source_id=class_result.source_id,
-                        symbol_kind="method",
-                        symbol=method,
-                        line_limit=config.max_method_lines,
-                        allow_optional_args=config.allow_optional_method_args,
-                        config=config,
-                    )
-                )
-        for interface_result in self.realm_results(architecture_map, architecture_map.code_map.interfaces().all()):
-            for method in interface_result.item.methods:
-                violations.extend(
-                    self.callable_violations(
-                        source_id=interface_result.source_id,
-                        symbol_kind="method",
-                        symbol=method,
-                        line_limit=config.max_method_lines,
-                        allow_optional_args=config.allow_optional_method_args,
-                        config=config,
-                    )
-                )
-        for abstract_class_result in self.realm_results(
-            architecture_map, architecture_map.code_map.abstract_classes().all()
-        ):
-            abstract_class = abstract_class_result.item
-            for method in (*abstract_class.abstract_methods, *abstract_class.methods):
-                violations.extend(
-                    self.callable_violations(
-                        source_id=abstract_class_result.source_id,
-                        symbol_kind="method",
-                        symbol=method,
-                        line_limit=config.max_method_lines,
-                        allow_optional_args=config.allow_optional_method_args,
-                        config=config,
-                    )
-                )
         return tuple(violations)
 
     def callable_violations(

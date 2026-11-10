@@ -6,6 +6,57 @@ from .base_test import ShapeTestCase
 
 class TestShapeLimits(ShapeTestCase):
     @pytest.mark.parametrize(
+        ("language", "path"),
+        (
+            ("ruby", "src/example.rb"),
+            ("php", "src/example.php"),
+        ),
+    )
+    def test_module_and_trait_methods_obey_method_limits(self, language: str, path: str) -> None:
+        root = self.repository / "tests/fixtures/shape" / language
+        code_map = self.application.generate_queryable_map(language, str(root), self.scan_policy())
+        config = self.application.configure(
+            {
+                "shape": {
+                    "realms": [
+                        {
+                            "name": "example-source",
+                            "match": "src",
+                            "shape": {"max_method_lines": 1, "max_declared_args": 1},
+                        }
+                    ]
+                }
+            }
+        )
+
+        violations = self.report("architecture.violations.shape", config, code_map).violations
+
+        assert {(item.source_id, item.symbol_kind, item.symbol_name, item.rule_name) for item in violations} == {
+            (path, "method", "example_method", "max_method_lines"),
+            (path, "method", "example_method", "max_declared_args"),
+            (path, "method", "example_method", "allow_optional_method_args"),
+        }
+
+        allowed = self.application.configure(
+            {
+                "shape": {
+                    "realms": [
+                        {
+                            "name": "example-source",
+                            "match": "src",
+                            "shape": {
+                                "max_method_lines": 3,
+                                "max_declared_args": 2,
+                                "allow_optional_method_args": True,
+                            },
+                        }
+                    ]
+                }
+            }
+        )
+        assert self.report("architecture.violations.shape", allowed, code_map).violations == ()
+
+    @pytest.mark.parametrize(
         ("rule", "source_file", "actual"),
         (
             (
