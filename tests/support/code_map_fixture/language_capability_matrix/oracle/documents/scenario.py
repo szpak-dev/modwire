@@ -1,11 +1,13 @@
-from modwire.application import DependencyGraph
+from typing import Annotated
 
-from ....fixture_model import FixtureModel
-from ...values.names.identifier import Identifier
-from .extraction import ScenarioExtractionDocument
+from pydantic import Field
+
+from ....fixture_root_model import FixtureRootModel
+from .code_map import ScenarioCodeMapDocument
+from .source_facts import ScenarioSourceFactsDocument
 
 
-class ScenarioCodeMapDocument(FixtureModel):
-    producer: Identifier
-    extraction: ScenarioExtractionDocument
-    dependency_graph: DependencyGraph
+class ScenarioDocument(
+    FixtureRootModel[Annotated[ScenarioCodeMapDocument | ScenarioSourceFactsDocument, Field(discriminator="kind")]]
+):
+    pass

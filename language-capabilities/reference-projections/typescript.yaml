@@ -300,3 +300,13 @@ scenarios:
   mappings:
   - authored: src/example.ts
     canonical: typescript/src/example.ts
+
+- scenario: structural
+  fixture:
+    kind: capability
+    role: structural
+  mappings:
+  - authored: typescript/src/example.ts
+    canonical: typescript/src/example.ts
+  - authored: typescript_payloads/src/example.ts
+    canonical: typescript_payloads/src/example.ts

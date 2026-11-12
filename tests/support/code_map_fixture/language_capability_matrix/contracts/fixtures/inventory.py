@@ -14,6 +14,7 @@ class LanguageFixtureInventory(FixtureModel):
     gaps: FixtureSourceSet
     types: FixtureSourceSet
     parameters: FixtureSourceSet
+    structural: FixtureSourceSet
 
     @model_validator(mode="after")
     def validate_suffixes(self) -> Self:
@@ -27,4 +28,5 @@ class LanguageFixtureInventory(FixtureModel):
             FixtureRole.GAPS: self.gaps,
             FixtureRole.TYPES: self.types,
             FixtureRole.PARAMETERS: self.parameters,
+            FixtureRole.STRUCTURAL: self.structural,
         }

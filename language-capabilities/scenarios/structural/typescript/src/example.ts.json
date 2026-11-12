@@ -1,0 +1,199 @@
+{
+  "declarations": [
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleContract",
+      "declaration_kind": "interface"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleAlias",
+      "declaration_kind": "type_alias"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOtherAlias",
+      "declaration_kind": "type_alias"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOwner",
+      "declaration_kind": "class"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOther",
+      "declaration_kind": "class"
+    }
+  ],
+  "callables": [
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleContract.exampleMethod",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.constructor",
+      "callable_kind": "constructor"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.exampleMethod",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.exampleMethod",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.exampleMethod",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.exampleProperty",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.exampleProperty",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOther.exampleMethod",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "exampleParameters",
+      "callable_kind": "function"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "exampleTypes",
+      "callable_kind": "function"
+    }
+  ],
+  "attributes": [
+    {
+      "kind": "attribute",
+      "owner": "ExampleOwner",
+      "name": "exampleValue",
+      "member_kind": "instance"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleOwner",
+      "name": "exampleProperty",
+      "member_kind": "instance"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleOther",
+      "name": "exampleValue",
+      "member_kind": "instance"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleAlias",
+      "name": "exampleValue",
+      "member_kind": "instance"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleOtherAlias",
+      "name": "exampleValue",
+      "member_kind": "instance"
+    }
+  ],
+  "namespaces": [],
+  "signatures": {
+    "ExampleContract": [
+      {
+        "kind": "call",
+        "line_count": 1,
+        "declared_args": 2,
+        "optional_args": 1
+      },
+      {
+        "kind": "construct",
+        "line_count": 1,
+        "declared_args": 1,
+        "optional_args": 0
+      },
+      {
+        "kind": "index",
+        "line_count": 1,
+        "declared_args": 1,
+        "optional_args": 0
+      }
+    ]
+  },
+  "spans": [],
+  "owners": {
+    "ExampleContract.exampleMethod": "ExampleContract",
+    "ExampleOwner.constructor": "ExampleOwner",
+    "ExampleOwner.exampleMethod": "ExampleOwner",
+    "ExampleOwner.exampleProperty": "ExampleOwner",
+    "ExampleOther.exampleMethod": "ExampleOther"
+  },
+  "parameters": {
+    "exampleParameters": [
+      {
+        "name": "exampleRequired",
+        "type": {
+          "kind": "reference",
+          "name": "string",
+          "arguments": []
+        },
+        "kind": "positional",
+        "has_default": false
+      },
+      {
+        "name": "exampleDefault",
+        "type": {
+          "kind": "reference",
+          "name": "string",
+          "arguments": []
+        },
+        "kind": "positional",
+        "has_default": true
+      },
+      {
+        "name": "exampleOptional",
+        "type": {
+          "kind": "reference",
+          "name": "number",
+          "arguments": []
+        },
+        "kind": "positional",
+        "has_default": false
+      },
+      {
+        "name": "exampleRest",
+        "type": {
+          "kind": "unsupported"
+        },
+        "kind": "variadic_positional",
+        "has_default": false
+      }
+    ]
+  },
+  "returns": {},
+  "gaps": {
+    "property_origin": "Identify the promoted readonly exampleValue and distinguish get/set exampleProperty from stored fields.",
+    "property_readonly": "Identify the promoted readonly exampleValue and distinguish get/set exampleProperty from stored fields.",
+    "overload_roles": "Preserve call/construct/index parameter names, order, types and returns; group the two overload signatures with their implementation.",
+    "optional_parameter": "exampleOptional is optional without an authored default; exampleDefault has one; preserve destructured parameter bindings.",
+    "type_structure": "Retain arrays, unions, tuple positions and function-type parameters while preserving Map's supported generic parents.",
+    "alias_target": "Keep ExampleAlias and ExampleOtherAlias's different object targets and ExampleOwner<T extends string>.",
+    "type_parameters": "Keep ExampleAlias and ExampleOtherAlias's different object targets and ExampleOwner<T extends string>.",
+    "visibility_origin": "Preserve authored visibility/modifiers separately from default or conventional visibility, and bind exports to exact declarations.",
+    "export_identity": "Preserve authored visibility/modifiers separately from default or conventional visibility, and bind exports to exact declarations.",
+    "local_inventory": "Distinguish complete-empty, unsupported-empty and partially observed inventories on each declaration; retain trustworthy siblings."
+  }
+}

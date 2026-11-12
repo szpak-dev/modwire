@@ -1,3 +1,4 @@
+reviewed_gaps: {}
 producers:
   reference:
     modwire_version: fixture
@@ -180,6 +181,7 @@ producers:
       inventory: unsupported
       inventory_explanation: The common fixture projection does not publish relationship inventory claims.
 scenarios:
+  structural: language-capabilities/scenarios/structural/scenario.yaml
   reference-shop: language-capabilities/scenarios/reference-shop/scenario.yaml
   extensions: language-capabilities/scenarios/extensions/scenario.yaml
   gaps: language-capabilities/scenarios/gaps/scenario.yaml
@@ -192,3 +194,284 @@ scenarios:
   manifest-dependencies: language-capabilities/scenarios/manifest-dependencies/scenario.yaml
   manifest-source_edit_before: language-capabilities/scenarios/manifest-source_edit_before/scenario.yaml
   manifest-source_edit_after: language-capabilities/scenarios/manifest-source_edit_after/scenario.yaml
+
+obligations:
+  C01:
+    meaning: Independently selected sources, exclusions, pruning, successful empty sources, failures and digests.
+    priority: 1
+    languages:
+      python: {applicable: true, reason: Python source forms and native observations; no application execution or import-based type equivalence., evidence: [
+            structural, extensions, gaps, types, parameters, manifest-canonical, manifest-calls, manifest-no_calls, manifest-negative_members,
+            manifest-dependencies, manifest-source_edit_before, manifest-source_edit_after]}
+      typescript: {applicable: true, reason: TypeScript source forms and native observations; authored signatures remain distinct from their implementations.,
+          evidence: [structural, extensions, gaps, types, parameters, manifest-canonical, manifest-calls, manifest-no_calls, manifest-negative_members,
+            manifest-dependencies, manifest-source_edit_before, manifest-source_edit_after]}
+      php: {applicable: true, reason: PHP source forms and native observations; promoted/anonymous constructs retain their own evidence scope., evidence: [
+            structural, extensions, gaps, types, parameters, manifest-canonical, manifest-calls, manifest-no_calls, manifest-negative_members,
+            manifest-dependencies, manifest-source_edit_before, manifest-source_edit_after]}
+      java: {applicable: true, reason: Java source forms and native observations; authored components remain distinct from generated members., evidence: [
+            structural, extensions, gaps, types, parameters, manifest-canonical, manifest-calls, manifest-no_calls, manifest-negative_members,
+            manifest-dependencies, manifest-source_edit_before, manifest-source_edit_after]}
+      ruby: {applicable: true, reason: Ruby source forms and native observations; runtime metaprogramming is outside static inventory completeness., evidence: [
+            structural, extensions, gaps, types, parameters, manifest-canonical, manifest-calls, manifest-no_calls, manifest-negative_members,
+            manifest-dependencies, manifest-source_edit_before, manifest-source_edit_after]}
+  C02:
+    meaning: Declaration kinds and nested/local/namespace placement, including same-named declarations.
+    priority: 1
+    languages:
+      python: {applicable: true, reason: Python source forms and native observations; no application execution or import-based type equivalence., evidence: [
+            structural]}
+      typescript: {applicable: true, reason: TypeScript source forms and native observations; authored signatures remain distinct from their implementations.,
+          evidence: [structural]}
+      php: {applicable: true, reason: PHP source forms and native observations; promoted/anonymous constructs retain their own evidence scope., evidence: [
+            structural]}
+      java: {applicable: true, reason: Java source forms and native observations; authored components remain distinct from generated members., evidence: [
+            structural]}
+      ruby: {applicable: true, reason: Ruby source forms and native observations; runtime metaprogramming is outside static inventory completeness., evidence: [
+            structural]}
+  C03:
+    meaning: Snapshot identity and exact member ownership; edit stability is a separate bounded obligation.
+    priority: 1
+    languages:
+      python: {applicable: true, reason: Python source forms and native observations; no application execution or import-based type equivalence., evidence: [
+            structural]}
+      typescript: {applicable: true, reason: TypeScript source forms and native observations; authored signatures remain distinct from their implementations.,
+          evidence: [structural]}
+      php: {applicable: true, reason: PHP source forms and native observations; promoted/anonymous constructs retain their own evidence scope., evidence: [
+            structural]}
+      java: {applicable: true, reason: Java source forms and native observations; authored components remain distinct from generated members., evidence: [
+            structural]}
+      ruby: {applicable: true, reason: Ruby source forms and native observations; runtime metaprogramming is outside static inventory completeness., evidence: [
+            structural]}
+  C04:
+    meaning: Explicit, assigned, accessor, promoted and record-component properties; generated origins stay distinguishable.
+    priority: 2
+    languages:
+      python: {applicable: true, reason: Python source forms and native observations; no application execution or import-based type equivalence., evidence: [
+            structural]}
+      typescript: {applicable: true, reason: TypeScript source forms and native observations; authored signatures remain distinct from their implementations.,
+          evidence: [structural]}
+      php: {applicable: true, reason: PHP source forms and native observations; promoted/anonymous constructs retain their own evidence scope., evidence: [
+            structural]}
+      java: {applicable: true, reason: Java source forms and native observations; authored components remain distinct from generated members., evidence: [
+            structural]}
+      ruby: {applicable: true, reason: Ruby source forms and native observations; runtime metaprogramming is outside static inventory completeness., evidence: [
+            structural]}
+  C05:
+    meaning: Authored callable inventories, overloads, and call/construct/index signature forms.
+    priority: 2
+    languages:
+      python: {applicable: true, reason: Python source forms and native observations; no application execution or import-based type equivalence., evidence: [
+            structural]}
+      typescript: {applicable: true, reason: TypeScript source forms and native observations; authored signatures remain distinct from their implementations.,
+          evidence: [structural]}
+      php: {applicable: true, reason: PHP source forms and native observations; promoted/anonymous constructs retain their own evidence scope., evidence: [
+            structural]}
+      java: {applicable: true, reason: Java source forms and native observations; authored components remain distinct from generated members., evidence: [
+            structural]}
+      ruby: {applicable: true, reason: Ruby source forms and native observations; runtime metaprogramming is outside static inventory completeness., evidence: [
+            structural]}
+  C06:
+    meaning: Ordered parameter names, passing modes, types and authored defaults, independently of omittability.
+    priority: 2
+    languages:
+      python: {applicable: true, reason: Python source forms and native observations; no application execution or import-based type equivalence., evidence: [
+            structural]}
+      typescript: {applicable: true, reason: TypeScript source forms and native observations; authored signatures remain distinct from their implementations.,
+          evidence: [structural]}
+      php: {applicable: true, reason: PHP source forms and native observations; promoted/anonymous constructs retain their own evidence scope., evidence: [
+            structural]}
+      java: {applicable: true, reason: Java source forms and native observations; authored components remain distinct from generated members., evidence: [
+            structural]}
+      ruby: {applicable: true, reason: Ruby source forms and native observations; runtime metaprogramming is outside static inventory completeness., evidence: [
+            structural]}
+  C07:
+    meaning: Named recursive types, meaningful language forms and uncertainty local to unsupported subexpressions.
+    priority: 2
+    languages:
+      python: {applicable: true, reason: Python source forms and native observations; no application execution or import-based type equivalence., evidence: [
+            structural]}
+      typescript: {applicable: true, reason: TypeScript source forms and native observations; authored signatures remain distinct from their implementations.,
+          evidence: [structural]}
+      php: {applicable: true, reason: PHP source forms and native observations; promoted/anonymous constructs retain their own evidence scope., evidence: [
+            structural]}
+      java: {applicable: true, reason: Java source forms and native observations; authored components remain distinct from generated members., evidence: [
+            structural]}
+      ruby: {applicable: true, reason: Ruby source forms and native observations; runtime metaprogramming is outside static inventory completeness., evidence: [
+            structural]}
+  C08:
+    meaning: Alias targets and generic declaration parameters/bounds, separately from use-site type arguments.
+    priority: 2
+    languages:
+      python: {applicable: true, reason: Python source forms and native observations; no application execution or import-based type equivalence., evidence: [
+            structural]}
+      typescript: {applicable: true, reason: TypeScript source forms and native observations; authored signatures remain distinct from their implementations.,
+          evidence: [structural]}
+      php: {applicable: false, reason: The selected source language has no authored static type-alias or generic-declaration syntax; external signature
+          languages are excluded., evidence: []}
+      java: {applicable: true, reason: Java source forms and native observations; authored components remain distinct from generated members., evidence: [
+            structural]}
+      ruby: {applicable: false, reason: The selected source language has no authored static type-alias or generic-declaration syntax; external signature
+          languages are excluded., evidence: []}
+  C09:
+    meaning: Selected visibility, modifiers and exports, with authored/default/conventional origins distinguished.
+    priority: 2
+    languages:
+      python: {applicable: true, reason: Python source forms and native observations; no application execution or import-based type equivalence., evidence: [
+            structural]}
+      typescript: {applicable: true, reason: TypeScript source forms and native observations; authored signatures remain distinct from their implementations.,
+          evidence: [structural]}
+      php: {applicable: true, reason: PHP source forms and native observations; promoted/anonymous constructs retain their own evidence scope., evidence: [
+            structural]}
+      java: {applicable: true, reason: Java source forms and native observations; authored components remain distinct from generated members., evidence: [
+            structural]}
+      ruby: {applicable: true, reason: Ruby source forms and native observations; runtime metaprogramming is outside static inventory completeness., evidence: [
+            structural]}
+  C10:
+    meaning: Authored relation kinds, exact source owners and target spelling distinguished from typed targets.
+    priority: 2
+    languages:
+      python: {applicable: true, reason: Python source forms and native observations; no application execution or import-based type equivalence., evidence: [
+            structural]}
+      typescript: {applicable: true, reason: TypeScript source forms and native observations; authored signatures remain distinct from their implementations.,
+          evidence: [structural]}
+      php: {applicable: true, reason: PHP source forms and native observations; promoted/anonymous constructs retain their own evidence scope., evidence: [
+            structural]}
+      java: {applicable: true, reason: Java source forms and native observations; authored components remain distinct from generated members., evidence: [
+            structural]}
+      ruby: {applicable: true, reason: Ruby source forms and native observations; runtime metaprogramming is outside static inventory completeness., evidence: [
+            structural]}
+  C11:
+    meaning: Complete-empty, unsupported-empty and partial local inventories with reliable siblings preserved.
+    priority: 1
+    languages:
+      python: {applicable: true, reason: Python source forms and native observations; no application execution or import-based type equivalence., evidence: [
+            structural]}
+      typescript: {applicable: true, reason: TypeScript source forms and native observations; authored signatures remain distinct from their implementations.,
+          evidence: [structural]}
+      php: {applicable: true, reason: PHP source forms and native observations; promoted/anonymous constructs retain their own evidence scope., evidence: [
+            structural]}
+      java: {applicable: true, reason: Java source forms and native observations; authored components remain distinct from generated members., evidence: [
+            structural]}
+      ruby: {applicable: true, reason: Ruby source forms and native observations; runtime metaprogramming is outside static inventory completeness., evidence: [
+            structural]}
+  C12:
+    meaning: Public source/schema/producer/runtime/resource identity, scan policy and exact reproduction inputs.
+    priority: 2
+    languages:
+      python: {applicable: true, reason: Python source forms and native observations; no application execution or import-based type equivalence., evidence: [
+            structural, extensions, gaps, types, parameters, manifest-canonical, manifest-calls, manifest-no_calls, manifest-negative_members,
+            manifest-dependencies, manifest-source_edit_before, manifest-source_edit_after]}
+      typescript: {applicable: true, reason: TypeScript source forms and native observations; authored signatures remain distinct from their implementations.,
+          evidence: [structural, extensions, gaps, types, parameters, manifest-canonical, manifest-calls, manifest-no_calls, manifest-negative_members,
+            manifest-dependencies, manifest-source_edit_before, manifest-source_edit_after]}
+      php: {applicable: true, reason: PHP source forms and native observations; promoted/anonymous constructs retain their own evidence scope., evidence: [
+            structural, extensions, gaps, types, parameters, manifest-canonical, manifest-calls, manifest-no_calls, manifest-negative_members,
+            manifest-dependencies, manifest-source_edit_before, manifest-source_edit_after]}
+      java: {applicable: true, reason: Java source forms and native observations; authored components remain distinct from generated members., evidence: [
+            structural, extensions, gaps, types, parameters, manifest-canonical, manifest-calls, manifest-no_calls, manifest-negative_members,
+            manifest-dependencies, manifest-source_edit_before, manifest-source_edit_after]}
+      ruby: {applicable: true, reason: Ruby source forms and native observations; runtime metaprogramming is outside static inventory completeness., evidence: [
+            structural, extensions, gaps, types, parameters, manifest-canonical, manifest-calls, manifest-no_calls, manifest-negative_members,
+            manifest-dependencies, manifest-source_edit_before, manifest-source_edit_after]}
+model_gaps:
+  declaration_owner:
+    conclusion: C02
+    state: model_gap
+    missing_representation: Declarations have no containing-declaration identity.
+    owner_issue: 81
+  declaration_reopening:
+    conclusion: C02
+    state: model_gap
+    missing_representation: Reopened declarations have no explicit reopening relationship.
+    owner_issue: 81
+  namespace_owner:
+    conclusion: C02
+    state: model_gap
+    missing_representation: Declarations have no containing-namespace identity.
+    owner_issue: 81
+  anonymous_identity:
+    conclusion: C02
+    state: unassessed
+    missing_representation: The selected catalogue has no established anonymous-declaration identity convention; anonymous inventory remains unresolved.
+    owner_issue: 81
+  property_origin:
+    conclusion: C04
+    state: model_gap
+    missing_representation: Properties have no authored, accessor, promoted or generated origin information.
+    owner_issue: 106
+  property_readonly:
+    conclusion: C04
+    state: model_gap
+    missing_representation: Properties have no readonly payload.
+    owner_issue: 106
+  overload_roles:
+    conclusion: C05
+    state: model_gap
+    missing_representation: Overload grouping and declaration/implementation roles are not represented.
+    owner_issue: 106
+  callable_alias:
+    conclusion: C05
+    state: model_gap
+    missing_representation: Callable alias bindings and generated origins are not represented.
+    owner_issue: 106
+  positional_only:
+    conclusion: C06
+    state: model_gap
+    missing_representation: SourceParameterKind has no positional-only value.
+    owner_issue: 106
+  reference_parameter:
+    conclusion: C06
+    state: model_gap
+    missing_representation: Parameters have no by-reference field.
+    owner_issue: 106
+  optional_parameter:
+    conclusion: C06
+    state: model_gap
+    missing_representation: Parameters have no independent optionality or binding-pattern payload.
+    owner_issue: 106
+  block_forwarding:
+    conclusion: C06
+    state: model_gap
+    missing_representation: Parameter kinds have no block or forwarding category.
+    owner_issue: 106
+  type_structure:
+    conclusion: C07
+    state: model_gap
+    missing_representation: Dedicated structural type forms and local uncertainty provenance are not represented.
+    owner_issue: 106
+  alias_target:
+    conclusion: C08
+    state: model_gap
+    missing_representation: Type-alias declarations have no target payload.
+    owner_issue: 106
+  type_parameters:
+    conclusion: C08
+    state: model_gap
+    missing_representation: Declared type parameters and bounds have no payload.
+    owner_issue: 106
+  visibility_origin:
+    conclusion: C09
+    state: model_gap
+    missing_representation: Visibility has no authored, default or conventional origin information.
+    owner_issue: 106
+  export_identity:
+    conclusion: C09
+    state: model_gap
+    missing_representation: Exports have no exact declaration identity.
+    owner_issue: 106
+  final_modifier:
+    conclusion: C09
+    state: model_gap
+    missing_representation: The selected declaration model has no dedicated final modifier field.
+    owner_issue: 106
+  relationship_target:
+    conclusion: C10
+    state: model_gap
+    missing_representation: Relation targets have spelling only, without structural type or declaration identity.
+    owner_issue: 106
+  local_inventory:
+    conclusion: C11
+    state: model_gap
+    missing_representation: Schema 13 has only producer/family coverage and cannot state local member-inventory completeness.
+    owner_issue: 104

@@ -294,3 +294,11 @@ scenarios:
   mappings:
   - authored: src/example.py
     canonical: python/src/example.py
+
+- scenario: structural
+  fixture:
+    kind: capability
+    role: structural
+  mappings:
+  - authored: python/src/example.py
+    canonical: python/src/example.py

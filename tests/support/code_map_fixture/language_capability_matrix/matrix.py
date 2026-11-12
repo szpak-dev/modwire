@@ -6,7 +6,10 @@ from pydantic import model_validator
 from modwire.application import CodeMap, FactCapability, FileId, RelationshipFamily
 
 from ..claim_evaluator import FixtureClaimEvaluator
+from ..conclusion import Conclusion
 from ..fixture_model import FixtureModel
+from ..scenario_contract_error import ScenarioContractError
+from ..scenario_violation import ScenarioViolation
 from .bundle import LanguageCapabilityBundle
 from .contracts.coverage.capability import CapabilityExpectation
 from .contracts.coverage.relationship import RelationshipExpectation
@@ -20,6 +23,8 @@ from .oracle.fixtures.reference import ScenarioFixtureReference
 from .oracle.projection import ScenarioProjectionKind
 from .oracle.reference import FixtureFactReference
 from .projections.mappings.identity import DeclarationIdentityKey
+from .values.enums.fixture_reference_kind import FixtureReferenceKind
+from .values.enums.observation_kind import ObservationKind
 from .values.names.language_id import LanguageId
 
 
@@ -30,7 +35,7 @@ class LanguageCapabilityMatrix(FixtureModel):
 
     @property
     def reference_code_map(self) -> CodeMap:
-        return self.catalog.expected[self.index.reference_scenario]
+        return self.catalog.code_map(self.index.reference_scenario)
 
     def capability_cases(self) -> tuple[tuple[LanguageId, FactCapability, CapabilityExpectation], ...]:
         return tuple(
@@ -62,6 +67,19 @@ class LanguageCapabilityMatrix(FixtureModel):
         self.validate_claim_targets()
         self.validate_manifest_parameter_targets()
         self.validate_fixture_collections()
+        if set(self.catalog.obligations) != set(Conclusion) - {Conclusion.CONTRACT}:
+            raise ScenarioContractError(ScenarioViolation.OBLIGATION_COVERAGE, "C01-C12")
+        for conclusion, obligation in self.catalog.obligations.items():
+            if set(obligation.languages) != set(self.languages):
+                raise ScenarioContractError(ScenarioViolation.OBLIGATION_COVERAGE, conclusion.value)
+            for language, applicability in obligation.languages.items():
+                native_scenarios = {
+                    binding.scenario.value
+                    for binding in self.languages[language].scenarios
+                    if binding.projection is ScenarioProjectionKind.SOURCE_IDENTITIES
+                }
+                if not {scenario.value for scenario in applicability.evidence} <= native_scenarios:
+                    raise ScenarioContractError(ScenarioViolation.UNKNOWN_EVIDENCE, conclusion.value)
         return self
 
     def fixture_paths(self) -> tuple[PurePosixPath, ...]:
@@ -105,7 +123,9 @@ class LanguageCapabilityMatrix(FixtureModel):
 
     def manifest_binding(self, language: LanguageId, scenario: ManifestScenario) -> LanguageScenarioBinding:
         bundle = self.languages[language]
-        reference = ScenarioFixtureReference(ManifestFixtureReference(kind="manifest", scenario=scenario.name))
+        reference = ScenarioFixtureReference(
+            ManifestFixtureReference(kind=FixtureReferenceKind.MANIFEST, scenario=scenario.name)
+        )
         document = next(document for document in bundle.reference_projection.scenarios if document.fixture == reference)
         return next(binding for binding in bundle.scenarios if binding.scenario == document.scenario)
 
@@ -115,12 +135,12 @@ class LanguageCapabilityMatrix(FixtureModel):
             for scenario in bundle.contract.manifests.scenarios:
                 binding = self.manifest_binding(language, scenario)
                 source = binding.expected_source(
-                    self.catalog.expected[binding.scenario],
+                    self.catalog.code_map(binding.scenario),
                     FileId(scenario.source.value.relative_to(scenario.name.value).as_posix()),
                 )
                 for claim in scenario.claims:
                     observation = claim.observation.root
-                    if observation.kind == "parameter":
+                    if observation.kind is ObservationKind.PARAMETER:
                         present = bool(evaluator.parameters(source, observation.owner.value, observation.position.root))
                         if not evaluator.result(present, claim.state).satisfied:
                             raise ValueError("manifest parameter selector contradicts its canonical source")
@@ -143,11 +163,15 @@ class LanguageCapabilityMatrix(FixtureModel):
             references = tuple(document.fixture for document in bundle.reference_projection.scenarios)
             expected = {
                 *(
-                    ScenarioFixtureReference(CapabilityFixtureReference(kind="capability", role=role))
+                    ScenarioFixtureReference(
+                        CapabilityFixtureReference(kind=FixtureReferenceKind.CAPABILITY, role=role)
+                    )
                     for role in bundle.contract.fixtures.source_sets()
                 ),
                 *(
-                    ScenarioFixtureReference(ManifestFixtureReference(kind="manifest", scenario=scenario.name))
+                    ScenarioFixtureReference(
+                        ManifestFixtureReference(kind=FixtureReferenceKind.MANIFEST, scenario=scenario.name)
+                    )
                     for scenario in bundle.contract.manifests.scenarios
                 ),
             }
@@ -186,7 +210,7 @@ class LanguageCapabilityMatrix(FixtureModel):
                     if binding.projection is ScenarioProjectionKind.SOURCE_IDENTITIES and binding.fixture == fixture
                 )
                 expected = binding.expected_source(
-                    self.catalog.expected[binding.scenario], FileId(scenario.source.value.as_posix())
+                    self.catalog.code_map(binding.scenario), FileId(scenario.source.value.as_posix())
                 )
                 for wrapped in scenario.claims:
                     claim = wrapped.root

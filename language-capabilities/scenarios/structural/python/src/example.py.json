@@ -1,0 +1,264 @@
+{
+  "declarations": [
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleAlias",
+      "declaration_kind": "type_alias"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleGeneric",
+      "declaration_kind": "class"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOwner",
+      "declaration_kind": "class"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOwner.ExampleNested",
+      "declaration_kind": "class"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOther",
+      "declaration_kind": "class"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "example_function.ExampleLocal",
+      "declaration_kind": "class"
+    }
+  ],
+  "callables": [
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.ExampleNested.example_method",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.example_method",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.example_property",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.example_property",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOther.example_method",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.example_static",
+      "callable_kind": "static_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "example_function",
+      "callable_kind": "function"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "example_types",
+      "callable_kind": "function"
+    }
+  ],
+  "attributes": [
+    {
+      "kind": "attribute",
+      "owner": "ExampleOwner",
+      "name": "example_value",
+      "member_kind": "instance"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleOwner",
+      "name": "example_property",
+      "member_kind": "instance"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleOther",
+      "name": "example_value",
+      "member_kind": "instance"
+    }
+  ],
+  "namespaces": [],
+  "signatures": {},
+  "spans": [],
+  "owners": {
+    "ExampleOwner.ExampleNested.example_method": "ExampleOwner.ExampleNested",
+    "ExampleOwner.example_method": "ExampleOwner",
+    "ExampleOwner.example_static": "ExampleOwner",
+    "ExampleOwner.example_property": "ExampleOwner",
+    "ExampleOther.example_method": "ExampleOther"
+  },
+  "parameters": {
+    "ExampleOwner.example_method": [
+      {
+        "name": "example_value",
+        "type": {
+          "kind": "reference",
+          "name": "str",
+          "arguments": []
+        },
+        "kind": "positional",
+        "has_default": false
+      }
+    ],
+    "ExampleOwner.example_static": [
+      {
+        "name": "self",
+        "type": {
+          "kind": "reference",
+          "name": "str",
+          "arguments": []
+        },
+        "kind": "positional",
+        "has_default": false
+      }
+    ],
+    "example_function": [
+      {
+        "name": "self",
+        "type": {
+          "kind": "reference",
+          "name": "str",
+          "arguments": []
+        },
+        "kind": "positional",
+        "has_default": false
+      },
+      {
+        "name": "example_value",
+        "type": {
+          "kind": "reference",
+          "name": "int",
+          "arguments": []
+        },
+        "kind": "positional",
+        "has_default": false
+      },
+      {
+        "name": "example_named",
+        "type": {
+          "kind": "reference",
+          "name": "str",
+          "arguments": []
+        },
+        "kind": "named_only",
+        "has_default": true
+      }
+    ],
+    "example_types": [
+      {
+        "name": "example_mixed",
+        "type": {
+          "kind": "reference",
+          "name": "dict",
+          "arguments": [
+            {
+              "kind": "reference",
+              "name": "str",
+              "arguments": []
+            },
+            {
+              "kind": "reference",
+              "name": "list",
+              "arguments": [
+                {
+                  "kind": "unsupported"
+                }
+              ]
+            }
+          ]
+        },
+        "kind": "positional",
+        "has_default": false
+      },
+      {
+        "name": "example_quoted",
+        "type": {
+          "kind": "reference",
+          "name": "ExampleOwner",
+          "arguments": []
+        },
+        "kind": "positional",
+        "has_default": false
+      },
+      {
+        "name": "example_tuple",
+        "type": {
+          "kind": "reference",
+          "name": "tuple",
+          "arguments": [
+            {
+              "kind": "reference",
+              "name": "str",
+              "arguments": []
+            },
+            {
+              "kind": "reference",
+              "name": "int",
+              "arguments": []
+            }
+          ]
+        },
+        "kind": "positional",
+        "has_default": false
+      },
+      {
+        "name": "example_callable",
+        "type": {
+          "kind": "reference",
+          "name": "Callable",
+          "arguments": [
+            {
+              "kind": "unsupported"
+            },
+            {
+              "kind": "reference",
+              "name": "int",
+              "arguments": []
+            }
+          ]
+        },
+        "kind": "positional",
+        "has_default": false
+      }
+    ]
+  },
+  "returns": {
+    "ExampleOwner.example_method": {
+      "kind": "reference",
+      "name": "str",
+      "arguments": []
+    },
+    "example_types": {
+      "kind": "reference",
+      "name": "ExampleAlias",
+      "arguments": []
+    }
+  },
+  "gaps": {
+    "declaration_owner": "Bind ExampleNested to ExampleOwner and ExampleLocal to example_function with exact containing identities.",
+    "property_origin": "Distinguish annotated example_value, the getter/setter pair example_property, and the setter's authored instance write.",
+    "positional_only": "self and example_value in example_function are positional-only; example_named is keyword-only and has an authored default.",
+    "type_structure": "Retain the union inside list, tuple shape, Callable parameter-list structure, and local uncertainty provenance.",
+    "alias_target": "ExampleAlias targets dict[str,int]; ExampleGeneric declares T bounded by str.",
+    "type_parameters": "ExampleAlias targets dict[str,int]; ExampleGeneric declares T bounded by str.",
+    "visibility_origin": "Preserve authored visibility/modifiers separately from default or conventional visibility, and bind exports to exact declarations.",
+    "export_identity": "Preserve authored visibility/modifiers separately from default or conventional visibility, and bind exports to exact declarations.",
+    "local_inventory": "Distinguish complete-empty, unsupported-empty and partially observed inventories on each declaration; retain trustworthy siblings."
+  }
+}

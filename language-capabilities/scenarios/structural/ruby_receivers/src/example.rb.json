@@ -1,0 +1,49 @@
+{
+  "declarations": [
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleTarget",
+      "declaration_kind": "class"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleContainer",
+      "declaration_kind": "class"
+    }
+  ],
+  "callables": [
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleTarget.example_named",
+      "callable_kind": "type_method"
+    }
+  ],
+  "attributes": [],
+  "namespaces": [],
+  "signatures": {},
+  "spans": [
+    {
+      "kind": "exact_span",
+      "owner": "ExampleTarget.example_named",
+      "start": 5,
+      "end": 7
+    }
+  ],
+  "owners": {
+    "ExampleTarget.example_named": "ExampleTarget"
+  },
+  "parameters": {
+    "ExampleTarget.example_named": [
+      {
+        "name": "example_value",
+        "type": {
+          "kind": "absent"
+        },
+        "kind": "positional",
+        "has_default": false
+      }
+    ]
+  },
+  "returns": {},
+  "gaps": {}
+}

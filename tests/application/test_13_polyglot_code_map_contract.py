@@ -1,24 +1,249 @@
 import shutil
+from pathlib import Path
 
 import pytest
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 
 from modwire.application import (
+    CapabilityStatus,
     CodeMap,
-    CodeValidationError,
     FactCapability,
-    FileId,
+    RelationshipCoverage,
     RelationshipFamily,
-    SourceAssignedValueKind,
 )
 
+from ..support.code_map_fixture.claim_result import ClaimResult
+from ..support.code_map_fixture.conclusion import Conclusion
+from ..support.code_map_fixture.discrepancy import Discrepancy
 from ..support.code_map_fixture.fixture_contract import PolyglotFixtureContract
 from ..support.code_map_fixture.fixture_contract_error import FixtureContractError
+from ..support.code_map_fixture.language_capability_matrix.oracle.binding import LanguageScenarioBinding
+from ..support.code_map_fixture.language_capability_matrix.oracle.documents.catalog import ScenarioCatalogDocument
+from ..support.code_map_fixture.language_capability_matrix.oracle.documents.language_applicability import (
+    LanguageApplicability,
+)
+from ..support.code_map_fixture.language_capability_matrix.oracle.scenario_kind import ScenarioKind
+from ..support.code_map_fixture.language_capability_matrix.reader import LanguageCapabilityMatrixReader
+from ..support.code_map_fixture.language_capability_matrix.values.enums.observation_kind import ObservationKind
+from ..support.code_map_fixture.language_capability_matrix.values.names.identifier import Identifier
+from ..support.code_map_fixture.language_capability_matrix.values.names.language_id import LanguageId
+from ..support.code_map_fixture.language_capability_matrix.values.names.scenario_id import ScenarioId
+from ..support.code_map_fixture.matrix_report import ExtractionMatrixReport
+from ..support.code_map_fixture.runtime_contract_error import RuntimeContractError
+from ..support.extraction_matrix import ExtractionMatrixCommand
 from .base_test import ApplicationTestCase
 
 
 class TestPolyglotCodeMapContract(ApplicationTestCase):
     contract = PolyglotFixtureContract(ApplicationTestCase.repository)
+
+    def structural_binding(self, language: str) -> LanguageScenarioBinding:
+        return next(
+            binding
+            for candidate, binding in self.contract.scenario_bindings()
+            if candidate.value == language and binding.scenario == ScenarioId("structural")
+        )
+
+    def copy_structural_sources(self) -> Path:
+        root = self.workspace / "structural"
+        shutil.copytree(self.repository / "tests/fixtures/structural_fidelity", root)
+        return root
+
+    def test_matrix_report_retains_five_language_gaps_and_native_provenance(self) -> None:
+        output = self.workspace / "matrix.json"
+        assert ExtractionMatrixCommand(self.application).run((str(self.repository), str(output))) == 1
+        report = ExtractionMatrixReport.model_validate_json(output.read_text())
+
+        assert not report.conforms and not report.regression_passes
+        assert set(report.results) == set(self.contract.matrix.languages)
+        assert sum(len(maps[ScenarioId("structural")].extraction.files) for maps in report.observations.values()) == 7
+        assert all(
+            result.expected and result.actual and result.owner_issue > 0
+            for scenarios in report.results.values()
+            for results in scenarios.values()
+            for result in results
+        )
+        assert any(
+            Discrepancy.WRONG_OWNER in result.discrepancies
+            for result in report.results[LanguageId("ruby")][ScenarioId("structural")]
+        )
+        assert all(
+            any(Discrepancy.MODEL_GAP in result.discrepancies for result in scenarios[ScenarioId("structural")])
+            for scenarios in report.results.values()
+        )
+        assert "N/A" in report.table() and "Conformance: FAIL" in report.table()
+
+    def copy_matrix_repository(self) -> None:
+        self.copy_contract_documents()
+        for collection in self.contract.matrix.index.fixture_collections:
+            shutil.copytree(self.repository / collection.root.value, self.workspace / collection.root.value)
+
+    def test_shared_model_limitation_rejects_case_overrides_and_has_one_owner(self) -> None:
+        self.copy_matrix_repository()
+        source = self.workspace / "language-capabilities/scenarios/structural/python/src/example.py.json"
+        original = source.read_text()
+        source.write_text(
+            "\n".join(
+                '    "local_inventory": {"owner_issue": 999}' if '"local_inventory":' in line else line
+                for line in original.splitlines()
+            )
+        )
+        output = self.workspace / "matrix.json"
+        command = ExtractionMatrixCommand(self.application)
+        assert command.run((str(self.workspace), str(output))) == 2
+        failure = ClaimResult.model_validate_json(output.read_text())
+        assert failure.discrepancies == (Discrepancy.INVALID_EVIDENCE,)
+        source.write_text(original)
+
+        catalogue = self.workspace / "language-capabilities/scenarios/catalog.yaml"
+        catalogue.write_text(catalogue.read_text().replace("owner_issue: 104", "owner_issue: 999"))
+        assert command.run((str(self.workspace), str(output))) == 1
+        report = ExtractionMatrixReport.model_validate_json(output.read_text())
+        findings = tuple(
+            result
+            for cases in report.results.values()
+            for results in cases.values()
+            for result in results
+            if result.subject.endswith(":local_inventory")
+        )
+        assert len(findings) == 6
+        assert all(result.owner_issue == 999 for result in findings)
+
+    def test_removed_evidence_cannot_be_replaced_by_unrelated_passing_scenarios(self) -> None:
+        self.copy_matrix_repository()
+        catalogue = self.workspace / "language-capabilities/scenarios/catalog.yaml"
+        document = LanguageCapabilityMatrixReader().read_document(catalogue, ScenarioCatalogDocument)
+        removed = tuple(name for name, gap in document.model_gaps.items() if gap.conclusion is Conclusion.QUALIFIERS)
+        for name in removed:
+            del document.model_gaps[name]
+        python = LanguageId("python")
+        applicability = document.obligations[Conclusion.DECLARATIONS].languages[python]
+        document.obligations[Conclusion.DECLARATIONS].languages[python] = LanguageApplicability(
+            applicable=True,
+            reason=applicability.reason,
+            evidence=(*applicability.evidence, ScenarioId("extensions")),
+        )
+        catalogue.write_text(document.model_dump_json())
+        scenario = ScenarioId("structural")
+        expected = self.contract.matrix.catalog.expected[scenario].root
+        assert expected.kind is ScenarioKind.SOURCE_FACTS
+        adapter = TypeAdapter(dict[Identifier, str])
+        for source, expectation in expected.sources.items():
+            path = self.workspace / self.contract.matrix.catalog.source_documents[scenario][source].value
+            gaps = {name: requirement for name, requirement in expectation.gaps.items() if name not in removed}
+            path.write_text(
+                expectation.model_dump_json().replace(
+                    '"gaps":' + adapter.dump_json(expectation.gaps).decode(),
+                    '"gaps":' + adapter.dump_json(gaps).decode(),
+                    1,
+                )
+            )
+
+        output = self.workspace / "matrix.json"
+        assert ExtractionMatrixCommand(self.application).run((str(self.workspace), str(output))) == 1
+        report = ExtractionMatrixReport.model_validate_json(output.read_text())
+        assert not report.conforms and not report.regression_passes
+        assert next(line for line in report.table().splitlines() if line.startswith("| C09 |")) == (
+            "| C09 | unassessed | unassessed | unassessed | unassessed | unassessed |"
+        )
+        missing = report.results[python][ScenarioId("obligation-C02")]
+        assert missing[0].discrepancies == (Discrepancy.UNASSESSED,)
+        assert missing[0].actual == '["extensions"]'
+
+    def test_non_applicable_obligation_cannot_hide_conflicting_findings(self) -> None:
+        self.copy_matrix_repository()
+        catalogue = self.workspace / "language-capabilities/scenarios/catalog.yaml"
+        document = LanguageCapabilityMatrixReader().read_document(catalogue, ScenarioCatalogDocument)
+        python = LanguageId("python")
+        document.obligations[Conclusion.COMPLETENESS].languages[python] = LanguageApplicability(
+            applicable=False,
+            reason="Example obligation is outside the selected scope.",
+            evidence=(),
+        )
+        catalogue.write_text(document.model_dump_json())
+        output = self.workspace / "matrix.json"
+        assert ExtractionMatrixCommand(self.application).run((str(self.workspace), str(output))) == 1
+        report = ExtractionMatrixReport.model_validate_json(output.read_text())
+        assert not report.conforms and not report.regression_passes
+        conflict = report.results[python][ScenarioId("obligation-C11")]
+        assert conflict[0].discrepancies == (Discrepancy.INVALID_EVIDENCE,)
+        row = next(line for line in report.table().splitlines() if line.startswith("| C11 |"))
+        assert "invalid_evidence" in row.split("|")[2]
+        assert "N/A" not in row.split("|")[2]
+
+    def test_failed_extraction_keeps_other_native_evidence_available(self) -> None:
+        self.copy_matrix_repository()
+        source = self.workspace / "tests/fixtures/structural_fidelity/python/src/example.py"
+        source.write_text("def broken(:\n")
+        report = PolyglotFixtureContract(self.workspace).assess(self.application, "test", "test")
+
+        assert not report.conforms and not report.regression_passes
+        failure = report.results[LanguageId("python")][ScenarioId("structural")]
+        assert len(failure) == 1 and failure[0].discrepancies == (Discrepancy.EXTRACTION_FAILURE,)
+        assert "source_parse" in failure[0].subject
+        assert ScenarioId("structural") not in report.observations[LanguageId("python")]
+        assert all(
+            ScenarioId("structural") in observations
+            for language, observations in report.observations.items()
+            if language != LanguageId("python")
+        )
+
+    def test_deleted_member_and_changed_owner_change_native_assessments(self) -> None:
+        root = self.copy_structural_sources()
+        java = LanguageId("java")
+        binding = self.structural_binding(java.value)
+        before = self.application.generate_map(java.value, str(root), self.contract.binding_policy(binding))
+        before_results = self.contract.evaluate_binding(self.application, java, before, binding)
+        property_result = next(
+            result for result in before_results if result.subject == "java/src/Example.java:C04:properties"
+        )
+        assert property_result.satisfied
+
+        source = root / "java/src/Example.java"
+        source.write_text(source.read_text().replace("    int exampleValue;\n", "", 1))
+        after = self.application.generate_map(java.value, str(root), self.contract.binding_policy(binding))
+        assert any(
+            result.subject == property_result.subject and Discrepancy.MISSING in result.discrepancies
+            for result in self.contract.evaluate_binding(self.application, java, after, binding)
+        )
+        ruby = LanguageId("ruby")
+        binding = self.structural_binding(ruby.value)
+        before = self.application.generate_map(ruby.value, str(root), self.contract.binding_policy(binding))
+        assert any(
+            Discrepancy.WRONG_OWNER in result.discrepancies
+            for result in self.contract.evaluate_binding(self.application, ruby, before, binding)
+        )
+        source = root / "ruby_receivers/src/example.rb"
+        source.write_text(source.read_text().replace("class ExampleContainer", "class ExampleTarget", 1))
+        after = self.application.generate_map(ruby.value, str(root), self.contract.binding_policy(binding))
+        assert not any(
+            Discrepancy.WRONG_OWNER in result.discrepancies
+            for result in self.contract.evaluate_binding(self.application, ruby, after, binding)
+        )
+
+    def test_empty_unsupported_inventory_cannot_be_relabelled_complete(self) -> None:
+        language = LanguageId("ruby")
+        binding = self.structural_binding(language.value)
+        actual = self.application.generate_map(
+            language.value, str(self.contract.binding_root(binding)), self.contract.binding_policy(binding)
+        )
+        published = next(
+            item for item in actual.producer.relationship_capabilities if item.family is RelationshipFamily.MEMBER
+        )
+        overclaim = RelationshipCoverage(
+            family=published.family,
+            evidence_requirements=published.evidence_requirements,
+            semantics=published.semantics,
+            semantics_explanation=published.semantics_explanation,
+            inventory=CapabilityStatus.SUPPORTED,
+            inventory_explanation=published.inventory_explanation,
+        )
+        payload = actual.model_dump_json().replace(published.model_dump_json(), overclaim.model_dump_json(), 1)
+        findings = self.contract.evaluate_binding(
+            self.application, language, CodeMap.model_validate_json(payload), binding
+        )
+        assert any(Discrepancy.FALSE_COMPLETENESS in result.discrepancies for result in findings)
+        assert any(Discrepancy.FALSE_SUPPORT in result.discrepancies for result in findings)
 
     def copy_contract_documents(self) -> None:
         shutil.copyfile(
@@ -60,7 +285,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         self.copy_contract_documents()
         index = self.workspace / "language-capabilities.yaml"
         original_index = index.read_text(encoding="utf-8")
-        index.write_text(original_index.replace("schema_version: 1", "schema_version: 2", 1), encoding="utf-8")
+        index.write_text(original_index.replace("schema_version: 2", "schema_version: 3", 1), encoding="utf-8")
 
         with pytest.raises(ValidationError, match="schema_version"):
             PolyglotFixtureContract(self.workspace)
@@ -115,7 +340,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
                 document.replace(f'"runtime":"{runtime.runtime.value}"', f'"runtime":"{other.value}"', 1),
                 encoding="utf-8",
             )
-            with pytest.raises(ValueError):
+            with pytest.raises((RuntimeContractError, ValidationError)):
                 PolyglotFixtureContract(self.workspace).validate_runtime_bindings(self.application)
 
             path.write_text(document.replace('"evidence":"supported"', '"evidence":"boundary"'), encoding="utf-8")
@@ -143,110 +368,11 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             path.write_text(original, encoding="utf-8")
             PolyglotFixtureContract(self.workspace)
 
-    def test_assigned_value_expectations_reject_the_same_invalid_state_as_public_facts(self) -> None:
-        self.copy_contract_documents()
-        attacks = 0
-        for scenario, sources in self.contract.matrix.catalog.source_documents.items():
-            for source_id, source_path in sources.items():
-                path = self.workspace / source_path.value
-                original = path.read_text(encoding="utf-8")
-                source = self.contract.matrix.catalog.expected[scenario].extraction.files[source_id]
-                sites = tuple(
-                    (declaration_index, property_index, value_index)
-                    for declaration_index, declaration in enumerate(source.declarations)
-                    for property_index, property_ in enumerate(declaration.properties)
-                    for value_index, value in enumerate(property_.assigned_values)
-                    if value.kind is SourceAssignedValueKind.UNASSIGNED
-                )
-                if not sites:
-                    continue
-                declaration_index, property_index, value_index = sites[0]
-                declaration = source.declarations[declaration_index]
-                property_ = declaration.properties[property_index]
-                attacked_property = property_.model_copy(
-                    update={
-                        "assigned_values": tuple(
-                            value.model_copy(update={"expression": "fabricated", "reference": "fabricated"})
-                            if index == value_index
-                            else value
-                            for index, value in enumerate(property_.assigned_values)
-                        )
-                    }
-                )
-                attacked_declaration = declaration.model_copy(
-                    update={
-                        "properties": tuple(
-                            attacked_property if index == property_index else value
-                            for index, value in enumerate(declaration.properties)
-                        )
-                    }
-                )
-                attacked = source.model_copy(
-                    update={
-                        "declarations": tuple(
-                            attacked_declaration if index == declaration_index else value
-                            for index, value in enumerate(source.declarations)
-                        )
-                    }
-                )
-                path.write_text(attacked.model_dump_json(), encoding="utf-8")
-                with pytest.raises(CodeValidationError):
-                    PolyglotFixtureContract(self.workspace)
-                path.write_text(original, encoding="utf-8")
-                PolyglotFixtureContract(self.workspace)
-                attacks += 1
-        assert attacks > 0
-
-    def test_each_nonempty_owned_source_has_evidence_that_rejects_erased_facts(self) -> None:
-        extracted: dict[tuple[str, str], CodeMap] = {}
-        for language, scenario in self.contract.scenario_cases():
-            key = (language.value, scenario.fixture.value)
-            if key not in extracted:
-                extracted[key] = self.application.generate_map(
-                    language.value, str(self.contract.fixture_root(language, scenario.fixture)), self.scan_policy()
-                )
-            code_map = extracted[key]
-            source_id = FileId(scenario.source.value.as_posix())
-            source = code_map.extraction.files[source_id]
-            erased = source.model_copy(
-                update={
-                    "declarations": (),
-                    "functions": (),
-                    "values": (),
-                    "callable_values": (),
-                    "anonymous_callables": (),
-                    "calls": (),
-                    "declaration_relations": (),
-                    "namespaces": (),
-                    "imports": [],
-                    "exports": [],
-                }
-            )
-            if source == erased:
-                continue
-            files = dict(code_map.extraction.files)
-            files[source_id] = erased
-            attacked = code_map.model_copy(
-                update={"extraction": code_map.extraction.model_copy(update={"files": files})}
-            )
-            related = (
-                candidate
-                for candidate_language, candidate in self.contract.scenario_cases()
-                if candidate_language == language
-                and candidate.fixture is scenario.fixture
-                and candidate.source == scenario.source
-            )
-            assert any(
-                not result.satisfied
-                for candidate in related
-                for result in self.contract.evaluate_scenario(attacked, candidate)
-            ), f"{language.value}:{scenario.fixture.value}:{source_id}"
-
     def test_type_slot_presence_never_accepts_absent_or_unsupported_types(self) -> None:
         for language, scenario in self.contract.scenario_cases():
             for wrapped in scenario.claims:
                 claim = wrapped.root
-                if claim.observation.root.kind != "type_slot" or claim.state is claim.state.PRESENT:
+                if claim.observation.root.kind is not ObservationKind.TYPE_SLOT or claim.state is claim.state.PRESENT:
                     continue
                 code_map = self.application.generate_map(
                     language.value, str(self.contract.fixture_root(language, scenario.fixture)), self.scan_policy()
@@ -277,6 +403,8 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         extracted: dict[tuple[str, str], CodeMap] = {}
 
         for language, binding in self.contract.scenario_bindings():
+            if self.contract.matrix.catalog.expected[binding.scenario].root.kind is ScenarioKind.SOURCE_FACTS:
+                continue
             key = (language.value, binding.fixture.root.value.as_posix())
             extracted[key] = self.application.generate_map(
                 language.value,

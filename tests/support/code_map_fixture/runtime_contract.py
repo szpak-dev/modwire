@@ -8,6 +8,8 @@ from modwire.application import ExtractorDescriptor, ModwireApplication
 from .language_capability_matrix.matrix import LanguageCapabilityMatrix
 from .language_capability_matrix.values.enums.runtime_package_manager import RuntimePackageManager
 from .language_capability_matrix.values.names.language_id import LanguageId
+from .runtime_contract_error import RuntimeContractError
+from .runtime_violation import RuntimeViolation
 
 
 class FixtureRuntimeContract:
@@ -36,9 +38,16 @@ class FixtureRuntimeContract:
     def descriptor(self, application: ModwireApplication, language: LanguageId, root: str) -> ExtractorDescriptor:
         descriptor = application.extraction.request(language.value, root).runtime.descriptor
         if descriptor.language != language.value:
-            raise ValueError(f"{language.value} language identity differs from the registered extractor")
+            raise RuntimeContractError(
+                RuntimeViolation.LANGUAGE_IDENTITY, descriptor.runtime, language.value, descriptor.language
+            )
         if descriptor.runtime != self.matrix.languages[language].contract.runtime.runtime.value:
-            raise ValueError(f"{language.value} runtime identity differs from the registered extractor")
+            raise RuntimeContractError(
+                RuntimeViolation.RUNTIME_IDENTITY,
+                descriptor.runtime,
+                self.matrix.languages[language].contract.runtime.runtime.value,
+                descriptor.runtime,
+            )
         return descriptor
 
     def validate_bindings(self, application: ModwireApplication, root: str) -> None:
@@ -46,40 +55,59 @@ class FixtureRuntimeContract:
             self.descriptor(application, language, root)
 
     def validate(self, application: ModwireApplication, root: str) -> None:
-        self.validate_bindings(application, root)
-        for bundle in self.matrix.languages.values():
-            requirement = bundle.contract.runtime
-            executable = shutil.which(requirement.runtime.value)
-            if executable is None:
-                raise RuntimeError(f"required runtime is unavailable: {requirement.runtime.value}")
-            completed = subprocess.run(
-                (executable, *requirement.probe.arguments),
-                capture_output=True,
-                check=True,
-                text=True,
+        for language in self.matrix.languages:
+            self.validate_language(application, language, root)
+
+    def validate_language(self, application: ModwireApplication, language: LanguageId, root: str) -> None:
+        self.descriptor(application, language, root)
+        requirement = self.matrix.languages[language].contract.runtime
+        executable = shutil.which(requirement.runtime.value)
+        if executable is None:
+            raise RuntimeContractError(
+                RuntimeViolation.UNAVAILABLE,
+                requirement.runtime.value,
+                requirement.version.text(),
+                "executable not found",
             )
-            observed = requirement.probe.pattern.search(f"{completed.stdout}\n{completed.stderr}".strip())
-            if observed is None:
-                raise RuntimeError(f"runtime identity or version is unreadable: {requirement.runtime.value}")
-            if observed.group(1) != requirement.version.text():
-                raise RuntimeError(
-                    f"{requirement.runtime.value} version mismatch: "
-                    f"expected {requirement.version.text()}, observed {observed.group(1)}"
+        completed = subprocess.run(
+            (executable, *requirement.probe.arguments), capture_output=True, check=False, text=True
+        )
+        output = f"{completed.stdout}\n{completed.stderr}".strip()
+        observed = requirement.probe.pattern.search(output)
+        if completed.returncode != 0 or observed is None:
+            raise RuntimeContractError(
+                RuntimeViolation.PROBE_FAILED, requirement.runtime.value, requirement.version.text(), output
+            )
+        if observed.group(1) != requirement.version.text():
+            raise RuntimeContractError(
+                RuntimeViolation.VERSION_MISMATCH,
+                requirement.runtime.value,
+                requirement.version.text(),
+                observed.group(1),
+            )
+        for package in requirement.packages:
+            if package.manager is RuntimePackageManager.GEM:
+                completed = subprocess.run(
+                    (
+                        executable,
+                        "-e",
+                        'gem ARGV.fetch(0), "=" + ARGV.fetch(1)',
+                        package.name.value,
+                        package.version.text(),
+                    ),
+                    capture_output=True,
+                    text=True,
+                    check=False,
                 )
-            for package in requirement.packages:
-                if package.manager is RuntimePackageManager.GEM:
-                    subprocess.run(
-                        (
-                            executable,
-                            "-e",
-                            'gem ARGV.fetch(0), "=" + ARGV.fetch(1)',
-                            package.name.value,
-                            package.version.text(),
-                        ),
-                        check=True,
+                if completed.returncode != 0:
+                    raise RuntimeContractError(
+                        RuntimeViolation.PACKAGE_UNAVAILABLE,
+                        requirement.runtime.value,
+                        f"{package.name.value}={package.version.text()}",
+                        completed.stderr.strip(),
                     )
-                else:
-                    assert_never(package.manager)
+            else:
+                assert_never(package.manager)
 
     def install_packages(self) -> None:
         for bundle in self.matrix.languages.values():

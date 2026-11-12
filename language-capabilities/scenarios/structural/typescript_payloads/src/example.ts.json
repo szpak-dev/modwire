@@ -1,0 +1,48 @@
+{
+  "declarations": [
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleText",
+      "declaration_kind": "type_alias"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleNumber",
+      "declaration_kind": "type_alias"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleFirst.ExampleNested",
+      "declaration_kind": "class"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleSecond.ExampleNested",
+      "declaration_kind": "class"
+    }
+  ],
+  "callables": [],
+  "attributes": [],
+  "namespaces": [
+    {
+      "kind": "namespace",
+      "qualified_name": "ExampleFirst",
+      "namespace_kind": "namespace"
+    },
+    {
+      "kind": "namespace",
+      "qualified_name": "ExampleSecond",
+      "namespace_kind": "namespace"
+    }
+  ],
+  "signatures": {},
+  "spans": [],
+  "owners": {},
+  "parameters": {},
+  "returns": {},
+  "gaps": {
+    "namespace_owner": "Bind each same-named ExampleNested to its exact namespace.",
+    "alias_target": "Distinguish ExampleText=string from ExampleNumber=number.",
+    "local_inventory": "Distinguish complete-empty, unsupported-empty and partially observed inventories on each declaration; retain trustworthy siblings."
+  }
+}
