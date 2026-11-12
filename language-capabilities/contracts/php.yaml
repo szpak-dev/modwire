@@ -29,80 +29,53 @@ fixtures:
     root: tests/fixtures/code_map/parameter_kinds/php
     sources:
     - src/Params.php
+  structural:
+    root: tests/fixtures/structural_fidelity
+    sources:
+    - php/src/Example.php
 capabilities:
   sources:
     status: supported
-    explanation: Every included PHP source is identified and hashed.
   symbols:
     status: supported
-    explanation: Classes, abstract classes, interfaces, traits, functions, and values are extracted.
   callables:
     status: supported
-    explanation: Functions, methods, constructors, closures, and arrow functions are extracted.
   calls:
     status: supported
-    explanation: Static calls owned by extracted callables are emitted with explicit resolved, external,
-      unresolved, or dynamic state.
   parameters:
     status: supported
-    explanation: Callable parameter order, kind, annotation, and default presence are extracted.
   type_references:
     status: partial
-    explanation: Named references are structural; unions, intersections, and other authored type syntax are
-      reported as unsupported.
   annotations:
     status: partial
-    explanation: Class and interface attributes and declared type annotations are extracted; attributes on other
-      declarations are not yet emitted.
   modifiers:
     status: partial
-    explanation: Visibility intent, callable kind, and property member kind are normalized.
   attributes:
     status: supported
-    explanation: Declared and promoted property identity, exact declared type, visibility, optionality, and member
-      kind are extracted.
   assigned_values:
     status: unsupported
-    explanation: PHP property assigned-value evidence is not extracted yet.
   inheritance:
     status: supported
-    explanation: Class and interface inheritance declarations are recorded.
   namespaces:
     status: unsupported
-    explanation: PHP namespace declarations are not extracted yet.
   declaration_kinds:
     status: supported
-    explanation: Classes, abstract classes, interfaces, and traits publish exact shared declaration kinds.
   composition:
     status: partial
-    explanation: Extension and implementation are extracted; trait use is not classified.
   dependencies:
     status: supported
-    explanation: Namespace imports are normalized and resolved when targets are present.
   spans:
     status: partial
-    explanation: Callable spans are exact; other symbol facts expose line counts.
 relationships:
   declaration:
     semantics: partial
-    semantics_explanation: Authored extension and implementation relations are preserved without classifying trait
-      use or framework conventions.
     inventory: partial
-    inventory_explanation: Class and interface heritage is emitted, but trait-use relationships are not yet
-      classified.
   member:
     semantics: partial
-    semantics_explanation: Declared property and callable types and static calls are preserved without resolving
-      runtime types or framework ownership.
     inventory: partial
-    inventory_explanation: Declared type and static-call evidence is emitted, but assigned-value relationship
-      evidence is not available.
   dependency:
     semantics: supported
-    semantics_explanation: Authored namespace imports are normalized with explicit resolution state; dynamic
-      loading is excluded.
     inventory: supported
-    inventory_explanation: Every authored namespace import in included PHP sources is emitted deterministically.
 scenarios:
 - name: supported-contract
   fixture: extensions

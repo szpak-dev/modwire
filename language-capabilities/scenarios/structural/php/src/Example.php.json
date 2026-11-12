@@ -1,0 +1,153 @@
+{
+  "declarations": [
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleContract",
+      "declaration_kind": "interface"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleLeft",
+      "declaration_kind": "interface"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleRight",
+      "declaration_kind": "interface"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleBase",
+      "declaration_kind": "class"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleTrait",
+      "declaration_kind": "trait"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOwner",
+      "declaration_kind": "class"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOther",
+      "declaration_kind": "class"
+    }
+  ],
+  "callables": [
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleTrait.exampleTraitMethod",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.__construct",
+      "callable_kind": "constructor"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.exampleMethod",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.exampleTypes",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOther.exampleMethod",
+      "callable_kind": "instance_method"
+    }
+  ],
+  "attributes": [
+    {
+      "kind": "attribute",
+      "owner": "ExampleOwner",
+      "name": "exampleValue",
+      "member_kind": "instance"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleOther",
+      "name": "exampleValue",
+      "member_kind": "instance"
+    }
+  ],
+  "namespaces": [
+    {
+      "kind": "namespace",
+      "qualified_name": "Example",
+      "namespace_kind": "namespace"
+    }
+  ],
+  "signatures": {},
+  "spans": [],
+  "owners": {
+    "ExampleTrait.exampleTraitMethod": "ExampleTrait",
+    "ExampleOwner.__construct": "ExampleOwner",
+    "ExampleOwner.exampleMethod": "ExampleOwner",
+    "ExampleOwner.exampleTypes": "ExampleOwner",
+    "ExampleOther.exampleMethod": "ExampleOther"
+  },
+  "parameters": {
+    "ExampleOwner.exampleMethod": [
+      {
+        "name": "exampleReference",
+        "type": {
+          "kind": "reference",
+          "name": "string",
+          "arguments": []
+        },
+        "kind": "positional",
+        "has_default": false
+      },
+      {
+        "name": "exampleDefault",
+        "type": {
+          "kind": "reference",
+          "name": "string",
+          "arguments": []
+        },
+        "kind": "positional",
+        "has_default": true
+      },
+      {
+        "name": "exampleRest",
+        "type": {
+          "kind": "reference",
+          "name": "string",
+          "arguments": []
+        },
+        "kind": "variadic_positional",
+        "has_default": false
+      }
+    ]
+  },
+  "returns": {
+    "ExampleTrait.exampleTraitMethod": {
+      "kind": "reference",
+      "name": "string",
+      "arguments": []
+    },
+    "ExampleOwner.exampleMethod": {
+      "kind": "reference",
+      "name": "string",
+      "arguments": []
+    }
+  },
+  "gaps": {
+    "anonymous_identity": "Preserve the anonymous class's members and exact lexical placement separately from ExampleOther's same-named members.",
+    "property_origin": "Record exampleValue as a promoted readonly property with an authored null default.",
+    "property_readonly": "Record exampleValue as a promoted readonly property with an authored null default.",
+    "reference_parameter": "exampleReference is passed by reference; exampleRest is variadic with no authored default.",
+    "type_structure": "Preserve nullable string, string|int and ExampleLeft&ExampleRight as distinct structures.",
+    "relationship_target": "Preserve extends ExampleBase, implements ExampleContract, and use ExampleTrait with exact source owners and typed targets.",
+    "visibility_origin": "Preserve authored visibility/modifiers separately from default or conventional visibility, and bind exports to exact declarations.",
+    "export_identity": "Preserve authored visibility/modifiers separately from default or conventional visibility, and bind exports to exact declarations.",
+    "local_inventory": "Distinguish complete-empty, unsupported-empty and partially observed inventories on each declaration; retain trustworthy siblings."
+  }
+}

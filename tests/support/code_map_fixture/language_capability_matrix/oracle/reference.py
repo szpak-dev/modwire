@@ -13,10 +13,7 @@ class FixtureFactReference(FixtureModel):
         return hash(self.selector.root)
 
     def source_id(self) -> FileId:
-        selector = self.selector.root
-        if selector.kind == "parameter_list":
-            return selector.callable.source_id
-        return selector.source
+        return self.selector.root.source
 
     def read_expected(self, code_map: CodeMap) -> PublicFactObservation:
         return self.selector.root.read_expected(code_map)

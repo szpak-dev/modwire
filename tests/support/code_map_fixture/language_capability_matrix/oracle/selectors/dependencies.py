@@ -4,12 +4,13 @@ from modwire.application import CodeMap, FileId
 
 from ....fixture_model import FixtureModel
 from ..dependencies import FixtureDependencyObservation
+from ..fact_selector_kind import FactSelectorKind
 from ..identities import FixtureSourceIdentities
 from ..observation import PublicFactObservation
 
 
 class DependencySelector(FixtureModel):
-    kind: Literal["dependencies"]
+    kind: Literal[FactSelectorKind.DEPENDENCIES]
     source: FileId
 
     def read_expected(self, code_map: CodeMap) -> PublicFactObservation:

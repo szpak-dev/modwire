@@ -1,0 +1,244 @@
+{
+  "declarations": [
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleContract",
+      "declaration_kind": "interface"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleBase",
+      "declaration_kind": "class"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOwner",
+      "declaration_kind": "class"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOwner.ExampleNested",
+      "declaration_kind": "class"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOther",
+      "declaration_kind": "class"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleRecord",
+      "declaration_kind": "record"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleStatus",
+      "declaration_kind": "enum"
+    }
+  ],
+  "callables": [
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.ExampleNested.exampleMethod",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.exampleMethod",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.exampleMethod",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.exampleParameters",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.exampleTypes",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOther.exampleMethod",
+      "callable_kind": "instance_method"
+    }
+  ],
+  "attributes": [
+    {
+      "kind": "attribute",
+      "owner": "ExampleOwner",
+      "name": "exampleValue",
+      "member_kind": "instance"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleOther",
+      "name": "exampleValue",
+      "member_kind": "instance"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleRecord",
+      "name": "exampleName",
+      "member_kind": "instance"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleRecord",
+      "name": "exampleCount",
+      "member_kind": "instance"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleStatus",
+      "name": "EXAMPLE_READY",
+      "member_kind": "static"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleStatus",
+      "name": "EXAMPLE_DONE",
+      "member_kind": "static"
+    }
+  ],
+  "namespaces": [
+    {
+      "kind": "namespace",
+      "qualified_name": "example",
+      "namespace_kind": "package"
+    }
+  ],
+  "signatures": {},
+  "spans": [],
+  "owners": {
+    "ExampleOwner.ExampleNested.exampleMethod": "ExampleOwner.ExampleNested",
+    "ExampleOwner.exampleMethod": "ExampleOwner",
+    "ExampleOwner.exampleParameters": "ExampleOwner",
+    "ExampleOwner.exampleTypes": "ExampleOwner",
+    "ExampleOther.exampleMethod": "ExampleOther"
+  },
+  "parameters": {
+    "ExampleOwner.exampleParameters": [
+      {
+        "name": "exampleValue",
+        "type": {
+          "kind": "reference",
+          "name": "String",
+          "arguments": []
+        },
+        "kind": "positional",
+        "has_default": false
+      },
+      {
+        "name": "exampleRest",
+        "type": {
+          "kind": "reference",
+          "name": "String",
+          "arguments": []
+        },
+        "kind": "variadic_positional",
+        "has_default": false
+      }
+    ],
+    "ExampleOwner.exampleTypes": [
+      {
+        "name": "exampleKnown",
+        "type": {
+          "kind": "reference",
+          "name": "Map",
+          "arguments": [
+            {
+              "kind": "reference",
+              "name": "String",
+              "arguments": []
+            },
+            {
+              "kind": "reference",
+              "name": "List",
+              "arguments": [
+                {
+                  "kind": "reference",
+                  "name": "Integer",
+                  "arguments": []
+                }
+              ]
+            }
+          ]
+        },
+        "kind": "positional",
+        "has_default": false
+      },
+      {
+        "name": "exampleMixed",
+        "type": {
+          "kind": "reference",
+          "name": "Map",
+          "arguments": [
+            {
+              "kind": "reference",
+              "name": "String",
+              "arguments": []
+            },
+            {
+              "kind": "reference",
+              "name": "List",
+              "arguments": [
+                {
+                  "kind": "unsupported"
+                }
+              ]
+            }
+          ]
+        },
+        "kind": "positional",
+        "has_default": false
+      },
+      {
+        "name": "exampleArray",
+        "type": {
+          "kind": "unsupported"
+        },
+        "kind": "positional",
+        "has_default": false
+      }
+    ]
+  },
+  "returns": {
+    "ExampleOwner.exampleTypes": {
+      "kind": "reference",
+      "name": "Map",
+      "arguments": [
+        {
+          "kind": "reference",
+          "name": "String",
+          "arguments": []
+        },
+        {
+          "kind": "reference",
+          "name": "List",
+          "arguments": [
+            {
+              "kind": "unsupported"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "gaps": {
+    "declaration_owner": "Bind ExampleNested to ExampleOwner with an explicit containing identity.",
+    "property_origin": "Distinguish record components, the generated canonical constructor/accessors, and authored enum constants.",
+    "overload_roles": "Group the two exampleMethod overloads without conflating their identities.",
+    "type_structure": "Retain Map<String,List<? extends Number>> parents and reliable String sibling around a local wildcard; preserve array form.",
+    "type_parameters": "ExampleOwner declares T extends Number.",
+    "visibility_origin": "Preserve explicit private/final separately from package-default visibility.",
+    "final_modifier": "Preserve explicit private/final separately from package-default visibility.",
+    "relationship_target": "Preserve class extends and interface implements separately with structural targets.",
+    "local_inventory": "Distinguish complete-empty, unsupported-empty and partially observed inventories on each declaration; retain trustworthy siblings."
+  }
+}

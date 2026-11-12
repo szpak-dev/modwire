@@ -3,6 +3,7 @@ from typing import Annotated, Self
 from pydantic import Field
 
 from .....fixture_root_model import FixtureRootModel
+from ....values.enums.claim_kind import ClaimKind
 from .capability import CapabilityClaim
 from .relationship import RelationshipClaim
 
@@ -11,13 +12,13 @@ class ScenarioClaim(FixtureRootModel[Annotated[CapabilityClaim | RelationshipCla
     def same_fact(self, other: Self) -> bool:
         first = self.root
         second = other.root
-        if first.kind == "capability" and second.kind == "capability":
+        if first.kind is ClaimKind.CAPABILITY and second.kind is ClaimKind.CAPABILITY:
             return (
                 first.capability is second.capability
                 and first.state is second.state
                 and first.observation == second.observation
             )
-        if first.kind == "relationship" and second.kind == "relationship":
+        if first.kind is ClaimKind.RELATIONSHIP and second.kind is ClaimKind.RELATIONSHIP:
             return (
                 first.relationship is second.relationship
                 and first.aspect is second.aspect

@@ -29,79 +29,53 @@ fixtures:
     root: tests/fixtures/code_map/parameter_kinds/java
     sources:
     - src/Params.java
+  structural:
+    root: tests/fixtures/structural_fidelity
+    sources:
+    - java/src/Example.java
 capabilities:
   sources:
     status: supported
-    explanation: Every included Java source is identified and hashed.
   symbols:
     status: supported
-    explanation: Classes, interfaces, records, enums, and annotation declarations are extracted.
   callables:
     status: supported
-    explanation: Constructors, methods, and annotation elements are extracted.
   calls:
     status: supported
-    explanation: Static method and constructor calls owned by extracted callables are emitted with explicit
-      resolved, external, unresolved, or dynamic state.
   parameters:
     status: supported
-    explanation: Callable parameter order, kind, and exact declared type are extracted.
   type_references:
     status: partial
-    explanation: Named references and ordered generic arguments are structural; wildcards, arrays, and other
-      authored type syntax are reported as unsupported.
   annotations:
     status: partial
-    explanation: Declaration annotations and exact declared types are extracted without evaluation.
   modifiers:
     status: partial
-    explanation: Visibility, callable kind, and property member kind are normalized.
   attributes:
     status: supported
-    explanation: Fields, record components, enum constants, and annotation elements are extracted.
   assigned_values:
     status: unsupported
-    explanation: Java member assigned-value evidence is not extracted yet.
   inheritance:
     status: supported
-    explanation: Declared extension and implementation relations are recorded.
   namespaces:
     status: supported
-    explanation: Authored package declarations are extracted.
   declaration_kinds:
     status: supported
-    explanation: Java declaration forms publish exact shared declaration kinds.
   composition:
     status: partial
-    explanation: Extension and implementation are extracted; permits relations are not yet emitted.
   dependencies:
     status: partial
-    explanation: Exact imports resolve internally; wildcard and implicit dependencies remain unresolved.
   spans:
     status: partial
-    explanation: Callable spans are exact; other declarations expose line counts.
 relationships:
   declaration:
     semantics: partial
-    semantics_explanation: Authored extension and implementation relations are preserved without permits,
-      annotation-processor, or framework inference.
     inventory: partial
-    inventory_explanation: Extension and implementation clauses are emitted, but permits relationships are not
-      available.
   member:
     semantics: partial
-    semantics_explanation: Declared member and callable types and static calls are preserved without classpath,
-      generated-code, or framework inference.
     inventory: partial
-    inventory_explanation: Declared type and static-call evidence is emitted, but assigned-value relationship
-      evidence is not available.
   dependency:
     semantics: partial
-    semantics_explanation: Exact imports are normalized, while wildcard, implicit same-package, classpath, and
-      generated dependencies remain unresolved.
     inventory: partial
-    inventory_explanation: Authored exact imports are emitted, but wildcard and implicit dependency inventory is
-      incomplete.
 scenarios:
 - name: supported-contract
   fixture: extensions

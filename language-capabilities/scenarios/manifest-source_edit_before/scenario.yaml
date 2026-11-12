@@ -1,3 +1,4 @@
+kind: code_map
 producer: observations
 extraction:
   files:

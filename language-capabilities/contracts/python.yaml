@@ -29,83 +29,53 @@ fixtures:
     root: tests/fixtures/code_map/parameter_kinds/python
     sources:
     - src/params.py
+  structural:
+    root: tests/fixtures/structural_fidelity
+    sources:
+    - python/src/example.py
 capabilities:
   sources:
     status: supported
-    explanation: Every included Python source is identified and hashed.
   symbols:
     status: supported
-    explanation: Classes, abstract classes, functions, and values are extracted.
   callables:
     status: supported
-    explanation: Functions, methods, constructors, and lambdas are extracted.
   calls:
     status: supported
-    explanation: Static calls owned by extracted callables are emitted with explicit resolved, external,
-      unresolved, or dynamic state.
   parameters:
     status: supported
-    explanation: Callable parameter order, kind, annotation, and default presence are extracted.
   type_references:
     status: partial
-    explanation: Named references and ordered generic arguments are structural; other authored type syntax is
-      reported as unsupported.
   annotations:
     status: partial
-    explanation: Class and callable decorators and declared type annotations are extracted; arbitrary annotations
-      are not evaluated.
   modifiers:
     status: partial
-    explanation: Visibility intent, callable kind, and class property member kind are normalized.
   attributes:
     status: supported
-    explanation: Class property identity, exact declared type, visibility, optionality, and member kind are
-      extracted.
   assigned_values:
     status: supported
-    explanation: Ordered assignment evidence distinguishes calls, references, literals, unresolved expressions, and
-      declarations without an assigned value.
   inheritance:
     status: supported
-    explanation: Every declared Python base expression is recorded.
   namespaces:
     status: unsupported
-    explanation: Python namespace declarations are not extracted yet.
   declaration_kinds:
     status: supported
-    explanation: Classes and abstract classes publish exact shared declaration kinds.
   composition:
     status: unsupported
-    explanation: Python base expressions are reported as inheritance; no distinct composition relation syntax is
-      classified.
   dependencies:
     status: supported
-    explanation: Imports are normalized and resolved when targets are present.
   spans:
     status: partial
-    explanation: Callable spans are exact; other symbol facts expose line counts.
 relationships:
   declaration:
     semantics: partial
-    semantics_explanation: Authored base expressions are preserved without interpreting runtime rebinding,
-      metaclasses, or framework conventions.
     inventory: supported
-    inventory_explanation: Every authored class base expression in included Python sources is emitted
-      deterministically.
   member:
     semantics: partial
-    semantics_explanation: Declared member and callable types, static calls, and assigned values are preserved
-      without resolving dynamic types or runtime mutation.
     inventory: supported
-    inventory_explanation: Every supported static member, callable type, call, and assigned-value fact in included
-      Python sources is emitted deterministically.
   dependency:
     semantics: supported
-    semantics_explanation: Authored import dependencies are normalized with explicit resolved, external, or
-      unresolved state; dynamic loading is excluded.
     inventory: supported
-    inventory_explanation: Every authored import declaration in included Python sources is emitted
-      deterministically.
 scenarios:
 - name: supported-contract
   fixture: extensions

@@ -6,6 +6,7 @@ from ..contracts.coverage.contract import LanguageContract
 from ..contracts.fixtures.source_set import FixtureSourceSet
 from ..projections.mappings.source import SourceIdentityProjection
 from ..projections.reference_projection import ReferenceProjection
+from ..values.enums.fixture_reference_kind import FixtureReferenceKind
 from ..values.names.scenario_id import ScenarioId
 from ..values.paths.path import RepositoryPath
 from ..values.paths.source_path import RepositorySourcePath
@@ -22,7 +23,7 @@ class FixtureScenarioBinder:
 
     def bind_document(self, contract: LanguageContract, document: ScenarioBindingDocument) -> LanguageScenarioBinding:
         reference = document.fixture.root
-        if reference.kind == "capability":
+        if reference.kind is FixtureReferenceKind.CAPABILITY:
             fixture = contract.fixtures.source_sets()[reference.role]
         else:
             scenario = next(item for item in contract.manifests.scenarios if item.name == reference.scenario)

@@ -296,3 +296,13 @@ scenarios:
   mappings:
   - authored: src/example.rb
     canonical: ruby/src/example.rb
+
+- scenario: structural
+  fixture:
+    kind: capability
+    role: structural
+  mappings:
+  - authored: ruby/src/example.rb
+    canonical: ruby/src/example.rb
+  - authored: ruby_receivers/src/example.rb
+    canonical: ruby_receivers/src/example.rb

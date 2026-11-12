@@ -3,6 +3,8 @@ from pathlib import Path
 
 from modwire.application import (
     CodeMap,
+    CodeValidationError,
+    ExtractionError,
     FactCapability,
     FileId,
     ImplementationManifest,
@@ -14,6 +16,8 @@ from modwire.application import (
 
 from .claim_evaluator import FixtureClaimEvaluator
 from .claim_result import ClaimResult
+from .conclusion import Conclusion
+from .discrepancy import Discrepancy
 from .fixture_contract_error import FixtureContractError
 from .language_capability_matrix.bundle import LanguageCapabilityBundle
 from .language_capability_matrix.contracts.coverage.capability import CapabilityExpectation
@@ -29,9 +33,12 @@ from .language_capability_matrix.projections.reference_projection import Referen
 from .language_capability_matrix.reader import LanguageCapabilityMatrixReader
 from .language_capability_matrix.values.enums.fixture_role import FixtureRole
 from .language_capability_matrix.values.names.language_id import LanguageId
+from .language_capability_matrix.values.names.scenario_id import ScenarioId
 from .language_capability_matrix.values.names.source_suffix import SourceSuffix
+from .matrix_report import ExtractionMatrixReport
 from .projector import FixtureCodeMapProjector
 from .runtime_contract import FixtureRuntimeContract
+from .runtime_contract_error import RuntimeContractError
 
 
 class PolyglotFixtureContract:
@@ -41,6 +48,72 @@ class PolyglotFixtureContract:
         self.evaluator = FixtureClaimEvaluator()
         self.projector = FixtureCodeMapProjector()
         self.runtime = FixtureRuntimeContract(self.matrix)
+
+    def assess(self, application: ModwireApplication, revision: str, workspace_digest: str) -> ExtractionMatrixReport:
+        results: dict[LanguageId, dict[ScenarioId, tuple[ClaimResult, ...]]] = {
+            language: {} for language in self.matrix.languages
+        }
+        observations: dict[LanguageId, dict[ScenarioId, CodeMap]] = {language: {} for language in self.matrix.languages}
+        equivalence: set[ScenarioId] = set()
+        for language in self.matrix.languages:
+            try:
+                self.runtime.validate_language(application, language, str(self.repository))
+            except RuntimeContractError as error:
+                results[language][ScenarioId("runtime")] = (
+                    ClaimResult(
+                        subject=f"{error.runtime}:{error.violation.value}",
+                        expected=error.expected,
+                        actual=error.actual,
+                        discrepancies=(Discrepancy.INVALID_EVIDENCE,),
+                        conclusions=(Conclusion.PROVENANCE,),
+                        owner_issue=84,
+                    ),
+                )
+        for language, binding in self.scenario_bindings():
+            if binding.projection is ScenarioProjectionKind.COMMON_REFERENCE:
+                equivalence.add(binding.scenario)
+            try:
+                code_map = application.generate_map(
+                    language.value, str(self.binding_root(binding)), self.binding_policy(binding)
+                )
+            except (ExtractionError, CodeValidationError) as error:
+                results[language][binding.scenario] = (
+                    ClaimResult(
+                        subject=f"{binding.scenario.value}:{error.code}",
+                        expected=self.matrix.catalog.expected[binding.scenario].model_dump_json(),
+                        actual=str(error),
+                        discrepancies=(Discrepancy.EXTRACTION_FAILURE,),
+                        conclusions=tuple(
+                            conclusion
+                            for conclusion, obligation in self.matrix.catalog.obligations.items()
+                            if obligation.languages[language].applicable
+                        ),
+                        owner_issue=81,
+                    ),
+                )
+                continue
+            observations[language][binding.scenario] = code_map
+            results[language][binding.scenario] = self.evaluate_binding(application, language, code_map, binding)
+        for language, scenario in self.manifest_cases():
+            binding = self.matrix.manifest_binding(language, scenario)
+            if binding.scenario not in observations[language]:
+                continue
+            for format in application.implementation_manifest_formats():
+                document = application.implementation_manifest(observations[language][binding.scenario], format)
+                manifest = application.read_implementation_manifest(document)
+                results[language][binding.scenario] += self.evaluate_manifest(manifest, scenario)
+        results = self.evaluator.evaluate_obligations(self.matrix.catalog, results, frozenset(equivalence))
+        return ExtractionMatrixReport(
+            revision=revision,
+            workspace_digest=workspace_digest,
+            matrix_schema_version=self.matrix.index.schema_version.root,
+            runtime_requirements=self.runtime_document(),
+            obligations=self.matrix.catalog.obligations,
+            results=results,
+            observations=observations,
+            equivalence_cases=frozenset(equivalence),
+            reviewed_gaps=self.matrix.catalog.reviewed_gaps,
+        )
 
     def capability_cases(
         self,
@@ -106,7 +179,7 @@ class PolyglotFixtureContract:
         return self.repository / binding.fixture.root.value
 
     def binding_policy(self, binding: LanguageScenarioBinding) -> ScanPolicy:
-        return self.matrix.catalog.expected[binding.scenario].extraction.manifest.policy
+        return self.matrix.catalog.policy(binding.scenario)
 
     def evaluate_binding(
         self,
@@ -116,8 +189,6 @@ class PolyglotFixtureContract:
         binding: LanguageScenarioBinding,
     ) -> tuple[ClaimResult, ...]:
         producer = self.evaluate_producer(application, language, code_map)
-        if not producer.satisfied:
-            return (producer,)
         if binding.projection is ScenarioProjectionKind.COMMON_REFERENCE:
             code_map = self.projector.project(
                 code_map, self.matrix.languages[language].reference_projection, self.matrix.reference_code_map
@@ -151,7 +222,7 @@ class PolyglotFixtureContract:
             if binding.projection is ScenarioProjectionKind.SOURCE_IDENTITIES and binding.fixture == fixture
         )
         return binding.expected_source(
-            self.matrix.catalog.expected[binding.scenario], FileId(scenario.source.value.as_posix())
+            self.matrix.catalog.code_map(binding.scenario), FileId(scenario.source.value.as_posix())
         )
 
     def evaluate_scenario(self, code_map: CodeMap, scenario: CapabilityScenario) -> tuple[ClaimResult, ...]:
@@ -169,7 +240,7 @@ class PolyglotFixtureContract:
         language = LanguageId(manifest.producer.extractor.language)
         binding = self.matrix.manifest_binding(language, scenario)
         expected = binding.expected_source(
-            self.matrix.catalog.expected[binding.scenario],
+            self.matrix.catalog.code_map(binding.scenario),
             FileId(scenario.source.value.relative_to(scenario.name.value).as_posix()),
         )
         return tuple(self.evaluator.evaluate_manifest(manifest, claim, expected) for claim in scenario.claims)

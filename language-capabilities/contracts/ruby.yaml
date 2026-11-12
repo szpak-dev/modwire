@@ -36,80 +36,54 @@ fixtures:
     root: tests/fixtures/code_map/parameter_kinds/ruby
     sources:
     - src/params.rb
+  structural:
+    root: tests/fixtures/structural_fidelity
+    sources:
+    - ruby/src/example.rb
+    - ruby_receivers/src/example.rb
 capabilities:
   sources:
     status: supported
-    explanation: Every included Ruby source is identified and hashed.
   symbols:
     status: partial
-    explanation: Classes, modules, and statically named constants are extracted.
   callables:
     status: partial
-    explanation: Instance methods, singleton methods, and constructors owned by statically named classes or modules
-      are extracted; aliases and generated methods are not.
   calls:
     status: partial
-    explanation: Calls owned by extracted methods are emitted; dynamic dispatch and runtime-generated targets
-      remain unresolved.
   parameters:
     status: partial
-    explanation: Positional, keyword, rest, keyword-rest, block, and forwarding parameters are normalized.
   type_references:
     status: supported
-    explanation: Every callable type slot is explicitly reported as absent because Ruby has no inline type syntax.
   annotations:
     status: unsupported
-    explanation: Ruby source annotations are not inferred.
   modifiers:
     status: partial
-    explanation: Authored method visibility and callable kind are normalized.
   attributes:
     status: unsupported
-    explanation: Ruby instance, class, and generated attributes are not extracted.
   assigned_values:
     status: unsupported
-    explanation: Ruby assigned-value relationship evidence is not extracted yet.
   inheritance:
     status: supported
-    explanation: Authored class superclass clauses are recorded.
   namespaces:
     status: partial
-    explanation: Statically named module declarations are extracted as namespaces.
   declaration_kinds:
     status: supported
-    explanation: Ruby classes, modules, and constants publish exact shared declaration kinds.
   composition:
     status: partial
-    explanation: Literal include, prepend, and extend composition is recorded.
   dependencies:
     status: partial
-    explanation: Literal require and require_relative dependencies are normalized without load-path or framework
-      inference.
   spans:
     status: partial
-    explanation: Callable spans are exact; other declarations expose line counts.
 relationships:
   declaration:
     semantics: partial
-    semantics_explanation: Authored superclass and literal module-composition relations are preserved without
-      refinements, metaprogramming, or framework inference.
     inventory: partial
-    inventory_explanation: Superclass, include, prepend, and extend sites are emitted, while dynamic composition
-      and reopened-definition merging are not available.
   member:
     semantics: partial
-    semantics_explanation: Authored methods and bounded same-file call targets are preserved without runtime
-      dispatch or generated members.
     inventory: partial
-    inventory_explanation: Declared method and static call evidence is emitted, but attributes and assigned-value
-      relationship evidence are not available.
   dependency:
     semantics: partial
-    semantics_explanation: Literal require and require_relative calls are normalized without Ruby load-path, Rails,
-      or Zeitwerk inference.
     inventory: partial
-    inventory_explanation: Authored literal loads are emitted, but dynamic loads and framework-generated
-      dependencies are not available.
 scenarios:
 - name: supported-contract
   fixture: extensions

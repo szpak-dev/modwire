@@ -35,81 +35,54 @@ fixtures:
     root: tests/fixtures/code_map/parameter_kinds/typescript
     sources:
     - src/params.ts
+  structural:
+    root: tests/fixtures/structural_fidelity
+    sources:
+    - typescript/src/example.ts
+    - typescript_payloads/src/example.ts
 capabilities:
   sources:
     status: supported
-    explanation: Every included TypeScript or JavaScript source is identified and hashed.
   symbols:
     status: supported
-    explanation: Classes, interfaces, types, functions, and values are extracted.
   callables:
     status: supported
-    explanation: Functions, methods, constructors, and callable values are extracted.
   calls:
     status: supported
-    explanation: Static calls owned by extracted callables are emitted with explicit resolved, external,
-      unresolved, or dynamic state.
   parameters:
     status: supported
-    explanation: Callable parameter order, kind, annotation, and default presence are extracted.
   type_references:
     status: partial
-    explanation: Named references and ordered generic arguments are structural; other authored type syntax is
-      reported as unsupported.
   annotations:
     status: partial
-    explanation: Class decorator expressions and declared type annotations are extracted; decorators on other
-      declarations are not yet emitted.
   modifiers:
     status: partial
-    explanation: Visibility intent, callable kind, and property member kind are normalized.
   attributes:
     status: supported
-    explanation: Class and type property identity, exact declared type, visibility, optionality, and member kind
-      are extracted.
   assigned_values:
     status: unsupported
-    explanation: TypeScript property assigned-value evidence is not extracted yet.
   inheritance:
     status: supported
-    explanation: Class and interface heritage clauses are recorded.
   namespaces:
     status: unsupported
-    explanation: TypeScript namespace declarations are not extracted yet.
   declaration_kinds:
     status: supported
-    explanation: Classes, interfaces, and type aliases publish exact shared declaration kinds.
   composition:
     status: partial
-    explanation: Extension and implementation heritage is extracted.
   dependencies:
     status: supported
-    explanation: Imports are normalized and resolved when targets are present.
   spans:
     status: partial
-    explanation: Callable spans are exact; other symbol facts expose line counts.
 relationships:
   declaration:
     semantics: partial
-    semantics_explanation: Authored extension and implementation heritage is preserved without resolving runtime
-      base aliases.
     inventory: supported
-    inventory_explanation: Every authored class and interface heritage clause in included TypeScript sources is
-      emitted deterministically.
   member:
     semantics: partial
-    semantics_explanation: Declared member and callable types and static calls are preserved without resolving
-      runtime types or framework ownership.
     inventory: partial
-    inventory_explanation: Declared type and static-call evidence is emitted, but assigned-value relationship
-      evidence is not available.
   dependency:
     semantics: supported
-    semantics_explanation: Authored import dependencies are normalized with explicit resolution state; dynamic
-      loading is excluded.
     inventory: supported
-    inventory_explanation: Every authored import declaration in included TypeScript and JavaScript sources is
-      emitted deterministically.
 scenarios:
 - name: supported-contract
   fixture: extensions

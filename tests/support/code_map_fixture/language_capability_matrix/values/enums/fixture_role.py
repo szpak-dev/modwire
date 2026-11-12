@@ -6,3 +6,4 @@ class FixtureRole(StrEnum):
     GAPS = "gaps"
     TYPES = "types"
     PARAMETERS = "parameters"
+    STRUCTURAL = "structural"

@@ -4,4 +4,4 @@ from ...fixture_root_model import FixtureRootModel
 
 
 class CapabilitySchemaVersion(FixtureRootModel[int]):
-    root: int = Field(ge=1, le=1)
+    root: int = Field(ge=2, le=2)

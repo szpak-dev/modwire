@@ -8,7 +8,7 @@ BIG_PROJECT_ARGS ?=
 export PYTHONPYCACHEPREFIX := $(PROJECT_ROOT)/$(DEV_DIR)/cache/python
 export UV_CACHE_DIR := $(PROJECT_ROOT)/$(DEV_DIR)/cache/uv
 
-.PHONY: big-projects build cache-benchmark ci docs docs-check docs-linkcheck docs-links docs-lock extractor-check format format-check host-check lint package-check report-benchmark scan-benchmark scan-benchmark-fixture test type-check
+.PHONY: big-projects build cache-benchmark ci docs docs-check docs-linkcheck docs-links docs-lock extraction-matrix extractor-check format format-check host-check lint package-check report-benchmark scan-benchmark scan-benchmark-fixture test type-check
 
 format:
 	uv run ruff format src tests scripts
@@ -25,6 +25,9 @@ type-check:
 test: docs-links
 	mkdir -p $(DEV_DIR)/testing
 	uv run pytest
+
+extraction-matrix:
+	uv run python -m tests.support.extraction_matrix . $(DEV_DIR)/reports/extraction-matrix.json
 
 big-projects:
 	uv run python -u -m tests.extraction.big_projects.run $(BIG_PROJECT_ARGS)

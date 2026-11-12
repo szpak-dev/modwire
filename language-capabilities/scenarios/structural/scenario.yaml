@@ -1,0 +1,10 @@
+kind: source_facts
+policy: {}
+sources:
+  python/src/example.py: language-capabilities/scenarios/structural/python/src/example.py.json
+  typescript/src/example.ts: language-capabilities/scenarios/structural/typescript/src/example.ts.json
+  typescript_payloads/src/example.ts: language-capabilities/scenarios/structural/typescript_payloads/src/example.ts.json
+  php/src/Example.php: language-capabilities/scenarios/structural/php/src/Example.php.json
+  java/src/Example.java: language-capabilities/scenarios/structural/java/src/Example.java.json
+  ruby/src/example.rb: language-capabilities/scenarios/structural/ruby/src/example.rb.json
+  ruby_receivers/src/example.rb: language-capabilities/scenarios/structural/ruby_receivers/src/example.rb.json

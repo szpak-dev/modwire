@@ -8,6 +8,8 @@ from pydantic_yaml import parse_yaml_raw_as
 from modwire.application import CodeMap, FileId, SourceExtraction, SourceFile
 
 from ..fixture_contract_error import FixtureContractError
+from ..scenario_contract_error import ScenarioContractError
+from ..scenario_violation import ScenarioViolation
 from .bundle import LanguageCapabilityBundle
 from .contracts.coverage.contract import LanguageContract
 from .documents.index import LanguageCapabilityIndex
@@ -15,8 +17,13 @@ from .documents.yaml_document import YamlDocument
 from .matrix import LanguageCapabilityMatrix
 from .oracle.binder import FixtureScenarioBinder
 from .oracle.catalog import FixtureScenarioCatalog
+from .oracle.code_map_expectation import CodeMapExpectation
 from .oracle.documents.catalog import ScenarioCatalogDocument
-from .oracle.documents.scenario import ScenarioCodeMapDocument
+from .oracle.documents.scenario import ScenarioDocument
+from .oracle.expected_scenario import ExpectedScenario
+from .oracle.scenario_kind import ScenarioKind
+from .oracle.source_facts import SourceFactExpectation
+from .oracle.source_facts_expectation import SourceFactsExpectation
 from .projections.reference_projection import ReferenceProjection
 from .values.names.identifier import Identifier
 from .values.names.scenario_id import ScenarioId
@@ -59,15 +66,26 @@ class LanguageCapabilityMatrixReader:
         catalog_path = repository / index.scenario_catalog.value
         document = self.read_document(catalog_path, ScenarioCatalogDocument)
         paths = {catalog_path}
-        expected: dict[ScenarioId, CodeMap] = {}
+        expected: dict[ScenarioId, ExpectedScenario] = {}
         source_documents: dict[ScenarioId, dict[FileId, RepositoryDocumentPath]] = {}
         producers: set[Identifier] = set()
         for name, path in document.scenarios.items():
             scenario_path = repository / path.value
             paths.add(scenario_path)
-            scenario = self.read_document(scenario_path, ScenarioCodeMapDocument)
+            scenario = self.read_document(scenario_path, ScenarioDocument).root
+            if scenario.kind is ScenarioKind.SOURCE_FACTS:
+                source_documents[name] = scenario.sources
+                sources = {
+                    source: self.read_json_document(repository / source_path.value, SourceFactExpectation)
+                    for source, source_path in scenario.sources.items()
+                }
+                paths.update(repository / path.value for path in scenario.sources.values())
+                expected[name] = ExpectedScenario(
+                    SourceFactsExpectation(kind=ScenarioKind.SOURCE_FACTS, sources=sources, policy=scenario.policy)
+                )
+                continue
             if scenario.producer not in document.producers:
-                raise ValueError(f"{name.value} names an unknown oracle producer")
+                raise ScenarioContractError(ScenarioViolation.UNKNOWN_PRODUCER, name.value)
             producers.add(scenario.producer)
             source_documents[name] = scenario.extraction.files
             files = {
@@ -76,7 +94,7 @@ class LanguageCapabilityMatrixReader:
             }
             paths.update(repository / path.value for path in scenario.extraction.files.values())
             producer = document.producers[scenario.producer]
-            expected[name] = CodeMap(
+            code_map = CodeMap(
                 language=producer.extractor.language,
                 producer=producer,
                 extraction=SourceExtraction(
@@ -89,10 +107,17 @@ class LanguageCapabilityMatrixReader:
                 ),
                 dependency_graph=scenario.dependency_graph,
             )
+            expected[name] = ExpectedScenario(CodeMapExpectation(kind=ScenarioKind.CODE_MAP, code_map=code_map))
         self.validate_catalog_inventory(catalog_path.parent, paths)
         if producers != set(document.producers):
-            raise ValueError("oracle producer definitions contain unused entries")
-        return FixtureScenarioCatalog(expected=expected, source_documents=source_documents)
+            raise ScenarioContractError(ScenarioViolation.UNUSED_PRODUCER, str(catalog_path))
+        return FixtureScenarioCatalog(
+            expected=expected,
+            source_documents=source_documents,
+            obligations=document.obligations,
+            model_gaps=document.model_gaps,
+            reviewed_gaps=document.reviewed_gaps,
+        )
 
     def validate_catalog_inventory(self, root: Path, paths: set[Path]) -> None:
         if any(not path.is_relative_to(root) for path in paths):

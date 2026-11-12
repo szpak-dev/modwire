@@ -3,12 +3,13 @@ from typing import Literal
 from modwire.application import CodeMap, FileId
 
 from ....fixture_model import FixtureModel
+from ..fact_selector_kind import FactSelectorKind
 from ..identities import FixtureSourceIdentities
 from ..observation import PublicFactObservation
 
 
 class SourceFileSelector(FixtureModel):
-    kind: Literal["source_file"]
+    kind: Literal[FactSelectorKind.SOURCE_FILE]
     source: FileId
 
     def read_expected(self, code_map: CodeMap) -> PublicFactObservation:
