@@ -11,8 +11,8 @@ from ...models.parsed_source_file import ParsedSourceFile
 from ...models.source_parse_error import SourceParseError
 from ..observations.source_context import PythonSourceContext
 from ..semantics.reader import PythonSemanticReader
-from ..source_facts.reader import PythonSourceFactReader
 from ..traversal.observation_reader import PythonObservationReader
+from .source_assembler import PythonSourceAssembler
 
 
 @injectable(as_type=SourceParser, qualifier="python")
@@ -20,7 +20,7 @@ from ..traversal.observation_reader import PythonObservationReader
 class PythonSyntaxParser(SourceParser):
     observations: PythonObservationReader
     semantics: PythonSemanticReader
-    facts: PythonSourceFactReader
+    assembler: PythonSourceAssembler
 
     def extract(self, content: str, path: str, sources_root: str, source_id: FileId) -> ParsedSourceFile:
         context = PythonSourceContext(
@@ -46,4 +46,4 @@ class PythonSyntaxParser(SourceParser):
             ) from error
         observation = self.observations.read(tree)
         catalog = self.semantics.read(observation, context)
-        return self.facts.read(catalog, context)
+        return self.assembler.assemble(catalog)

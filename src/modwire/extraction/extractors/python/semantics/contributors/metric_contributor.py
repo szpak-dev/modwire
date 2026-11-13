@@ -7,15 +7,12 @@ from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
 from ..catalog import PythonSemanticCatalog
 from ..contribution import PythonSemanticContribution
-from ..policies.visibility_policy import PythonVisibilityPolicy
 from ..reader import PythonSemanticContributor
 
 
 @injectable(as_type=PythonSemanticContributor, qualifier="100-metric")
 @dataclass(frozen=True)
 class MetricSemanticContributor(PythonSemanticContributor):
-    visibility: PythonVisibilityPolicy
-
     @property
     def order(self) -> int:
         return 100
@@ -26,20 +23,20 @@ class MetricSemanticContributor(PythonSemanticContributor):
         catalog: PythonSemanticCatalog,
         context: PythonSourceContext,
     ) -> PythonSemanticContribution:
+        module_classes = {candidate.ordinal for candidate in observation.classes if candidate.module_level}
         public_classes = sum(
             1
-            for candidate in observation.classes
+            for declaration in catalog.declarations
             if (
-                candidate.module_level
-                and self.visibility.classify(candidate.node.name) is SourceVisibility.PUBLIC
-                and not candidate.node.name.startswith("_")
+                declaration.declaration_id.ordinal in module_classes
+                and declaration.visibility_intent is SourceVisibility.PUBLIC
+                and not declaration.name.startswith("_")
             )
         )
         public_functions = sum(
             1
-            for candidate in observation.functions
-            if self.visibility.classify(candidate.node.name) is SourceVisibility.PUBLIC
-            and not candidate.node.name.startswith("_")
+            for function in catalog.functions
+            if function.visibility_intent is SourceVisibility.PUBLIC and not function.name.startswith("_")
         )
         return PythonSemanticContribution(
             line_count=len(context.content.splitlines()),
