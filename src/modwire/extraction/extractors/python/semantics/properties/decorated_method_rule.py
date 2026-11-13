@@ -29,7 +29,7 @@ class DecoratedMethodPropertyRule(PythonPropertyRule):
         return 50
 
     def applies(self, candidate: PythonPropertyCandidate) -> bool:
-        return not self.is_class_target(candidate.target) and self.has_property_decorator(candidate.statement)
+        return self.is_observed_method(candidate.statement)
 
     def classify(
         self,
@@ -42,16 +42,13 @@ class DecoratedMethodPropertyRule(PythonPropertyRule):
         return self.read(candidate.statement, candidate, declaration_id, owner_declaration_id, member_kind, placement)
 
     @singledispatchmethod
-    def has_property_decorator(self, statement: ast.stmt) -> bool:
+    def is_observed_method(self, statement: ast.stmt) -> bool:
         return False
 
-    @has_property_decorator.register
-    def function_has_property_decorator(self, statement: ast.FunctionDef) -> bool:
-        return any(ast.unparse(item).rsplit(".", 1)[-1] == "property" for item in statement.decorator_list)
-
-    @has_property_decorator.register
-    def async_function_has_property_decorator(self, statement: ast.AsyncFunctionDef) -> bool:
-        return any(ast.unparse(item).rsplit(".", 1)[-1] == "property" for item in statement.decorator_list)
+    @is_observed_method.register(ast.FunctionDef)
+    @is_observed_method.register(ast.AsyncFunctionDef)
+    def observed_method(self, statement: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+        return True
 
     @singledispatchmethod
     def read(
@@ -67,31 +64,9 @@ class DecoratedMethodPropertyRule(PythonPropertyRule):
             ExtractorInvariantViolation.DECORATED_METHOD_PROPERTY_REQUIRES_FUNCTION, candidate.name
         )
 
-    @read.register
+    @read.register(ast.FunctionDef)
+    @read.register(ast.AsyncFunctionDef)
     def read_function(
-        self,
-        statement: ast.FunctionDef,
-        candidate: PythonPropertyCandidate,
-        declaration_id: DeclarationIdentity,
-        owner_declaration_id: DeclarationIdentity,
-        member_kind: SourceMemberKind,
-        placement: SourcePlacement,
-    ) -> SourceClassProperty:
-        return self.build_method(statement, candidate, declaration_id, owner_declaration_id, member_kind, placement)
-
-    @read.register
-    def read_async_function(
-        self,
-        statement: ast.AsyncFunctionDef,
-        candidate: PythonPropertyCandidate,
-        declaration_id: DeclarationIdentity,
-        owner_declaration_id: DeclarationIdentity,
-        member_kind: SourceMemberKind,
-        placement: SourcePlacement,
-    ) -> SourceClassProperty:
-        return self.build_method(statement, candidate, declaration_id, owner_declaration_id, member_kind, placement)
-
-    def build_method(
         self,
         statement: ast.FunctionDef | ast.AsyncFunctionDef,
         candidate: PythonPropertyCandidate,

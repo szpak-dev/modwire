@@ -39,24 +39,19 @@ class CodeMapManifestCompiler(ManifestCompiler):
     def symbol(
         self,
         declaration_id: DeclarationIdentity,
-        namespace: str,
+        placement: SourcePlacement,
+        import_identity: str,
         kind: SourceSymbolKind,
         visibility: SourceVisibility,
     ) -> ManifestSymbol:
         return ManifestSymbol(
             id=declaration_id,
             qualified_name=declaration_id.qualified_name
-            if declaration_id.qualified_name.startswith(f"{namespace}.")
-            else f"{namespace}.{declaration_id.qualified_name}",
+            if placement.namespace.kind is SourceNamespaceMembershipKind.MEMBER
+            else f"{import_identity}.{declaration_id.qualified_name}",
             kind=kind,
             visibility=visibility,
         )
-
-    def namespace(self, placement: SourcePlacement, import_identity: str) -> str:
-        namespace = placement.namespace
-        if namespace.kind is SourceNamespaceMembershipKind.MEMBER:
-            return namespace.namespace_reference
-        return import_identity
 
     def attribute_id(self, owner_symbol_id: DeclarationIdentity, name: str) -> str:
         return f"{owner_symbol_id.canonical()}::attribute:{name}"
@@ -84,7 +79,8 @@ class CodeMapManifestCompiler(ManifestCompiler):
                 symbols.append(
                     self.symbol(
                         declaration.declaration_id,
-                        self.namespace(declaration.placement, import_identity),
+                        declaration.placement,
+                        import_identity,
                         declaration.kind,
                         declaration.visibility,
                     )
@@ -96,7 +92,8 @@ class CodeMapManifestCompiler(ManifestCompiler):
                 symbols.append(
                     self.symbol(
                         function.declaration_id,
-                        self.namespace(function.placement, import_identity),
+                        function.placement,
+                        import_identity,
                         SourceSymbolKind.FUNCTION,
                         function.visibility,
                     )
@@ -106,7 +103,8 @@ class CodeMapManifestCompiler(ManifestCompiler):
                 symbols.append(
                     self.symbol(
                         value.declaration_id,
-                        self.namespace(value.placement, import_identity),
+                        value.placement,
+                        import_identity,
                         value.value_kind,
                         value.visibility,
                     )
@@ -119,7 +117,8 @@ class CodeMapManifestCompiler(ManifestCompiler):
                     symbols.append(
                         self.symbol(
                             callable_id,
-                            self.namespace(callable_value.placement, import_identity),
+                            callable_value.placement,
+                            import_identity,
                             SourceSymbolKind.CALLABLE,
                             callable_value.visibility,
                         )

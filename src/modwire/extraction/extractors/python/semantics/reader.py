@@ -8,6 +8,7 @@ from wireup import injectable
 from .....shared.code.models.callables.source_callable_kind import SourceCallableKind
 from .....shared.code.models.declarations.declaration_family import DeclarationFamily
 from .....shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from .....shared.code.models.declarations.source_unresolved_reason import SourceUnresolvedReason
 from ..observations.source_context import PythonSourceContext
 from ..observations.source_observation import PythonSourceObservation
 from .callables.classifier import PythonCallableClassifier
@@ -59,6 +60,19 @@ class OrderedPythonSemanticReader(PythonSemanticReader):
         identities: dict[ast.AST, DeclarationIdentity] = {}
         scopes: dict[ast.AST, ast.AST] = {}
         kinds: dict[ast.AST, SourceCallableKind] = {}
+        unresolved = {
+            scope: {name: SourceUnresolvedReason.DYNAMIC for name in names}
+            for scope, names in observation.unresolved_bindings.items()
+        }
+        wildcard_scopes: set[ast.AST] = set()
+        for imported in observation.imports:
+            if imported.alias.name == "*":
+                wildcard_scopes.add(imported.binding_scope)
+                continue
+            if imported.binding_scope not in unresolved:
+                unresolved[imported.binding_scope] = {}
+            name = imported.alias.asname or imported.alias.name.split(".", 1)[0]
+            unresolved[imported.binding_scope][name] = SourceUnresolvedReason.EXTERNAL
         for declaration in observation.classes:
             identities[declaration.node] = self.identities.create(
                 context, self.classes.classify(declaration), declaration.qualified_name, declaration.ordinal
@@ -83,5 +97,10 @@ class OrderedPythonSemanticReader(PythonSemanticReader):
                 identities[value.target] = self.identities.create(context, family, value.qualified_name, value.ordinal)
                 scopes[value.target] = value.binding_scope
         return PythonSemanticCatalog(
-            scope_identities=identities, binding_scopes=scopes, callable_kinds=kinds, inventory=observation.inventory
+            scope_identities=identities,
+            binding_scopes=scopes,
+            callable_kinds=kinds,
+            inventory=observation.inventory,
+            unresolved_bindings=unresolved,
+            wildcard_scopes=frozenset(wildcard_scopes),
         )

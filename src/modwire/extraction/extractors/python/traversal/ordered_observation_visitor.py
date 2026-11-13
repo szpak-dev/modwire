@@ -33,6 +33,7 @@ class OrderedObservationVisitor:
     inventory: PythonInventoryEvidence = field(default_factory=PythonInventoryEvidence)
     lambda_bindings: dict[ast.Lambda, ast.Name] = field(default_factory=dict[ast.Lambda, ast.Name])
     call_ordinals: dict[ast.AST, int] = field(default_factory=dict[ast.AST, int])
+    unresolved_bindings: dict[ast.AST, set[str]] = field(default_factory=dict[ast.AST, set[str]])
 
     def read(self, tree: ast.Module) -> PythonSourceObservation:
         self.visit(tree, 0, PythonTraversalContext(tree, ""))
@@ -46,6 +47,7 @@ class OrderedObservationVisitor:
             properties=tuple(self.properties),
             declaration_relations=tuple(self.declaration_relations),
             inventory=self.inventory,
+            unresolved_bindings=self.unresolved_bindings,
         )
 
     def qualified_name(self, context: PythonTraversalContext, name: str) -> str:
@@ -101,7 +103,7 @@ class OrderedObservationVisitor:
             self.source_span(node),
         )
         self.callables.append(candidate)
-        self.observe_property_method(context.binding_scope, node)
+        self.observe_property_method(context.binding_scope, node, candidate.source_span, ordinal)
         for expression in (*node.decorator_list, *node.args.defaults):
             self.visit(expression, depth + 1, context)
         for expression in node.args.kw_defaults:
@@ -112,17 +114,17 @@ class OrderedObservationVisitor:
             self.visit(statement, depth + 1, nested)
 
     @singledispatchmethod
-    def observe_property_method(self, scope: ast.AST, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
+    def observe_property_method(
+        self, scope: ast.AST, node: ast.FunctionDef | ast.AsyncFunctionDef, span: tuple[int, int], ordinal: int
+    ) -> None:
         return
 
     @observe_property_method.register
-    def class_property_method(self, scope: ast.ClassDef, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
+    def class_property_method(
+        self, scope: ast.ClassDef, node: ast.FunctionDef | ast.AsyncFunctionDef, span: tuple[int, int], ordinal: int
+    ) -> None:
         if any(ast.unparse(decorator).rsplit(".", 1)[-1] == "property" for decorator in node.decorator_list):
-            self.properties.append(
-                PythonPropertyCandidate(
-                    node, scope, node.name, self.source_span(node), self.declaration_ordinal(node), node
-                )
-            )
+            self.properties.append(PythonPropertyCandidate(node, scope, node.name, span, ordinal, node))
 
     @visit.register
     def visit_Lambda(self, node: ast.Lambda, depth: int, context: PythonTraversalContext) -> None:
@@ -153,6 +155,7 @@ class OrderedObservationVisitor:
 
     @visit.register
     def visit_Call(self, node: ast.Call, depth: int, context: PythonTraversalContext) -> None:
+        self.observe_export_mutation(node.func, node, context)
         self.observe_call(context.binding_scope, node)
         for child in ast.iter_child_nodes(node):
             self.visit(child, depth + 1, context)
@@ -204,6 +207,8 @@ class OrderedObservationVisitor:
     def observe_assignment(
         self, target: ast.expr, statement: ast.Assign | ast.AnnAssign, context: PythonTraversalContext
     ) -> None:
+        self.observe_export_mutation(target, statement, context)
+        self.visit(target, 0, context)
         limitation = self.inventory_limitation(
             statement,
             InventoryLimitationKind.UNSUPPORTED_SYNTAX,
@@ -312,6 +317,7 @@ class OrderedObservationVisitor:
     @visit.register
     def visit_exception_handler(self, node: ast.ExceptHandler, depth: int, context: PythonTraversalContext) -> None:
         if node.name is not None:
+            self.record_unresolved_binding(node.name, context)
             limitation = InventoryLimitation(
                 kind=InventoryLimitationKind.UNSUPPORTED_SYNTAX,
                 location=InventorySourceLocation(start_line=node.lineno, end_line=node.lineno),
@@ -357,8 +363,96 @@ class OrderedObservationVisitor:
         self.inventory.values.append(limitation)
         self.inventory.callable_values.append(limitation)
         self.limit_property_scope(context.binding_scope, limitation)
+        self.observe_export_mutation(node, node, context)
         for child in ast.iter_child_nodes(node):
             self.visit(child, depth + 1, context)
+
+    @visit.register
+    def visit_Name(self, node: ast.Name, depth: int, context: PythonTraversalContext) -> None:
+        self.observe_unresolved_binding(node.ctx, node.id, context)
+
+    @singledispatchmethod
+    def observe_unresolved_binding(
+        self, operation: ast.expr_context, name: str, context: PythonTraversalContext
+    ) -> None:
+        return
+
+    @observe_unresolved_binding.register(ast.Store)
+    @observe_unresolved_binding.register(ast.Del)
+    def unresolved_name_binding(
+        self, operation: ast.Store | ast.Del, name: str, context: PythonTraversalContext
+    ) -> None:
+        self.record_unresolved_binding(name, context)
+
+    def record_unresolved_binding(self, name: str, context: PythonTraversalContext) -> None:
+        if context.binding_scope not in self.unresolved_bindings:
+            self.unresolved_bindings[context.binding_scope] = set()
+        self.unresolved_bindings[context.binding_scope].add(name)
+
+    @visit.register(ast.Global)
+    @visit.register(ast.Nonlocal)
+    def visit_scope_directive(
+        self, node: ast.Global | ast.Nonlocal, depth: int, context: PythonTraversalContext
+    ) -> None:
+        for name in node.names:
+            self.record_unresolved_binding(name, context)
+
+    @visit.register(ast.MatchAs)
+    @visit.register(ast.MatchStar)
+    def visit_pattern_binding(
+        self, node: ast.MatchAs | ast.MatchStar, depth: int, context: PythonTraversalContext
+    ) -> None:
+        if node.name is not None:
+            self.record_unresolved_binding(node.name, context)
+        for child in ast.iter_child_nodes(node):
+            self.visit(child, depth + 1, context)
+
+    @visit.register
+    def visit_mapping_binding(self, node: ast.MatchMapping, depth: int, context: PythonTraversalContext) -> None:
+        if node.rest is not None:
+            self.record_unresolved_binding(node.rest, context)
+        for child in ast.iter_child_nodes(node):
+            self.visit(child, depth + 1, context)
+
+    @singledispatchmethod
+    def observe_export_mutation(
+        self, target: ast.AST, node: ast.stmt | ast.expr, context: PythonTraversalContext
+    ) -> None:
+        return
+
+    @observe_export_mutation.register
+    def augmented_export_mutation(
+        self, target: ast.AugAssign, node: ast.stmt | ast.expr, context: PythonTraversalContext
+    ) -> None:
+        self.observe_export_mutation(target.target, node, context)
+
+    @observe_export_mutation.register(ast.Attribute)
+    @observe_export_mutation.register(ast.Subscript)
+    def attribute_export_mutation(
+        self, target: ast.Attribute | ast.Subscript, node: ast.stmt | ast.expr, context: PythonTraversalContext
+    ) -> None:
+        self.observe_export_mutation(target.value, node, context)
+
+    @observe_export_mutation.register
+    def named_export_mutation(
+        self, target: ast.Name, node: ast.stmt | ast.expr, context: PythonTraversalContext
+    ) -> None:
+        if target.id == "__all__":
+            self.limit_exports(context.binding_scope, node)
+
+    @singledispatchmethod
+    def limit_exports(self, scope: ast.AST, node: ast.stmt | ast.expr) -> None:
+        return
+
+    @limit_exports.register
+    def limit_module_exports(self, scope: ast.Module, node: ast.stmt | ast.expr) -> None:
+        self.inventory.exports.append(
+            self.inventory_limitation(
+                node,
+                InventoryLimitationKind.DYNAMIC_STRUCTURE,
+                "Explicit export bindings are mutated outside a literal assignment.",
+            )
+        )
 
     @singledispatchmethod
     def limit_property_scope(self, scope: ast.AST, limitation: InventoryLimitation) -> None:

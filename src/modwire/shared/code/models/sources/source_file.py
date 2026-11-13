@@ -55,21 +55,12 @@ class SourceFile(ValueModel):
             (self.values, DeclarationFamily.VALUE),
         )
         for declarations, family in declarations_by_family:
-            identities = tuple(item.declaration_id.canonical() for item in declarations)
-            if len(identities) != len(set(identities)):
-                raise CodeValidationError(CodeViolation.DUPLICATE_DECLARATION_IDENTITY, str(self.file_id))
-            if any(item.declaration_id.source_id != self.file_id for item in declarations):
-                raise CodeValidationError(CodeViolation.FOREIGN_DECLARATION_IDENTITY, str(self.file_id))
             if family is not None and any(item.declaration_id.family is not family for item in declarations):
                 raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_FAMILY, str(self.file_id))
         if any(self.declaration_family(item.kind) is not item.declaration_id.family for item in self.declarations):
             raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_KIND, str(self.file_id))
         callables = self.canonical_callables()
         callable_identities = tuple(item.declaration_id.canonical() for item in callables)
-        if len(callable_identities) != len(set(callable_identities)):
-            raise CodeValidationError(CodeViolation.DUPLICATE_CALLABLE_IDENTITY, str(self.file_id))
-        if any(item.declaration_id.source_id != self.file_id for item in callables):
-            raise CodeValidationError(CodeViolation.FOREIGN_CALLABLE_IDENTITY, str(self.file_id))
         call_identities = tuple(item.identity() for item in self.calls)
         if len(call_identities) != len(set(call_identities)):
             raise CodeValidationError(CodeViolation.DUPLICATE_CALL, str(self.file_id))

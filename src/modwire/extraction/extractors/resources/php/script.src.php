@@ -522,15 +522,16 @@ function source_text(Node $node, string $content): string {
     return substr($content, $node->getStartFilePos(), $node->getEndFilePos() - $node->getStartFilePos() + 1);
 }
 
-function collect_imports(array $nodes, string $content): array {
+function collect_imports(array $nodes, string $content, PhpStructuralIndex $index): array {
     $imports = [];
     $statementId = 0;
 
-    walk_nodes($nodes, function (Node $node, array $parents) use ($content, &$imports, &$statementId): void {
+    walk_nodes($nodes, function (Node $node, array $parents) use ($content, $index, &$imports, &$statementId): void {
         if (!$node instanceof Stmt\Use_ && !$node instanceof Stmt\GroupUse) {
             return;
         }
-        if (!is_top_level($parents)) {
+        $scope = $index->nearestIdentity($index->parents[spl_object_id($node)]);
+        if ($scope !== null && $scope['family'] !== 'namespace') {
             return;
         }
 
@@ -830,7 +831,7 @@ function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRo
     $inventory['unresolved_methods'] = inventory_coverage([], 'not_applicable');
 
     return [
-        'imports' => collect_imports($nodes, $content),
+        'imports' => collect_imports($nodes, $content, $index),
         'exports' => $definitions['exports'],
         'namespaces' => $index->namespaces,
         'inventory' => $inventory,

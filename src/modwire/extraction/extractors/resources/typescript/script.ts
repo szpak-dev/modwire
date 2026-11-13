@@ -239,6 +239,11 @@ class TypeScriptExtractor {
             visibility: 'public', visibility_intent: 'public', declaration_annotations: this.decorators(node), line_count: this.lineCount(node),
             methods: [], abstract_methods: [], properties: [], signatures: [], placement: this.placement(node), inventory: { methods: this.coverage(), abstract_methods: this.coverage(), properties: this.coverage(), signatures: this.coverage() } };
         const members = ts.isTypeAliasDeclaration(node) ? (ts.isTypeLiteralNode(node.type) ? node.type.members : []) : node.members;
+        if (ts.isTypeAliasDeclaration(node)) {
+            let type = node.type;
+            while (ts.isParenthesizedTypeNode(type)) type = type.type;
+            if (ts.isFunctionTypeNode(type) || ts.isConstructorTypeNode(type)) fact.signatures.push(this.emitSignature(type, ts.isFunctionTypeNode(type) ? 'call' : 'construct'));
+        }
         for (const member of members) {
             const callable = this.callables.get(member);
             if (callable !== undefined) {
@@ -251,13 +256,17 @@ class TypeScriptExtractor {
             if (ts.isConstructorDeclaration(member)) for (const parameter of member.parameters) {
                 if ([ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ReadonlyKeyword].some(kind => this.modifier(parameter, kind))) fact.properties.push(this.emitProperty(parameter, fact));
             }
-            if (ts.isCallSignatureDeclaration(member) || ts.isConstructSignatureDeclaration(member) || ts.isIndexSignatureDeclaration(member)) fact.signatures.push({ kind: ts.isCallSignatureDeclaration(member) ? 'call' : ts.isConstructSignatureDeclaration(member) ? 'construct' : 'index', line_count: this.lineCount(member), declared_args: member.parameters.length, optional_args: member.parameters.filter(parameter => parameter.questionToken !== undefined || parameter.initializer !== undefined).length });
+            if (ts.isCallSignatureDeclaration(member) || ts.isConstructSignatureDeclaration(member) || ts.isIndexSignatureDeclaration(member)) fact.signatures.push(this.emitSignature(member, ts.isCallSignatureDeclaration(member) ? 'call' : ts.isConstructSignatureDeclaration(member) ? 'construct' : 'index'));
         }
         if (ts.isClassDeclaration(node) || ts.isClassExpression(node) || ts.isInterfaceDeclaration(node)) for (const clause of node.heritageClauses ?? []) for (const type of clause.types) {
             const reference = type.expression.getText(this.source);
             this.relations.push({ source_declaration_id: identity, kind: clause.token === ts.SyntaxKind.ExtendsKeyword ? 'extends' : 'implements', target_reference: reference, target: this.resolve(reference, node) });
         }
         return fact;
+    }
+    emitSignature(node: ts.SignatureDeclaration, kind: Signature['kind']): Signature {
+        return { kind, line_count: this.lineCount(node), declared_args: node.parameters.length,
+            optional_args: node.parameters.filter(parameter => parameter.questionToken !== undefined || parameter.initializer !== undefined).length };
     }
     normalized(specifier: string): string {
         return specifier.startsWith('.') ? path.relative(this.root, path.resolve(path.dirname(this.filePath), specifier)).split(path.sep).join('/').replace(/\.[^/.]+$/, '') : specifier;

@@ -1,3 +1,4 @@
+import ast
 from dataclasses import dataclass
 
 from .call_observation import PythonCallObservation
@@ -22,3 +23,4 @@ class PythonSourceObservation:
     properties: tuple[PythonPropertyCandidate, ...]
     declaration_relations: tuple[PythonDeclarationRelationCandidate, ...]
     inventory: PythonInventoryEvidence
+    unresolved_bindings: dict[ast.AST, set[str]]

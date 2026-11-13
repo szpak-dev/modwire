@@ -34,6 +34,8 @@ class PythonSemanticCatalog:
     binding_scopes: dict[ast.AST, ast.AST]
     callable_kinds: dict[ast.AST, SourceCallableKind]
     inventory: PythonInventoryEvidence
+    unresolved_bindings: dict[ast.AST, dict[str, SourceUnresolvedReason]]
+    wildcard_scopes: frozenset[ast.AST]
     imports: tuple[SourceImport, ...] = field(default_factory=tuple)
     exports: tuple[SourceExport, ...] = field(default_factory=tuple)
     namespaces: tuple[SourceNamespace, ...] = field(default_factory=tuple)
@@ -62,6 +64,8 @@ class PythonSemanticCatalog:
             binding_scopes=self.binding_scopes,
             callable_kinds=self.callable_kinds,
             inventory=self.inventory,
+            unresolved_bindings=self.unresolved_bindings,
+            wildcard_scopes=self.wildcard_scopes,
             imports=(*self.imports, *contribution.imports),
             exports=(*self.exports, *contribution.exports),
             namespaces=(*self.namespaces, *contribution.namespaces),
@@ -142,19 +146,24 @@ class PythonSemanticCatalog:
     def resolve(self, reference: str, binding_scope: ast.AST) -> SourceResolvedTarget | SourceUnresolvedTarget:
         parts = reference.split(".")
         scope = binding_scope
-        if parts[0] == self.receiver_name(scope):
-            if any(
-                parent is scope
-                and node in self.scope_identities
-                and self.scope_identities[node].qualified_name.rsplit(".", 1)[-1] == parts[0]
-                for node, parent in self.binding_scopes.items()
-            ):
-                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.DYNAMIC)
-            scope = self.binding_scopes[scope]
-            if len(parts) == 1:
-                return SourceResolvedTarget(declaration_id=self.scope_identities[scope])
-            parts = parts[1:]
         while True:
+            if scope in self.unresolved_bindings and parts[0] in self.unresolved_bindings[scope]:
+                return SourceUnresolvedTarget(reason=self.unresolved_bindings[scope][parts[0]])
+            if scope in self.wildcard_scopes:
+                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.EXTERNAL)
+            if parts[0] == self.receiver_name(scope):
+                if any(
+                    parent is scope
+                    and node in self.scope_identities
+                    and self.scope_identities[node].qualified_name.rsplit(".", 1)[-1] == parts[0]
+                    for node, parent in self.binding_scopes.items()
+                ):
+                    return SourceUnresolvedTarget(reason=SourceUnresolvedReason.DYNAMIC)
+                scope = self.binding_scopes[scope]
+                if len(parts) == 1:
+                    return SourceResolvedTarget(declaration_id=self.scope_identities[scope])
+                parts = parts[1:]
+                continue
             if parts[0] in self.parameter_names(scope):
                 return SourceUnresolvedTarget(reason=SourceUnresolvedReason.DYNAMIC)
             matches = tuple(
