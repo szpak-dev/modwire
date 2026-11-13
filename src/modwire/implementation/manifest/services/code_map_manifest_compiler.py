@@ -6,6 +6,8 @@ from wireup import injectable
 from ....shared.code.models.callables.source_call import SourceCall
 from ....shared.code.models.declarations.declaration_identity import DeclarationIdentity
 from ....shared.code.models.declarations.source_declaration import SourceDeclaration
+from ....shared.code.models.declarations.source_namespace_membership_kind import SourceNamespaceMembershipKind
+from ....shared.code.models.declarations.source_placement import SourcePlacement
 from ....shared.code.models.declarations.source_symbol_kind import SourceSymbolKind
 from ....shared.code.models.declarations.source_visibility import SourceVisibility
 from ....shared.code.models.dependencies.source_dependency_resolution import SourceDependencyResolution
@@ -43,10 +45,18 @@ class CodeMapManifestCompiler(ManifestCompiler):
     ) -> ManifestSymbol:
         return ManifestSymbol(
             id=declaration_id,
-            qualified_name=f"{namespace}.{declaration_id.qualified_name}",
+            qualified_name=declaration_id.qualified_name
+            if declaration_id.qualified_name.startswith(f"{namespace}.")
+            else f"{namespace}.{declaration_id.qualified_name}",
             kind=kind,
             visibility=visibility,
         )
+
+    def namespace(self, placement: SourcePlacement, import_identity: str) -> str:
+        namespace = placement.namespace
+        if namespace.kind is SourceNamespaceMembershipKind.MEMBER:
+            return namespace.namespace_reference
+        return import_identity
 
     def attribute_id(self, owner_symbol_id: DeclarationIdentity, name: str) -> str:
         return f"{owner_symbol_id.canonical()}::attribute:{name}"
@@ -70,18 +80,11 @@ class CodeMapManifestCompiler(ManifestCompiler):
             namespaces.update(
                 ManifestNamespace(kind=item.kind, qualified_name=item.qualified_name) for item in source_file.namespaces
             )
-            namespace = (
-                max(
-                    source_file.namespaces, key=lambda item: (len(item.qualified_name), item.qualified_name)
-                ).qualified_name
-                if source_file.namespaces
-                else import_identity
-            )
             for declaration in source_file.declarations:
                 symbols.append(
                     self.symbol(
                         declaration.declaration_id,
-                        namespace,
+                        self.namespace(declaration.placement, import_identity),
                         declaration.kind,
                         declaration.visibility,
                     )
@@ -93,14 +96,21 @@ class CodeMapManifestCompiler(ManifestCompiler):
                 symbols.append(
                     self.symbol(
                         function.declaration_id,
-                        namespace,
+                        self.namespace(function.placement, import_identity),
                         SourceSymbolKind.FUNCTION,
                         function.visibility,
                     )
                 )
                 symbol_ids.add(function.declaration_id.canonical())
             for value in source_file.values:
-                symbols.append(self.symbol(value.declaration_id, namespace, value.value_kind, value.visibility))
+                symbols.append(
+                    self.symbol(
+                        value.declaration_id,
+                        self.namespace(value.placement, import_identity),
+                        value.value_kind,
+                        value.visibility,
+                    )
+                )
                 symbol_ids.add(value.declaration_id.canonical())
             for callable_value in source_file.canonical_callables():
                 callable_id = callable_value.declaration_id
@@ -109,7 +119,7 @@ class CodeMapManifestCompiler(ManifestCompiler):
                     symbols.append(
                         self.symbol(
                             callable_id,
-                            namespace,
+                            self.namespace(callable_value.placement, import_identity),
                             SourceSymbolKind.CALLABLE,
                             callable_value.visibility,
                         )

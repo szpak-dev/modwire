@@ -5,12 +5,12 @@ from functools import singledispatchmethod
 from wireup import injectable
 
 from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ......shared.code.models.declarations.source_placement import SourcePlacement
 from ......shared.code.models.values.source_class_property import SourceClassProperty
 from ......shared.code.models.values.source_member_kind import SourceMemberKind
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.property_candidate import PythonPropertyCandidate
-from ...observations.property_scope import PythonPropertyScope
 from ..policies.assigned_value_reader import PythonAssignedValueReader
 from ..policies.source_type_reader import PythonSourceTypeReader
 from ..policies.visibility_policy import PythonVisibilityPolicy
@@ -29,15 +29,17 @@ class DecoratedMethodPropertyRule(PythonPropertyRule):
         return 50
 
     def applies(self, candidate: PythonPropertyCandidate) -> bool:
-        return candidate.scope is PythonPropertyScope.METHOD and self.has_property_decorator(candidate.statement)
+        return not self.is_class_target(candidate.target) and self.has_property_decorator(candidate.statement)
 
     def classify(
         self,
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
     ) -> SourceClassProperty:
-        return self.read(candidate.statement, candidate, declaration_id, owner_declaration_id)
+        return self.read(candidate.statement, candidate, declaration_id, owner_declaration_id, member_kind, placement)
 
     @singledispatchmethod
     def has_property_decorator(self, statement: ast.stmt) -> bool:
@@ -58,6 +60,8 @@ class DecoratedMethodPropertyRule(PythonPropertyRule):
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
     ) -> SourceClassProperty:
         raise ExtractorInvariantError(
             ExtractorInvariantViolation.DECORATED_METHOD_PROPERTY_REQUIRES_FUNCTION, candidate.name
@@ -70,8 +74,10 @@ class DecoratedMethodPropertyRule(PythonPropertyRule):
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
     ) -> SourceClassProperty:
-        return self.build_method(statement, candidate, declaration_id, owner_declaration_id)
+        return self.build_method(statement, candidate, declaration_id, owner_declaration_id, member_kind, placement)
 
     @read.register
     def read_async_function(
@@ -80,8 +86,10 @@ class DecoratedMethodPropertyRule(PythonPropertyRule):
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
     ) -> SourceClassProperty:
-        return self.build_method(statement, candidate, declaration_id, owner_declaration_id)
+        return self.build_method(statement, candidate, declaration_id, owner_declaration_id, member_kind, placement)
 
     def build_method(
         self,
@@ -89,6 +97,8 @@ class DecoratedMethodPropertyRule(PythonPropertyRule):
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
     ) -> SourceClassProperty:
         return self.build(
             candidate=candidate,
@@ -97,6 +107,7 @@ class DecoratedMethodPropertyRule(PythonPropertyRule):
             is_optional=statement.returns is not None and self.annotation_is_optional(statement.returns),
             type=self.types.read(statement.returns),
             visibility=self.visibility.classify(candidate.name),
-            member_kind=SourceMemberKind.INSTANCE,
+            member_kind=member_kind,
+            placement=placement,
             assigned_value=self.assigned_values.unassigned(),
         )

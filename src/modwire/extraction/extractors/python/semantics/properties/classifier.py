@@ -7,6 +7,7 @@ from functools import singledispatchmethod
 from wireup import injectable
 
 from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ......shared.code.models.declarations.source_placement import SourcePlacement
 from ......shared.code.models.declarations.source_visibility import SourceVisibility
 from ......shared.code.models.source_types.absent import SourceTypeAbsent
 from ......shared.code.models.source_types.reference import SourceTypeReference
@@ -35,6 +36,8 @@ class PythonPropertyRule(ABC):
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
     ) -> SourceClassProperty:
         raise NotImplementedError
 
@@ -43,10 +46,11 @@ class PythonPropertyRule(ABC):
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
         is_optional: bool,
         type: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported,
         visibility: SourceVisibility,
-        member_kind: SourceMemberKind,
         assigned_value: SourceAssignedValue,
     ) -> SourceClassProperty:
         return SourceClassProperty(
@@ -57,8 +61,17 @@ class PythonPropertyRule(ABC):
             type=type,
             visibility=visibility,
             member_kind=member_kind,
+            placement=placement,
             assigned_values=(assigned_value,),
         )
+
+    @singledispatchmethod
+    def is_class_target(self, target: ast.AST) -> bool:
+        return False
+
+    @is_class_target.register
+    def class_target(self, target: ast.Name) -> bool:
+        return True
 
     @singledispatchmethod
     def annotation_is_optional(self, node: ast.expr) -> bool:
@@ -157,6 +170,8 @@ class PythonPropertyClassifier(ABC):
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
     ) -> SourceClassProperty:
         raise NotImplementedError
 
@@ -171,8 +186,10 @@ class OrderedPythonPropertyClassifier(PythonPropertyClassifier):
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
     ) -> SourceClassProperty:
         for rule in sorted(self.rules.values(), key=lambda item: item.order):
             if rule.applies(candidate):
-                return rule.classify(candidate, declaration_id, owner_declaration_id)
+                return rule.classify(candidate, declaration_id, owner_declaration_id, member_kind, placement)
         raise ExtractorInvariantError(ExtractorInvariantViolation.UNCLASSIFIED_PROPERTY, candidate.name)

@@ -19,7 +19,7 @@ from .code_map_producer import CodeMapProducer
 
 
 class CodeMap(ValueModel):
-    schema_version: ClassVar[int] = 13
+    schema_version: ClassVar[int] = 14
     language: str
     producer: CodeMapProducer
     extraction: SourceExtraction

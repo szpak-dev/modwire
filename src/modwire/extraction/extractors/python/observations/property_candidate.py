@@ -1,17 +1,12 @@
 import ast
 from dataclasses import dataclass
 
-from .property_scope import PythonPropertyScope
-
 
 @dataclass(frozen=True)
 class PythonPropertyCandidate:
     statement: ast.Assign | ast.AnnAssign | ast.FunctionDef | ast.AsyncFunctionDef
-    class_name: str
-    class_line: int
-    class_column: int
-    class_bases: tuple[ast.expr, ...]
-    method: ast.FunctionDef | ast.AsyncFunctionDef | ast.Module
+    binding_scope: ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda
     name: str
-    receiver: str
-    scope: PythonPropertyScope
+    source_span: tuple[int, int]
+    ordinal: int
+    target: ast.Name | ast.Attribute | ast.FunctionDef | ast.AsyncFunctionDef

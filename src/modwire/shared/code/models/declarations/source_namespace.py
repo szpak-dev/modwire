@@ -1,9 +1,14 @@
-from pydantic import Field
-
 from ....values.models.value_model import ValueModel
+from .declaration_identity import DeclarationIdentity
 from .source_namespace_kind import SourceNamespaceKind
+from .source_placement import SourcePlacement
 
 
 class SourceNamespace(ValueModel):
     kind: SourceNamespaceKind
-    qualified_name: str = Field(min_length=1)
+    declaration_id: DeclarationIdentity
+    placement: SourcePlacement
+
+    @property
+    def qualified_name(self) -> str:
+        return self.declaration_id.qualified_name

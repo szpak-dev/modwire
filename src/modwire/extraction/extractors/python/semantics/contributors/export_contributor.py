@@ -1,12 +1,20 @@
 import ast
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import singledispatchmethod
 
 from wireup import injectable
 
 from ......shared.code.models.declarations.declaration_family import DeclarationFamily
+from ......shared.code.models.declarations.source_binding_kind import SourceBindingKind
+from ......shared.code.models.declarations.source_scope_kind import SourceScopeKind
+from ......shared.code.models.declarations.source_unresolved_reason import SourceUnresolvedReason
+from ......shared.code.models.declarations.source_unresolved_target import SourceUnresolvedTarget
+from ......shared.code.models.inventories.inventory_limitation import InventoryLimitation
+from ......shared.code.models.inventories.inventory_limitation_kind import InventoryLimitationKind
+from ......shared.code.models.inventories.inventory_source_location import InventorySourceLocation
 from ......shared.code.models.sources.identity import ImportSpecifier
 from ......shared.code.models.sources.source_export_kind import SourceExportKind
+from ......shared.code.models.sources.source_resolved_export_binding import SourceResolvedExportBinding
 from ...observations.export_candidate import PythonExportCandidate
 from ...observations.import_candidate import PythonImportCandidate
 from ...observations.source_context import PythonSourceContext
@@ -37,7 +45,7 @@ class ExportSemanticContributor(PythonSemanticContributor):
     ) -> PythonSemanticContribution:
         declarations = self.declaration_candidates(catalog)
         imported = self.import_candidates(observation.imports, context)
-        explicit, names = self.explicit_names(observation.values)
+        explicit, names = self.explicit_names(observation.values, catalog)
         candidates: tuple[PythonExportCandidate, ...]
         if explicit:
             candidates = tuple(self.explicit_candidate(name, declarations, imported) for name in sorted(names))
@@ -51,14 +59,23 @@ class ExportSemanticContributor(PythonSemanticContributor):
 
     def declaration_candidates(self, catalog: PythonSemanticCatalog) -> dict[str, PythonExportCandidate]:
         candidates: dict[str, PythonExportCandidate] = {}
-        for item in catalog.declarations:
-            if item.declaration_id.family is DeclarationFamily.ABSTRACT_CLASS:
-                kind = SourceExportKind.ABSTRACT_CLASS
-            else:
-                kind = SourceExportKind.CLASS
-            candidates[item.name] = self.direct_candidate(item.name, kind, False)
-        for item in catalog.functions:
-            candidates[item.name] = self.direct_candidate(item.name, SourceExportKind.FUNCTION, False)
+        families = {
+            DeclarationFamily.CLASS: SourceExportKind.CLASS,
+            DeclarationFamily.ABSTRACT_CLASS: SourceExportKind.ABSTRACT_CLASS,
+            DeclarationFamily.FUNCTION: SourceExportKind.FUNCTION,
+            DeclarationFamily.VALUE: SourceExportKind.VALUE,
+            DeclarationFamily.TYPE: SourceExportKind.TYPE,
+        }
+        for item in (*catalog.declarations, *catalog.functions, *catalog.values, *catalog.callable_values):
+            if item.placement.lexical_scope.kind is not SourceScopeKind.FILE:
+                continue
+            candidate = self.direct_candidate(item.name, families[item.declaration_id.family], False)
+            identities = (item.declaration_id,)
+            if item.name in candidates:
+                binding = candidates[item.name].binding
+                if binding.kind is SourceBindingKind.RESOLVED:
+                    identities = (*binding.declaration_ids, *identities)
+            candidates[item.name] = replace(candidate, binding=SourceResolvedExportBinding(declaration_ids=identities))
         return candidates
 
     def import_candidates(
@@ -68,6 +85,8 @@ class ExportSemanticContributor(PythonSemanticContributor):
     ) -> dict[str, PythonExportCandidate]:
         candidates: dict[str, PythonExportCandidate] = {}
         for candidate in imports:
+            if not self.module_scope(candidate.binding_scope):
+                continue
             item = self.import_candidate(candidate, context)
             if item.name:
                 candidates[item.name] = item
@@ -107,20 +126,32 @@ class ExportSemanticContributor(PythonSemanticContributor):
             is_aliased=candidate.alias.asname is not None,
             statement_id=candidate.statement_id,
             explicit=True,
+            binding=SourceUnresolvedTarget(reason=SourceUnresolvedReason.EXTERNAL),
         )
 
-    def explicit_names(self, values: tuple[PythonValueCandidate, ...]) -> tuple[bool, tuple[str, ...]]:
+    def explicit_names(
+        self, values: tuple[PythonValueCandidate, ...], catalog: PythonSemanticCatalog
+    ) -> tuple[bool, tuple[str, ...]]:
         found = False
         names: tuple[str, ...] = ()
         for candidate in values:
-            if candidate.target.id != "__all__":
+            if candidate.target.id != "__all__" or not self.module_scope(candidate.binding_scope):
                 continue
             relevant, valid, incoming_names = self.statement_names(candidate.statement)
             if not relevant:
                 continue
             found = True
             if not valid:
-                return (False, ())
+                catalog.inventory.exports.append(
+                    InventoryLimitation(
+                        kind=InventoryLimitationKind.DYNAMIC_STRUCTURE,
+                        location=InventorySourceLocation(
+                            start_line=candidate.statement.lineno, end_line=candidate.statement.lineno
+                        ),
+                        description="Explicit export names require runtime evaluation.",
+                    )
+                )
+                return (True, ())
             names = incoming_names
         return (found, names)
 
@@ -201,6 +232,7 @@ class ExportSemanticContributor(PythonSemanticContributor):
                 is_aliased=item.is_aliased,
                 statement_id=item.statement_id,
                 explicit=True,
+                binding=item.binding,
             )
         return self.direct_candidate(name, SourceExportKind.UNKNOWN, True)
 
@@ -221,4 +253,13 @@ class ExportSemanticContributor(PythonSemanticContributor):
             is_aliased=False,
             statement_id=0,
             explicit=explicit,
+            binding=SourceUnresolvedTarget(reason=SourceUnresolvedReason.UNOBSERVED),
         )
+
+    @singledispatchmethod
+    def module_scope(self, scope: ast.AST) -> bool:
+        return False
+
+    @module_scope.register
+    def module_binding(self, scope: ast.Module) -> bool:
+        return True

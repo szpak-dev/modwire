@@ -17,7 +17,7 @@ class TypeMethodCallableRule(PythonCallableRule):
         return 20
 
     def applies(self, candidate: PythonCallableCandidate) -> bool:
-        return bool(candidate.owner_name) and self.has_decorator(candidate.node)
+        return self.is_class_scope(candidate.binding_scope) and self.has_decorator(candidate.node)
 
     def classify(self, candidate: PythonCallableCandidate) -> SourceCallableKind:
         return SourceCallableKind.TYPE_METHOD

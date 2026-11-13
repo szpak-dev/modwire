@@ -1,5 +1,4 @@
 import sys
-from dataclasses import dataclass
 
 from wireup import injectable
 
@@ -20,13 +19,14 @@ from .semantics.policies.import_identity_policy import PythonImportIdentityPolic
 
 
 @injectable(as_type=SourceExtractor, qualifier="python")
-@dataclass(frozen=True)
 class PythonExtractor(SourceExtractor):
+    runtime: ExtractorRuntime
+    batch_config: BatchConfig
     identities: PythonImportIdentityPolicy
 
-    @property
-    def runtime(self) -> ExtractorRuntime:
-        return ExtractorRuntime(
+    def __init__(self, identities: PythonImportIdentityPolicy) -> None:
+        self.identities = identities
+        self.runtime = ExtractorRuntime(
             order=0,
             descriptor=ExtractorDescriptor(
                 id="modwire.python.ast",
@@ -186,9 +186,7 @@ class PythonExtractor(SourceExtractor):
             ),
         )
 
-    @property
-    def batch_config(self) -> BatchConfig:
-        return BatchConfig(
+        self.batch_config = BatchConfig(
             size=500,
             parallel_threshold=1000,
             parallel_size=1000,

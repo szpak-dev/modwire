@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from wireup import injectable
 
 from ....shared.code.models.capabilities.capability_coverage import CapabilityCoverage
@@ -18,15 +16,16 @@ from ..models.extractor_runtime import ExtractorRuntime
 
 
 @injectable(as_type=SourceExtractor, qualifier="php")
-@dataclass(frozen=True)
 class PhpExtractor(SourceExtractor):
-    @property
-    def runtime(self) -> ExtractorRuntime:
-        return ExtractorRuntime(
+    runtime: ExtractorRuntime
+    batch_config: BatchConfig
+
+    def __init__(self) -> None:
+        self.runtime = ExtractorRuntime(
             order=2,
             descriptor=ExtractorDescriptor(
                 id="modwire.php.php-parser",
-                version="3",
+                version="4",
                 language="php",
                 runtime="php",
             ),
@@ -178,9 +177,7 @@ class PhpExtractor(SourceExtractor):
             ),
         )
 
-    @property
-    def batch_config(self) -> BatchConfig:
-        return BatchConfig(
+        self.batch_config = BatchConfig(
             size=500,
             parallel_threshold=500,
             parallel_size=500,

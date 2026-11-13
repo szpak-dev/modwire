@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from wireup import injectable
 
+from ......shared.code.models.declarations.source_scope_kind import SourceScopeKind
 from ......shared.code.models.declarations.source_visibility import SourceVisibility
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
@@ -23,12 +24,11 @@ class MetricSemanticContributor(PythonSemanticContributor):
         catalog: PythonSemanticCatalog,
         context: PythonSourceContext,
     ) -> PythonSemanticContribution:
-        module_classes = {candidate.ordinal for candidate in observation.classes if candidate.module_level}
         public_classes = sum(
             1
             for declaration in catalog.declarations
             if (
-                declaration.declaration_id.ordinal in module_classes
+                declaration.placement.lexical_scope.kind is SourceScopeKind.FILE
                 and declaration.visibility_intent is SourceVisibility.PUBLIC
                 and not declaration.name.startswith("_")
             )
@@ -36,7 +36,9 @@ class MetricSemanticContributor(PythonSemanticContributor):
         public_functions = sum(
             1
             for function in catalog.functions
-            if function.visibility_intent is SourceVisibility.PUBLIC and not function.name.startswith("_")
+            if function.placement.lexical_scope.kind is SourceScopeKind.FILE
+            and function.visibility_intent is SourceVisibility.PUBLIC
+            and not function.name.startswith("_")
         )
         return PythonSemanticContribution(
             line_count=len(context.content.splitlines()),

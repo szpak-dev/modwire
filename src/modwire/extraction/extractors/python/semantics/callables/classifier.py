@@ -1,6 +1,8 @@
+import ast
 from abc import ABC, abstractmethod
 from collections.abc import Hashable, Mapping
 from dataclasses import dataclass
+from functools import singledispatchmethod
 
 from wireup import injectable
 
@@ -23,6 +25,14 @@ class PythonCallableRule(ABC):
     @abstractmethod
     def classify(self, candidate: PythonCallableCandidate) -> SourceCallableKind:
         raise NotImplementedError
+
+    @singledispatchmethod
+    def is_class_scope(self, scope: ast.AST) -> bool:
+        return False
+
+    @is_class_scope.register
+    def class_scope(self, scope: ast.ClassDef) -> bool:
+        return True
 
 
 class PythonCallableClassifier(ABC):

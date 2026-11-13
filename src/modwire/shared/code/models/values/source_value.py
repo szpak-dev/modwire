@@ -5,6 +5,7 @@ from pydantic import model_validator
 from ....values.models.value_model import ValueModel
 from ..declarations.declaration_family import DeclarationFamily
 from ..declarations.declaration_identity import DeclarationIdentity
+from ..declarations.source_placement import SourcePlacement
 from ..declarations.source_symbol_kind import SourceSymbolKind
 from ..declarations.source_visibility import SourceVisibility
 from ..failures.code_validation_error import CodeValidationError
@@ -22,6 +23,7 @@ class SourceValue(ValueModel):
     declaration_kind: SourceValueDeclarationKind
     value_kind: SourceSymbolKind
     scope: SourceValueScope
+    placement: SourcePlacement
 
     @model_validator(mode="after")
     def validate_state(self) -> Self:

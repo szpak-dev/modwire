@@ -10,8 +10,12 @@ class DeclarationIdentity(ValueModel):
     family: DeclarationFamily
     qualified_name: str = Field(min_length=1)
     ordinal: int = Field(ge=1)
+    content_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
 
     def canonical(self) -> str:
-        """Return the stable source-qualified declaration identity."""
+        """Return the identity of a declaration in one exact source capture."""
 
-        return f"{self.source_id}::{self.family.value}:{self.ordinal}:{self.qualified_name}"
+        return f"{self.source_id}@{self.content_digest}::{self.family.value}:{self.ordinal}:{self.qualified_name}"
+
+    def __hash__(self) -> int:
+        return hash(self.canonical())

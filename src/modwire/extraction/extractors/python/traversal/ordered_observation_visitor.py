@@ -2,573 +2,368 @@ import ast
 from dataclasses import dataclass, field
 from functools import singledispatchmethod
 
+from .....shared.code.models.inventories.inventory_limitation import InventoryLimitation
+from .....shared.code.models.inventories.inventory_limitation_kind import InventoryLimitationKind
+from .....shared.code.models.inventories.inventory_source_location import InventorySourceLocation
+from ...models.extractor_invariant_error import ExtractorInvariantError
+from ...models.extractor_invariant_violation import ExtractorInvariantViolation
 from ..observations.call_observation import PythonCallObservation
 from ..observations.callable_candidate import PythonCallableCandidate
 from ..observations.class_candidate import PythonClassCandidate
 from ..observations.declaration_relation_candidate import PythonDeclarationRelationCandidate
-from ..observations.function_candidate import PythonFunctionCandidate
 from ..observations.import_candidate import PythonImportCandidate
+from ..observations.inventory_evidence import PythonInventoryEvidence
 from ..observations.property_candidate import PythonPropertyCandidate
-from ..observations.property_scope import PythonPropertyScope
 from ..observations.source_observation import PythonSourceObservation
 from ..observations.value_candidate import PythonValueCandidate
 from .context import PythonTraversalContext
-from .traversal_role import PythonTraversalRole
 
 
 @dataclass
 class OrderedObservationVisitor:
-    positioned_classes: list[tuple[PythonClassCandidate, int, int]] = field(
-        default_factory=list[tuple[PythonClassCandidate, int, int]]
-    )
-    functions: list[PythonFunctionCandidate] = field(default_factory=list[PythonFunctionCandidate])
+    classes: list[PythonClassCandidate] = field(default_factory=list[PythonClassCandidate])
     values: list[PythonValueCandidate] = field(default_factory=list[PythonValueCandidate])
     callables: list[PythonCallableCandidate] = field(default_factory=list[PythonCallableCandidate])
-    positioned_lambdas: list[tuple[ast.Lambda, str, str, int, int, int]] = field(
-        default_factory=list[tuple[ast.Lambda, str, str, int, int, int]]
-    )
-    positioned_imports: list[tuple[ast.Import | ast.ImportFrom, ast.alias, str, bool, int, int]] = field(
-        default_factory=list[tuple[ast.Import | ast.ImportFrom, ast.alias, str, bool, int, int]]
-    )
-    lambda_names: dict[ast.Lambda, list[tuple[str, str]]] = field(
-        default_factory=dict[ast.Lambda, list[tuple[str, str]]]
-    )
-    calls: dict[ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda, list[ast.Call]] = field(
-        default_factory=dict[ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda, list[ast.Call]]
-    )
+    calls: list[PythonCallObservation] = field(default_factory=list[PythonCallObservation])
+    imports: list[PythonImportCandidate] = field(default_factory=list[PythonImportCandidate])
     properties: list[PythonPropertyCandidate] = field(default_factory=list[PythonPropertyCandidate])
-    lambdas_with_calls: set[ast.Lambda] = field(default_factory=set[ast.Lambda])
-    node_counts_by_depth: dict[int, int] = field(default_factory=dict[int, int])
-    stack: list[tuple[ast.AST, int, PythonTraversalContext, bool]] = field(
-        default_factory=list[tuple[ast.AST, int, PythonTraversalContext, bool]]
+    declaration_relations: list[PythonDeclarationRelationCandidate] = field(
+        default_factory=list[PythonDeclarationRelationCandidate]
     )
-    sequence_at_depth: int = 0
+    inventory: PythonInventoryEvidence = field(default_factory=PythonInventoryEvidence)
+    lambda_bindings: dict[ast.Lambda, ast.Name] = field(default_factory=dict[ast.Lambda, ast.Name])
+    call_ordinals: dict[ast.AST, int] = field(default_factory=dict[ast.AST, int])
 
     def read(self, tree: ast.Module) -> PythonSourceObservation:
-        context = PythonTraversalContext(
-            module=tree,
-            parent_role=PythonTraversalRole.MODULE,
-            class_name="",
-            lambda_root="",
-            lambda_owner="",
-            lambda_root_ordinal=0,
-            owners=(),
-            property_contexts=(),
-            direct_classes=(),
-            active_lambda=tree,
+        self.visit(tree, 0, PythonTraversalContext(tree, ""))
+        return PythonSourceObservation(
+            classes=tuple(self.classes),
+            values=tuple(self.values),
+            callables=tuple(self.callables),
+            calls=tuple(self.calls),
+            imports=tuple(self.imports),
+            exports=(),
+            properties=tuple(self.properties),
+            declaration_relations=tuple(self.declaration_relations),
+            inventory=self.inventory,
         )
-        self.node_counts_by_depth[0] = 1
-        for child in reversed(tuple(ast.iter_child_nodes(tree))):
-            self.stack.append((child, 1, context, False))
-        visit = self.visit
-        pop = self.stack.pop
-        while self.stack:
-            node, depth, context, completed = pop()
-            if completed:
-                self.finish_lambda(node, context)
-                continue
-            self.sequence_at_depth = self.node_counts_by_depth.get(depth, 0) + 1
-            self.node_counts_by_depth[depth] = self.sequence_at_depth
-            visit(node, depth, context)
-        return self.observation()
+
+    def qualified_name(self, context: PythonTraversalContext, name: str) -> str:
+        return f"{context.qualified_name}.{name}" if context.qualified_name else name
+
+    def source_span(self, node: ast.stmt | ast.expr) -> tuple[int, int]:
+        if node.end_lineno is None:
+            raise ExtractorInvariantError(ExtractorInvariantViolation.MISSING_SOURCE_END_LINE, ast.unparse(node))
+        return (node.lineno, node.end_lineno)
+
+    def declaration_ordinal(self, node: ast.stmt | ast.expr) -> int:
+        return (node.lineno << 32) + node.col_offset + 1
 
     @singledispatchmethod
     def visit(self, node: ast.AST, depth: int, context: PythonTraversalContext) -> None:
-        self.enqueue(node, depth, context)
+        for child in ast.iter_child_nodes(node):
+            self.visit(child, depth + 1, context)
 
     @visit.register
     def visit_ClassDef(self, node: ast.ClassDef, depth: int, context: PythonTraversalContext) -> None:
-        self.positioned_classes.append(
-            (
-                PythonClassCandidate(
-                    node=node,
-                    ordinal=self.declaration_ordinal(node),
-                    module_level=context.parent_role is PythonTraversalRole.MODULE,
-                ),
-                depth,
-                self.sequence_at_depth,
+        candidate = PythonClassCandidate(
+            node,
+            context.binding_scope,
+            self.qualified_name(context, node.name),
+            self.declaration_ordinal(node),
+            self.source_span(node),
+        )
+        self.classes.append(candidate)
+        self.inventory.methods[node] = []
+        self.inventory.properties[node] = []
+        self.declaration_relations.extend(PythonDeclarationRelationCandidate(candidate, base) for base in node.bases)
+        for expression in (*node.decorator_list, *node.bases, *(keyword.value for keyword in node.keywords)):
+            self.visit(expression, depth + 1, context)
+        nested = PythonTraversalContext(node, candidate.qualified_name)
+        for statement in node.body:
+            self.visit(statement, depth + 1, nested)
+
+    @visit.register(ast.FunctionDef)
+    @visit.register(ast.AsyncFunctionDef)
+    def visit_FunctionDef(
+        self, node: ast.FunctionDef | ast.AsyncFunctionDef, depth: int, context: PythonTraversalContext
+    ) -> None:
+        ordinal = self.declaration_ordinal(node)
+        candidate = PythonCallableCandidate(
+            node,
+            node,
+            context.binding_scope,
+            node.name,
+            self.qualified_name(context, node.name),
+            ordinal,
+            ordinal,
+            0,
+            self.source_span(node),
+        )
+        self.callables.append(candidate)
+        self.observe_property_method(context.binding_scope, node)
+        for expression in (*node.decorator_list, *node.args.defaults):
+            self.visit(expression, depth + 1, context)
+        for expression in node.args.kw_defaults:
+            if expression is not None:
+                self.visit(expression, depth + 1, context)
+        nested = PythonTraversalContext(node, candidate.qualified_name)
+        for statement in node.body:
+            self.visit(statement, depth + 1, nested)
+
+    @singledispatchmethod
+    def observe_property_method(self, scope: ast.AST, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
+        return
+
+    @observe_property_method.register
+    def class_property_method(self, scope: ast.ClassDef, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
+        if any(ast.unparse(decorator).rsplit(".", 1)[-1] == "property" for decorator in node.decorator_list):
+            self.properties.append(
+                PythonPropertyCandidate(
+                    node, scope, node.name, self.source_span(node), self.declaration_ordinal(node), node
+                )
             )
-        )
-        role = (
-            PythonTraversalRole.MODULE_CLASS
-            if context.parent_role is PythonTraversalRole.MODULE
-            else PythonTraversalRole.NESTED_CLASS
-        )
-        body = set(node.body)
-        body_context = PythonTraversalContext(
-            module=context.module,
-            parent_role=role,
-            class_name=node.name,
-            lambda_root=context.lambda_root,
-            lambda_owner=context.lambda_owner,
-            lambda_root_ordinal=context.lambda_root_ordinal,
-            owners=(),
-            property_contexts=context.property_contexts,
-            direct_classes=(node,),
-            active_lambda=context.active_lambda,
-        )
-        nested_context = PythonTraversalContext(
-            module=context.module,
-            parent_role=PythonTraversalRole.NESTED,
-            class_name=node.name,
-            lambda_root=context.lambda_root,
-            lambda_owner=context.lambda_owner,
-            lambda_root_ordinal=context.lambda_root_ordinal,
-            owners=(),
-            property_contexts=context.property_contexts,
-            direct_classes=(),
-            active_lambda=context.active_lambda,
-        )
-        for child in reversed(tuple(ast.iter_child_nodes(node))):
-            child_context = body_context if child in body else nested_context
-            self.stack.append((child, depth + 1, child_context, False))
-
-    @visit.register
-    def visit_FunctionDef(self, node: ast.FunctionDef, depth: int, context: PythonTraversalContext) -> None:
-        self.visit_function(node, depth, context)
-
-    @visit.register
-    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef, depth: int, context: PythonTraversalContext) -> None:
-        self.visit_function(node, depth, context)
 
     @visit.register
     def visit_Lambda(self, node: ast.Lambda, depth: int, context: PythonTraversalContext) -> None:
-        if context.lambda_root:
-            name = f"<anonymous>@{node.lineno}:{node.col_offset}"
-            qualified_name = f"{context.lambda_root}.{name}"
-            self.positioned_lambdas.append(
-                (
-                    node,
-                    qualified_name,
-                    context.lambda_owner,
-                    context.lambda_root_ordinal,
-                    depth,
-                    self.sequence_at_depth,
-                )
-            )
-            self.register_lambda(node, qualified_name, context.lambda_owner)
-        owners: tuple[ast.Lambda, ...] = ()
-        if node in self.lambda_names:
-            owners = (node,)
-        body_context = PythonTraversalContext(
-            module=context.module,
-            parent_role=PythonTraversalRole.NESTED,
-            class_name=context.class_name,
-            lambda_root=context.lambda_root,
-            lambda_owner=context.lambda_owner,
-            lambda_root_ordinal=context.lambda_root_ordinal,
-            owners=owners,
-            property_contexts=context.property_contexts,
-            direct_classes=(),
-            active_lambda=node,
+        identity_node: ast.expr = node
+        name = f"<lambda@{node.lineno}:{node.col_offset}>"
+        if node in self.lambda_bindings:
+            identity_node = self.lambda_bindings[node]
+            name = self.lambda_bindings[node].id
+        ordinal = self.declaration_ordinal(identity_node)
+        candidate = PythonCallableCandidate(
+            node,
+            identity_node,
+            context.binding_scope,
+            name,
+            self.qualified_name(context, name),
+            ordinal,
+            ordinal,
+            0,
+            self.source_span(node),
         )
-        nested_context = PythonTraversalContext(
-            module=context.module,
-            parent_role=PythonTraversalRole.NESTED,
-            class_name=context.class_name,
-            lambda_root=context.lambda_root,
-            lambda_owner=context.lambda_owner,
-            lambda_root_ordinal=context.lambda_root_ordinal,
-            owners=(),
-            property_contexts=context.property_contexts,
-            direct_classes=(),
-            active_lambda=node,
-        )
-        self.stack.append((node, depth, context, True))
-        for child in reversed(tuple(ast.iter_child_nodes(node))):
-            child_context = body_context if child is node.body else nested_context
-            self.stack.append((child, depth + 1, child_context, False))
+        self.callables.append(candidate)
+        for expression in node.args.defaults:
+            self.visit(expression, depth + 1, context)
+        for expression in node.args.kw_defaults:
+            if expression is not None:
+                self.visit(expression, depth + 1, context)
+        self.visit(node.body, depth + 1, PythonTraversalContext(node, candidate.qualified_name))
 
     @visit.register
     def visit_Call(self, node: ast.Call, depth: int, context: PythonTraversalContext) -> None:
-        for owner in context.owners:
-            if owner not in self.calls:
-                self.calls[owner] = []
-            self.calls[owner].append(node)
-        self.mark_lambda_call(context.active_lambda)
-        self.enqueue(node, depth, context)
+        self.observe_call(context.binding_scope, node)
+        for child in ast.iter_child_nodes(node):
+            self.visit(child, depth + 1, context)
+
+    @singledispatchmethod
+    def observe_call(self, scope: ast.AST, node: ast.Call) -> None:
+        return
+
+    @observe_call.register(ast.FunctionDef)
+    @observe_call.register(ast.AsyncFunctionDef)
+    @observe_call.register(ast.Lambda)
+    def callable_call(self, scope: ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda, node: ast.Call) -> None:
+        ordinal = self.call_ordinals[scope] + 1 if scope in self.call_ordinals else 1
+        self.call_ordinals[scope] = ordinal
+        self.calls.append(PythonCallObservation(node, ordinal, scope, scope))
 
     @visit.register
     def visit_Assign(self, node: ast.Assign, depth: int, context: PythonTraversalContext) -> None:
-        if context.parent_role is PythonTraversalRole.MODULE:
-            for target in node.targets:
-                self.visit_assignment_target(target, node, node.value)
         for target in node.targets:
-            self.collect_property_target(target, node, context)
-        self.enqueue(node, depth, context)
+            self.observe_assignment(target, node, context)
+        if len(node.targets) == 1:
+            self.bind_lambda(node.value, node.targets[0])
+        self.visit(node.value, depth + 1, context)
 
     @visit.register
     def visit_AnnAssign(self, node: ast.AnnAssign, depth: int, context: PythonTraversalContext) -> None:
-        if context.parent_role is PythonTraversalRole.MODULE:
-            self.visit_annotated_target(node.target, node)
-        self.collect_property_target(node.target, node, context)
-        self.enqueue(node, depth, context)
+        self.observe_assignment(node.target, node, context)
+        if node.value is not None:
+            self.bind_lambda(node.value, node.target)
+            self.visit(node.value, depth + 1, context)
+
+    @singledispatchmethod
+    def bind_lambda(self, value: ast.expr, target: ast.expr) -> None:
+        return
+
+    @bind_lambda.register
+    def lambda_binding(self, value: ast.Lambda, target: ast.expr) -> None:
+        self.bind_lambda_name(target, value)
+
+    @singledispatchmethod
+    def bind_lambda_name(self, target: ast.expr, value: ast.Lambda) -> None:
+        return
+
+    @bind_lambda_name.register
+    def lambda_name_binding(self, target: ast.Name, value: ast.Lambda) -> None:
+        self.lambda_bindings[value] = target
+
+    @singledispatchmethod
+    def observe_assignment(
+        self, target: ast.expr, statement: ast.Assign | ast.AnnAssign, context: PythonTraversalContext
+    ) -> None:
+        limitation = self.inventory_limitation(
+            statement,
+            InventoryLimitationKind.UNSUPPORTED_SYNTAX,
+            "Assignment target is outside the represented value inventory.",
+        )
+        self.inventory.values.append(limitation)
+        self.inventory.callable_values.append(limitation)
+        self.limit_property_scope(context.binding_scope, limitation)
+
+    @observe_assignment.register
+    def name_assignment(
+        self, target: ast.Name, statement: ast.Assign | ast.AnnAssign, context: PythonTraversalContext
+    ) -> None:
+        candidate = PythonValueCandidate(
+            statement,
+            target,
+            context.binding_scope,
+            self.qualified_name(context, target.id),
+            self.declaration_ordinal(target),
+            self.source_span(statement),
+        )
+        self.values.append(candidate)
+        self.observe_class_property(context.binding_scope, statement, candidate)
+
+    @singledispatchmethod
+    def observe_class_property(
+        self, scope: ast.AST, statement: ast.Assign | ast.AnnAssign, candidate: PythonValueCandidate
+    ) -> None:
+        return
+
+    @observe_class_property.register
+    def class_assignment(
+        self,
+        scope: ast.ClassDef,
+        statement: ast.Assign | ast.AnnAssign,
+        candidate: PythonValueCandidate,
+    ) -> None:
+        self.properties.append(
+            PythonPropertyCandidate(
+                statement, scope, candidate.target.id, candidate.source_span, candidate.ordinal, candidate.target
+            )
+        )
+
+    @observe_assignment.register
+    def attribute_assignment(
+        self, target: ast.Attribute, statement: ast.Assign | ast.AnnAssign, context: PythonTraversalContext
+    ) -> None:
+        self.properties.append(
+            PythonPropertyCandidate(
+                statement,
+                context.binding_scope,
+                target.attr,
+                self.source_span(statement),
+                self.declaration_ordinal(target),
+                target,
+            )
+        )
 
     @visit.register
     def visit_Import(self, node: ast.Import, depth: int, context: PythonTraversalContext) -> None:
-        self.positioned_imports.extend(
-            (node, alias, alias.name, False, depth, self.sequence_at_depth) for alias in node.names
+        self.imports.extend(
+            PythonImportCandidate(node, context.binding_scope, alias, alias.name, False, self.declaration_ordinal(node))
+            for alias in node.names
         )
-        self.enqueue(node, depth, context)
 
     @visit.register
     def visit_ImportFrom(self, node: ast.ImportFrom, depth: int, context: PythonTraversalContext) -> None:
         path = f"{'.' * node.level}{node.module or ''}"
-        self.positioned_imports.extend(
-            (node, alias, path, node.level > 0, depth, self.sequence_at_depth) for alias in node.names
-        )
-        self.enqueue(node, depth, context)
-
-    def visit_function(
-        self, node: ast.FunctionDef | ast.AsyncFunctionDef, depth: int, context: PythonTraversalContext
-    ) -> None:
-        qualified_name = ""
-        owner_name = ""
-        property_method = False
-        if context.parent_role is PythonTraversalRole.MODULE:
-            self.functions.append(PythonFunctionCandidate(node=node, ordinal=self.declaration_ordinal(node)))
-            qualified_name = node.name
-        elif context.parent_role in {PythonTraversalRole.MODULE_CLASS, PythonTraversalRole.NESTED_CLASS}:
-            owner_name = context.class_name
-            property_method = self.has_decorator(node, "property")
-            if property_method:
-                self.collect_decorated_property(node, context)
-            if context.parent_role is PythonTraversalRole.MODULE_CLASS:
-                qualified_name = f"{owner_name}.{node.name}"
-        lambda_root = context.lambda_root
-        lambda_owner = context.lambda_owner
-        lambda_root_ordinal = context.lambda_root_ordinal
-        owners: tuple[ast.FunctionDef | ast.AsyncFunctionDef, ...] = ()
-        if qualified_name and not property_method:
-            ordinal = self.declaration_ordinal(node)
-            self.callables.append(
-                PythonCallableCandidate(
-                    node=node,
-                    identity_node=node,
-                    name=node.name,
-                    qualified_name=qualified_name,
-                    owner_name=owner_name,
-                    ordinal=ordinal,
-                    requires_call=False,
-                    root_ordinal=ordinal,
-                    sequence=0,
-                )
-            )
-            lambda_root = qualified_name
-            lambda_owner = owner_name
-            lambda_root_ordinal = ordinal
-            owners = (node,)
-        property_contexts = (
-            *context.property_contexts,
-            *((class_node, node) for class_node in context.direct_classes),
-        )
-        body = set(node.body)
-        body_context = PythonTraversalContext(
-            module=context.module,
-            parent_role=PythonTraversalRole.NESTED,
-            class_name=context.class_name,
-            lambda_root=lambda_root,
-            lambda_owner=lambda_owner,
-            lambda_root_ordinal=lambda_root_ordinal,
-            owners=owners,
-            property_contexts=property_contexts,
-            direct_classes=(),
-            active_lambda=context.active_lambda,
-        )
-        nested_context = PythonTraversalContext(
-            module=context.module,
-            parent_role=PythonTraversalRole.NESTED,
-            class_name=context.class_name,
-            lambda_root=lambda_root,
-            lambda_owner=lambda_owner,
-            lambda_root_ordinal=lambda_root_ordinal,
-            owners=(),
-            property_contexts=property_contexts,
-            direct_classes=(),
-            active_lambda=context.active_lambda,
-        )
-        for child in reversed(tuple(ast.iter_child_nodes(node))):
-            child_context = body_context if child in body else nested_context
-            self.stack.append((child, depth + 1, child_context, False))
-
-    def has_decorator(self, node: ast.FunctionDef | ast.AsyncFunctionDef, name: str) -> bool:
-        return any(ast.unparse(item).rsplit(".", 1)[-1] == name for item in node.decorator_list)
-
-    def collect_decorated_property(
-        self,
-        node: ast.FunctionDef | ast.AsyncFunctionDef,
-        context: PythonTraversalContext,
-    ) -> None:
-        positional = [*node.args.posonlyargs, *node.args.args]
-        receiver = positional[0].arg if positional else ""
-        self.properties.extend(
-            PythonPropertyCandidate(
-                statement=node,
-                class_name=class_node.name,
-                class_line=class_node.lineno,
-                class_column=class_node.col_offset,
-                class_bases=tuple(class_node.bases),
-                method=node,
-                name=node.name,
-                receiver=receiver,
-                scope=PythonPropertyScope.METHOD,
-            )
-            for class_node in context.direct_classes
-        )
-
-    def enqueue(self, node: ast.AST, depth: int, context: PythonTraversalContext) -> None:
-        child_context = context
-        if context.parent_role is not PythonTraversalRole.NESTED or context.direct_classes:
-            child_context = PythonTraversalContext(
-                module=context.module,
-                parent_role=PythonTraversalRole.NESTED,
-                class_name=context.class_name,
-                lambda_root=context.lambda_root,
-                lambda_owner=context.lambda_owner,
-                lambda_root_ordinal=context.lambda_root_ordinal,
-                owners=context.owners,
-                property_contexts=context.property_contexts,
-                direct_classes=(),
-                active_lambda=context.active_lambda,
-            )
-        self.stack.extend(
-            (child, depth + 1, child_context, False) for child in reversed(tuple(ast.iter_child_nodes(node)))
-        )
-
-    def observation(self) -> PythonSourceObservation:
-        offsets = self.breadth_offsets()
-        classes = tuple(
-            item[0]
-            for item in sorted(
-                self.positioned_classes,
-                key=lambda item: self.breadth_ordinal(item[1], item[2], offsets),
-            )
-        )
-        self.callables.extend(
-            PythonCallableCandidate(
-                node=node,
-                identity_node=node,
-                name=qualified_name.rsplit(".", 1)[-1],
-                qualified_name=qualified_name,
-                owner_name=owner_name,
-                ordinal=self.declaration_ordinal(node),
-                requires_call=True,
-                root_ordinal=root_ordinal,
-                sequence=self.breadth_ordinal(depth, sequence, offsets),
-            )
-            for node, qualified_name, owner_name, root_ordinal, depth, sequence in self.positioned_lambdas
-        )
-        callables = tuple(
-            sorted(
-                (
-                    candidate
-                    for candidate in self.callables
-                    if (not candidate.requires_call) or candidate.node in self.lambdas_with_calls
-                ),
-                key=lambda candidate: (candidate.root_ordinal, candidate.sequence),
-            )
-        )
-        calls = tuple(
-            PythonCallObservation(
-                node=node,
-                ordinal=ordinal,
-                source_qualified_name=candidate.qualified_name,
-                source_ordinal=self.declaration_ordinal(candidate.identity_node),
-                owner_name=candidate.owner_name,
-            )
-            for candidate in callables
-            for ordinal, node in enumerate(
-                self.calls[candidate.node] if candidate.node in self.calls else (),
-                start=1,
-            )
-        )
-        imports = tuple(
+        self.imports.extend(
             PythonImportCandidate(
-                node=node,
-                alias=alias,
-                path=path,
-                is_relative=is_relative,
-                statement_id=self.breadth_ordinal(depth, sequence, offsets),
+                node, context.binding_scope, alias, path, node.level > 0, self.declaration_ordinal(node)
             )
-            for node, alias, path, is_relative, depth, sequence in sorted(
-                self.positioned_imports,
-                key=lambda item: self.breadth_ordinal(item[4], item[5], offsets),
-            )
+            for alias in node.names
         )
-        return PythonSourceObservation(
-            classes=classes,
-            functions=tuple(self.functions),
-            values=tuple(self.values),
-            callables=callables,
-            calls=calls,
-            imports=imports,
-            exports=(),
-            properties=tuple(self.properties),
-            declaration_relations=tuple(
-                PythonDeclarationRelationCandidate(source=candidate, base=base)
-                for candidate in classes
-                for base in candidate.node.bases
-            ),
-        )
-
-    def breadth_offsets(self) -> dict[int, int]:
-        offsets: dict[int, int] = {}
-        preceding = 0
-        for depth in sorted(self.node_counts_by_depth):
-            offsets[depth] = preceding
-            preceding += self.node_counts_by_depth[depth]
-        return offsets
-
-    def breadth_ordinal(self, depth: int, sequence: int, offsets: dict[int, int]) -> int:
-        return offsets[depth] + sequence
-
-    @singledispatchmethod
-    def visit_assignment_target(self, target: ast.expr, statement: ast.Assign, value: ast.expr) -> None:
-        return
-
-    @visit_assignment_target.register
-    def visit_assignment_name(self, target: ast.Name, statement: ast.Assign, value: ast.expr) -> None:
-        candidate = PythonValueCandidate(statement=statement, target=target, ordinal=self.declaration_ordinal(target))
-        self.values.append(candidate)
-        if target.id != "__all__":
-            self.visit_assignment_value(value, candidate)
-
-    @singledispatchmethod
-    def visit_annotated_target(self, target: ast.expr, statement: ast.AnnAssign) -> None:
-        return
-
-    @visit_annotated_target.register
-    def visit_annotated_name(self, target: ast.Name, statement: ast.AnnAssign) -> None:
-        candidate = PythonValueCandidate(statement=statement, target=target, ordinal=self.declaration_ordinal(target))
-        self.values.append(candidate)
-        if statement.value is not None:
-            self.visit_assignment_value(statement.value, candidate)
-
-    @singledispatchmethod
-    def visit_assignment_value(self, value: ast.expr, candidate: PythonValueCandidate) -> None:
-        return
-
-    @visit_assignment_value.register
-    def visit_assignment_lambda(self, value: ast.Lambda, candidate: PythonValueCandidate) -> None:
-        name = candidate.target.id
-        self.callables.append(
-            PythonCallableCandidate(
-                node=value,
-                identity_node=candidate.target,
-                name=name,
-                qualified_name=name,
-                owner_name="",
-                ordinal=candidate.ordinal,
-                requires_call=False,
-                root_ordinal=candidate.ordinal,
-                sequence=0,
-            )
-        )
-        self.register_lambda(value, name, "")
-
-    def register_lambda(self, node: ast.Lambda, qualified_name: str, owner_name: str) -> None:
-        if node not in self.lambda_names:
-            self.lambda_names[node] = []
-        self.lambda_names[node].append((qualified_name, owner_name))
-
-    @singledispatchmethod
-    def mark_lambda_call(self, node: ast.AST) -> None:
-        return
-
-    @mark_lambda_call.register
-    def mark_lambda_with_call(self, node: ast.Lambda) -> None:
-        self.lambdas_with_calls.add(node)
-
-    @singledispatchmethod
-    def finish_lambda(self, node: ast.AST, context: PythonTraversalContext) -> None:
-        return
-
-    @finish_lambda.register
-    def finish_lambda_node(self, node: ast.Lambda, context: PythonTraversalContext) -> None:
-        if node in self.lambdas_with_calls:
-            self.mark_lambda_call(context.active_lambda)
-
-    @singledispatchmethod
-    def collect_property_target(
-        self, target: ast.expr, statement: ast.Assign | ast.AnnAssign, context: PythonTraversalContext
-    ) -> None:
-        return
-
-    @collect_property_target.register
-    def collect_property_name(
-        self, target: ast.Name, statement: ast.Assign | ast.AnnAssign, context: PythonTraversalContext
-    ) -> None:
-        for class_node in context.direct_classes:
-            self.properties.append(
-                PythonPropertyCandidate(
-                    statement=statement,
-                    class_name=class_node.name,
-                    class_line=class_node.lineno,
-                    class_column=class_node.col_offset,
-                    class_bases=tuple(class_node.bases),
-                    method=context.module,
-                    name=target.id,
-                    receiver="",
-                    scope=PythonPropertyScope.CLASS,
+        if any(alias.name == "*" for alias in node.names):
+            self.inventory.implicit_exports.append(
+                self.inventory_limitation(
+                    node,
+                    InventoryLimitationKind.DYNAMIC_STRUCTURE,
+                    "Wildcard import bindings require imported-module execution.",
                 )
             )
 
-    @collect_property_target.register
-    def collect_property_attribute(
-        self, target: ast.Attribute, statement: ast.Assign | ast.AnnAssign, context: PythonTraversalContext
+    def inventory_limitation(
+        self, node: ast.stmt | ast.expr, kind: InventoryLimitationKind, description: str
+    ) -> InventoryLimitation:
+        start, end = self.source_span(node)
+        return InventoryLimitation(
+            kind=kind, location=InventorySourceLocation(start_line=start, end_line=end), description=description
+        )
+
+    @visit.register
+    def visit_TypeAlias(self, node: ast.TypeAlias, depth: int, context: PythonTraversalContext) -> None:
+        self.values.append(
+            PythonValueCandidate(
+                node,
+                node.name,
+                context.binding_scope,
+                self.qualified_name(context, node.name.id),
+                self.declaration_ordinal(node.name),
+                self.source_span(node),
+            )
+        )
+        self.visit(node.value, depth + 1, context)
+
+    @visit.register
+    def visit_exception_handler(self, node: ast.ExceptHandler, depth: int, context: PythonTraversalContext) -> None:
+        if node.name is not None:
+            limitation = InventoryLimitation(
+                kind=InventoryLimitationKind.UNSUPPORTED_SYNTAX,
+                location=InventorySourceLocation(start_line=node.lineno, end_line=node.lineno),
+                description="Exception target binding is outside the represented value inventory.",
+            )
+            self.inventory.values.append(limitation)
+            self.limit_property_scope(context.binding_scope, limitation)
+        for child in ast.iter_child_nodes(node):
+            self.visit(child, depth + 1, context)
+
+    @visit.register(ast.For)
+    @visit.register(ast.AsyncFor)
+    @visit.register(ast.With)
+    @visit.register(ast.AsyncWith)
+    @visit.register(ast.NamedExpr)
+    @visit.register(ast.AugAssign)
+    @visit.register(ast.Match)
+    @visit.register(ast.ListComp)
+    @visit.register(ast.SetComp)
+    @visit.register(ast.DictComp)
+    @visit.register(ast.GeneratorExp)
+    def visit_binding_statement(
+        self,
+        node: ast.For
+        | ast.AsyncFor
+        | ast.With
+        | ast.AsyncWith
+        | ast.NamedExpr
+        | ast.AugAssign
+        | ast.Match
+        | ast.ListComp
+        | ast.SetComp
+        | ast.DictComp
+        | ast.GeneratorExp,
+        depth: int,
+        context: PythonTraversalContext,
     ) -> None:
-        self.collect_property_receiver(target.value, target.attr, statement, context)
+        limitation = self.inventory_limitation(
+            node,
+            InventoryLimitationKind.UNSUPPORTED_SYNTAX,
+            "Binding form is outside the represented assignment inventory.",
+        )
+        self.inventory.values.append(limitation)
+        self.inventory.callable_values.append(limitation)
+        self.limit_property_scope(context.binding_scope, limitation)
+        for child in ast.iter_child_nodes(node):
+            self.visit(child, depth + 1, context)
 
     @singledispatchmethod
-    def collect_property_receiver(
-        self,
-        receiver: ast.expr,
-        name: str,
-        statement: ast.Assign | ast.AnnAssign,
-        context: PythonTraversalContext,
-    ) -> None:
+    def limit_property_scope(self, scope: ast.AST, limitation: InventoryLimitation) -> None:
         return
 
-    @collect_property_receiver.register
-    def collect_property_receiver_name(
-        self,
-        receiver: ast.Name,
-        name: str,
-        statement: ast.Assign | ast.AnnAssign,
-        context: PythonTraversalContext,
-    ) -> None:
-        if receiver.id not in {"self", "cls"}:
-            return
-        for class_node, method in context.property_contexts:
-            self.properties.append(
-                PythonPropertyCandidate(
-                    statement=statement,
-                    class_name=class_node.name,
-                    class_line=class_node.lineno,
-                    class_column=class_node.col_offset,
-                    class_bases=tuple(class_node.bases),
-                    method=method,
-                    name=name,
-                    receiver=receiver.id,
-                    scope=PythonPropertyScope.METHOD,
-                )
-            )
-
-    @visit.register(ast.Constant)
-    @visit.register(ast.alias)
-    @visit.register(ast.operator)
-    @visit.register(ast.unaryop)
-    @visit.register(ast.boolop)
-    @visit.register(ast.cmpop)
-    @visit.register(ast.expr_context)
-    @visit.register(ast.Pass)
-    @visit.register(ast.Break)
-    @visit.register(ast.Continue)
-    @visit.register(ast.Global)
-    @visit.register(ast.Nonlocal)
-    @visit.register(ast.TypeIgnore)
-    def visit_terminal(self, node: ast.AST, depth: int, context: PythonTraversalContext) -> None:
-        return
-
-    def declaration_ordinal(self, node: ast.stmt | ast.expr) -> int:
-        return (node.lineno << 32) + node.col_offset + 1
+    @limit_property_scope.register
+    def limit_class_properties(self, scope: ast.ClassDef, limitation: InventoryLimitation) -> None:
+        self.inventory.properties[scope].append(limitation)

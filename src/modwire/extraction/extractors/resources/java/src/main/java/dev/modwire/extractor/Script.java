@@ -46,6 +46,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.IdentityHashMap;
+import java.util.HexFormat;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.expr.LambdaExpr;
+import com.github.javaparser.ast.expr.MethodReferenceExpr;
 
 public final class Script {
     private final Gson gson = new GsonBuilder().serializeNulls().create();
@@ -105,19 +112,28 @@ public final class Script {
 
 final class JavaSourceExtractor {
     private final List<CallableFact> callableFacts = new ArrayList<>();
-    private final Map<String, List<CallableFact>> callablesByName = new HashMap<>();
-    private final Map<String, List<CallableFact>> callablesByQualifiedName = new HashMap<>();
-    private final Map<String, List<CallableFact>> constructorsByOwner = new HashMap<>();
     private String sourceId = "";
+    private String contentDigest = "";
+    private String sourceContent = "";
+    private final Map<Node, JsonObject> identities = new IdentityHashMap<>();
+    private JsonObject namespaceMembership = new JsonObject();
+    private JsonObject inventory = new JsonObject();
 
     JsonObject extract(Path path, String sourceIdentity) throws IOException {
         sourceId = sourceIdentity;
+        identities.clear();
+        inventory = fileInventory();
+        namespaceMembership = new JsonObject();
+        namespaceMembership.addProperty("kind", "none");
         callableFacts.clear();
-        callablesByName.clear();
-        callablesByQualifiedName.clear();
-        constructorsByOwner.clear();
 
         String content = Files.readString(path, StandardCharsets.UTF_8);
+        sourceContent = content;
+        try {
+            contentDigest = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(content.getBytes(StandardCharsets.UTF_8)));
+        } catch (NoSuchAlgorithmException error) {
+            throw new ExtractorInvariantFailure("SHA-256 is unavailable.", error);
+        }
         CompilationUnit unit;
         try {
             unit = StaticJavaParser.parse(content);
@@ -142,20 +158,54 @@ final class JavaSourceExtractor {
         JsonArray relations = new JsonArray();
         JsonArray namespaces = namespaces(unit);
 
-        for (TypeDeclaration<?> declaration : unit.getTypes()) {
-            collectType(declaration, "", declarations, callables, relations);
+        JsonArray values = new JsonArray();
+        JsonArray callableValues = new JsonArray();
+        JsonArray anonymousCallables = new JsonArray();
+        unit.walk(node -> {
+            String owner = nearestIdentity(node).map(value -> value.get("qualified_name").getAsString()).orElse("");
+            if (node instanceof TypeDeclaration<?> declaration) {
+                collectType(declaration, owner, declarations, callables, relations);
+            } else if (node instanceof ObjectCreationExpr creation && creation.getAnonymousClassBody().isPresent()) {
+                collectAnonymousType(creation, creation.getAnonymousClassBody().get(), owner, declarations, callables);
+                relations.add(relation(identities.get(node), "extends", creation.getType().toString()));
+            } else if (node instanceof EnumConstantDeclaration constant && !constant.getClassBody().isEmpty()) {
+                collectAnonymousType(constant, constant.getClassBody(), owner, declarations, callables);
+            } else if (node instanceof LambdaExpr lambda) {
+                Node parent = lambda.getParentNode().orElseThrow(() -> new ExtractorInvariantFailure("Lambda has no native parent.", null));
+                boolean bound = parent instanceof VariableDeclarator;
+                String name = bound ? ((VariableDeclarator) parent).getNameAsString() : "<anonymous>@" + ordinal(lambda);
+                String qualified = owner.isEmpty() ? name : owner + "." + name;
+                JsonObject fact = callable(lambda, lambda.getParameters(), name, new JsonObject(), owner, qualified,
+                    bound ? "callable_value" : "anonymous", "", "private", ordinal(lambda));
+                if (bound) {
+                    fact.addProperty("declaration_kind", "assignment"); fact.addProperty("value_kind", "value_callable");
+                    fact.addProperty("scope", parent.getParentNode().filter(FieldDeclaration.class::isInstance).isPresent() ? "member" : "local");
+                    callableValues.add(fact);
+                } else anonymousCallables.add(fact);
+                callableFacts.add(new CallableFact(lambda, fact, name, owner, qualified, false));
+            } else if (node instanceof VariableDeclarator variable && variable.getParentNode().filter(FieldDeclaration.class::isInstance).isEmpty()
+                && variable.getInitializer().filter(LambdaExpr.class::isInstance).isEmpty()) {
+                values.add(value(variable, owner));
+            } else if (node instanceof MethodReferenceExpr) {
+                limitInventory("callable_values", node, "Method references require a resolved external binding and do not declare a callable body.");
+            }
+        });
+        for (JsonElement value : relations) {
+            JsonObject relation = value.getAsJsonObject();
+            relation.add("target", resolveTarget(relation.get("target_reference").getAsString(), relation.getAsJsonObject("source_declaration_id")));
         }
-        indexCallables();
 
         JsonObject result = new JsonObject();
+        result.add("inventory", inventory);
+        result.add("unresolved_methods", new JsonArray());
         result.add("imports", imports(unit));
         result.add("exports", new JsonArray());
         result.add("namespaces", namespaces);
         result.add("declarations", declarations);
         result.add("functions", new JsonArray());
-        result.add("values", new JsonArray());
-        result.add("callable_values", new JsonArray());
-        result.add("anonymous_callables", new JsonArray());
+        result.add("values", values);
+        result.add("callable_values", callableValues);
+        result.add("anonymous_callables", anonymousCallables);
         result.add("calls", calls());
         result.add("declaration_relations", relations);
         result.addProperty("line_count", content.split("\\R", -1).length);
@@ -169,7 +219,15 @@ final class JavaSourceExtractor {
         unit.getPackageDeclaration().ifPresent(declaration -> {
             JsonObject namespace = new JsonObject();
             namespace.addProperty("kind", "package");
-            namespace.addProperty("qualified_name", declaration.getNameAsString());
+            JsonObject identity = declarationIdentity("namespace", declaration.getNameAsString(), ordinal(declaration));
+            namespace.add("declaration_id", identity);
+            namespace.add("placement", placement(declaration));
+            namespaceMembership.addProperty("kind", "member");
+            namespaceMembership.addProperty("namespace_reference", declaration.getNameAsString());
+            JsonObject target = new JsonObject();
+            target.addProperty("kind", "resolved");
+            target.add("declaration_id", identity);
+            namespaceMembership.add("target", target);
             namespaces.add(namespace);
         });
         return namespaces;
@@ -229,16 +287,19 @@ final class JavaSourceExtractor {
             : owner + "." + declaration.getNameAsString();
         DeclarationKind kind = declarationKind(declaration);
         JsonObject identity = declarationIdentity(kind.family(), qualifiedName, ordinal(declaration));
+        identities.put(declaration, identity);
         String visibility = visibility(declaration, implicitTypeVisibility(declaration));
         JsonArray methods = new JsonArray();
         JsonArray abstractMethods = new JsonArray();
         JsonArray properties = new JsonArray();
 
         collectProperties(declaration, identity, properties);
-        collectCallableDeclarations(declaration, identity, qualifiedName, methods, abstractMethods, callables);
+        collectCallableDeclarations(declaration, declaration.getMembers(), identity, qualifiedName, methods, abstractMethods, callables);
 
         JsonObject fact = new JsonObject();
         fact.add("declaration_id", identity.deepCopy());
+        fact.add("placement", placement(declaration));
+        fact.add("inventory", memberInventory());
         fact.addProperty("kind", kind.kind());
         fact.addProperty("name", qualifiedName);
         fact.addProperty("visibility", visibility);
@@ -252,11 +313,6 @@ final class JavaSourceExtractor {
         declarations.add(fact);
 
         collectRelations(declaration, identity, relations);
-        for (BodyDeclaration<?> member : declaration.getMembers()) {
-            if (member.isTypeDeclaration()) {
-                collectType(member.asTypeDeclaration(), qualifiedName, declarations, callables, relations);
-            }
-        }
     }
 
     private void collectProperties(TypeDeclaration<?> declaration, JsonObject ownerIdentity, JsonArray properties) {
@@ -343,6 +399,7 @@ final class JavaSourceExtractor {
             )
         );
         property.add("owner_declaration_id", ownerIdentity.deepCopy());
+        property.add("placement", placement(declaration));
         property.addProperty("name", name);
         property.addProperty("is_optional", false);
         property.add("type", sourceType(annotation));
@@ -353,80 +410,62 @@ final class JavaSourceExtractor {
     }
 
     private void collectCallableDeclarations(
-        TypeDeclaration<?> declaration,
+        Node declaration,
+        List<BodyDeclaration<?>> members,
         JsonObject ownerIdentity,
         String owner,
         JsonArray methods,
         JsonArray abstractMethods,
         JsonArray callables
     ) {
-        boolean interfaceDeclaration = declaration.isClassOrInterfaceDeclaration()
-            && declaration.asClassOrInterfaceDeclaration().isInterface();
+        boolean interfaceDeclaration = declaration instanceof ClassOrInterfaceDeclaration typed && typed.isInterface();
         String methodFallback = interfaceDeclaration ? "public" : "internal";
-        String constructorFallback = declaration.isEnumDeclaration() ? "private" : methodFallback;
-        for (ConstructorDeclaration constructor : declaration.getConstructors()) {
-            JsonObject callable = addCallable(
-                constructor,
-                "constructor",
-                ownerIdentity,
-                owner,
-                "constructor",
-                "",
-                visibility(constructor, constructorFallback),
-                callables
-            );
-            methods.add(callable.deepCopy());
-        }
-        if (declaration.isRecordDeclaration()) {
-            RecordDeclaration record = declaration.asRecordDeclaration();
-            for (CompactConstructorDeclaration constructor : record.getCompactConstructors()) {
-                String constructorVisibility = visibility(
-                    constructor,
-                    visibility(record, implicitTypeVisibility(record))
-                );
-                JsonObject callable = addCompactConstructor(
-                    constructor,
-                    record.getParameters(),
-                    ownerIdentity,
-                    owner,
-                    constructorVisibility,
-                    callables
-                );
-                methods.add(callable.deepCopy());
+        String constructorFallback = declaration instanceof EnumDeclaration ? "private" : methodFallback;
+        for (BodyDeclaration<?> member : members) {
+            if (member instanceof ConstructorDeclaration constructor) {
+                methods.add(addCallable(constructor, "constructor", ownerIdentity, owner, "constructor", "",
+                    visibility(constructor, constructorFallback), callables));
+            } else if (member instanceof CompactConstructorDeclaration constructor && declaration instanceof RecordDeclaration record) {
+                methods.add(addCompactConstructor(constructor, record.getParameters(), ownerIdentity, owner,
+                    visibility(constructor, visibility(record, implicitTypeVisibility(record))), callables));
+            } else if (member instanceof MethodDeclaration method) {
+                JsonObject callable = addCallable(method, method.getNameAsString(), ownerIdentity, owner,
+                    method.isStatic() ? "static_method" : "instance_method", method.getType().toString(), visibility(method, methodFallback), callables);
+                if (method.isAbstract() || method.getBody().isEmpty()) abstractMethods.add(callable);
+                else methods.add(callable);
+            } else if (member instanceof AnnotationMemberDeclaration annotation) {
+                abstractMethods.add(addAnnotationCallable(annotation, ownerIdentity, owner, callables));
             }
         }
-        for (MethodDeclaration method : declaration.getMethods()) {
-            String methodVisibility = visibility(method, methodFallback);
-            JsonObject callable = addCallable(
-                method,
-                method.getNameAsString(),
-                ownerIdentity,
-                owner,
-                method.isStatic() ? "static_method" : "instance_method",
-                method.getType().toString(),
-                methodVisibility,
-                callables
-            );
-            if (!interfaceDeclaration && (method.isAbstract() || method.getBody().isEmpty())) {
-                abstractMethods.add(callable.deepCopy());
-            } else {
-                methods.add(callable.deepCopy());
-            }
+    }
+
+    private void collectAnonymousType(Node node, List<BodyDeclaration<?>> members, String owner, JsonArray declarations, JsonArray callables) {
+        String name = "<anonymous>@" + ordinal(node);
+        String qualified = owner.isEmpty() ? name : owner + "." + name;
+        JsonObject identity = declarationIdentity("class", qualified, ordinal(node));
+        identities.put(node, identity);
+        JsonArray methods = new JsonArray(); JsonArray abstractMethods = new JsonArray(); JsonArray properties = new JsonArray();
+        collectCallableDeclarations(node, members, identity, qualified, methods, abstractMethods, callables);
+        for (BodyDeclaration<?> member : members) if (member instanceof FieldDeclaration field) {
+            for (VariableDeclarator variable : field.getVariables()) properties.add(property(variable, identity, variable.getNameAsString(),
+                variable.getType().toString(), visibility(field, "internal"), field.isStatic() ? "static" : "instance"));
         }
-        if (declaration.isAnnotationDeclaration()) {
-            for (BodyDeclaration<?> member : declaration.getMembers()) {
-                if (member.isAnnotationMemberDeclaration()) {
-                    AnnotationMemberDeclaration annotationMember = member.asAnnotationMemberDeclaration();
-                    JsonObject callable = addAnnotationCallable(
-                        annotationMember,
-                        ownerIdentity,
-                        owner,
-                        callables
-                    );
-                    abstractMethods.add(callable.deepCopy());
-                }
-            }
-        }
+        JsonObject fact = new JsonObject();
+        fact.add("declaration_id", identity); fact.add("placement", placement(node)); fact.add("inventory", memberInventory());
+        fact.addProperty("kind", "class"); fact.addProperty("name", name); fact.addProperty("visibility", "private"); fact.addProperty("visibility_intent", "private");
+        fact.add("declaration_annotations", new JsonArray()); fact.addProperty("line_count", lineCount(node));
+        fact.add("methods", methods); fact.add("abstract_methods", abstractMethods); fact.add("properties", properties); fact.add("signatures", new JsonArray());
+        declarations.add(fact);
+    }
+
+    private JsonObject value(VariableDeclarator variable, String owner) {
+        String name = variable.getNameAsString(); String qualified = owner.isEmpty() ? name : owner + "." + name;
+        JsonObject fact = new JsonObject();
+        fact.add("declaration_id", declarationIdentity("value", qualified, ordinal(variable))); fact.add("placement", placement(variable));
+        fact.addProperty("name", name); fact.addProperty("visibility", "private"); fact.addProperty("visibility_intent", "private");
+        fact.addProperty("line_count", lineCount(variable)); fact.addProperty("declaration_kind", "assignment");
+        fact.addProperty("value_kind", "value_unknown"); fact.addProperty("scope", "local");
+        return fact;
     }
 
     private JsonObject addCallable(
@@ -440,7 +479,7 @@ final class JavaSourceExtractor {
         JsonArray callables
     ) {
         String qualifiedName = owner + "." + name;
-        int ordinal = ordinal(declaration);
+        long ordinal = ordinal(declaration);
         JsonObject callable = callable(
             declaration,
             declaration.getParameters(),
@@ -466,7 +505,7 @@ final class JavaSourceExtractor {
     ) {
         String name = declaration.getNameAsString();
         String qualifiedName = owner + "." + name;
-        int ordinal = ordinal(declaration);
+        long ordinal = ordinal(declaration);
         JsonObject callable = callable(
             declaration,
             List.of(),
@@ -493,7 +532,7 @@ final class JavaSourceExtractor {
         JsonArray callables
     ) {
         String qualifiedName = owner + ".constructor";
-        int ordinal = ordinal(declaration);
+        long ordinal = ordinal(declaration);
         JsonObject callable = callable(
             declaration,
             parameters,
@@ -521,10 +560,14 @@ final class JavaSourceExtractor {
         String kind,
         String returnAnnotation,
         String visibility,
-        int ordinal
+        long ordinal
     ) {
         JsonObject callable = new JsonObject();
-        callable.add("declaration_id", declarationIdentity("method", qualifiedName, ordinal));
+        String family = "callable_value".equals(kind) ? "value" : "anonymous".equals(kind) ? "callable" : "method";
+        JsonObject identity = declarationIdentity(family, qualifiedName, ordinal);
+        identities.put(declaration, identity);
+        callable.add("declaration_id", identity);
+        callable.add("placement", placement(declaration));
         callable.addProperty("source_id", sourceId);
         callable.addProperty("name", name);
         callable.addProperty("qualified_name", qualifiedName);
@@ -539,7 +582,7 @@ final class JavaSourceExtractor {
         callable.add("return_type", sourceType(returnAnnotation));
         callable.add("decorators", annotationsForNode(declaration));
         callable.addProperty("docstring", "");
-        callable.add("owner_declaration_id", ownerIdentity.deepCopy());
+        if ("method".equals(family)) callable.add("owner_declaration_id", ownerIdentity.deepCopy());
         return callable;
     }
 
@@ -646,17 +689,6 @@ final class JavaSourceExtractor {
         return relation;
     }
 
-    private void indexCallables() {
-        for (CallableFact fact : callableFacts) {
-            callablesByName.computeIfAbsent(fact.name(), ignored -> new ArrayList<>()).add(fact);
-            callablesByQualifiedName.computeIfAbsent(fact.qualifiedName(), ignored -> new ArrayList<>()).add(fact);
-            if (fact.constructor()) {
-                constructorsByOwner.computeIfAbsent(fact.owner(), ignored -> new ArrayList<>()).add(fact);
-                constructorsByOwner.computeIfAbsent(lastPart(fact.owner()), ignored -> new ArrayList<>()).add(fact);
-            }
-        }
-    }
-
     private JsonArray calls() {
         JsonArray calls = new JsonArray();
         for (CallableFact source : callableFacts) {
@@ -672,8 +704,8 @@ final class JavaSourceExtractor {
                 }
             }
             expressions.sort((left, right) -> {
-                int start = left.getBegin().orElseThrow().compareTo(right.getBegin().orElseThrow());
-                return start != 0 ? start : right.getEnd().orElseThrow().compareTo(left.getEnd().orElseThrow());
+                int start = sourceRange(left).begin.compareTo(sourceRange(right).begin);
+                return start != 0 ? start : sourceRange(right).end.compareTo(sourceRange(left).end);
             });
             int ordinal = 1;
             for (Node expression : expressions) {
@@ -690,21 +722,24 @@ final class JavaSourceExtractor {
     private JsonObject methodCall(CallableFact source, MethodCallExpr expression, int ordinal) {
         String name = expression.getNameAsString();
         String rendered = expression.getScope().map(scope -> scope + "." + name).orElse(name);
-        List<CallableFact> candidates;
-        if (expression.getScope().isEmpty()) {
-            candidates = callablesByName.getOrDefault(name, List.of());
-        } else {
-            String scope = expression.getScope().orElseThrow().toString();
-            String qualifiedName = ("this".equals(scope) ? source.owner() : scope) + "." + name;
-            candidates = callablesByQualifiedName.getOrDefault(qualifiedName, List.of());
-        }
-        return call(source, ordinal, expression, rendered, name, candidates);
+        String reference = rendered;
+        if (expression.getScope().isEmpty() || expression.getScope().get().toString().equals("this")) reference = source.owner() + "." + name;
+        JsonObject target = resolveTarget(reference, source.json().getAsJsonObject("declaration_id"));
+        return call(source, ordinal, expression, rendered, name, targetCallables(target, false));
     }
 
     private JsonObject constructorCall(CallableFact source, ObjectCreationExpr expression, int ordinal) {
-        String target = expression.getType().toString();
-        List<CallableFact> candidates = constructorsByOwner.getOrDefault(target, List.of());
-        return call(source, ordinal, expression, target, lastPart(target), candidates);
+        String target = expression.getType().getNameWithScope();
+        JsonObject binding = resolveTarget(target, source.json().getAsJsonObject("declaration_id"));
+        return call(source, ordinal, expression, target, lastPart(target), targetCallables(binding, true));
+    }
+
+    private List<CallableFact> targetCallables(JsonObject target, boolean constructor) {
+        if (!target.get("kind").getAsString().equals("resolved")) return List.of();
+        JsonObject identity = target.getAsJsonObject("declaration_id");
+        return callableFacts.stream().filter(fact -> constructor
+            ? fact.constructor() && fact.json().getAsJsonObject("owner_declaration_id").equals(identity)
+            : fact.json().getAsJsonObject("declaration_id").equals(identity)).toList();
     }
 
     private JsonObject call(
@@ -736,7 +771,7 @@ final class JavaSourceExtractor {
         Optional<Node> current = expression.getParentNode();
         while (current.isPresent()) {
             Node candidate = current.get();
-            if (candidate instanceof CallableDeclaration<?> || candidate instanceof CompactConstructorDeclaration) {
+            if (candidate instanceof CallableDeclaration<?> || candidate instanceof CompactConstructorDeclaration || candidate instanceof LambdaExpr) {
                 return candidate == owner;
             }
             current = candidate.getParentNode();
@@ -744,9 +779,10 @@ final class JavaSourceExtractor {
         return false;
     }
 
-    private JsonObject declarationIdentity(String family, String qualifiedName, int ordinal) {
+    private JsonObject declarationIdentity(String family, String qualifiedName, long ordinal) {
         JsonObject identity = new JsonObject();
         identity.addProperty("source_id", sourceId);
+        identity.addProperty("content_digest", contentDigest);
         identity.addProperty("family", family);
         identity.addProperty("qualified_name", qualifiedName);
         identity.addProperty("ordinal", ordinal);
@@ -853,20 +889,128 @@ final class JavaSourceExtractor {
         return count;
     }
 
-    private int ordinal(Node node) {
-        return beginLine(node) * 10000 + beginColumn(node);
+    private long ordinal(Node node) {
+        return ((long) beginLine(node) << 32) + beginColumn(node);
+    }
+
+    private Range sourceRange(Node node) {
+        return node.getRange().orElseThrow(() -> new ExtractorInvariantFailure(
+            "Java parser omitted the source range for " + node.getClass().getSimpleName() + " in " + sourceId, null));
+    }
+
+    private Optional<JsonObject> nearestIdentity(Node node) {
+        Optional<Node> parent = node.getParentNode();
+        while (parent.isPresent()) {
+            JsonObject identity = identities.get(parent.get());
+            if (identity != null) return Optional.of(identity);
+            parent = parent.get().getParentNode();
+        }
+        return Optional.empty();
+    }
+
+    private int byteOffset(com.github.javaparser.Position position, boolean inclusiveEnd) {
+        int offset = 0;
+        for (int line = 1; line < position.line; line++) {
+            int newline = sourceContent.indexOf('\n', offset);
+            if (newline < 0) throw new ExtractorInvariantFailure("Java source range lies outside " + sourceId, null);
+            offset = newline + 1;
+        }
+        offset += position.column - 1 + (inclusiveEnd ? 1 : 0);
+        if (offset > sourceContent.length()) throw new ExtractorInvariantFailure("Java source column lies outside " + sourceId, null);
+        return sourceContent.substring(0, offset).getBytes(StandardCharsets.UTF_8).length;
+    }
+
+    private JsonObject placement(Node node) {
+        JsonObject container = new JsonObject();
+        Optional<JsonObject> parentIdentity = nearestIdentity(node);
+        if (parentIdentity.isPresent()) {
+            container.addProperty("kind", "declaration");
+            container.add("declaration_id", parentIdentity.get());
+        } else {
+            container.addProperty("kind", "file");
+        }
+        JsonObject lexical = container;
+        Optional<Node> parent = node.getParentNode();
+        while (parent.isPresent() && !identities.containsKey(parent.get())) {
+            if (parent.get() instanceof BlockStmt block) {
+                lexical = new JsonObject();
+                lexical.addProperty("kind", "block");
+                lexical.add("container", container);
+                Range range = sourceRange(block);
+                lexical.addProperty("start_utf8_offset", byteOffset(range.begin, false));
+                lexical.addProperty("end_utf8_offset", byteOffset(range.end, true));
+                break;
+            }
+            parent = parent.get().getParentNode();
+        }
+        JsonObject result = new JsonObject();
+        result.add("lexical_scope", lexical);
+        result.add("namespace", namespaceMembership.deepCopy());
+        return result;
+    }
+
+    private JsonObject coverage(String status) {
+        JsonObject result = new JsonObject();
+        result.addProperty("status", status);
+        result.add("limitations", new JsonArray());
+        return result;
+    }
+
+    private JsonObject fileInventory() {
+        JsonObject result = new JsonObject();
+        for (String name : List.of("declarations", "values", "callable_values", "anonymous_callables", "namespaces")) result.add(name, coverage("complete"));
+        for (String name : List.of("functions", "exports", "unresolved_methods")) result.add(name, coverage("not_applicable"));
+        return result;
+    }
+
+    private JsonObject memberInventory() {
+        JsonObject result = new JsonObject();
+        for (String name : List.of("methods", "abstract_methods", "properties")) result.add(name, coverage("complete"));
+        result.add("signatures", coverage("not_applicable"));
+        return result;
+    }
+
+    private void limitInventory(String family, Node node, String description) {
+        JsonObject coverage = inventory.getAsJsonObject(family);
+        coverage.addProperty("status", "incomplete");
+        JsonObject limitation = new JsonObject();
+        limitation.addProperty("kind", "unsupported_syntax");
+        limitation.addProperty("description", description);
+        JsonObject location = new JsonObject();
+        location.addProperty("kind", "source");
+        location.addProperty("start_line", beginLine(node));
+        location.addProperty("end_line", endLine(node));
+        limitation.add("location", location);
+        coverage.getAsJsonArray("limitations").add(limitation);
+    }
+
+    private JsonObject resolveTarget(String reference, JsonObject source) {
+        int generic = reference.indexOf('<');
+        String name = generic < 0 ? reference : reference.substring(0, generic);
+        String prefix = source.get("qualified_name").getAsString();
+        while (true) {
+            String qualified = prefix.isEmpty() ? name : prefix + "." + name;
+            List<JsonObject> matches = identities.values().stream().filter(identity -> identity.get("qualified_name").getAsString().equals(qualified)).toList();
+            JsonObject target = new JsonObject();
+            if (matches.size() == 1) { target.addProperty("kind", "resolved"); target.add("declaration_id", matches.get(0)); return target; }
+            if (matches.size() > 1 || prefix.isEmpty()) {
+                target.addProperty("kind", "unresolved"); target.addProperty("reason", matches.isEmpty() ? "external" : "ambiguous"); return target;
+            }
+            int separator = prefix.lastIndexOf('.');
+            prefix = separator < 0 ? "" : prefix.substring(0, separator);
+        }
     }
 
     private int beginLine(Node node) {
-        return node.getRange().map(range -> range.begin.line).orElse(1);
+        return sourceRange(node).begin.line;
     }
 
     private int beginColumn(Node node) {
-        return node.getRange().map(range -> range.begin.column).orElse(1);
+        return sourceRange(node).begin.column;
     }
 
     private int endLine(Node node) {
-        return node.getRange().map(range -> range.end.line).orElse(beginLine(node));
+        return sourceRange(node).end.line;
     }
 
     private int lineCount(Node node) {

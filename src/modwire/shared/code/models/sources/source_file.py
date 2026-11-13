@@ -8,13 +8,20 @@ from ..callables.source_call import SourceCall
 from ..callables.source_callable import SourceCallable
 from ..callables.source_callable_value import SourceCallableValue
 from ..callables.source_function import SourceFunction
+from ..callables.source_unresolved_method import SourceUnresolvedMethod
 from ..declarations.declaration_family import DeclarationFamily
+from ..declarations.declaration_identity import DeclarationIdentity
+from ..declarations.source_binding_kind import SourceBindingKind
 from ..declarations.source_declaration import SourceDeclaration
 from ..declarations.source_declaration_relation import SourceDeclarationRelation
 from ..declarations.source_namespace import SourceNamespace
+from ..declarations.source_namespace_membership_kind import SourceNamespaceMembershipKind
+from ..declarations.source_placement import SourcePlacement
+from ..declarations.source_scope_kind import SourceScopeKind
 from ..declarations.source_symbol_kind import SourceSymbolKind
 from ..failures.code_validation_error import CodeValidationError
 from ..failures.code_violation import CodeViolation
+from ..inventories.file_inventory_coverage import FileInventoryCoverage
 from ..values.source_value import SourceValue
 from .identity import FileId, ImportIdentity
 from .source_export import SourceExport
@@ -34,6 +41,8 @@ class SourceFile(ValueModel):
     anonymous_callables: tuple[SourceAnonymousCallable, ...] = Field(default_factory=tuple)
     calls: tuple[SourceCall, ...] = Field(default_factory=tuple)
     declaration_relations: tuple[SourceDeclarationRelation, ...] = Field(default_factory=tuple)
+    unresolved_methods: tuple[SourceUnresolvedMethod, ...]
+    inventory: FileInventoryCoverage
     line_count: int
     code_line_count: int
     public_symbol_count: int
@@ -53,8 +62,6 @@ class SourceFile(ValueModel):
                 raise CodeValidationError(CodeViolation.FOREIGN_DECLARATION_IDENTITY, str(self.file_id))
             if family is not None and any(item.declaration_id.family is not family for item in declarations):
                 raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_FAMILY, str(self.file_id))
-            if any(item.declaration_id.qualified_name != item.name for item in declarations):
-                raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_NAME, str(self.file_id))
         if any(self.declaration_family(item.kind) is not item.declaration_id.family for item in self.declarations):
             raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_KIND, str(self.file_id))
         callables = self.canonical_callables()
@@ -87,8 +94,93 @@ class SourceFile(ValueModel):
             *(method for declaration in self.declarations for method in declaration.abstract_methods),
             *self.callable_values,
             *self.anonymous_callables,
+            *self.unresolved_methods,
         )
         return tuple(sorted(callables, key=lambda item: item.declaration_id.ordinal))
+
+    def declaration_placements(self) -> tuple[tuple[DeclarationIdentity, SourcePlacement], ...]:
+        return tuple(
+            (item.declaration_id, item.placement)
+            for item in (
+                *self.declarations,
+                *self.namespaces,
+                *self.values,
+                *self.canonical_callables(),
+                *(member for declaration in self.declarations for member in declaration.properties),
+            )
+        )
+
+    @model_validator(mode="after")
+    def validate_inventory(self) -> Self:
+        self.inventory.declarations.validate_item_count(len(self.declarations))
+        self.inventory.functions.validate_item_count(len(self.functions))
+        self.inventory.values.validate_item_count(len(self.values))
+        self.inventory.callable_values.validate_item_count(len(self.callable_values))
+        self.inventory.anonymous_callables.validate_item_count(len(self.anonymous_callables))
+        self.inventory.namespaces.validate_item_count(len(self.namespaces))
+        self.inventory.exports.validate_item_count(len(self.exports))
+        self.inventory.unresolved_methods.validate_item_count(len(self.unresolved_methods))
+        return self
+
+    @model_validator(mode="after")
+    def validate_placement(self) -> Self:
+        placements = self.declaration_placements()
+        identities = {identity for identity, _ in placements}
+        if len(identities) != len(placements):
+            raise CodeValidationError(CodeViolation.DUPLICATE_DECLARATION_IDENTITY, str(self.file_id))
+        if any(identity.source_id != self.file_id for identity in identities):
+            raise CodeValidationError(CodeViolation.FOREIGN_DECLARATION_IDENTITY, str(self.file_id))
+        if len({identity.content_digest for identity in identities}) > 1:
+            raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_CAPTURE, str(self.file_id))
+        if any(item.declaration_id.family is not DeclarationFamily.NAMESPACE for item in self.namespaces):
+            raise CodeValidationError(CodeViolation.INVALID_NAMESPACE_TARGET, str(self.file_id))
+        parents: dict[DeclarationIdentity, DeclarationIdentity] = {}
+        for identity, placement in placements:
+            scope = placement.lexical_scope
+            if scope.kind is SourceScopeKind.BLOCK:
+                if scope.end_utf8_offset <= scope.start_utf8_offset:
+                    raise CodeValidationError(CodeViolation.INVALID_BLOCK_SCOPE, identity.canonical())
+                scope = scope.container
+            if scope.kind is SourceScopeKind.DECLARATION:
+                if scope.declaration_id not in identities:
+                    raise CodeValidationError(CodeViolation.UNKNOWN_LEXICAL_SCOPE, identity.canonical())
+                parents[identity] = scope.declaration_id
+        for identity in parents:
+            visited: set[DeclarationIdentity] = set()
+            current = identity
+            while current in parents:
+                if current in visited:
+                    raise CodeValidationError(CodeViolation.CYCLIC_LEXICAL_SCOPE, identity.canonical())
+                visited.add(current)
+                current = parents[current]
+        return self
+
+    @model_validator(mode="after")
+    def validate_bindings(self) -> Self:
+        placements = self.declaration_placements()
+        identities = {identity for identity, _ in placements}
+        namespace_ids = {
+            *(item.declaration_id for item in self.namespaces),
+            *(item.declaration_id for item in self.declarations if item.kind is SourceSymbolKind.MODULE),
+        }
+        for identity, placement in placements:
+            namespace = placement.namespace
+            if (
+                namespace.kind is SourceNamespaceMembershipKind.MEMBER
+                and namespace.target.kind is SourceBindingKind.RESOLVED
+                and namespace.target.declaration_id not in namespace_ids
+            ):
+                raise CodeValidationError(CodeViolation.INVALID_NAMESPACE_TARGET, identity.canonical())
+        for export in self.exports:
+            if export.binding.kind is SourceBindingKind.RESOLVED:
+                if not export.binding.declaration_ids:
+                    raise CodeValidationError(CodeViolation.EMPTY_EXPORT_BINDING, export.name)
+                if any(identity not in identities for identity in export.binding.declaration_ids):
+                    raise CodeValidationError(CodeViolation.UNKNOWN_DECLARATION_TARGET, export.name)
+        for relation in self.declaration_relations:
+            if relation.target.kind is SourceBindingKind.RESOLVED and relation.target.declaration_id not in identities:
+                raise CodeValidationError(CodeViolation.UNKNOWN_DECLARATION_TARGET, relation.target_reference)
+        return self
 
     def declaration_family(self, kind: SourceSymbolKind) -> DeclarationFamily:
         return {

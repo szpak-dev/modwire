@@ -3,6 +3,7 @@
 require "json"
 require "pathname"
 require "prism"
+require "digest"
 
 class SourceParseFailure < StandardError
   attr_reader :document
@@ -46,14 +47,23 @@ class RubySourceExtractor
     @functions = []
     @callable_facts = []
     @relations = []
+    @declaration_nodes = {}
+    @unresolved_methods = []
+    @limitations = Hash.new { |hash, key| hash[key] = [] }
   end
 
   def extract
     content = @path.read(encoding: "UTF-8")
+    @content_digest = Digest::SHA256.hexdigest(content)
     parsed = Prism.parse(content, filepath: @path.to_s)
     raise_parse_failure(parsed.errors.first) unless parsed.success?
 
-    collect_body(parsed.value.statements, "", nil, false)
+    index_declarations(parsed.value, "")
+    collect_body(parsed.value.statements, "", nil, {"kind" => "file"}, nil)
+    @relations.each do |item|
+      source = item.fetch("source_declaration_id")
+      item["target"] = resolve_reference(item.fetch("target_reference"), source.fetch("qualified_name"))
+    end
     callable_values = @callable_facts
                       .map { |fact| fact.fetch("json") }
                       .select { |callable| callable.fetch("kind") == "callable_value" }
@@ -65,7 +75,9 @@ class RubySourceExtractor
       "functions" => @functions,
       "values" => @values,
       "callable_values" => callable_values,
-      "anonymous_callables" => [],
+      "anonymous_callables" => @callable_facts.map { |fact| fact.fetch("json") }.select { |fact| fact.fetch("kind") == "anonymous" },
+      "unresolved_methods" => @unresolved_methods,
+      "inventory" => file_inventory,
       "calls" => calls,
       "declaration_relations" => @relations,
       "line_count" => [1, content.split(/\r\n|\n|\r/, -1).length].max,
@@ -86,135 +98,221 @@ class RubySourceExtractor
     )
   end
 
-  def collect_body(statements, owner, declaration, singleton)
-    return if statements.nil?
+  def index_declarations(node, owner)
+    return if node.nil?
+
+    if node.is_a?(Prism::ClassNode) || node.is_a?(Prism::ModuleNode)
+      name = declaration_name(node.constant_path, owner)
+      module_declaration = node.is_a?(Prism::ModuleNode)
+      @declaration_nodes[node] = {
+        "declaration_id" => identity(module_declaration ? "type" : "class", name, ordinal(node)),
+        "kind" => module_declaration ? "module" : "class", "name" => name,
+        "visibility" => "public", "visibility_intent" => "public", "declaration_annotations" => [],
+        "line_count" => line_count(node), "methods" => [], "abstract_methods" => [], "properties" => [], "signatures" => [],
+        "inventory" => member_inventory
+      }
+      owner = name
+    end
+    node.child_nodes.compact.each { |child| index_declarations(child, owner) }
+  end
+
+  def collect_body(node, owner, declaration, lexical_scope, singleton_target)
+    return if node.nil?
 
     visibility = "public"
-    statement_sequence(statements).each do |node|
-      if node.is_a?(Prism::ClassNode) || node.is_a?(Prism::ModuleNode)
-        collect_declaration(node, owner)
-      elsif node.is_a?(Prism::DefNode)
-        if owner.empty?
-          collect_function(node, visibility)
-        else
-          collect_method(node, owner, declaration, visibility, singleton)
+    statements = node.is_a?(Prism::StatementsNode) ? node.body : [node]
+    statements.each do |statement|
+      if statement.is_a?(Prism::ClassNode) || statement.is_a?(Prism::ModuleNode)
+        fact = @declaration_nodes.fetch(statement)
+        fact["placement"] = placement(lexical_scope, owner)
+        @declarations << fact
+        name = fact.fetch("declaration_id").fetch("qualified_name")
+        if statement.is_a?(Prism::ModuleNode)
+          @namespaces << {"kind" => "module", "declaration_id" => identity("namespace", name, ordinal(statement)),
+                         "placement" => placement(lexical_scope, owner)}
+        elsif statement.superclass
+          @relations << relation(fact.fetch("declaration_id"), "extends", statement.superclass.slice)
         end
-      elsif node.is_a?(Prism::SingletonClassNode) && self_receiver?(node.expression)
-        collect_body(node.body, owner, declaration, true)
-      elsif constant_write?(node)
-        collect_constant(node, owner)
-      elsif visibility_call?(node)
-        names = symbol_arguments(node)
+        collect_body(statement.body, name, fact, declaration_scope(fact.fetch("declaration_id")), nil)
+      elsif statement.is_a?(Prism::DefNode)
+        collect_callable(statement, owner, declaration, lexical_scope, singleton_target, visibility)
+      elsif statement.is_a?(Prism::SingletonClassNode)
+        target = receiver_target(statement.expression, owner, declaration)
+        container = lexical_scope.fetch("kind") == "block" ? lexical_scope.fetch("container") : lexical_scope
+        block_scope = {"kind" => "block", "container" => container,
+                       "start_utf8_offset" => statement.location.start_offset, "end_utf8_offset" => statement.location.end_offset}
+        collect_body(statement.body, owner, declaration, block_scope, target)
+      elsif constant_write?(statement)
+        collect_constant(statement, owner, lexical_scope)
+      elsif statement.is_a?(Prism::LocalVariableWriteNode)
+        collect_local_value(statement, owner, declaration, lexical_scope)
+      elsif statement.is_a?(Prism::InstanceVariableWriteNode)
+        if declaration
+          collect_property(statement.name.to_s, statement, declaration, lexical_scope, owner)
+        else
+          @limitations["values"] << limitation(statement, "unresolved_ownership", "Instance variable receiver has no exact source declaration.")
+        end
+        collect_body(statement.value, owner, declaration, lexical_scope, singleton_target)
+      elsif statement.is_a?(Prism::LambdaNode) || statement.is_a?(Prism::BlockNode)
+        name = "<lambda@#{statement.location.start_offset}>"
+        fact = callable_fact(statement, name, lexical_name(name, lexical_scope), "anonymous", visibility, lexical_scope, owner)
+        @callable_facts << {"node" => statement, "json" => fact, "owner" => owner}
+        collect_body(statement.body, owner, declaration, declaration_scope(fact.fetch("declaration_id")), nil)
+      elsif visibility_call?(statement)
+        names = symbol_arguments(statement)
         if names.empty?
-          visibility = node.name.to_s
+          visibility = statement.name.to_s
         else
-          apply_visibility(owner, names, node.name.to_s, singleton)
+          apply_visibility(owner, names, statement.name.to_s, !singleton_target.nil?)
         end
-      elsif declaration
-        collect_composition(node, declaration.fetch("declaration_id"))
+      elsif statement.is_a?(Prism::CallNode) && statement.receiver.nil? && [:attr_reader, :attr_writer, :attr_accessor].include?(statement.name) && declaration
+        arguments(statement).each do |argument|
+          if argument.is_a?(Prism::SymbolNode) || argument.is_a?(Prism::StringNode)
+            collect_property(argument.unescaped, argument, declaration, lexical_scope, owner)
+          else
+            entry = declaration.fetch("inventory").fetch("properties")
+            declaration.fetch("inventory")["properties"] = coverage(entry.fetch("limitations") + [limitation(statement, "dynamic_structure", "Attribute name requires runtime evaluation.")])
+          end
+        end
+      else
+        collect_composition(statement, declaration.fetch("declaration_id")) if declaration
+        if statement.is_a?(Prism::AliasMethodNode)
+          @limitations["unresolved_methods"] << limitation(statement, "unsupported_syntax", "Method alias binding is not represented.")
+          declaration.fetch("inventory")["methods"] = coverage(@limitations["unresolved_methods"]) if declaration
+        end
+        statement.child_nodes.compact.each { |child| collect_body(child, owner, declaration, lexical_scope, singleton_target) }
       end
     end
   end
 
-  def statement_sequence(node)
-    if node.is_a?(Prism::StatementsNode)
-      node.body
-    elsif node.is_a?(Prism::BeginNode)
-      node.statements.nil? ? [] : node.statements.body
-    else
-      []
-    end
-  end
-
-  def collect_declaration(node, owner)
-    name = declaration_name(node.constant_path, owner)
-    module_declaration = node.is_a?(Prism::ModuleNode)
-    identity = identity(module_declaration ? "type" : "class", name, ordinal(node))
-    fact = {
-      "declaration_id" => identity,
-      "kind" => module_declaration ? "module" : "class",
-      "name" => name,
-      "visibility" => "public",
-      "visibility_intent" => "public",
-      "declaration_annotations" => [],
-      "line_count" => line_count(node),
-      "methods" => [],
-      "abstract_methods" => [],
-      "properties" => [],
-      "signatures" => []
-    }
-    @declarations << fact
-    if module_declaration && @namespaces.none? { |namespace| namespace.fetch("qualified_name") == name }
-      @namespaces << {"kind" => "module", "qualified_name" => name}
-    end
-    if node.is_a?(Prism::ClassNode) && node.superclass
-      @relations << relation(identity, "extends", node.superclass.slice)
-    end
-    collect_body(node.body, name, fact, false)
-  end
-
-  def collect_method(node, owner, declaration, visibility, singleton)
-    singleton_method = singleton || !node.receiver.nil?
-    method_visibility = if singleton
-                          visibility
-                        elsif node.receiver
-                          "public"
-                        else
-                          visibility
-                        end
-    name = node.name.to_s
-    kind = if !singleton_method && name == "initialize"
-             "constructor"
-           elsif singleton_method
+  def collect_callable(node, owner, declaration, lexical_scope, singleton_target, visibility)
+    target = if node.receiver
+               receiver_target(node.receiver, owner, declaration)
+             elsif singleton_target
+               singleton_target
+             elsif declaration
+               {"kind" => "resolved", "declaration_id" => declaration.fetch("declaration_id")}
+             else
+               nil
+             end
+    singleton = !node.receiver.nil? || !singleton_target.nil?
+    kind = if target.nil?
+             "function"
+           elsif singleton
              "type_method"
+           elsif node.name == :initialize
+             "constructor"
            else
              "instance_method"
            end
-    qualified_name = "#{owner}.#{name}"
-    parameters = parameters(node.parameters)
-    callable = {
-      "declaration_id" => identity("method", qualified_name, ordinal(node)),
-      "source_id" => @source_id,
-      "name" => name,
-      "qualified_name" => qualified_name,
-      "kind" => kind,
-      "visibility" => method_visibility,
-      "visibility_intent" => method_visibility,
-      "declaration_annotations" => [],
-      "line_start" => node.location.start_line,
-      "line_end" => node.location.end_line,
-      "line_count" => line_count(node),
-      "parameters" => parameters,
-      "return_type" => absent_type,
-      "decorators" => [],
-      "docstring" => "",
-      "owner_declaration_id" => declaration.fetch("declaration_id").dup
-    }
-    declaration.fetch("methods") << callable
-    @callable_facts << {"node" => node, "json" => callable, "owner" => owner}
+    name = node.name.to_s
+    target_owner = if target && target.fetch("kind") == "resolved"
+                     target.fetch("declaration_id").fetch("qualified_name")
+                   elsif target
+                     node.receiver ? node.receiver.slice : "<singleton@#{node.location.start_offset}>"
+                   else
+                     owner
+                   end
+    qualified = target_owner.empty? ? name : "#{target_owner}.#{name}"
+    fact = callable_fact(node, name, qualified, kind, node.receiver ? "public" : visibility, lexical_scope, owner)
+    body_declaration = nil
+    if target.nil?
+      @functions << fact
+    elsif target.fetch("kind") == "resolved"
+      fact["owner_declaration_id"] = target.fetch("declaration_id")
+      exact_owner = @declaration_nodes.values.find { |item| item.fetch("declaration_id") == target.fetch("declaration_id") }
+      exact_owner.fetch("methods") << fact
+      body_declaration = exact_owner
+    else
+      fact["receiver_reference"] = node.receiver ? node.receiver.slice : target_owner
+      fact["owner"] = target
+      @unresolved_methods << fact
+    end
+    @callable_facts << {"node" => node, "json" => fact, "owner" => target_owner}
+    collect_body(node.body, target_owner, body_declaration, declaration_scope(fact.fetch("declaration_id")), nil)
   end
 
-  def collect_function(node, visibility)
-    name = node.name.to_s
-    callable = {
-      "declaration_id" => identity("function", name, ordinal(node)),
-      "source_id" => @source_id,
-      "name" => name,
-      "qualified_name" => name,
-      "kind" => "function",
-      "visibility" => visibility,
-      "visibility_intent" => visibility,
-      "declaration_annotations" => [],
-      "line_start" => node.location.start_line,
-      "line_end" => node.location.end_line,
-      "line_count" => line_count(node),
-      "parameters" => parameters(node.parameters),
-      "return_type" => absent_type,
-      "decorators" => [],
-      "docstring" => ""
-    }
-    @functions << callable
-    @callable_facts << {"node" => node, "json" => callable, "owner" => ""}
+  def callable_fact(node, name, qualified_name, kind, visibility, lexical_scope, owner)
+    family = {"function" => "function", "callable_value" => "value", "anonymous" => "callable"}.fetch(kind, "method")
+    {"declaration_id" => identity(family, qualified_name, ordinal(node)), "source_id" => @source_id,
+     "name" => name, "qualified_name" => qualified_name, "kind" => kind,
+     "visibility" => visibility, "visibility_intent" => visibility, "declaration_annotations" => [],
+     "line_start" => node.location.start_line, "line_end" => node.location.end_line, "line_count" => line_count(node),
+     "parameters" => parameters(node.parameters), "return_type" => absent_type, "decorators" => [], "docstring" => "",
+     "placement" => placement(lexical_scope, owner)}
+  end
+
+  def collect_property(name, node, declaration, lexical_scope, owner)
+    properties = declaration.fetch("properties")
+    return if properties.any? { |item| item.fetch("name") == name }
+
+    owner_id = declaration.fetch("declaration_id")
+    properties << {"declaration_id" => identity("property", "#{owner_id.fetch("qualified_name")}.#{name}", ordinal(node)),
+      "owner_declaration_id" => owner_id, "name" => name, "is_optional" => false, "type" => absent_type,
+      "visibility" => "public", "member_kind" => "instance", "placement" => placement(lexical_scope, owner),
+      "assigned_values" => [{"kind" => "unassigned", "expression" => "", "reference" => ""}]}
+  end
+
+  def receiver_target(receiver, owner, declaration)
+    if self_receiver?(receiver)
+      return declaration ? {"kind" => "resolved", "declaration_id" => declaration.fetch("declaration_id")} : {"kind" => "unresolved", "reason" => "dynamic"}
+    end
+    reference = constant_reference(receiver)
+    reference.nil? ? {"kind" => "unresolved", "reason" => "dynamic"} : resolve_reference(reference, owner)
+  end
+
+  def resolve_reference(reference, owner)
+    absolute = reference.start_with?("::")
+    name = reference.sub(/\A::/, "").gsub("::", ".")
+    prefixes = absolute ? [""] : owner.split(".").length.downto(0).map { |length| owner.split(".").take(length).join(".") }
+    prefixes.each do |prefix|
+      qualified = prefix.empty? ? name : "#{prefix}.#{name}"
+      matches = @declaration_nodes.values.select { |item| item.fetch("declaration_id").fetch("qualified_name") == qualified }
+      next if matches.empty?
+      return {"kind" => "unresolved", "reason" => "ambiguous"} unless matches.length == 1
+
+      return {"kind" => "resolved", "declaration_id" => matches.first.fetch("declaration_id")}
+    end
+    {"kind" => "unresolved", "reason" => "external"}
+  end
+
+  def declaration_scope(identity)
+    {"kind" => "declaration", "declaration_id" => identity}
+  end
+
+  def placement(scope, owner)
+    modules = @declaration_nodes.values.select do |item|
+      name = item.fetch("declaration_id").fetch("qualified_name")
+      item.fetch("kind") == "module" && (owner == name || owner.start_with?("#{name}."))
+    end
+    nearest = modules.group_by { |item| item.fetch("declaration_id").fetch("qualified_name") }.max_by { |name, _| name.length }
+    namespace = if nearest.nil?
+                  {"kind" => "none"}
+                else
+                  name, matches = nearest
+                  target = matches.length == 1 ? {"kind" => "resolved", "declaration_id" => matches.first.fetch("declaration_id")} : {"kind" => "unresolved", "reason" => "ambiguous"}
+                  {"kind" => "member", "namespace_reference" => name, "target" => target}
+                end
+    {"lexical_scope" => scope, "namespace" => namespace}
+  end
+
+  def limitation(node, kind, description)
+    {"kind" => kind, "location" => {"kind" => "source", "start_line" => node.location.start_line, "end_line" => node.location.end_line}, "description" => description}
+  end
+
+  def coverage(limitations, status = "complete")
+    {"status" => limitations.empty? ? status : "incomplete", "limitations" => limitations.dup}
+  end
+
+  def member_inventory
+    {"methods" => coverage([]), "abstract_methods" => coverage([], "not_applicable"),
+     "properties" => coverage([]), "signatures" => coverage([], "not_applicable")}
+  end
+
+  def file_inventory
+    %w[declarations functions values callable_values anonymous_callables namespaces exports unresolved_methods].to_h do |kind|
+      [kind, coverage(@limitations[kind], kind == "exports" ? "not_applicable" : "complete")]
+    end
   end
 
   def parameters(node)
@@ -288,7 +386,29 @@ class RubySourceExtractor
     end
   end
 
-  def collect_constant(node, owner)
+  def lexical_name(name, scope)
+    container = scope.fetch("kind") == "block" ? scope.fetch("container") : scope
+    container.fetch("kind") == "file" ? name : "#{container.fetch("declaration_id").fetch("qualified_name")}.#{name}"
+  end
+
+  def collect_local_value(node, owner, declaration, lexical_scope)
+    name = node.name.to_s
+    qualified = lexical_name(name, lexical_scope)
+    if node.value.is_a?(Prism::LambdaNode)
+      fact = callable_fact(node.value, name, qualified, "callable_value", "private", lexical_scope, owner)
+      fact.merge!("declaration_kind" => "assignment", "value_kind" => "value_callable", "scope" => lexical_scope.fetch("kind") == "file" ? "module" : "local")
+      @callable_facts << {"node" => node.value, "json" => fact, "owner" => owner}
+      collect_body(node.value.body, owner, declaration, declaration_scope(fact.fetch("declaration_id")), nil)
+    else
+      @values << {"declaration_id" => identity("value", qualified, ordinal(node)), "name" => name,
+        "visibility" => "private", "visibility_intent" => "private", "line_count" => line_count(node),
+        "declaration_kind" => "assignment", "value_kind" => LITERAL_NODES.any? { |type| node.value.is_a?(type) } ? "value_literal" : "value_unknown",
+        "scope" => lexical_scope.fetch("kind") == "file" ? "module" : "local", "placement" => placement(lexical_scope, owner)}
+      collect_body(node.value, owner, declaration, lexical_scope, nil)
+    end
+  end
+
+  def collect_constant(node, owner, lexical_scope)
     name_node = node.is_a?(Prism::ConstantPathWriteNode) ? node.target : node
     name = declaration_name(name_node, owner)
     value = node.value
@@ -302,7 +422,7 @@ class RubySourceExtractor
                    "value_unknown"
                  end
     if value.is_a?(Prism::LambdaNode)
-      collect_callable_constant(node, value, name)
+      collect_callable_constant(node, value, name, lexical_scope, owner)
       return
     end
     @values << {
@@ -313,32 +433,19 @@ class RubySourceExtractor
       "line_count" => line_count(node),
       "declaration_kind" => "constant",
       "value_kind" => value_kind,
-      "scope" => "module"
+      "scope" => lexical_scope.fetch("kind") == "file" ? "module" : "local",
+      "placement" => placement(lexical_scope, owner)
     }
+    collect_body(value, owner, nil, lexical_scope, nil)
   end
 
-  def collect_callable_constant(node, value, name)
-    callable = {
-      "declaration_id" => identity("value", name, ordinal(node)),
-      "source_id" => @source_id,
-      "name" => name,
-      "qualified_name" => name,
-      "kind" => "callable_value",
-      "visibility" => "public",
-      "visibility_intent" => "public",
-      "declaration_annotations" => [],
-      "line_start" => node.location.start_line,
-      "line_end" => node.location.end_line,
-      "line_count" => line_count(node),
-      "parameters" => parameters(value.parameters),
-      "return_type" => absent_type,
-      "decorators" => [],
-      "docstring" => "",
-      "declaration_kind" => "constant",
-      "value_kind" => "value_callable",
-      "scope" => "module"
-    }
-    @callable_facts << {"node" => value, "json" => callable, "owner" => ""}
+  def collect_callable_constant(node, value, name, lexical_scope, owner)
+    fact = callable_fact(value, name, name, "callable_value", "public", lexical_scope, owner)
+    fact["declaration_id"] = identity("value", name, ordinal(node))
+    fact.merge!("declaration_kind" => "constant", "value_kind" => "value_callable",
+                "scope" => lexical_scope.fetch("kind") == "file" ? "module" : "local")
+    @callable_facts << {"node" => value, "json" => fact, "owner" => owner}
+    collect_body(value.body, owner, nil, declaration_scope(fact.fetch("declaration_id")), nil)
   end
 
   def imports(program)
@@ -431,7 +538,9 @@ class RubySourceExtractor
     receiver = constant_reference(node.receiver)
     return nil if receiver.nil?
 
-    normalized = receiver.sub(/\A::/, "").gsub("::", ".")
+    target = resolve_reference(receiver, owner)
+    return nil unless target.fetch("kind") == "resolved"
+    normalized = target.fetch("declaration_id").fetch("qualified_name")
     name == "new" ? "#{normalized}.initialize" : "#{normalized}.#{name}"
   end
 
@@ -449,7 +558,7 @@ class RubySourceExtractor
 
     yield node
     node.child_nodes.compact.each do |child|
-      next if stop_at_definitions && child.is_a?(Prism::DefNode)
+      next if stop_at_definitions && (child.is_a?(Prism::DefNode) || child.is_a?(Prism::LambdaNode) || child.is_a?(Prism::BlockNode) || child.is_a?(Prism::ClassNode) || child.is_a?(Prism::ModuleNode))
 
       walk(child, stop_at_definitions: stop_at_definitions, &block)
     end
@@ -502,7 +611,7 @@ class RubySourceExtractor
   end
 
   def identity(family, name, ordinal)
-    {"source_id" => @source_id, "family" => family, "qualified_name" => name, "ordinal" => ordinal}
+    {"source_id" => @source_id, "family" => family, "qualified_name" => name, "ordinal" => ordinal, "content_digest" => @content_digest}
   end
 
   def absent_type

@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from wireup import injectable
 
 from ....shared.code.models.capabilities.capability_coverage import CapabilityCoverage
@@ -18,15 +16,16 @@ from ..models.extractor_runtime import ExtractorRuntime
 
 
 @injectable(as_type=SourceExtractor, qualifier="typescript")
-@dataclass(frozen=True)
 class TypeScriptExtractor(SourceExtractor):
-    @property
-    def runtime(self) -> ExtractorRuntime:
-        return ExtractorRuntime(
+    runtime: ExtractorRuntime
+    batch_config: BatchConfig
+
+    def __init__(self) -> None:
+        self.runtime = ExtractorRuntime(
             order=1,
             descriptor=ExtractorDescriptor(
                 id="modwire.typescript.ts-morph",
-                version="3",
+                version="4",
                 language="typescript",
                 runtime="node",
             ),
@@ -178,9 +177,7 @@ class TypeScriptExtractor(SourceExtractor):
             ),
         )
 
-    @property
-    def batch_config(self) -> BatchConfig:
-        return BatchConfig(
+        self.batch_config = BatchConfig(
             size=500,
             parallel_threshold=1000,
             parallel_size=500,

@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from wireup import injectable
 
 from ....shared.code.models.capabilities.capability_coverage import CapabilityCoverage
@@ -19,15 +17,16 @@ from ..models.extractor_runtime import ExtractorRuntime
 
 
 @injectable(as_type=SourceExtractor, qualifier="java")
-@dataclass(frozen=True)
 class JavaExtractor(SourceExtractor):
-    @property
-    def runtime(self) -> ExtractorRuntime:
-        return ExtractorRuntime(
+    runtime: ExtractorRuntime
+    batch_config: BatchConfig
+
+    def __init__(self) -> None:
+        self.runtime = ExtractorRuntime(
             order=3,
             descriptor=ExtractorDescriptor(
                 id="modwire.java.javaparser",
-                version="2",
+                version="3",
                 language="java",
                 runtime="java",
             ),
@@ -174,9 +173,7 @@ class JavaExtractor(SourceExtractor):
             ),
         )
 
-    @property
-    def batch_config(self) -> BatchConfig:
-        return BatchConfig(
+        self.batch_config = BatchConfig(
             size=500,
             parallel_threshold=500,
             parallel_size=500,

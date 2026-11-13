@@ -14,15 +14,8 @@ class SourceParser(ABC):
 
 
 class SourceExtractor(ABC):
-    @property
-    @abstractmethod
-    def runtime(self) -> ExtractorRuntime:
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def batch_config(self) -> BatchConfig:
-        raise NotImplementedError
+    runtime: ExtractorRuntime
+    batch_config: BatchConfig
 
     @abstractmethod
     def import_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:

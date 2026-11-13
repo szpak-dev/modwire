@@ -5,12 +5,12 @@ from functools import singledispatchmethod
 from wireup import injectable
 
 from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ......shared.code.models.declarations.source_placement import SourcePlacement
 from ......shared.code.models.values.source_class_property import SourceClassProperty
 from ......shared.code.models.values.source_member_kind import SourceMemberKind
 from ....models.extractor_invariant_error import ExtractorInvariantError
 from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.property_candidate import PythonPropertyCandidate
-from ...observations.property_scope import PythonPropertyScope
 from ..policies.assigned_value_reader import PythonAssignedValueReader
 from ..policies.source_type_reader import PythonSourceTypeReader
 from ..policies.visibility_policy import PythonVisibilityPolicy
@@ -29,15 +29,17 @@ class AnnotatedInstancePropertyRule(PythonPropertyRule):
         return 30
 
     def applies(self, candidate: PythonPropertyCandidate) -> bool:
-        return candidate.scope is PythonPropertyScope.METHOD and self.is_annotated(candidate.statement)
+        return not self.is_class_target(candidate.target) and self.is_annotated(candidate.statement)
 
     def classify(
         self,
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
     ) -> SourceClassProperty:
-        return self.read(candidate.statement, candidate, declaration_id, owner_declaration_id)
+        return self.read(candidate.statement, candidate, declaration_id, owner_declaration_id, member_kind, placement)
 
     @singledispatchmethod
     def is_annotated(self, statement: ast.stmt) -> bool:
@@ -54,6 +56,8 @@ class AnnotatedInstancePropertyRule(PythonPropertyRule):
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
     ) -> SourceClassProperty:
         raise ExtractorInvariantError(
             ExtractorInvariantViolation.ANNOTATED_INSTANCE_PROPERTY_REQUIRES_ANNOTATED_ASSIGNMENT,
@@ -67,13 +71,14 @@ class AnnotatedInstancePropertyRule(PythonPropertyRule):
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
     ) -> SourceClassProperty:
         assigned = self.assigned_values.unassigned()
         value_is_none = False
         if statement.value is not None:
             assigned = self.assigned_values.read_expression(statement.value)
             value_is_none = self.value_is_none(statement.value)
-        member_kind = SourceMemberKind.INSTANCE if candidate.receiver == "self" else SourceMemberKind.STATIC
         return self.build(
             candidate=candidate,
             declaration_id=declaration_id,
@@ -82,5 +87,6 @@ class AnnotatedInstancePropertyRule(PythonPropertyRule):
             type=self.types.read(statement.annotation),
             visibility=self.visibility.classify(candidate.name),
             member_kind=member_kind,
+            placement=placement,
             assigned_value=assigned,
         )

@@ -1,1369 +1,402 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { Node, Project, ScriptKind, SyntaxKind, VariableDeclarationKind, ts } from 'ts-morph';
+import { createHash } from 'node:crypto';
+import { Project, ScriptKind, ts } from 'ts-morph';
+
+type Family = 'class' | 'abstract_class' | 'interface' | 'type' | 'namespace' | 'function' | 'method' | 'property' | 'value' | 'callable';
+type CallableKind = 'function' | 'instance_method' | 'static_method' | 'constructor' | 'callable_value' | 'anonymous';
+interface Identity { source_id: string; content_digest: string; family: Family; qualified_name: string; ordinal: number }
+type Target = { kind: 'resolved'; declaration_id: Identity } | { kind: 'unresolved'; reason: 'external' | 'dynamic' | 'ambiguous' | 'unobserved' };
+type Container = { kind: 'file' } | { kind: 'declaration'; declaration_id: Identity };
+type Scope = Container | { kind: 'block'; container: Container; start_utf8_offset: number; end_utf8_offset: number };
+interface Placement { lexical_scope: Scope; namespace: { kind: 'none' } | { kind: 'member'; namespace_reference: string; target: Target } }
+type SourceType = { kind: 'absent' | 'unsupported' } | { kind: 'reference'; name: string; arguments: SourceType[] };
+interface Parameter { name: string; type: SourceType; kind: 'positional' | 'variadic_positional'; has_default: boolean }
+interface Limitation { kind: 'unsupported_syntax' | 'dynamic_structure' | 'unresolved_ownership'; location: { kind: 'source'; start_line: number; end_line: number }; description: string }
+interface Coverage { status: 'complete' | 'incomplete' | 'not_applicable'; limitations: Limitation[] }
+interface Callable { declaration_id: Identity; source_id: string; name: string; qualified_name: string; kind: CallableKind; visibility: string; visibility_intent: string; declaration_annotations: string[]; line_start: number; line_end: number; line_count: number; parameters: Parameter[]; return_type: SourceType; decorators: string[]; docstring: string; placement: Placement; owner_declaration_id?: Identity; owner?: { kind: 'unresolved'; reason: 'dynamic' }; receiver_reference?: string; declaration_kind?: string; value_kind?: string; scope?: string }
+interface Property { declaration_id: Identity; owner_declaration_id: Identity; name: string; type: SourceType; is_optional: boolean; visibility: string; member_kind: string; placement: Placement; assigned_values: { kind: string; expression: string; reference: string }[] }
+interface Signature { kind: 'call' | 'construct' | 'index'; line_count: number; declared_args: number; optional_args: number }
+interface Declaration { declaration_id: Identity; kind: string; name: string; visibility: string; visibility_intent: string; declaration_annotations: string[]; line_count: number; methods: Callable[]; abstract_methods: Callable[]; properties: Property[]; signatures: Signature[]; inventory: Record<string, Coverage>; placement: Placement }
+interface Value { declaration_id: Identity; name: string; visibility: string; visibility_intent: string; line_count: number; declaration_kind: string; value_kind: string; scope: string; placement: Placement }
+interface Namespace { kind: 'namespace' | 'module'; declaration_id: Identity; placement: Placement }
+interface Export { name: string; local_name: string; kind: string; crossing_type: string; path: string; is_relative: boolean; normalized_path: string; is_reexport: boolean; is_default: boolean; is_aliased: boolean; statement_id: number; binding: { kind: 'resolved'; declaration_ids: Identity[] } | { kind: 'unresolved'; reason: 'external' | 'dynamic' | 'ambiguous' | 'unobserved' } }
+interface Import { path: string; is_relative: boolean; normalized_path: string; imported_name: string; is_aliased: boolean; crossing_type: string; file_barrier_crossed: boolean; statement_id: number; join_key: string; uses_joined_import: boolean; imported_symbols: { name: string; alias: string; is_aliased: boolean; is_default: boolean; is_namespace: boolean; is_star: boolean }[] }
+interface Call { source_callable_id: Identity; ordinal: number; target_callable_id: Identity | null; source_id: string; line: number; expression: string; resolution: string; target_name: string }
+interface Relation { source_declaration_id: Identity; kind: string; target_reference: string; target: Target }
+interface ExtractedFile { imports: Import[]; exports: Export[]; namespaces: Namespace[]; declarations: Declaration[]; functions: Callable[]; values: Value[]; callable_values: Callable[]; anonymous_callables: Callable[]; unresolved_methods: Callable[]; calls: Call[]; declaration_relations: Relation[]; inventory: Record<string, Coverage>; line_count: number; code_line_count: number; public_symbol_count: number }
+type CallableNode = ts.FunctionDeclaration | ts.FunctionExpression | ts.ArrowFunction | ts.MethodDeclaration | ts.MethodSignature | ts.ConstructorDeclaration | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration;
+type DeclarationNode = ts.ClassDeclaration | ts.ClassExpression | ts.InterfaceDeclaration | ts.TypeAliasDeclaration | ts.EnumDeclaration;
 
 class SourceParseFailure extends Error {
-    language;
-    sourcePath;
-    line;
-    column;
-    diagnostic;
-
-    constructor(language, sourcePath, line, column, diagnostic) {
-        super(diagnostic);
-        this.language = language;
-        this.sourcePath = sourcePath;
-        this.line = line;
-        this.column = column;
-        this.diagnostic = diagnostic;
-    }
+    constructor(readonly sourcePath: string, readonly line: number, readonly column: number, readonly diagnostic: string) { super(diagnostic); }
 }
+class SourceInvariantFailure extends Error {}
+class InputContractFailure extends Error {}
 
-function scriptKindForPath(filePath) {
-    switch (path.extname(filePath).toLowerCase()) {
-        case '.js':
-            return ScriptKind.JS;
-        case '.jsx':
-            return ScriptKind.JSX;
-        case '.tsx':
-            return ScriptKind.TSX;
-        default:
-            return ScriptKind.TS;
-    }
-}
+class TypeScriptExtractor {
+    readonly source: ts.SourceFile;
+    readonly digest: string;
+    readonly identities = new Map<ts.Node, Identity>();
+    readonly containers = new Map<ts.Node, ts.Node>();
+    readonly callableNodes = new Map<CallableNode, CallableKind>();
+    readonly declarationNodes = new Map<DeclarationNode, string>();
+    readonly declarations = new Map<ts.Node, Declaration>();
+    readonly callables = new Map<ts.Node, Callable>();
+    readonly inventory: Record<string, Coverage> = {};
+    readonly imports: Import[] = [];
+    readonly exports: Export[] = [];
+    readonly values: Value[] = [];
+    readonly namespaces: Namespace[] = [];
+    readonly relations: Relation[] = [];
 
-function parseSourceFile(filePath, content) {
-    const project = new Project({
-        compilerOptions: {
-            allowJs: true,
-            checkJs: false,
-            jsx: ts.JsxEmit.Preserve,
-            target: ts.ScriptTarget.ESNext,
-        },
-        skipLoadingLibFiles: true,
-        useInMemoryFileSystem: true,
-    });
-    const sourceFile = project.createSourceFile(filePath, content, {
-        overwrite: true,
-        scriptKind: scriptKindForPath(filePath),
-    });
-
-    const parseDiagnostics = (
-        sourceFile.compilerNode as ts.SourceFile & {
-            parseDiagnostics: readonly ts.DiagnosticWithLocation[];
+    constructor(readonly sourceId: string, readonly filePath: string, readonly root: string, readonly content: string) {
+        const project = new Project({ useInMemoryFileSystem: true, skipLoadingLibFiles: true,
+            compilerOptions: { allowJs: true, target: ts.ScriptTarget.ESNext, jsx: ts.JsxEmit.Preserve } });
+        const extension = path.extname(filePath).toLowerCase();
+        const scriptKind = extension === '.tsx' ? ScriptKind.TSX : extension === '.jsx' ? ScriptKind.JSX : extension === '.js' ? ScriptKind.JS : ScriptKind.TS;
+        const file = project.createSourceFile(filePath, content, { scriptKind });
+        this.source = file.compilerNode;
+        const diagnostics = project.getProgram().compilerObject.getSyntacticDiagnostics(this.source);
+        for (const diagnostic of diagnostics) {
+            if (diagnostic.start === undefined) throw new SourceInvariantFailure('TypeScript syntax diagnostic has no source position.');
+            const location = this.source.getLineAndCharacterOfPosition(diagnostic.start);
+            throw new SourceParseFailure(filePath, location.line + 1, location.character + 1, ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
         }
-    ).parseDiagnostics;
-    const diagnostic = parseDiagnostics[0];
-    if (diagnostic !== undefined) {
-        const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-        const location = sourceFile.compilerNode.getLineAndCharacterOfPosition(diagnostic.start);
-        throw new SourceParseFailure('typescript', filePath, location.line + 1, location.character + 1, message);
+        this.digest = createHash('sha256').update(content).digest('hex');
+        for (const family of ['declarations', 'functions', 'values', 'callable_values', 'anonymous_callables', 'namespaces', 'exports']) this.inventory[family] = this.coverage();
+        this.inventory.unresolved_methods = this.coverage();
     }
 
-    return sourceFile;
-}
-
-function buildLineStarts(content) {
-    const lineStarts = [0];
-    for (let index = 0; index < content.length; index += 1) {
-        if (content[index] === '\n') {
-            lineStarts.push(index + 1);
+    coverage(status: 'complete' | 'not_applicable' = 'complete'): Coverage { return { status, limitations: [] }; }
+    limit(family: string, node: ts.Node, description: string): void {
+        const coverage = this.inventory[family];
+        coverage.status = 'incomplete';
+        coverage.limitations.push({ kind: 'unsupported_syntax', location: { kind: 'source', start_line: this.line(node.getStart(this.source)), end_line: this.line(node.end - 1) }, description });
+    }
+    line(position: number): number { return this.source.getLineAndCharacterOfPosition(position).line + 1; }
+    lineCount(node: ts.Node): number { return this.line(node.end - 1) - this.line(node.getStart(this.source)) + 1; }
+    modifier(node: ts.Node, kind: ts.SyntaxKind): boolean { return ts.canHaveModifiers(node) && (ts.getModifiers(node)?.some(modifier => modifier.kind === kind) ?? false); }
+    visibility(node: ts.Node): string { return this.modifier(node, ts.SyntaxKind.PrivateKeyword) ? 'private' : this.modifier(node, ts.SyntaxKind.ProtectedKeyword) ? 'protected' : 'public'; }
+    decorators(node: ts.Node): string[] { return ts.canHaveDecorators(node) ? (ts.getDecorators(node)?.map(decorator => decorator.expression.getText(this.source)) ?? []) : []; }
+    identity(node: ts.Node): Identity {
+        const identity = this.identities.get(node);
+        if (identity === undefined) throw new SourceInvariantFailure(`Missing indexed declaration at ${node.getStart(this.source)}.`);
+        return identity;
+    }
+    container(node: ts.Node): ts.Node {
+        const container = this.containers.get(node);
+        if (container === undefined) throw new SourceInvariantFailure(`Missing native scope at ${node.getStart(this.source)}.`);
+        return container;
+    }
+    createIdentity(node: ts.Node, family: Family, name: string, container: ts.Node): Identity {
+        const parent = container === this.source ? undefined : this.identity(container);
+        return { source_id: this.sourceId, content_digest: this.digest, family,
+            qualified_name: parent === undefined ? name : `${parent.qualified_name}.${name}`, ordinal: node.getStart(this.source) + 1 };
+    }
+    callableNode(node: ts.Node): node is CallableNode {
+        return ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node) || ts.isArrowFunction(node) || ts.isMethodDeclaration(node)
+            || ts.isMethodSignature(node) || ts.isConstructorDeclaration(node) || ts.isGetAccessorDeclaration(node) || ts.isSetAccessorDeclaration(node);
+    }
+    index(node: ts.Node, container: ts.Node): void {
+        this.containers.set(node, container);
+        let nested = container;
+        if (ts.isClassDeclaration(node) || ts.isClassExpression(node) || ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node) || ts.isEnumDeclaration(node)) {
+            const kind = ts.isInterfaceDeclaration(node) ? 'interface' : ts.isTypeAliasDeclaration(node) ? 'type_alias' : ts.isEnumDeclaration(node) ? 'enum' : this.modifier(node, ts.SyntaxKind.AbstractKeyword) ? 'abstract_class' : 'class';
+            const family: Family = kind === 'type_alias' ? 'type' : kind === 'enum' ? 'class' : kind;
+            const name = node.name === undefined ? `<anonymous>@${node.getStart(this.source)}` : node.name.getText(this.source);
+            this.identities.set(node, this.createIdentity(node, family, name, container));
+            this.declarationNodes.set(node, kind);
+            nested = node;
+        } else if (ts.isModuleDeclaration(node)) {
+            this.identities.set(node, this.createIdentity(node, 'namespace', node.name.text, container));
+            nested = node;
+        } else if (this.callableNode(node)) {
+            const parent = node.parent;
+            const assigned = ts.isVariableDeclaration(parent) && ts.isIdentifier(parent.name);
+            const method = ts.isMethodDeclaration(node) || ts.isMethodSignature(node) || ts.isGetAccessorDeclaration(node) || ts.isSetAccessorDeclaration(node);
+            const kind: CallableKind = ts.isConstructorDeclaration(node) ? 'constructor' : method ? (this.modifier(node, ts.SyntaxKind.StaticKeyword) ? 'static_method' : 'instance_method')
+                : ts.isFunctionDeclaration(node) ? 'function' : assigned ? 'callable_value' : 'anonymous';
+            const name = ts.isConstructorDeclaration(node) ? 'constructor' : assigned ? parent.name.getText(this.source)
+                : node.name === undefined ? `<anonymous>@${node.getStart(this.source)}` : node.name.getText(this.source);
+            const family: Family = kind === 'function' ? 'function' : kind === 'callable_value' ? 'value' : kind === 'anonymous' ? 'callable' : 'method';
+            this.identities.set(node, this.createIdentity(node, family, name, container));
+            this.callableNodes.set(node, kind);
+            nested = node;
+        } else if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) {
+            if (node.initializer === undefined || !this.callableNode(node.initializer)) this.identities.set(node, this.createIdentity(node, 'value', node.name.text, container));
         }
+        ts.forEachChild(node, child => this.index(child, nested));
     }
-    return lineStarts;
-}
-
-function lineNumberAt(lineStarts, index) {
-    let low = 0;
-    let high = lineStarts.length - 1;
-    while (low <= high) {
-        const middle = Math.floor((low + high) / 2);
-        if (lineStarts[middle] <= index) {
-            low = middle + 1;
-        } else {
-            high = middle - 1;
-        }
-    }
-    return high + 1;
-}
-
-function lineSpan(lineStarts, startIndex, endIndex) {
-    return lineNumberAt(lineStarts, Math.max(startIndex, endIndex)) - lineNumberAt(lineStarts, startIndex) + 1;
-}
-
-function withoutExtension(value) {
-    return value.replace(/\.[^.\/\\]+$/, '');
-}
-
-function sourceIdForPath(filePath, sourcesRoot) {
-    return withoutExtension(path.relative(sourcesRoot, filePath).split(path.sep).join('/')).replace(/^\/+|\/+$/g, '');
-}
-
-function normalizedImportPath(importPath, isRelative, filePath, sourcesRoot) {
-    if (!isRelative) {
-        return importPath;
-    }
-    const absolutePath = path.resolve(path.dirname(filePath), importPath);
-    return withoutExtension(path.relative(sourcesRoot, absolutePath).split(path.sep).join('/')).replace(/^\/+|\/+$/g, '');
-}
-
-function moduleSpecifierValue(declaration) {
-    const specifier = declaration.compilerNode.moduleSpecifier;
-    if (
-        specifier === undefined
-        || (!ts.isStringLiteral(specifier) && !ts.isNoSubstitutionTemplateLiteral(specifier))
-    ) {
-        return null;
-    }
-    return specifier.text;
-}
-
-function endIndexForNode(node) {
-    return Math.max(node.getStart(), node.getEnd() - 1);
-}
-
-function textOf(node) {
-    return node === undefined ? '' : node.getText();
-}
-
-function visibilityIntent(name, visibility) {
-    if (name.startsWith('#') || (name.startsWith('__') && !name.endsWith('__'))) {
-        return 'private';
-    }
-    if (name.startsWith('_') && !name.endsWith('__')) {
-        return 'protected';
-    }
-    return visibility;
-}
-
-function visibilityFromModifiers(node, fallback = 'public') {
-    const modifiers = typeof node.getModifiers === 'function'
-        ? node.getModifiers().map(modifier => modifier.getText())
-        : [];
-    if (modifiers.includes('private')) {
-        return 'private';
-    }
-    if (modifiers.includes('protected')) {
-        return 'protected';
-    }
-    if (modifiers.includes('public')) {
-        return 'public';
-    }
-    const name = typeof node.getName === 'function' ? node.getName() : '';
-    return name.startsWith('#') ? 'private' : fallback;
-}
-
-function memberKindFromModifiers(node) {
-    return node.getModifiers().some(modifier => modifier.getKind() === SyntaxKind.StaticKeyword)
-        ? 'static'
-        : 'instance';
-}
-
-function declarationAnnotations(node) {
-    return node.getDecorators().map(decorator => decorator.getExpression().getText());
-}
-
-function isExported(node) {
-    return Boolean(
-        (typeof node.hasExportKeyword === 'function' && node.hasExportKeyword())
-        || (typeof node.isDefaultExport === 'function' && node.isDefaultExport()),
-    );
-}
-
-function moduleVisibility(node) {
-    return node !== undefined && isExported(node) ? 'public' : 'private';
-}
-
-function codeLineCount(content) {
-    return content.split('\n').filter(line => {
-        const trimmed = line.trim();
-        return trimmed !== '' && !trimmed.startsWith('//');
-    }).length;
-}
-
-function bindingNamesFromCompilerName(nameNode) {
-    if (ts.isIdentifier(nameNode)) {
-        return [nameNode.text];
-    }
-    if (ts.isObjectBindingPattern(nameNode) || ts.isArrayBindingPattern(nameNode)) {
-        return nameNode.elements.flatMap(element => {
-            if (ts.isOmittedExpression(element)) {
-                return [];
+    placement(node: ts.Node): Placement {
+        const container = this.container(node);
+        const identity = container === this.source ? undefined : this.identity(container);
+        const enclosing: Container = identity === undefined ? { kind: 'file' } : { kind: 'declaration', declaration_id: identity };
+        let scope: Scope = enclosing;
+        for (let parent = node.parent; parent !== undefined && parent !== container; parent = parent.parent) {
+            if (ts.isBlock(parent) && !ts.isModuleBlock(parent)) {
+                scope = { kind: 'block', container: enclosing, start_utf8_offset: Buffer.byteLength(this.content.slice(0, parent.getStart(this.source))), end_utf8_offset: Buffer.byteLength(this.content.slice(0, parent.end)) };
+                break;
             }
-            return bindingNamesFromCompilerName(element.name);
-        });
-    }
-    return [];
-}
-
-function bindingNames(nameNode) {
-    return bindingNamesFromCompilerName(nameNode.compilerNode);
-}
-
-function singleBindingName(nameNode) {
-    const names = bindingNames(nameNode);
-    return names.length === 1 ? names[0] : '';
-}
-
-function unwrapExpression(node) {
-    let current = node;
-    while (
-        Node.isParenthesizedExpression(current)
-        || Node.isAsExpression(current)
-        || Node.isSatisfiesExpression(current)
-        || Node.isTypeAssertion(current)
-        || Node.isNonNullExpression(current)
-    ) {
-        current = current.getExpression();
-    }
-    return current;
-}
-
-function expressionValueKind(expression) {
-    if (expression === undefined) {
-        return 'value_unknown';
-    }
-    const unwrapped = unwrapExpression(expression);
-    if (Node.isArrowFunction(unwrapped) || Node.isFunctionExpression(unwrapped)) {
-        return 'value_callable';
-    }
-    switch (unwrapped.getKind()) {
-        case SyntaxKind.StringLiteral:
-        case SyntaxKind.NoSubstitutionTemplateLiteral:
-        case SyntaxKind.NumericLiteral:
-        case SyntaxKind.BigIntLiteral:
-        case SyntaxKind.TrueKeyword:
-        case SyntaxKind.FalseKeyword:
-        case SyntaxKind.NullKeyword:
-            return 'value_literal';
-        case SyntaxKind.ObjectLiteralExpression:
-        case SyntaxKind.ArrayLiteralExpression:
-        case SyntaxKind.NewExpression:
-            return 'value_object';
-        default:
-            return Node.isIdentifier(unwrapped) && unwrapped.getText() === 'undefined' ? 'value_literal' : 'value_unknown';
-    }
-}
-
-function parameterDefinitions(parameters) {
-    return parameters.map(parameter => {
-        const nameNode = parameter.getNameNode();
-        const name = singleBindingName(nameNode) || nameNode.getText();
-        const typeNode = typeof parameter.getTypeNode === 'function' ? parameter.getTypeNode() : undefined;
-        return {
-            name,
-            type: sourceType(typeNode),
-            kind: parameter.isRestParameter() ? 'variadic_positional' : 'positional',
-            has_default: parameter.isRestParameter()
-                || parameter.isOptional()
-                || parameter.getInitializer() !== undefined,
-        };
-    });
-}
-
-function sourceType(typeNode) {
-    if (typeNode === undefined) {
-        return { kind: 'absent' };
-    }
-    if (Node.isTypeReference(typeNode)) {
-        return {
-            kind: 'reference',
-            name: typeNode.getTypeName().getText(),
-            arguments: typeNode.getTypeArguments().map(sourceType),
-        };
-    }
-    const keywordKinds = new Set([
-        SyntaxKind.AnyKeyword,
-        SyntaxKind.BigIntKeyword,
-        SyntaxKind.BooleanKeyword,
-        SyntaxKind.NeverKeyword,
-        SyntaxKind.NumberKeyword,
-        SyntaxKind.ObjectKeyword,
-        SyntaxKind.StringKeyword,
-        SyntaxKind.SymbolKeyword,
-        SyntaxKind.UndefinedKeyword,
-        SyntaxKind.UnknownKeyword,
-        SyntaxKind.VoidKeyword,
-    ]);
-    if (keywordKinds.has(typeNode.getKind())) {
-        return { kind: 'reference', name: typeNode.getText(), arguments: [] };
-    }
-    return { kind: 'unsupported' };
-}
-
-function functionParameters(functionLike) {
-    return typeof functionLike.getParameters === 'function'
-        ? parameterDefinitions(functionLike.getParameters())
-        : [];
-}
-
-function sourceValue(options) {
-    return {
-        declaration_id: {
-            source_id: options.sourceId,
-            family: 'value',
-            qualified_name: options.name,
-            ordinal: options.startIndex + 1,
-        },
-        name: options.name,
-        visibility: options.visibility,
-        visibility_intent: visibilityIntent(options.name, options.visibility),
-        line_count: lineSpan(options.lineStarts, options.startIndex, options.endIndex),
-        declaration_kind: options.declarationKind,
-        value_kind: options.valueKind,
-        scope: options.scope,
-    };
-}
-
-function sourceCallable(options) {
-    const parameters = options.parameters || [];
-    const family = options.kind === 'function'
-        ? 'function'
-        : (['instance_method', 'type_method', 'static_method', 'constructor'].includes(options.kind)
-            ? 'method'
-            : (options.kind === 'callable_value' ? 'value' : 'callable'));
-    return {
-        declaration_id: {
-            source_id: options.sourceId,
-            family,
-            qualified_name: options.qualifiedName,
-            ordinal: options.startIndex + 1,
-        },
-        source_id: options.sourceId,
-        name: options.name,
-        qualified_name: options.qualifiedName,
-        kind: options.kind,
-        visibility: options.visibility,
-        visibility_intent: visibilityIntent(options.name, options.visibility),
-        declaration_annotations: [],
-        line_start: lineNumberAt(options.lineStarts, options.startIndex),
-        line_end: lineNumberAt(options.lineStarts, options.endIndex),
-        line_count: lineSpan(options.lineStarts, options.startIndex, options.endIndex),
-        parameters,
-        return_type: sourceType(options.returnTypeNode),
-        decorators: [],
-        docstring: '',
-        ...(options.ownerDeclarationId === undefined ? {} : { owner_declaration_id: options.ownerDeclarationId }),
-        ...(options.kind === 'callable_value' ? {
-            declaration_kind: options.declarationKind || 'assignment',
-            value_kind: 'value_callable',
-            scope: options.scope || 'module',
-        } : {}),
-    };
-}
-
-function callableBodyInfo(functionLike) {
-    const body = typeof functionLike.getBody === 'function' ? functionLike.getBody() : undefined;
-    if (body === undefined) {
-        return {
-            bodyNode: functionLike,
-            bodyStart: functionLike.getStart(),
-            bodyEnd: functionLike.getEnd(),
-            endIndex: endIndexForNode(functionLike),
-        };
-    }
-    if (Node.isBlock(body)) {
-        return {
-            bodyNode: body,
-            bodyStart: body.getStart() + 1,
-            bodyEnd: Math.max(body.getStart() + 1, body.getEnd() - 1),
-            endIndex: endIndexForNode(body),
-        };
-    }
-    return {
-        bodyNode: body,
-        bodyStart: body.getStart(),
-        bodyEnd: body.getEnd(),
-        endIndex: endIndexForNode(body),
-    };
-}
-
-function addCallable(callables, callableRanges, callable, bodyInfo, functionNode, ownerName) {
-    callables.push(callable);
-    callableRanges.push({
-        declarationId: callable.declaration_id,
-        ownerName,
-        bodyNode: bodyInfo.bodyNode,
-        functionNode,
-        bodyStart: bodyInfo.bodyStart,
-        bodyEnd: bodyInfo.bodyEnd,
-    });
-}
-
-function propertyNameText(node) {
-    if (typeof node.getName === 'function') {
-        return node.getName();
-    }
-    if (typeof node.getNameNode === 'function') {
-        return node.getNameNode().getText().replace(/^['"]|['"]$/g, '');
-    }
-    return '';
-}
-
-function ownerNameForObjectLiteral(objectLiteral) {
-    const parent = objectLiteral.getParent();
-    if (Node.isVariableDeclaration(parent)) {
-        return singleBindingName(parent.getNameNode());
-    }
-    if (Node.isPropertyAssignment(parent)) {
-        const container = parent.getParent();
-        const owner = Node.isObjectLiteralExpression(container) ? ownerNameForObjectLiteral(container) : '';
-        return [owner, propertyNameText(parent)].filter(Boolean).join('.');
-    }
-    return '';
-}
-
-function collectImports(sourceFile, filePath, sourcesRoot) {
-    const imports = [];
-    let statementId = 0;
-
-    function importedSymbol(name, alias, extras = undefined) {
-        return {
-            name,
-            alias,
-            is_aliased: name !== alias,
-            is_default: Boolean(extras?.isDefault),
-            is_namespace: Boolean(extras?.isNamespace),
-            is_star: Boolean(extras?.isStar),
-        };
-    }
-
-    function addImport(importPath, importedSymbols, crossingType = 'symbol') {
-        statementId += 1;
-        const isRelative = importPath.startsWith('.');
-        const normalizedPath = normalizedImportPath(importPath, isRelative, filePath, sourcesRoot);
-        imports.push({
-            path: importPath,
-            is_relative: isRelative,
-            normalized_path: normalizedPath,
-            imported_name: importedSymbols[0]?.alias || importedSymbols[0]?.name || '',
-            is_aliased: importedSymbols.some(symbol => symbol.is_aliased),
-            crossing_type: crossingType,
-            file_barrier_crossed: true,
-            statement_id: statementId,
-            join_key: normalizedPath,
-            uses_joined_import: importedSymbols.length > 1,
-            imported_symbols: importedSymbols,
-        });
-    }
-
-    for (const declaration of sourceFile.getImportDeclarations()) {
-        const importPath = moduleSpecifierValue(declaration);
-        if (importPath === null) {
-            continue;
         }
-        const symbols = [];
-        const defaultImport = declaration.getDefaultImport();
-        const namespaceImport = declaration.getNamespaceImport();
-        if (defaultImport !== undefined) {
-            symbols.push(importedSymbol('default', defaultImport.getText(), { isDefault: true }));
+        let namespace: Placement['namespace'] = { kind: 'none' };
+        for (let parent: ts.Node = container; parent !== this.source; parent = this.container(parent)) {
+            if (ts.isModuleDeclaration(parent)) {
+                const identity = this.identity(parent);
+                namespace = { kind: 'member', namespace_reference: identity.qualified_name, target: { kind: 'resolved', declaration_id: identity } };
+                break;
+            }
         }
-        if (namespaceImport !== undefined) {
-            symbols.push(importedSymbol('*', namespaceImport.getText(), { isNamespace: true, isStar: true }));
+        return { lexical_scope: scope, namespace };
+    }
+    type(node: ts.TypeNode | undefined): SourceType {
+        if (node === undefined) return { kind: 'absent' };
+        if (ts.isTypeReferenceNode(node)) return { kind: 'reference', name: node.typeName.getText(this.source), arguments: node.typeArguments?.map(type => this.type(type)) ?? [] };
+        if ([ts.SyntaxKind.StringKeyword, ts.SyntaxKind.NumberKeyword, ts.SyntaxKind.BooleanKeyword, ts.SyntaxKind.VoidKeyword, ts.SyntaxKind.AnyKeyword, ts.SyntaxKind.UnknownKeyword, ts.SyntaxKind.NeverKeyword, ts.SyntaxKind.ObjectKeyword, ts.SyntaxKind.UndefinedKeyword, ts.SyntaxKind.BigIntKeyword, ts.SyntaxKind.SymbolKeyword].includes(node.kind))
+            return { kind: 'reference', name: node.getText(this.source), arguments: [] };
+        return { kind: 'unsupported' };
+    }
+    parameters(parameters: readonly ts.ParameterDeclaration[]): Parameter[] {
+        return parameters.map(parameter => ({ name: parameter.name.getText(this.source), type: this.type(parameter.type), kind: parameter.dotDotDotToken === undefined ? 'positional' : 'variadic_positional', has_default: parameter.initializer !== undefined }));
+    }
+    bindingScope(node: ts.Node): ts.Node {
+        let current = node.parent;
+        if (this.callableNode(node) && (ts.isFunctionExpression(node) || ts.isArrowFunction(node)) && ts.isVariableDeclaration(current)) current = current.parent;
+        const variable = ts.isVariableDeclaration(node) ? node :
+            (ts.isFunctionExpression(node) || ts.isArrowFunction(node)) && ts.isVariableDeclaration(node.parent) ? node.parent : undefined;
+        const hoisted = variable !== undefined && ts.isVariableDeclarationList(variable.parent) && (variable.parent.flags & ts.NodeFlags.BlockScoped) === 0;
+        while (current !== this.source) {
+            if (this.callableNode(current) || ts.isClassDeclaration(current) || ts.isClassExpression(current) || ts.isInterfaceDeclaration(current) || ts.isTypeAliasDeclaration(current) || ts.isModuleDeclaration(current)) return current;
+            if (!hoisted && (ts.isBlock(current) || ts.isModuleBlock(current))) return current;
+            current = current.parent;
         }
-        for (const namedImport of declaration.getNamedImports()) {
-            const name = namedImport.getName();
-            const alias = namedImport.getAliasNode()?.getText() || name;
-            symbols.push(importedSymbol(name, alias));
+        return this.source;
+    }
+    bindings(reference: string, node: ts.Node): Identity[] {
+        const parts = reference.split('.');
+        let scope = this.bindingScope(node);
+        const memberLookup = parts[0] === 'this';
+        if (memberLookup) {
+            for (let parent = node.parent; parent !== this.source; parent = parent.parent) {
+                if (ts.isFunctionDeclaration(parent) || ts.isFunctionExpression(parent)) return [];
+                if ((ts.isMethodDeclaration(parent) || ts.isGetAccessorDeclaration(parent) || ts.isSetAccessorDeclaration(parent)) && ts.isObjectLiteralExpression(parent.parent)) return [];
+                if (ts.isClassDeclaration(parent) || ts.isClassExpression(parent)) break;
+            }
+            while (scope !== this.source && !ts.isClassDeclaration(scope) && !ts.isClassExpression(scope)) scope = this.bindingScope(scope);
+            if (scope === this.source) return [];
+            parts.shift();
         }
-        addImport(
-            importPath,
-            symbols.length === 0 ? [importedSymbol('*', '*', { isStar: true })] : symbols,
-            symbols.length === 0 ? 'module' : 'symbol',
-        );
-    }
-
-    for (const callExpression of sourceFile.getDescendantsOfKind(SyntaxKind.CallExpression)) {
-        const expression = callExpression.getExpression();
-        if (expression.getText() !== 'require' && expression.getText() !== 'import') {
-            continue;
+        let matches: ts.Node[] = [];
+        while (true) {
+            matches = [...this.identities].filter(([declaration, identity]) => this.bindingScope(declaration) === scope && (memberLookup || identity.family !== 'method') && identity.qualified_name.split('.').pop() === parts[0]).map(([declaration]) => declaration);
+            if (matches.length || scope === this.source) break;
+            if (this.callableNode(scope) && scope.parameters.some(parameter => parameter.name.getText(this.source) === parts[0])) return [];
+            scope = this.bindingScope(scope);
         }
-        const firstArgument = callExpression.getArguments()[0];
-        if (firstArgument === undefined || !Node.isStringLiteral(firstArgument)) {
-            continue;
+        for (const part of parts.slice(1)) {
+            if (matches.length !== 1) return [];
+            const parent = matches[0];
+            matches = [...this.identities].filter(([declaration, identity]) => this.container(declaration) === parent && identity.qualified_name.split('.').pop() === part).map(([declaration]) => declaration);
         }
-        addImport(firstArgument.getLiteralValue(), [importedSymbol('*', '*', { isStar: true })], 'module');
+        return matches.map(node => this.identity(node));
     }
-
-    return imports;
-}
-
-function sourceExport(name, kind, options) {
-    const exportPath = options.path || '';
-    const isRelative = exportPath.startsWith('.');
-    return {
-        name,
-        local_name: options.localName,
-        kind,
-        crossing_type: options.crossingType || 'symbol',
-        path: exportPath,
-        is_relative: isRelative,
-        normalized_path: options.normalizedPath || '',
-        is_reexport: Boolean(options.isReexport),
-        is_default: Boolean(options.isDefault),
-        is_aliased: Boolean(options.isAliased),
-        statement_id: options.statementId || 0,
-    };
-}
-
-function addExport(exports, seen, value) {
-    const key = [value.name, value.kind, value.normalized_path, value.is_reexport].join('\0');
-    if (seen.has(key)) {
-        return;
+    resolve(reference: string, node: ts.Node): Target {
+        const matches = this.bindings(reference, node);
+        if (matches.length === 1) return { kind: 'resolved', declaration_id: matches[0] };
+        return { kind: 'unresolved', reason: matches.length ? 'ambiguous' : 'unobserved' };
     }
-    seen.add(key);
-    exports.push(value);
-}
-
-function collectExports(sourceFile, filePath, sourcesRoot) {
-    const exports = [];
-    const seen = new Set();
-    let statementId = 0;
-
-    function normalizeExportPath(exportPath) {
-        return exportPath ? normalizedImportPath(exportPath, exportPath.startsWith('.'), filePath, sourcesRoot) : '';
-    }
-
-    for (const classDeclaration of sourceFile.getClasses()) {
-        if (!isExported(classDeclaration)) {
-            continue;
+    emitCallable(node: CallableNode, kind: CallableKind): Callable {
+        const identity = this.identity(node);
+        const name = ts.isConstructorDeclaration(node) ? 'constructor' : identity.qualified_name.split('.').pop();
+        if (name === undefined) throw new SourceInvariantFailure('Callable identity has no name.');
+        const fact: Callable = { declaration_id: identity, source_id: this.sourceId, name, qualified_name: identity.qualified_name, kind,
+            visibility: this.visibility(node), visibility_intent: this.visibility(node), declaration_annotations: this.decorators(node),
+            line_start: this.line(node.getStart(this.source)), line_end: this.line(node.end - 1), line_count: this.lineCount(node),
+            parameters: this.parameters(node.parameters), return_type: this.type(node.type), decorators: this.decorators(node), docstring: '', placement: this.placement(node) };
+        if (identity.family === 'method') {
+            const container = this.container(node);
+            const owner = this.identities.get(container);
+            const directMember = node.parent === container || (ts.isTypeAliasDeclaration(container) && node.parent === container.type);
+            if (directMember && owner !== undefined && ['class', 'abstract_class', 'interface', 'type'].includes(owner.family)) fact.owner_declaration_id = owner;
+            else { fact.owner = { kind: 'unresolved', reason: 'dynamic' }; fact.receiver_reference = node.parent.getText(this.source); }
         }
-        const name = classDeclaration.isDefaultExport() ? 'default' : classDeclaration.getName() || 'default';
-        addExport(exports, seen, sourceExport(name, classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class', {
-            localName: classDeclaration.getName() || name,
-            isDefault: classDeclaration.isDefaultExport(),
-        }));
+        if (kind === 'callable_value') { fact.declaration_kind = 'assignment'; fact.value_kind = 'value_callable'; fact.scope = this.container(node) === this.source ? 'module' : 'local'; }
+        return fact;
     }
-
-    for (const interfaceDeclaration of sourceFile.getInterfaces()) {
-        if (isExported(interfaceDeclaration)) {
-            addExport(exports, seen, sourceExport(interfaceDeclaration.getName(), 'interface', {
-                localName: interfaceDeclaration.getName(),
-            }));
+    emitProperty(node: ts.PropertyDeclaration | ts.PropertySignature | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration | ts.ParameterDeclaration | ts.EnumMember, owner: Declaration): Property {
+        const name = node.name.getText(this.source);
+        const identity: Identity = { ...owner.declaration_id, family: 'property', qualified_name: `${owner.declaration_id.qualified_name}.${name}`, ordinal: node.getStart(this.source) + 1 };
+        const type = ts.isEnumMember(node) ? undefined : ts.isSetAccessor(node) ? node.parameters[0]?.type : node.type;
+        const optional = (ts.isPropertyDeclaration(node) || ts.isPropertySignature(node) || ts.isParameter(node)) && node.questionToken !== undefined;
+        return { declaration_id: identity, owner_declaration_id: owner.declaration_id, name, type: this.type(type), is_optional: optional,
+            visibility: this.visibility(node), member_kind: this.modifier(node, ts.SyntaxKind.StaticKeyword) || ts.isEnumMember(node) ? 'static' : 'instance', placement: this.placement(node),
+            assigned_values: [{ kind: 'unsupported', expression: '', reference: '' }] };
+    }
+    emitDeclaration(node: DeclarationNode, kind: string): Declaration {
+        const identity = this.identity(node);
+        const fact: Declaration = { declaration_id: identity, kind, name: node.name?.getText(this.source) ?? identity.qualified_name,
+            visibility: 'public', visibility_intent: 'public', declaration_annotations: this.decorators(node), line_count: this.lineCount(node),
+            methods: [], abstract_methods: [], properties: [], signatures: [], placement: this.placement(node), inventory: { methods: this.coverage(), abstract_methods: this.coverage(), properties: this.coverage(), signatures: this.coverage() } };
+        const members = ts.isTypeAliasDeclaration(node) ? (ts.isTypeLiteralNode(node.type) ? node.type.members : []) : node.members;
+        for (const member of members) {
+            const callable = this.callables.get(member);
+            if (callable !== undefined) {
+                if (ts.isMethodSignature(member) || this.modifier(member, ts.SyntaxKind.AbstractKeyword)) fact.abstract_methods.push(callable);
+                else fact.methods.push(callable);
+            }
+            if (ts.isPropertyDeclaration(member) || ts.isPropertySignature(member) || ts.isGetAccessorDeclaration(member) || ts.isSetAccessorDeclaration(member) || ts.isEnumMember(member)) {
+                if (!fact.properties.some(property => property.name === member.name.getText(this.source))) fact.properties.push(this.emitProperty(member, fact));
+            }
+            if (ts.isConstructorDeclaration(member)) for (const parameter of member.parameters) {
+                if ([ts.SyntaxKind.PublicKeyword, ts.SyntaxKind.ProtectedKeyword, ts.SyntaxKind.PrivateKeyword, ts.SyntaxKind.ReadonlyKeyword].some(kind => this.modifier(parameter, kind))) fact.properties.push(this.emitProperty(parameter, fact));
+            }
+            if (ts.isCallSignatureDeclaration(member) || ts.isConstructSignatureDeclaration(member) || ts.isIndexSignatureDeclaration(member)) fact.signatures.push({ kind: ts.isCallSignatureDeclaration(member) ? 'call' : ts.isConstructSignatureDeclaration(member) ? 'construct' : 'index', line_count: this.lineCount(member), declared_args: member.parameters.length, optional_args: member.parameters.filter(parameter => parameter.questionToken !== undefined || parameter.initializer !== undefined).length });
         }
-    }
-
-    for (const typeAlias of sourceFile.getTypeAliases()) {
-        if (isExported(typeAlias)) {
-            addExport(exports, seen, sourceExport(typeAlias.getName(), 'type', {
-                localName: typeAlias.getName(),
-            }));
+        if (ts.isClassDeclaration(node) || ts.isClassExpression(node) || ts.isInterfaceDeclaration(node)) for (const clause of node.heritageClauses ?? []) for (const type of clause.types) {
+            const reference = type.expression.getText(this.source);
+            this.relations.push({ source_declaration_id: identity, kind: clause.token === ts.SyntaxKind.ExtendsKeyword ? 'extends' : 'implements', target_reference: reference, target: this.resolve(reference, node) });
         }
+        return fact;
     }
-
-    for (const functionDeclaration of sourceFile.getFunctions()) {
-        if (!isExported(functionDeclaration)) {
-            continue;
+    normalized(specifier: string): string {
+        return specifier.startsWith('.') ? path.relative(this.root, path.resolve(path.dirname(this.filePath), specifier)).split(path.sep).join('/').replace(/\.[^/.]+$/, '') : specifier;
+    }
+    export(name: string, local: string, node: ts.Node, specifier = '', isDefault = false): void {
+        const reexport = specifier !== '';
+        const references = this.bindings(local, node);
+        const own = this.identities.get(node);
+        const binding: Export['binding'] = reexport ? { kind: 'unresolved', reason: 'external' } : own !== undefined ? { kind: 'resolved', declaration_ids: [own] }
+            : references.length ? { kind: 'resolved', declaration_ids: references } : { kind: 'unresolved', reason: 'unobserved' };
+        const family = binding.kind === 'resolved' ? binding.declaration_ids[0].family : 'unknown';
+        this.exports.push({ name, local_name: local, kind: family === 'namespace' ? 'module' : family === 'callable' || family === 'method' || family === 'property' ? 'unknown' : family,
+            crossing_type: 'symbol', path: specifier, is_relative: specifier.startsWith('.'), normalized_path: this.normalized(specifier), is_reexport: reexport, is_default: isDefault, is_aliased: name !== local, statement_id: node.getStart(this.source) + 1, binding });
+    }
+    importedSymbol(name: string, alias: string, isDefault: boolean, isNamespace: boolean, isStar: boolean): Import['imported_symbols'][number] {
+        return { name, alias, is_aliased: name !== alias, is_default: isDefault, is_namespace: isNamespace, is_star: isStar };
+    }
+    addImport(specifier: string, symbols: Import['imported_symbols'], node: ts.Node): void {
+        const module = symbols.length === 0;
+        if (module) symbols.push(this.importedSymbol('*', '*', false, false, true));
+        const normalized = this.normalized(specifier);
+        this.imports.push({ path: specifier, is_relative: specifier.startsWith('.'), normalized_path: normalized,
+            imported_name: symbols[0].alias, is_aliased: symbols.some(symbol => symbol.is_aliased), crossing_type: module ? 'module' : 'symbol',
+            file_barrier_crossed: true, statement_id: node.getStart(this.source) + 1, join_key: normalized, uses_joined_import: symbols.length > 1, imported_symbols: symbols });
+    }
+    observe(node: ts.Node): void {
+        if (ts.isModuleDeclaration(node)) this.namespaces.push({ kind: ts.isStringLiteral(node.name) ? 'module' : 'namespace', declaration_id: this.identity(node), placement: this.placement(node) });
+        if (ts.isImportDeclaration(node)) {
+            if (!ts.isStringLiteral(node.moduleSpecifier)) throw new SourceInvariantFailure('Import module specifier is not a string literal.');
+            const specifier = node.moduleSpecifier.text;
+            const symbols: Import['imported_symbols'] = [];
+            const clause = node.importClause;
+            if (clause?.name !== undefined) symbols.push(this.importedSymbol('default', clause.name.text, true, false, false));
+            const bindings = clause?.namedBindings;
+            if (bindings !== undefined) {
+                if (ts.isNamespaceImport(bindings)) symbols.push(this.importedSymbol('*', bindings.name.text, false, true, true));
+                else for (const item of bindings.elements) symbols.push(this.importedSymbol(item.propertyName?.text ?? item.name.text, item.name.text, false, false, false));
+            }
+            this.addImport(specifier, symbols, node);
         }
-        const name = functionDeclaration.isDefaultExport() ? 'default' : functionDeclaration.getName() || 'default';
-        addExport(exports, seen, sourceExport(name, 'function', {
-            localName: functionDeclaration.getName() || name,
-            isDefault: functionDeclaration.isDefaultExport(),
-        }));
-    }
-
-    for (const declaration of moduleVariableDeclarations(sourceFile)) {
-        const statement = declaration.getVariableStatement();
-        if (statement === undefined || !statement.hasExportKeyword()) {
-            continue;
+        if (ts.isCallExpression(node) && (node.expression.kind === ts.SyntaxKind.ImportKeyword || (ts.isIdentifier(node.expression) && node.expression.text === 'require'))) {
+            const specifier = node.arguments[0];
+            if (specifier !== undefined && ts.isStringLiteral(specifier)) this.addImport(specifier.text, [], node);
         }
-        for (const name of bindingNames(declaration.getNameNode())) {
-            addExport(exports, seen, sourceExport(name, 'value', { localName: name }));
+        if (ts.isVariableDeclaration(node)) {
+            if (!ts.isIdentifier(node.name)) {
+                this.limit('values', node, 'Destructured value bindings are not represented.');
+                this.limit('callable_values', node, 'Destructured bindings cannot be tied to an exact callable value.');
+            }
+            else if (this.identities.has(node)) {
+                const constant = ts.isVariableDeclarationList(node.parent) && (node.parent.flags & ts.NodeFlags.Const) !== 0;
+                const value: Value = { declaration_id: this.identity(node), name: node.name.text, visibility: 'public', visibility_intent: 'public', line_count: this.lineCount(node), declaration_kind: constant ? 'constant' : 'assignment',
+                    value_kind: node.initializer === undefined ? 'value_unknown' : ts.isClassExpression(node.initializer) ? 'value_class' : ts.isObjectLiteralExpression(node.initializer) ? 'value_object' : ts.isLiteralExpression(node.initializer) ? 'value_literal' : 'value_unknown',
+                    scope: this.container(node) === this.source ? 'module' : 'local', placement: this.placement(node) };
+                this.values.push(value);
+            }
         }
-    }
-
-    for (const exportAssignment of sourceFile.getExportAssignments()) {
-        addExport(exports, seen, sourceExport('default', 'value', {
-            localName: 'default',
-            isDefault: true,
-        }));
-    }
-
-    for (const exportDeclaration of sourceFile.getExportDeclarations()) {
-        statementId += 1;
-        const exportPath = moduleSpecifierValue(exportDeclaration) || '';
-        const namedExports = exportDeclaration.getNamedExports();
-        if (namedExports.length === 0 && exportPath) {
-            addExport(exports, seen, sourceExport('*', 'unknown', {
-                localName: '*',
-                path: exportPath,
-                normalizedPath: normalizeExportPath(exportPath),
-                crossingType: 'module',
-                isReexport: true,
-                statementId,
-            }));
-            continue;
+        if (this.modifier(node, ts.SyntaxKind.ExportKeyword) && this.identities.has(node)) {
+            const identity = this.identity(node); const name = identity.qualified_name.split('.').pop();
+            if (name === undefined) throw new SourceInvariantFailure('Export has no native name.');
+            this.export(this.modifier(node, ts.SyntaxKind.DefaultKeyword) ? 'default' : name, name, node, '', this.modifier(node, ts.SyntaxKind.DefaultKeyword));
         }
-        for (const namedExport of namedExports) {
-            const localName = namedExport.getName();
-            const exportedName = namedExport.getAliasNode()?.getText() || localName;
-            addExport(exports, seen, sourceExport(exportedName, 'unknown', {
-                localName,
-                path: exportPath,
-                normalizedPath: normalizeExportPath(exportPath),
-                crossingType: 'symbol',
-                isReexport: Boolean(exportPath),
-                isAliased: exportedName !== localName,
-                statementId,
-            }));
+        if (ts.isVariableStatement(node) && this.modifier(node, ts.SyntaxKind.ExportKeyword)) for (const declaration of node.declarationList.declarations) {
+            if (ts.isIdentifier(declaration.name)) {
+                const binding = declaration.initializer !== undefined && this.callableNode(declaration.initializer) ? declaration.initializer : declaration;
+                this.export(declaration.name.text, declaration.name.text, binding);
+            }
         }
-    }
-
-    return exports;
-}
-
-function classDeclarationIsAbstract(classDeclaration) {
-    return classDeclaration.getModifiers().some(modifier => modifier.getKind() === SyntaxKind.AbstractKeyword);
-}
-
-function typeIncludesUndefined(typeNode) {
-    if (typeNode === undefined) {
-        return false;
-    }
-    if (typeNode.kind === SyntaxKind.UndefinedKeyword) {
-        return true;
-    }
-    if (ts.isUnionTypeNode(typeNode)) {
-        return typeNode.types.some(typeIncludesUndefined);
-    }
-    if (ts.isParenthesizedTypeNode(typeNode)) {
-        return typeIncludesUndefined(typeNode.type);
-    }
-    return false;
-}
-
-function propertyIsOptional(property) {
-    const typeNode = typeof property.getTypeNode === 'function' ? property.getTypeNode() : undefined;
-    const initializer = typeof property.getInitializer === 'function' ? property.getInitializer() : undefined;
-    return Boolean(
-        (typeof property.hasQuestionToken === 'function' && property.hasQuestionToken())
-        || typeIncludesUndefined(typeNode?.compilerNode)
-        || textOf(initializer).match(/^(undefined|null)$/),
-    );
-}
-
-function sourceClassMethod(method, lineStarts, sourceId, ownerDeclarationId, kind, name = propertyNameText(method)) {
-    const visibility = visibilityFromModifiers(method);
-    return sourceCallable({
-        sourceId,
-        name,
-        qualifiedName: `${ownerDeclarationId.qualified_name}.${name}`,
-        ownerDeclarationId,
-        kind,
-        visibility,
-        startIndex: method.getStart(),
-        endIndex: endIndexForNode(method),
-        lineStarts,
-        parameters: functionParameters(method),
-        returnTypeNode: typeof method.getReturnTypeNode === 'function' ? method.getReturnTypeNode() : undefined,
-    });
-}
-
-function sourceProperty(property, sourceId, ownerDeclarationId, name, visibility, memberKind) {
-    return {
-        declaration_id: {
-            source_id: sourceId,
-            family: 'property',
-            qualified_name: `${ownerDeclarationId.qualified_name}.${name}`,
-            ordinal: property.getStart() + 1,
-        },
-        owner_declaration_id: ownerDeclarationId,
-        name,
-        is_optional: propertyIsOptional(property),
-        type: sourceType(typeof property.getTypeNode === 'function' ? property.getTypeNode() : undefined),
-        visibility,
-        member_kind: memberKind,
-        assigned_values: [{ kind: 'unsupported', expression: '', reference: '' }],
-    };
-}
-
-function collectClasses(sourceFile, lineStarts, sourceId) {
-    const classes = [];
-    const abstractClasses = [];
-    const classRanges = [];
-
-    for (const classDeclaration of sourceFile.getClasses()) {
-        const name = classDeclaration.getName() || 'default';
-        const visibility = moduleVisibility(classDeclaration);
-        const ownerDeclarationId = {
-            source_id: sourceId,
-            family: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
-            qualified_name: name,
-            ordinal: classDeclaration.getStart() + 1,
-        };
-        classRanges.push({
-            start: classDeclaration.getStart(),
-            end: classDeclaration.getEnd(),
-        });
-
-        const properties = new Map();
-        for (const property of classDeclaration.getProperties()) {
-            const propertyName = propertyNameText(property);
-            properties.set(propertyName, sourceProperty(
-                property,
-                sourceId,
-                ownerDeclarationId,
-                propertyName,
-                visibilityFromModifiers(property),
-                memberKindFromModifiers(property),
-            ));
+        if (ts.isExportDeclaration(node)) {
+            const specifier = node.moduleSpecifier;
+            if (specifier !== undefined && !ts.isStringLiteral(specifier)) throw new SourceInvariantFailure('Export module specifier is not a string literal.');
+            const module = specifier?.text ?? '';
+            if (node.exportClause === undefined) { this.export('*', '*', node, module); this.limit('exports', node, 'Wildcard export bindings require the external module inventory.'); }
+            else if (ts.isNamespaceExport(node.exportClause)) this.export(node.exportClause.name.text, '*', node, module);
+            else for (const element of node.exportClause.elements) this.export(element.name.text, element.propertyName?.text ?? element.name.text, node, module);
         }
-        for (const constructorDeclaration of classDeclaration.getConstructors()) {
-            for (const parameter of constructorDeclaration.getParameters()) {
-                if (parameter.isParameterProperty()) {
-                    const parameterName = singleBindingName(parameter.getNameNode()) || parameter.getNameNode().getText();
-                    properties.set(parameterName, sourceProperty(
-                        parameter,
-                        sourceId,
-                        ownerDeclarationId,
-                        parameterName,
-                        visibilityFromModifiers(parameter),
-                        'instance',
-                    ));
+        if (ts.isExportAssignment(node)) this.export('default', node.expression.getText(this.source), node, '', true);
+        ts.forEachChild(node, child => this.observe(child));
+    }
+    calls(): Call[] {
+        const result: Call[] = []; const ordinals = new Map<ts.Node, number>();
+        const visit = (node: ts.Node): void => {
+            if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
+                let owner = this.container(node);
+                while (owner !== this.source && !this.callables.has(owner)) owner = this.container(owner);
+                const source = this.callables.get(owner);
+                if (source !== undefined) {
+                    const expression = node.expression.getText(this.source);
+                    const target = this.resolve(expression, node);
+                    let candidates = target.kind === 'resolved' ? [...this.callables.values()].filter(callable => callable.declaration_id === target.declaration_id) : [];
+                    if (ts.isNewExpression(node) && target.kind === 'resolved') candidates = [...this.callables.values()].filter(callable => callable.kind === 'constructor' && callable.owner_declaration_id === target.declaration_id);
+                    const ordinal = (ordinals.get(owner) ?? 0) + 1; ordinals.set(owner, ordinal);
+                    result.push({ source_callable_id: source.declaration_id, ordinal, target_callable_id: candidates.length === 1 ? candidates[0].declaration_id : null,
+                        source_id: this.sourceId, line: this.line(node.getStart(this.source)), expression, resolution: candidates.length === 1 ? 'resolved' : ts.isIdentifier(node.expression) || ts.isPropertyAccessExpression(node.expression) ? 'unresolved' : 'dynamic', target_name: expression.split('.').pop() ?? expression });
                 }
             }
-        }
-
-        const concreteMethods = [];
-        const abstractMethods = [];
-        for (const constructorDeclaration of classDeclaration.getConstructors()) {
-            concreteMethods.push(sourceClassMethod(
-                constructorDeclaration,
-                lineStarts,
-                sourceId,
-                ownerDeclarationId,
-                'constructor',
-                'constructor',
-            ));
-        }
-        for (const method of classDeclaration.getMethods()) {
-            const methodValue = sourceClassMethod(
-                method,
-                lineStarts,
-                sourceId,
-                ownerDeclarationId,
-                method.getModifiers().some(modifier => modifier.getKind() === SyntaxKind.StaticKeyword)
-                    ? 'static_method'
-                    : 'instance_method',
-            );
-            if (method.getBody() === undefined || method.getModifiers().some(modifier => modifier.getKind() === SyntaxKind.AbstractKeyword)) {
-                abstractMethods.push(methodValue);
-            } else {
-                concreteMethods.push(methodValue);
-            }
-        }
-
-        const base = {
-            declaration_id: ownerDeclarationId,
-            kind: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
-            name,
-            visibility,
-            visibility_intent: visibilityIntent(name, visibility),
-            declaration_annotations: declarationAnnotations(classDeclaration),
-            properties: Array.from(properties.values()),
-            line_count: lineSpan(lineStarts, classDeclaration.getStart(), endIndexForNode(classDeclaration)),
-        };
-
-        if (classDeclarationIsAbstract(classDeclaration)) {
-            abstractClasses.push({
-                ...base,
-                abstract_methods: abstractMethods,
-                methods: concreteMethods,
-            });
-        } else {
-            classes.push({
-                ...base,
-                methods: concreteMethods,
-            });
-        }
+            ts.forEachChild(node, visit);
+        }; visit(this.source); return result;
     }
-
-    return { classes, abstractClasses, classRanges };
-}
-
-function collectSignaturesFromMembers(members, lineStarts) {
-    const signatures = [];
-    for (const member of members) {
-        let kind = '';
-        if (Node.isCallSignatureDeclaration(member)) {
-            kind = 'call';
-        } else if (Node.isConstructSignatureDeclaration(member)) {
-            kind = 'construct';
-        } else if (Node.isIndexSignatureDeclaration(member)) {
-            kind = 'index';
-        }
-        if (!kind) {
-            continue;
-        }
-        const parameters = typeof member.getParameters === 'function' ? functionParameters(member) : [];
-        signatures.push({
-            kind,
-            line_count: lineSpan(lineStarts, member.getStart(), endIndexForNode(member)),
-            declared_args: parameters.length,
-            optional_args: parameters.filter(parameter => parameter.has_default).length,
-        });
-    }
-    return signatures;
-}
-
-function collectInterfaces(sourceFile, lineStarts, sourceId) {
-    return sourceFile.getInterfaces().map(interfaceDeclaration => {
-        const visibility = moduleVisibility(interfaceDeclaration);
-        const ownerDeclarationId = {
-            source_id: sourceId,
-            family: 'interface',
-            qualified_name: interfaceDeclaration.getName(),
-            ordinal: interfaceDeclaration.getStart() + 1,
-        };
-        const properties = interfaceDeclaration.getProperties().map(property => sourceProperty(
-            property,
-            sourceId,
-            ownerDeclarationId,
-            propertyNameText(property),
-            'public',
-            'instance',
-        ));
-        const methods = interfaceDeclaration.getMethods().map(method => sourceClassMethod(
-            method,
-            lineStarts,
-            sourceId,
-            ownerDeclarationId,
-            'instance_method',
-        ));
-        return {
-            declaration_id: ownerDeclarationId,
-            kind: 'interface',
-            name: interfaceDeclaration.getName(),
-            visibility,
-            visibility_intent: visibilityIntent(interfaceDeclaration.getName(), visibility),
-            declaration_annotations: [],
-            methods,
-            properties,
-            signatures: collectSignaturesFromMembers(interfaceDeclaration.getMembers(), lineStarts),
-            line_count: lineSpan(lineStarts, interfaceDeclaration.getStart(), endIndexForNode(interfaceDeclaration)),
-        };
-    });
-}
-
-function collectTypes(sourceFile, lineStarts, sourceId) {
-    return sourceFile.getTypeAliases().map(typeAlias => {
-        const visibility = moduleVisibility(typeAlias);
-        const ownerDeclarationId = {
-            source_id: sourceId,
-            family: 'type',
-            qualified_name: typeAlias.getName(),
-            ordinal: typeAlias.getStart() + 1,
-        };
-        const typeNode = typeAlias.getTypeNode();
-        const members = Node.isTypeLiteral(typeNode) ? typeNode.getMembers() : [];
-        const properties = members.filter(member => Node.isPropertySignature(member)).map(property => sourceProperty(
-            property,
-            sourceId,
-            ownerDeclarationId,
-            propertyNameText(property),
-            'public',
-            'instance',
-        ));
-        return {
-            declaration_id: ownerDeclarationId,
-            kind: 'type_alias',
-            name: typeAlias.getName(),
-            visibility,
-            visibility_intent: visibilityIntent(typeAlias.getName(), visibility),
-            declaration_annotations: [],
-            properties,
-            signatures: collectSignaturesFromMembers(members, lineStarts),
-            line_count: lineSpan(lineStarts, typeAlias.getStart(), endIndexForNode(typeAlias)),
-        };
-    });
-}
-
-function moduleVariableDeclarations(sourceFile) {
-    return sourceFile.getVariableDeclarations().filter(declaration => {
-        const statement = declaration.getVariableStatement();
-        return statement !== undefined && statement.getParent() === sourceFile;
-    });
-}
-
-function variableScope(declaration) {
-    const statement = declaration.getVariableStatement();
-    const parent = statement === undefined ? undefined : statement.getParent();
-    if (parent !== undefined && (Node.isSourceFile(parent) || Node.isModuleBlock(parent))) {
-        return 'module';
-    }
-    return 'local';
-}
-
-function collectValues(sourceFile, lineStarts, sourceId) {
-    const values = [];
-    for (const declaration of sourceFile.getVariableDeclarations()) {
-        const initializer = declaration.getInitializer();
-        const valueKind = expressionValueKind(initializer);
-        if (valueKind === 'value_callable') {
-            continue;
-        }
-        const expression = initializer === undefined ? undefined : unwrapExpression(initializer);
-        const variableStatement = declaration.getVariableStatement();
-        const declarationKind = variableStatement !== undefined
-            && variableStatement.getDeclarationKind() === VariableDeclarationKind.Const
-            ? 'constant'
-            : 'assignment';
-        const visibility = variableStatement !== undefined && variableStatement.getParent() === sourceFile
-            ? moduleVisibility(variableStatement)
-            : 'private';
-        for (const name of bindingNames(declaration.getNameNode())) {
-            values.push(sourceValue({
-                sourceId,
-                name,
-                visibility,
-                startIndex: declaration.getStart(),
-                endIndex: endIndexForNode(declaration),
-                lineStarts,
-                valueKind,
-                declarationKind,
-                scope: variableScope(declaration),
-            }));
-        }
-    }
-    return values;
-}
-
-function nearestFunctionLike(node) {
-    let current = node;
-    while (current !== undefined) {
-        if (
-            Node.isFunctionDeclaration(current)
-            || Node.isFunctionExpression(current)
-            || Node.isArrowFunction(current)
-            || Node.isMethodDeclaration(current)
-            || Node.isConstructorDeclaration(current)
-        ) {
-            return current;
-        }
-        current = current.getParent();
-    }
-    return undefined;
-}
-
-function callableNameForExpression(expression, lineStarts) {
-    const parent = expression.getParent();
-    if (Node.isVariableDeclaration(parent)) {
-        const name = singleBindingName(parent.getNameNode());
-        if (name) {
-            return { name, qualifiedName: name, ownerName: '', visibility: moduleVisibility(parent.getVariableStatement()) };
-        }
-    }
-    if (Node.isPropertyDeclaration(parent)) {
-        const classDeclaration = parent.getFirstAncestorByKind(SyntaxKind.ClassDeclaration);
-        const ownerName = classDeclaration?.getName() || 'default';
-        const name = propertyNameText(parent);
-        return {
-            name,
-            qualifiedName: `${ownerName}.${name}`,
-            ownerName,
-            visibility: visibilityFromModifiers(parent),
-        };
-    }
-    if (Node.isPropertyAssignment(parent) || Node.isShorthandPropertyAssignment(parent)) {
-        const objectLiteral = parent.getParent();
-        const ownerName = Node.isObjectLiteralExpression(objectLiteral) ? ownerNameForObjectLiteral(objectLiteral) : '';
-        const name = propertyNameText(parent);
-        return {
-            name,
-            qualifiedName: [ownerName, name].filter(Boolean).join('.') || name,
-            ownerName,
-            visibility: 'private',
-        };
-    }
-    if (Node.isExportAssignment(parent)) {
-        return { name: 'default', qualifiedName: 'default', ownerName: '', visibility: 'public' };
-    }
-    const line = lineNumberAt(lineStarts, expression.getStart());
-    const column = expression.getStart() - lineStarts[line - 1];
-    const name = `<anonymous>@${line}:${column}`;
-    return { name, qualifiedName: name, ownerName: '', visibility: 'private' };
-}
-
-function collectCallables(sourceFile, lineStarts, sourceId) {
-    const callables = [];
-    const callableRanges = [];
-
-    function addFunctionLike(node, nameInfo, kind, startNode = node) {
-        const bodyInfo = callableBodyInfo(node);
-        let declarationKind = 'assignment';
-        let scope = 'module';
-        if (Node.isVariableDeclaration(startNode)) {
-            const statement = startNode.getVariableStatement();
-            declarationKind = statement !== undefined
-                && statement.getDeclarationKind() === VariableDeclarationKind.Const
-                ? 'constant'
-                : 'assignment';
-            scope = variableScope(startNode);
-        } else if (
-            Node.isPropertyDeclaration(startNode)
-            || Node.isPropertyAssignment(startNode)
-            || Node.isShorthandPropertyAssignment(startNode)
-        ) {
-            declarationKind = 'property';
-            scope = 'member';
-        }
-        const ownerDeclarationId = nameInfo.ownerName
-            ? {
-                source_id: sourceId,
-                family: nameInfo.ownerFamily || 'class',
-                qualified_name: nameInfo.ownerName,
-                ordinal: nameInfo.ownerOrdinal,
-            }
-            : undefined;
-        addCallable(callables, callableRanges, sourceCallable({
-            sourceId,
-            name: nameInfo.name,
-            qualifiedName: nameInfo.qualifiedName,
-            ownerName: nameInfo.ownerName,
-            ownerDeclarationId: ['instance_method', 'type_method', 'static_method', 'constructor'].includes(kind)
-                ? ownerDeclarationId
-                : undefined,
-            kind,
-            visibility: nameInfo.visibility,
-            startIndex: startNode.getStart(),
-            endIndex: bodyInfo.endIndex,
-            lineStarts,
-            parameters: functionParameters(node),
-            returnTypeNode: typeof node.getReturnTypeNode === 'function' ? node.getReturnTypeNode() : undefined,
-            declarationKind,
-            scope,
-        }), bodyInfo, node, nameInfo.ownerName);
-    }
-
-    for (const functionDeclaration of sourceFile.getFunctions()) {
-        if (functionDeclaration.getBody() === undefined) {
-            continue;
-        }
-        const name = functionDeclaration.getName() || (functionDeclaration.isDefaultExport() ? 'default' : '');
-        if (name) {
-            addFunctionLike(functionDeclaration, {
-                name,
-                qualifiedName: name,
-                ownerName: '',
-                visibility: moduleVisibility(functionDeclaration),
-            }, 'function');
-        }
-    }
-
-    for (const classDeclaration of sourceFile.getClasses()) {
-        const className = classDeclaration.getName() || 'default';
-        for (const constructorDeclaration of classDeclaration.getConstructors()) {
-            if (constructorDeclaration.getBody() !== undefined) {
-                addFunctionLike(constructorDeclaration, {
-                    name: 'constructor',
-                    qualifiedName: `${className}.constructor`,
-                    ownerName: className,
-                ownerFamily: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
-                ownerOrdinal: classDeclaration.getStart() + 1,
-                    visibility: visibilityFromModifiers(constructorDeclaration),
-                }, 'constructor');
-            }
-        }
-        for (const method of classDeclaration.getMethods()) {
-            if (method.getBody() === undefined) {
-                continue;
-            }
-            const name = method.getName();
-            const isStatic = method.getModifiers().some(modifier => modifier.getKind() === SyntaxKind.StaticKeyword);
-            addFunctionLike(method, {
-                name,
-                qualifiedName: `${className}.${name}`,
-                ownerName: className,
-                ownerFamily: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
-                ownerOrdinal: classDeclaration.getStart() + 1,
-                visibility: visibilityFromModifiers(method),
-            }, isStatic ? 'static_method' : 'instance_method');
-        }
-    }
-
-    for (const expression of [
-        ...sourceFile.getDescendantsOfKind(SyntaxKind.ArrowFunction),
-        ...sourceFile.getDescendantsOfKind(SyntaxKind.FunctionExpression),
-    ]) {
-        const nameInfo = callableNameForExpression(expression, lineStarts);
-        const parent = expression.getParent();
-        const named = Node.isVariableDeclaration(parent)
-            || Node.isPropertyDeclaration(parent)
-            || Node.isPropertyAssignment(parent)
-            || Node.isShorthandPropertyAssignment(parent)
-            || Node.isExportAssignment(parent);
-        addFunctionLike(expression, nameInfo, named ? 'callable_value' : 'anonymous', named ? parent : expression);
-    }
-
-    for (const method of sourceFile.getDescendantsOfKind(SyntaxKind.MethodDeclaration)) {
-        const objectLiteral = method.getParent();
-        if (!Node.isObjectLiteralExpression(objectLiteral) || method.getBody() === undefined) {
-            continue;
-        }
-        const ownerName = ownerNameForObjectLiteral(objectLiteral);
-        const name = method.getName();
-        addFunctionLike(method, {
-            name,
-            qualifiedName: [ownerName, name].filter(Boolean).join('.') || name,
-            ownerName,
-            visibility: 'private',
-        }, 'callable_value');
-    }
-
-    return { callables, callableRanges };
-}
-
-function expressionName(expression) {
-    const text = expression.getText();
-    return text.split('.').pop() || text;
-}
-
-function collectCalls(sourceFile, lineStarts, sourceId, callableRanges, callables) {
-    const byName = new Map();
-    const byQualifiedName = new Map();
-    const constructorsByName = new Map();
-    for (const callable of callables) {
-        byQualifiedName.set(
-            callable.qualified_name,
-            [...(byQualifiedName.get(callable.qualified_name) || []), callable.declaration_id],
-        );
-        if (['function', 'callable_value'].includes(callable.kind)) {
-            byName.set(callable.name, [...(byName.get(callable.name) || []), callable.declaration_id]);
-        }
-        if (callable.kind === 'constructor') {
-            const ownerName = callable.owner_declaration_id.qualified_name;
-            constructorsByName.set(
-                ownerName,
-                [...(constructorsByName.get(ownerName) || []), callable.declaration_id],
-            );
-        }
-    }
-
-    const rangesByFunction = new Map();
-    const nextOrdinalByFunction = new Map();
-    for (const range of callableRanges) {
-        rangesByFunction.set(range.functionNode, range);
-        nextOrdinalByFunction.set(range.functionNode, 1);
-    }
-    const calls = [];
-
-    function addCall(node, expression, isConstructor) {
-        const nearest = nearestFunctionLike(node);
-        const range = rangesByFunction.get(nearest);
-        if (range === undefined) {
-            return;
-        }
-        const ordinal = nextOrdinalByFunction.get(nearest);
-        nextOrdinalByFunction.set(nearest, ordinal + 1);
-        const expressionText = expression.getText();
-        const targetName = expressionName(expression);
-        let targetCallableId = null;
-        let resolution = 'unresolved';
-        if (isConstructor && constructorsByName.get(expressionText)?.length === 1) {
-            [targetCallableId] = constructorsByName.get(expressionText);
-            resolution = 'resolved';
-        } else if (byQualifiedName.get(expressionText)?.length === 1) {
-            [targetCallableId] = byQualifiedName.get(expressionText);
-            resolution = 'resolved';
-        } else if (expressionText.startsWith('this.') && range.ownerName) {
-            const qualifiedName = `${range.ownerName}.${expressionText.slice('this.'.length)}`;
-            if (byQualifiedName.get(qualifiedName)?.length === 1) {
-                [targetCallableId] = byQualifiedName.get(qualifiedName);
-                resolution = 'resolved';
-            }
-        } else if (byName.get(expressionText)?.length === 1) {
-            [targetCallableId] = byName.get(expressionText);
-            resolution = 'resolved';
-        }
-        calls.push({
-            source_callable_id: range.declarationId,
-            ordinal,
-            target_callable_id: targetCallableId,
-            source_id: sourceId,
-            line: lineNumberAt(lineStarts, node.getStart()),
-            expression: expressionText,
-            resolution,
-            target_name: targetName,
-        });
-    }
-
-    const occurrences = sourceFile.getDescendantsOfKind(SyntaxKind.CallExpression).map(node => ({
-        node,
-        expression: node.getExpression(),
-        isConstructor: false,
-    }));
-    for (const newExpression of sourceFile.getDescendantsOfKind(SyntaxKind.NewExpression)) {
-        const expression = newExpression.getExpression();
-        if (expression !== undefined) {
-            occurrences.push({ node: newExpression, expression, isConstructor: true });
-        }
-    }
-    occurrences.sort((left, right) => left.node.getStart() - right.node.getStart() || right.node.getEnd() - left.node.getEnd());
-    for (const occurrence of occurrences) {
-        addCall(occurrence.node, occurrence.expression, occurrence.isConstructor);
-    }
-    return calls;
-}
-
-function collectCallableGraph(sourceFile, lineStarts, sourceId) {
-    const { callables, callableRanges } = collectCallables(sourceFile, lineStarts, sourceId);
-    return {
-        values: collectValues(sourceFile, lineStarts, sourceId),
-        callables,
-        calls: collectCalls(sourceFile, lineStarts, sourceId, callableRanges, callables),
-    };
-}
-
-function publicSymbolCount(exports) {
-    return new Set(exports.filter(value => !value.is_reexport).map(value => value.name)).size;
-}
-
-function extractFile(filePath, sourcesRoot, sourceId = null) {
-    const content = fs.readFileSync(filePath, 'utf8');
-    const sourceFile = parseSourceFile(path.resolve(filePath), content);
-    const lineStarts = buildLineStarts(content);
-    const resolvedSourceId = sourceId || sourceIdForPath(filePath, sourcesRoot);
-    const { classes, abstractClasses } = collectClasses(sourceFile, lineStarts, resolvedSourceId);
-    const imports = collectImports(sourceFile, filePath, sourcesRoot);
-    const exports = collectExports(sourceFile, filePath, sourcesRoot);
-    const callableGraph = collectCallableGraph(sourceFile, lineStarts, resolvedSourceId);
-
-    return {
-        imports,
-        exports,
-        namespaces: [],
-        declarations: [
-            ...classes,
-            ...collectInterfaces(sourceFile, lineStarts, resolvedSourceId),
-            ...collectTypes(sourceFile, lineStarts, resolvedSourceId),
-            ...abstractClasses,
-        ],
-        functions: callableGraph.callables.filter(callable => callable.kind === 'function'),
-        values: callableGraph.values,
-        callable_values: callableGraph.callables.filter(callable => callable.kind === 'callable_value'),
-        anonymous_callables: callableGraph.callables.filter(callable => callable.kind === 'anonymous'),
-        calls: callableGraph.calls,
-        declaration_relations: [
-            ...sourceFile.getClasses().flatMap(classDeclaration => {
-                const extension = classDeclaration.getExtends();
-                return [
-                    ...(extension === undefined ? [] : [{
-                        source_declaration_id: {
-                            source_id: resolvedSourceId,
-                            family: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
-                            qualified_name: classDeclaration.getName() || 'default',
-                            ordinal: classDeclaration.getStart() + 1,
-                        },
-                        kind: 'extends',
-                        target_reference: extension.getExpression().getText(),
-                    }]),
-                    ...classDeclaration.getImplements().map(target => ({
-                        source_declaration_id: {
-                            source_id: resolvedSourceId,
-                            family: classDeclarationIsAbstract(classDeclaration) ? 'abstract_class' : 'class',
-                            qualified_name: classDeclaration.getName() || 'default',
-                            ordinal: classDeclaration.getStart() + 1,
-                        },
-                        kind: 'implements',
-                        target_reference: target.getExpression().getText(),
-                    })),
-                ];
-            }),
-            ...sourceFile.getInterfaces().flatMap(interfaceDeclaration =>
-                interfaceDeclaration.getExtends().map(target => ({
-                    source_declaration_id: {
-                        source_id: resolvedSourceId,
-                        family: 'interface',
-                        qualified_name: interfaceDeclaration.getName(),
-                        ordinal: interfaceDeclaration.getStart() + 1,
-                    },
-                    kind: 'extends',
-                    target_reference: target.getExpression().getText(),
-                })),
-            ),
-        ],
-        line_count: content.split('\n').length,
-        code_line_count: codeLineCount(content),
-        public_symbol_count: publicSymbolCount(exports),
-    };
-}
-
-function extractBatchFromStdin(sourcesRoot) {
-    const pathsBySourceId = JSON.parse(fs.readFileSync(0, 'utf8'));
-    if (
-        pathsBySourceId === null
-        || Array.isArray(pathsBySourceId)
-        || typeof pathsBySourceId !== 'object'
-    ) {
-        console.error('Expected a JSON object mapping source ids to TypeScript file paths.');
-        process.exit(1);
-    }
-
-    const result = {};
-    for (const [sourceId, filePath] of Object.entries(pathsBySourceId)) {
-        if (typeof sourceId !== 'string' || typeof filePath !== 'string') {
-            console.error('Expected source ids and paths to be strings.');
-            process.exit(1);
-        }
-        result[sourceId] = extractFile(path.resolve(filePath), sourcesRoot, sourceId);
-    }
-    return result;
-}
-
-function writeBatchJsonlFromStdin(sourcesRoot) {
-    const pathsBySourceId = JSON.parse(fs.readFileSync(0, 'utf8'));
-    if (
-        pathsBySourceId === null
-        || Array.isArray(pathsBySourceId)
-        || typeof pathsBySourceId !== 'object'
-    ) {
-        console.error('Expected a JSON object mapping source ids to TypeScript file paths.');
-        process.exit(1);
-    }
-
-    for (const [sourceId, filePath] of Object.entries(pathsBySourceId)) {
-        if (typeof sourceId !== 'string' || typeof filePath !== 'string') {
-            console.error('Expected source ids and paths to be strings.');
-            process.exit(1);
-        }
-        console.log(JSON.stringify([
-            sourceId,
-            extractFile(path.resolve(filePath), sourcesRoot, sourceId),
-        ]));
+    extract(): ExtractedFile {
+        this.index(this.source, this.source);
+        for (const [node, kind] of this.callableNodes) this.callables.set(node, this.emitCallable(node, kind));
+        for (const [node, kind] of this.declarationNodes) this.declarations.set(node, this.emitDeclaration(node, kind));
+        this.observe(this.source);
+        const callables = [...this.callables.values()];
+        return { imports: this.imports, exports: this.exports, namespaces: this.namespaces, declarations: [...this.declarations.values()], functions: callables.filter(callable => callable.kind === 'function'), values: this.values,
+            callable_values: callables.filter(callable => callable.kind === 'callable_value'), anonymous_callables: callables.filter(callable => callable.kind === 'anonymous'), unresolved_methods: callables.filter(callable => callable.owner !== undefined), calls: this.calls(), declaration_relations: this.relations, inventory: this.inventory,
+            line_count: this.content.split('\n').length, code_line_count: this.content.split('\n').filter(line => line.trim() !== '' && !line.trim().startsWith('//')).length, public_symbol_count: new Set(this.exports.filter(item => !item.is_reexport).map(item => item.name)).size };
     }
 }
 
-function main() {
-    if (process.argv[2] === '--batch') {
-        const sourcesRoot = process.argv[3] ? path.resolve(process.argv[3]) : process.cwd();
-        if (process.argv.includes('--jsonl')) {
-            writeBatchJsonlFromStdin(sourcesRoot);
-        } else {
-            console.log(JSON.stringify(extractBatchFromStdin(sourcesRoot)));
+class Script {
+    readInput(): Map<string, string> {
+        const document: unknown = JSON.parse(fs.readFileSync(0, 'utf8'));
+        if (document === null || typeof document !== 'object' || Array.isArray(document)) throw new InputContractFailure('Expected a source-id to path object.');
+        const inputs = new Map<string, string>();
+        for (const [id, file] of Object.entries(document)) {
+            if (typeof file !== 'string') throw new InputContractFailure('Source paths must be strings.');
+            inputs.set(id, file);
         }
-    } else {
-        console.log(JSON.stringify(extractFile(
-            path.resolve(process.argv[2]),
-            process.argv[3] ? path.resolve(process.argv[3]) : process.cwd(),
-        )));
+        return inputs;
+    }
+    run(): void {
+        const batch = process.argv[2] === '--batch';
+        const root = path.resolve(process.argv[3] ?? process.cwd());
+        const file = process.argv[2];
+        if (file === undefined) throw new InputContractFailure('Expected a source path or --batch.');
+        const inputs = batch ? this.readInput() : new Map([[path.relative(root, path.resolve(file)).replace(/\.[^/.]+$/, ''), file]]);
+        const output: Record<string, ExtractedFile> = {};
+        for (const [id, file] of inputs) {
+            const result = new TypeScriptExtractor(id, path.resolve(file), root, fs.readFileSync(file, 'utf8')).extract();
+            if (batch && process.argv.includes('--jsonl')) console.log(JSON.stringify([id, result]));
+            else output[id] = result;
+        }
+        if (!batch) console.log(JSON.stringify(Object.values(output)[0]));
+        else if (!process.argv.includes('--jsonl')) console.log(JSON.stringify(output));
     }
 }
-
-try {
-    main();
-} catch (error) {
-    if (error instanceof SourceParseFailure) {
-        console.error(`modwire-error:${JSON.stringify({
-            code: 'source_parse',
-            language: error.language,
-            path: error.sourcePath,
-            line: error.line,
-            column: error.column,
-            diagnostic: error.diagnostic,
-        })}`);
-        process.exitCode = 1;
-    } else {
-        throw error;
-    }
+try { new Script().run(); } catch (error) {
+    if (error instanceof SourceParseFailure) { console.error(`modwire-error:${JSON.stringify({ code: 'source_parse', language: 'typescript', path: error.sourcePath, line: error.line, column: error.column, diagnostic: error.diagnostic })}`); process.exitCode = 1; }
+    else throw error;
 }

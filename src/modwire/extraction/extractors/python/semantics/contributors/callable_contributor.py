@@ -9,22 +9,15 @@ from ......shared.code.models.callables.source_callable_kind import SourceCallab
 from ......shared.code.models.callables.source_callable_value import SourceCallableValue
 from ......shared.code.models.callables.source_class_method import SourceClassMethod
 from ......shared.code.models.callables.source_function import SourceFunction
-from ......shared.code.models.declarations.declaration_family import DeclarationFamily
-from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ......shared.code.models.declarations.source_scope_kind import SourceScopeKind
 from ......shared.code.models.declarations.source_symbol_kind import SourceSymbolKind
 from ......shared.code.models.declarations.source_visibility import SourceVisibility
 from ......shared.code.models.values.source_value_declaration_kind import SourceValueDeclarationKind
 from ......shared.code.models.values.source_value_scope import SourceValueScope
-from ....models.extractor_invariant_error import ExtractorInvariantError
-from ....models.extractor_invariant_violation import ExtractorInvariantViolation
-from ...observations.callable_candidate import PythonCallableCandidate
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
-from ..callables.classifier import PythonCallableClassifier
 from ..catalog import PythonSemanticCatalog
-from ..classes.classifier import PythonClassClassifier
 from ..contribution import PythonSemanticContribution
-from ..policies.declaration_identity_factory import PythonDeclarationIdentityFactory
 from ..policies.parameter_reader import PythonParameterReader
 from ..policies.source_type_reader import PythonSourceTypeReader
 from ..policies.visibility_policy import PythonVisibilityPolicy
@@ -34,10 +27,7 @@ from ..reader import PythonSemanticContributor
 @injectable(as_type=PythonSemanticContributor, qualifier="10-callable")
 @dataclass(frozen=True)
 class CallableSemanticContributor(PythonSemanticContributor):
-    callables: PythonCallableClassifier
-    classes: PythonClassClassifier
     visibility: PythonVisibilityPolicy
-    identities: PythonDeclarationIdentityFactory
     parameters: PythonParameterReader
     types: PythonSourceTypeReader
 
@@ -46,194 +36,117 @@ class CallableSemanticContributor(PythonSemanticContributor):
         return 10
 
     def contribute(
-        self,
-        observation: PythonSourceObservation,
-        catalog: PythonSemanticCatalog,
-        context: PythonSourceContext,
+        self, observation: PythonSourceObservation, catalog: PythonSemanticCatalog, context: PythonSourceContext
     ) -> PythonSemanticContribution:
-        owners = {
-            candidate.node.name: self.identities.create(
-                context.source_id,
-                self.classes.classify(candidate),
-                candidate.node.name,
-                candidate.node.lineno,
-                candidate.node.col_offset,
-            )
-            for candidate in observation.classes
-        }
         functions: list[SourceFunction] = []
         methods: list[SourceClassMethod] = []
-        callable_values: list[SourceCallableValue] = []
-        anonymous_callables: list[SourceAnonymousCallable] = []
+        values: list[SourceCallableValue] = []
+        anonymous: list[SourceAnonymousCallable] = []
         for candidate in observation.callables:
-            kind = self.callables.classify(candidate)
+            kind = catalog.callable_kinds[candidate.node]
+            start, end = candidate.source_span
+            visibility_intent = self.visibility.classify(candidate.name)
+            parameters = self.parameters.read(candidate, kind)
+            return_type = self.types.read(self.return_annotation(candidate.node))
+            decorators = self.decorators(candidate.node)
+            docstring = self.docstring(candidate.node)
+            placement = catalog.placement(candidate.binding_scope)
             if kind is SourceCallableKind.FUNCTION:
-                functions.append(self.source_function(candidate, context))
-            elif kind in {
-                SourceCallableKind.INSTANCE_METHOD,
-                SourceCallableKind.TYPE_METHOD,
-                SourceCallableKind.STATIC_METHOD,
-                SourceCallableKind.CONSTRUCTOR,
-            }:
-                if not candidate.owner_name:
-                    raise ExtractorInvariantError(
-                        ExtractorInvariantViolation.MISSING_CALLABLE_OWNER,
-                        candidate.qualified_name,
+                functions.append(
+                    SourceFunction(
+                        declaration_id=catalog.scope_identities[candidate.node],
+                        source_id=context.source_id,
+                        name=candidate.name,
+                        qualified_name=candidate.qualified_name,
+                        kind=kind,
+                        visibility=SourceVisibility.PUBLIC,
+                        visibility_intent=visibility_intent,
+                        declaration_annotations=(),
+                        line_start=start,
+                        line_end=end,
+                        line_count=end - start + 1,
+                        parameters=parameters,
+                        return_type=return_type,
+                        decorators=decorators,
+                        docstring=docstring,
+                        placement=placement,
                     )
-                methods.append(self.source_method(candidate, context, owners[candidate.owner_name], kind))
+                )
             elif kind is SourceCallableKind.CALLABLE_VALUE:
-                callable_values.append(self.source_callable_value(candidate, context))
+                values.append(
+                    SourceCallableValue(
+                        declaration_id=catalog.scope_identities[candidate.node],
+                        source_id=context.source_id,
+                        name=candidate.name,
+                        qualified_name=candidate.qualified_name,
+                        kind=kind,
+                        visibility=SourceVisibility.PUBLIC,
+                        visibility_intent=visibility_intent,
+                        declaration_annotations=(),
+                        line_start=start,
+                        line_end=end,
+                        line_count=end - start + 1,
+                        parameters=parameters,
+                        return_type=return_type,
+                        decorators=decorators,
+                        docstring=docstring,
+                        placement=placement,
+                        declaration_kind=SourceValueDeclarationKind.ASSIGNMENT,
+                        value_kind=SourceSymbolKind.VALUE_CALLABLE,
+                        scope=SourceValueScope.MODULE
+                        if placement.lexical_scope.kind is SourceScopeKind.FILE
+                        else SourceValueScope.LOCAL,
+                    )
+                )
+            elif kind is SourceCallableKind.ANONYMOUS:
+                anonymous.append(
+                    SourceAnonymousCallable(
+                        declaration_id=catalog.scope_identities[candidate.node],
+                        source_id=context.source_id,
+                        name=candidate.name,
+                        qualified_name=candidate.qualified_name,
+                        kind=kind,
+                        visibility=SourceVisibility.PUBLIC,
+                        visibility_intent=visibility_intent,
+                        declaration_annotations=(),
+                        line_start=start,
+                        line_end=end,
+                        line_count=end - start + 1,
+                        parameters=parameters,
+                        return_type=return_type,
+                        decorators=decorators,
+                        docstring=docstring,
+                        placement=placement,
+                    )
+                )
             else:
-                anonymous_callables.append(self.source_anonymous_callable(candidate, context))
+                methods.append(
+                    SourceClassMethod(
+                        declaration_id=catalog.scope_identities[candidate.node],
+                        source_id=context.source_id,
+                        name=candidate.name,
+                        qualified_name=candidate.qualified_name,
+                        kind=kind,
+                        visibility=SourceVisibility.PUBLIC,
+                        visibility_intent=visibility_intent,
+                        declaration_annotations=(),
+                        line_start=start,
+                        line_end=end,
+                        line_count=end - start + 1,
+                        parameters=parameters,
+                        return_type=return_type,
+                        decorators=decorators,
+                        docstring=docstring,
+                        placement=placement,
+                        owner_declaration_id=catalog.scope_identities[candidate.binding_scope],
+                    )
+                )
         return PythonSemanticContribution(
             functions=tuple(functions),
             methods=tuple(methods),
-            callable_values=tuple(callable_values),
-            anonymous_callables=tuple(anonymous_callables),
+            callable_values=tuple(values),
+            anonymous_callables=tuple(anonymous),
         )
-
-    def source_function(
-        self,
-        candidate: PythonCallableCandidate,
-        context: PythonSourceContext,
-    ) -> SourceFunction:
-        line_end = candidate.node.end_lineno
-        if line_end is None:
-            raise ExtractorInvariantError(
-                ExtractorInvariantViolation.MISSING_CALLABLE_END_LINE, candidate.qualified_name
-            )
-        return SourceFunction(
-            declaration_id=self.declaration_id(candidate, context, SourceCallableKind.FUNCTION),
-            source_id=context.source_id,
-            name=candidate.name,
-            qualified_name=candidate.qualified_name,
-            visibility=SourceVisibility.PUBLIC,
-            visibility_intent=self.visibility.classify(candidate.name),
-            declaration_annotations=(),
-            line_start=candidate.node.lineno,
-            line_end=line_end,
-            line_count=line_end - candidate.node.lineno + 1,
-            parameters=self.parameters.read(candidate, SourceCallableKind.FUNCTION),
-            return_type=self.types.read(self.return_annotation(candidate.node)),
-            decorators=self.decorators(candidate.node),
-            docstring=self.docstring(candidate.node),
-        )
-
-    def source_method(
-        self,
-        candidate: PythonCallableCandidate,
-        context: PythonSourceContext,
-        owner_declaration_id: DeclarationIdentity,
-        kind: SourceCallableKind,
-    ) -> SourceClassMethod:
-        line_end = candidate.node.end_lineno
-        if line_end is None:
-            raise ExtractorInvariantError(
-                ExtractorInvariantViolation.MISSING_CALLABLE_END_LINE, candidate.qualified_name
-            )
-        return SourceClassMethod(
-            declaration_id=self.declaration_id(candidate, context, kind),
-            owner_declaration_id=owner_declaration_id,
-            source_id=context.source_id,
-            name=candidate.name,
-            qualified_name=candidate.qualified_name,
-            kind=kind,
-            visibility=SourceVisibility.PUBLIC,
-            visibility_intent=self.visibility.classify(candidate.name),
-            declaration_annotations=(),
-            line_start=candidate.node.lineno,
-            line_end=line_end,
-            line_count=line_end - candidate.node.lineno + 1,
-            parameters=self.parameters.read(candidate, kind),
-            return_type=self.types.read(self.return_annotation(candidate.node)),
-            decorators=self.decorators(candidate.node),
-            docstring=self.docstring(candidate.node),
-        )
-
-    def source_callable_value(
-        self,
-        candidate: PythonCallableCandidate,
-        context: PythonSourceContext,
-    ) -> SourceCallableValue:
-        line_end = candidate.node.end_lineno
-        if line_end is None:
-            raise ExtractorInvariantError(
-                ExtractorInvariantViolation.MISSING_CALLABLE_END_LINE, candidate.qualified_name
-            )
-        return SourceCallableValue(
-            declaration_id=self.declaration_id(candidate, context, SourceCallableKind.CALLABLE_VALUE),
-            source_id=context.source_id,
-            name=candidate.name,
-            qualified_name=candidate.qualified_name,
-            visibility=SourceVisibility.PUBLIC,
-            visibility_intent=self.visibility.classify(candidate.name),
-            declaration_annotations=(),
-            line_start=candidate.node.lineno,
-            line_end=line_end,
-            line_count=line_end - candidate.node.lineno + 1,
-            parameters=self.parameters.read(candidate, SourceCallableKind.CALLABLE_VALUE),
-            return_type=self.types.read(self.return_annotation(candidate.node)),
-            decorators=self.decorators(candidate.node),
-            docstring=self.docstring(candidate.node),
-            declaration_kind=SourceValueDeclarationKind.ASSIGNMENT,
-            value_kind=SourceSymbolKind.VALUE_CALLABLE,
-            scope=SourceValueScope.MODULE,
-        )
-
-    def source_anonymous_callable(
-        self,
-        candidate: PythonCallableCandidate,
-        context: PythonSourceContext,
-    ) -> SourceAnonymousCallable:
-        line_end = candidate.node.end_lineno
-        if line_end is None:
-            raise ExtractorInvariantError(
-                ExtractorInvariantViolation.MISSING_CALLABLE_END_LINE, candidate.qualified_name
-            )
-        return SourceAnonymousCallable(
-            declaration_id=self.declaration_id(candidate, context, SourceCallableKind.ANONYMOUS),
-            source_id=context.source_id,
-            name=candidate.name,
-            qualified_name=candidate.qualified_name,
-            visibility=SourceVisibility.PUBLIC,
-            visibility_intent=self.visibility.classify(candidate.name),
-            declaration_annotations=(),
-            line_start=candidate.node.lineno,
-            line_end=line_end,
-            line_count=line_end - candidate.node.lineno + 1,
-            parameters=self.parameters.read(candidate, SourceCallableKind.ANONYMOUS),
-            return_type=self.types.read(self.return_annotation(candidate.node)),
-            decorators=self.decorators(candidate.node),
-            docstring=self.docstring(candidate.node),
-        )
-
-    def declaration_id(
-        self,
-        candidate: PythonCallableCandidate,
-        context: PythonSourceContext,
-        kind: SourceCallableKind,
-    ) -> DeclarationIdentity:
-        return self.identities.create(
-            context.source_id,
-            self.family(kind),
-            candidate.qualified_name,
-            candidate.identity_node.lineno,
-            candidate.identity_node.col_offset,
-        )
-
-    def family(self, kind: SourceCallableKind) -> DeclarationFamily:
-        if kind in {
-            SourceCallableKind.INSTANCE_METHOD,
-            SourceCallableKind.TYPE_METHOD,
-            SourceCallableKind.STATIC_METHOD,
-            SourceCallableKind.CONSTRUCTOR,
-        }:
-            return DeclarationFamily.METHOD
-        if kind is SourceCallableKind.CALLABLE_VALUE:
-            return DeclarationFamily.VALUE
-        if kind is SourceCallableKind.ANONYMOUS:
-            return DeclarationFamily.CALLABLE
-        return DeclarationFamily.FUNCTION
 
     @singledispatchmethod
     def decorators(self, node: ast.AST) -> tuple[str, ...]:

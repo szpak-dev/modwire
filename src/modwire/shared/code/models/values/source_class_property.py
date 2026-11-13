@@ -5,6 +5,7 @@ from pydantic import Field, model_validator
 from ....values.models.value_model import ValueModel
 from ..declarations.declaration_family import DeclarationFamily
 from ..declarations.declaration_identity import DeclarationIdentity
+from ..declarations.source_placement import SourcePlacement
 from ..declarations.source_visibility import SourceVisibility
 from ..failures.code_validation_error import CodeValidationError
 from ..failures.code_violation import CodeViolation
@@ -23,6 +24,7 @@ class SourceClassProperty(ValueModel):
     type: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported
     visibility: SourceVisibility
     member_kind: SourceMemberKind
+    placement: SourcePlacement
     assigned_values: tuple[SourceAssignedValue, ...] = Field(min_length=1)
 
     @model_validator(mode="after")

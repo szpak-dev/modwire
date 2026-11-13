@@ -6,10 +6,10 @@ from dataclasses import dataclass
 class PythonCallableCandidate:
     node: ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda
     identity_node: ast.stmt | ast.expr
+    binding_scope: ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda
     name: str
     qualified_name: str
-    owner_name: str
     ordinal: int
-    requires_call: bool
     root_ordinal: int
     sequence: int
+    source_span: tuple[int, int]
