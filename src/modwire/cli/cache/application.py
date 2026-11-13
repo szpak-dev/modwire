@@ -109,27 +109,31 @@ class CacheApplication:
                 raise DuplicateIdentityError(IdentityKind.IMPORT, source_file.import_identity, existing, file_id)
             import_identities[source_file.import_identity] = file_id
 
-        extraction = SourceExtraction(
+        extraction = SourceExtraction.model_construct(
             files=ordered_files,
             import_identities=import_identities,
             manifest=observation.manifest,
             files_found=observation.files_found,
             files_excluded=observation.files_excluded,
             directories_pruned=observation.directories_pruned,
-        )
-        return CachedResult(
-            value=extraction,
-            outcomes=(
-                CacheOutcome(
-                    stage=CacheStage.EXTRACTION,
-                    namespace=options.namespace,
-                    hits=hits,
-                    misses=len(misses),
-                    invalidated=invalidated,
-                    computed=len(misses),
-                    stored=len(misses),
+        ).validate_manifest_sources()
+        return (
+            CachedResult[SourceExtraction]
+            .model_construct(
+                value=extraction,
+                outcomes=(
+                    CacheOutcome(
+                        stage=CacheStage.EXTRACTION,
+                        namespace=options.namespace,
+                        hits=hits,
+                        misses=len(misses),
+                        invalidated=invalidated,
+                        computed=len(misses),
+                        stored=len(misses),
+                    ),
                 ),
-            ),
+            )
+            .validate_outcomes()
         )
 
     def maintain_source_set(self, plan: CachePlan, options: CacheOptions) -> bool:

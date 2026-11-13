@@ -1,3 +1,5 @@
+from collections.abc import Mapping
+from functools import cached_property
 from typing import Self
 
 from pydantic import Field, model_validator
@@ -48,6 +50,16 @@ class SourceFile(ValueModel):
     public_symbol_count: int
 
     @model_validator(mode="after")
+    def validate_document(self) -> Self:
+        return self.validate_facts()
+
+    def validate_facts(self) -> Self:
+        self.validate_declaration_identities()
+        self.validate_inventory()
+        self.validate_placement()
+        self.validate_bindings()
+        return self
+
     def validate_declaration_identities(self) -> Self:
         declarations_by_family = (
             (self.declarations, None),
@@ -60,7 +72,7 @@ class SourceFile(ValueModel):
         if any(self.declaration_family(item.kind) is not item.declaration_id.family for item in self.declarations):
             raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_KIND, str(self.file_id))
         callables = self.canonical_callables()
-        callable_identities = tuple(item.declaration_id.canonical() for item in callables)
+        callable_identities = {item.declaration_id.canonical() for item in callables}
         call_identities = tuple(item.identity() for item in self.calls)
         if len(call_identities) != len(set(call_identities)):
             raise CodeValidationError(CodeViolation.DUPLICATE_CALL, str(self.file_id))
@@ -79,6 +91,10 @@ class SourceFile(ValueModel):
         return self
 
     def canonical_callables(self) -> tuple[SourceCallable, ...]:
+        return self.callable_inventory
+
+    @cached_property
+    def callable_inventory(self) -> tuple[SourceCallable, ...]:
         callables = (
             *self.functions,
             *(method for declaration in self.declarations for method in declaration.methods),
@@ -90,6 +106,10 @@ class SourceFile(ValueModel):
         return tuple(sorted(callables, key=lambda item: item.declaration_id.ordinal))
 
     def declaration_placements(self) -> tuple[tuple[DeclarationIdentity, SourcePlacement], ...]:
+        return self.placement_inventory
+
+    @cached_property
+    def placement_inventory(self) -> tuple[tuple[DeclarationIdentity, SourcePlacement], ...]:
         return tuple(
             (item.declaration_id, item.placement)
             for item in (
@@ -101,7 +121,6 @@ class SourceFile(ValueModel):
             )
         )
 
-    @model_validator(mode="after")
     def validate_inventory(self) -> Self:
         self.inventory.declarations.validate_item_count(len(self.declarations))
         self.inventory.functions.validate_item_count(len(self.functions))
@@ -113,7 +132,6 @@ class SourceFile(ValueModel):
         self.inventory.unresolved_methods.validate_item_count(len(self.unresolved_methods))
         return self
 
-    @model_validator(mode="after")
     def validate_placement(self) -> Self:
         placements = self.declaration_placements()
         identities = {identity for identity, _ in placements}
@@ -146,7 +164,6 @@ class SourceFile(ValueModel):
                 current = parents[current]
         return self
 
-    @model_validator(mode="after")
     def validate_bindings(self) -> Self:
         placements = self.declaration_placements()
         identities = {identity for identity, _ in placements}
@@ -172,6 +189,23 @@ class SourceFile(ValueModel):
             if relation.target.kind is SourceBindingKind.RESOLVED and relation.target.declaration_id not in identities:
                 raise CodeValidationError(CodeViolation.UNKNOWN_DECLARATION_TARGET, relation.target_reference)
         return self
+
+    def model_copy(self, *, update: Mapping[str, object] | None = None, deep: bool = False) -> Self:
+        copied = super().model_copy(update=update, deep=deep)
+        callables_changed = (
+            copied.declarations is not self.declarations
+            or copied.functions is not self.functions
+            or copied.callable_values is not self.callable_values
+            or copied.anonymous_callables is not self.anonymous_callables
+            or copied.unresolved_methods is not self.unresolved_methods
+        )
+        if callables_changed:
+            del copied.callable_inventory
+            copied.canonical_callables()
+        if callables_changed or copied.namespaces is not self.namespaces or copied.values is not self.values:
+            del copied.placement_inventory
+            copied.declaration_placements()
+        return copied
 
     def declaration_family(self, kind: SourceSymbolKind) -> DeclarationFamily:
         return {

@@ -51,6 +51,10 @@ import java.util.HexFormat;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import com.github.javaparser.ast.stmt.BlockStmt;
+import com.github.javaparser.ast.stmt.CatchClause;
+import com.github.javaparser.ast.stmt.ForStmt;
+import com.github.javaparser.ast.stmt.ForEachStmt;
+import com.github.javaparser.ast.stmt.TryStmt;
 import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
 
@@ -116,12 +120,14 @@ final class JavaSourceExtractor {
     private String contentDigest = "";
     private String sourceContent = "";
     private final Map<Node, JsonObject> identities = new IdentityHashMap<>();
+    private final Map<Node, Map<String, List<Node>>> valueBindings = new IdentityHashMap<>();
     private JsonObject namespaceMembership = new JsonObject();
     private JsonObject inventory = new JsonObject();
 
     JsonObject extract(Path path, String sourceIdentity) throws IOException {
         sourceId = sourceIdentity;
         identities.clear();
+        valueBindings.clear();
         inventory = fileInventory();
         namespaceMembership = new JsonObject();
         namespaceMembership.addProperty("kind", "none");
@@ -162,6 +168,8 @@ final class JavaSourceExtractor {
         JsonArray callableValues = new JsonArray();
         JsonArray anonymousCallables = new JsonArray();
         unit.walk(node -> {
+            if (node instanceof Parameter parameter) indexValueBinding(parameter.getNameAsString(), parameter);
+            else if (node instanceof VariableDeclarator variable) indexValueBinding(variable.getNameAsString(), variable);
             String owner = nearestIdentity(node).map(value -> value.get("qualified_name").getAsString())
                 .orElseGet(() -> unit.getPackageDeclaration().map(declaration -> declaration.getNameAsString()).orElse(""));
             if (node instanceof TypeDeclaration<?> declaration) {
@@ -197,7 +205,7 @@ final class JavaSourceExtractor {
                 .filter(entry -> entry.getValue().equals(relation.getAsJsonObject("source_declaration_id")))
                 .map(Map.Entry::getKey).findFirst()
                 .orElseThrow(() -> new ExtractorInvariantFailure("Relation source has no indexed native declaration.", null));
-            relation.add("target", resolveTarget(relation.get("target_reference").getAsString(), source));
+            relation.add("target", resolveTarget(relation.get("target_reference").getAsString(), source, false));
         }
 
         JsonObject result = new JsonObject();
@@ -727,13 +735,13 @@ final class JavaSourceExtractor {
     private JsonObject methodCall(CallableFact source, MethodCallExpr expression, int ordinal) {
         String name = expression.getNameAsString();
         String rendered = expression.getScope().map(scope -> scope + "." + name).orElse(name);
-        JsonObject target = resolveTarget(rendered, expression);
+        JsonObject target = resolveTarget(rendered, expression, true);
         return call(source, ordinal, expression, rendered, name, targetCallables(target, false));
     }
 
     private JsonObject constructorCall(CallableFact source, ObjectCreationExpr expression, int ordinal) {
         String target = expression.getType().getNameWithScope();
-        JsonObject binding = resolveTarget(target, expression);
+        JsonObject binding = resolveTarget(target, expression, false);
         return call(source, ordinal, expression, target, lastPart(target), targetCallables(binding, true));
     }
 
@@ -990,6 +998,8 @@ final class JavaSourceExtractor {
     private Node bindingScope(Node node) {
         Node current = node.getParentNode().orElseThrow(() -> new ExtractorInvariantFailure("Native binding has no parent.", null));
         while (!(current instanceof CompilationUnit) && !(current instanceof BlockStmt)
+            && !(current instanceof ForStmt) && !(current instanceof ForEachStmt)
+            && !(current instanceof CatchClause) && !(current instanceof TryStmt)
             && !(current instanceof TypeDeclaration<?>) && !(current instanceof CallableDeclaration<?>)
             && !(current instanceof LambdaExpr) && !(current instanceof CompactConstructorDeclaration)
             && !(current instanceof ObjectCreationExpr creation && creation.getAnonymousClassBody().isPresent())
@@ -999,11 +1009,28 @@ final class JavaSourceExtractor {
         return current;
     }
 
-    private List<Node> bindings(String name, Node scope, Node source) {
+    private void indexValueBinding(String name, Node node) {
+        valueBindings.computeIfAbsent(bindingScope(node), scope -> new HashMap<>())
+            .computeIfAbsent(name, key -> new ArrayList<>()).add(node);
+    }
+
+    private boolean visibleBinding(Node binding, Node scope, Node source) {
+        return !(scope instanceof BlockStmt || scope instanceof ForStmt || scope instanceof ForEachStmt || scope instanceof TryStmt)
+            || sourceRange(binding).begin.compareTo(sourceRange(source).begin) <= 0;
+    }
+
+    private boolean shadowsReceiver(String name, Node scope, Node source) {
+        Map<String, List<Node>> names = valueBindings.get(scope);
+        return names != null && names.containsKey(name)
+            && names.get(name).stream().anyMatch(node -> visibleBinding(node, scope, source));
+    }
+
+    private List<Node> bindings(String name, Node scope, Node source, boolean valueReference) {
         return identities.entrySet().stream()
             .filter(entry -> bindingScope(entry.getKey()) == scope)
             .filter(entry -> lastPart(entry.getValue().get("qualified_name").getAsString()).equals(name))
-            .filter(entry -> !(scope instanceof BlockStmt) || sourceRange(entry.getKey()).begin.compareTo(sourceRange(source).begin) <= 0)
+            .filter(entry -> valueReference || List.of("class", "abstract_class", "interface", "type").contains(entry.getValue().get("family").getAsString()))
+            .filter(entry -> visibleBinding(entry.getKey(), scope, source))
             .map(Map.Entry::getKey).toList();
     }
 
@@ -1014,16 +1041,12 @@ final class JavaSourceExtractor {
         return target;
     }
 
-    private JsonObject resolveTarget(String reference, Node source) {
+    private JsonObject resolveTarget(String reference, Node source, boolean valueReference) {
         int generic = reference.indexOf('<');
         String name = generic < 0 ? reference : reference.substring(0, generic);
         Node scope = bindingScope(source);
         CompilationUnit unit = source.findCompilationUnit().orElseThrow(() -> new ExtractorInvariantFailure("Declaration has no source unit.", null));
         String packageName = unit.getPackageDeclaration().map(declaration -> declaration.getNameAsString()).orElse("");
-        if (!packageName.isEmpty() && name.startsWith(packageName + ".")) {
-            name = name.substring(packageName.length() + 1);
-            scope = unit;
-        }
         String[] parts = name.split("\\.");
         int first = 0;
         boolean memberLookup = parts[0].equals("this");
@@ -1034,21 +1057,28 @@ final class JavaSourceExtractor {
             if (scope instanceof CompilationUnit || parts.length == 1) return unresolvedTarget("dynamic");
             first = 1;
         }
-        List<Node> matches;
+        int position = first;
         while (true) {
-            matches = bindings(parts[first], scope, source);
-            if (!matches.isEmpty() || scope instanceof CompilationUnit || memberLookup) break;
-            scope = bindingScope(scope);
-        }
-        for (int index = first + 1; index < parts.length; index++) {
+            if (valueReference && position < parts.length - 1 && shadowsReceiver(parts[position], scope, source)) return unresolvedTarget("dynamic");
+            List<Node> matches = bindings(parts[position], scope, source, valueReference);
+            if (matches.isEmpty() && position == 0 && scope == unit && !packageName.isEmpty() && name.startsWith(packageName + ".")) {
+                position = packageName.split("\\.").length;
+                continue;
+            }
+            if (matches.isEmpty() && position == first && !(scope instanceof CompilationUnit) && !memberLookup) {
+                scope = bindingScope(scope);
+                continue;
+            }
             if (matches.size() != 1) return unresolvedTarget(matches.isEmpty() ? "external" : "ambiguous");
-            matches = bindings(parts[index], matches.get(0), source);
+            scope = matches.get(0);
+            position++;
+            if (position == parts.length) {
+                JsonObject target = new JsonObject();
+                target.addProperty("kind", "resolved");
+                target.add("declaration_id", identities.get(scope));
+                return target;
+            }
         }
-        if (matches.size() != 1) return unresolvedTarget(matches.isEmpty() ? "external" : "ambiguous");
-        JsonObject target = new JsonObject();
-        target.addProperty("kind", "resolved");
-        target.add("declaration_id", identities.get(matches.get(0)));
-        return target;
     }
 
     private int beginLine(Node node) {

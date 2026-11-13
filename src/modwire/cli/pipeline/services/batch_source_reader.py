@@ -73,21 +73,21 @@ class BatchSourceReader(SourceReader):
 
     def extract_source(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceExtraction:
         observation = self.observe(request, policy)
-        files = self.extract_entries(observation, tuple(entry.source_id for entry in observation.entries))
+        files = self.extract_observed_entries(observation, tuple(entry.source_id for entry in observation.entries))
         import_identities: dict[ImportIdentity, FileId] = {}
         for file_id, source_file in files.items():
             existing = import_identities.get(source_file.import_identity)
             if existing is not None:
                 raise DuplicateIdentityError(IdentityKind.IMPORT, source_file.import_identity, existing, file_id)
             import_identities[source_file.import_identity] = file_id
-        return SourceExtraction(
+        return SourceExtraction.model_construct(
             files=files,
             import_identities=import_identities,
             manifest=observation.manifest,
             files_found=observation.files_found,
             files_excluded=observation.files_excluded,
             directories_pruned=observation.directories_pruned,
-        )
+        ).validate_manifest_sources()
 
     def observe(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceObservation:
         root = Path(request.root)
@@ -101,7 +101,7 @@ class BatchSourceReader(SourceReader):
             )
             entries = tuple(
                 SourceEntry(
-                    source_id=self._source_id_for_path(request, resolved_root, source_path),
+                    source_id=self.identities.file_id(str(resolved_root), str(source_path)),
                     relative_path=source_path.relative_to(resolved_root).as_posix(),
                     content_digest=self._content_digest(source_path),
                     path=str(source_path),
@@ -123,6 +123,12 @@ class BatchSourceReader(SourceReader):
     def extract_entries(
         self, observation: SourceObservation, source_ids: tuple[FileId, ...]
     ) -> dict[FileId, SourceFile]:
+        self.validate_observation(observation)
+        return self.extract_observed_entries(observation, source_ids)
+
+    def extract_observed_entries(
+        self, observation: SourceObservation, source_ids: tuple[FileId, ...]
+    ) -> dict[FileId, SourceFile]:
         request = observation.request
         requested = set(source_ids)
         entries = tuple(entry for entry in observation.entries if entry.source_id in requested)
@@ -136,22 +142,21 @@ class BatchSourceReader(SourceReader):
                 (),
                 "source observation does not contain requested identities",
             )
-        try:
-            root = Path(request.root).resolve()
-        except OSError as error:
-            raise SourceAccessError(request.root, "resolve") from error
+        root = Path(request.root)
         source_paths = tuple(Path(entry.path) for entry in entries)
+        source_ids_by_path = {Path(entry.path): entry.source_id for entry in entries}
         files: dict[FileId, SourceFile] = {}
         plan = self.planners[request.batch_config.planner].plan(source_paths, request.batch_config)
-        self.validate_observation(observation)
         try:
             if plan.parallel:
                 with ThreadPoolExecutor(max_workers=request.batch_config.max_workers) as executor:
-                    for extracted in executor.map(self._extract_batch, repeat(request), repeat(root), plan.batches):
+                    for extracted in executor.map(
+                        self._extract_batch, repeat(request), repeat(root), plan.batches, repeat(source_ids_by_path)
+                    ):
                         self._merge_files(files, extracted)
             else:
                 for batch_paths in plan.batches:
-                    self._merge_files(files, self._extract_batch(request, root, batch_paths))
+                    self._merge_files(files, self._extract_batch(request, root, batch_paths, source_ids_by_path))
         except (ExtractorError, SourceAccessError):
             self.validate_observation(observation)
             raise
@@ -167,25 +172,20 @@ class BatchSourceReader(SourceReader):
                 observation.manifest.policy,
                 limit=None,
             )
-            current = {
-                path.relative_to(root).as_posix(): (
-                    self._source_id_for_path(observation.request, root, path),
-                    self._content_digest(path),
-                )
-                for path in current_paths
-            }
+            current = {path.relative_to(root).as_posix(): self._content_digest(path) for path in current_paths}
         except OSError as error:
             raise SourceAccessError(str(root), "validate observation for") from error
         observed = {entry.relative_path: (entry.source_id, entry.content_digest) for entry in observation.entries}
-        added = tuple(sorted((current[path][0] for path in current.keys() - observed.keys()), key=str))
+        added = tuple(
+            sorted(
+                (self.identities.file_id(str(root), str(root / path)) for path in current.keys() - observed.keys()),
+                key=str,
+            )
+        )
         removed = tuple(sorted((observed[path][0] for path in observed.keys() - current.keys()), key=str))
         changed = tuple(
             sorted(
-                (
-                    observed[path][0]
-                    for path in current.keys() & observed.keys()
-                    if current[path][1] != observed[path][1]
-                ),
+                (observed[path][0] for path in current.keys() & observed.keys() if current[path] != observed[path][1]),
                 key=str,
             )
         )
@@ -244,7 +244,11 @@ class BatchSourceReader(SourceReader):
         )
 
     def _extract_batch(
-        self, request: ExtractionRequest, root: Path, source_paths: tuple[Path, ...]
+        self,
+        request: ExtractionRequest,
+        root: Path,
+        source_paths: tuple[Path, ...],
+        source_ids_by_path: Mapping[Path, FileId],
     ) -> dict[FileId, SourceFile]:
         if not source_paths:
             return {}
@@ -256,9 +260,8 @@ class BatchSourceReader(SourceReader):
             raise ExtractorResourceError(runtime.descriptor.language, entrypoint.path) from error
         if not script_path.is_file():
             raise ExtractorResourceError(runtime.descriptor.language, str(script_path))
-        paths_by_source_id = {
-            self.identities.file_id(str(root), str(source_path)): str(source_path) for source_path in source_paths
-        }
+        source_paths_by_id = {source_ids_by_path[path]: path for path in source_paths}
+        paths_by_source_id = {source_id: str(path) for source_id, path in source_paths_by_id.items()}
         command = [*runtime.command, *entrypoint.command_arguments(script_path), "--batch", str(root)]
         if request.batch_config.output_format is BatchOutputFormat.JSON_LINES:
             command.append("--jsonl")
@@ -316,9 +319,6 @@ class BatchSourceReader(SourceReader):
                 "extractor output contains duplicate source identities",
             )
         extracted_by_source_id = dict(extracted)
-        source_paths_by_id = {
-            self.identities.file_id(str(root), str(source_path)): source_path for source_path in source_paths
-        }
         expected = set(source_paths_by_id)
         actual = set(extracted_by_source_id)
         if actual != expected:
@@ -384,9 +384,6 @@ class BatchSourceReader(SourceReader):
             if file_id in files:
                 raise DuplicateIdentityError(IdentityKind.FILE, file_id, file_id, file_id)
             files[file_id] = source_file
-
-    def _source_id_for_path(self, request: ExtractionRequest, root: Path, path: Path) -> FileId:
-        return self.identities.file_id(str(root), str(path))
 
     def _content_digest(self, path: Path) -> str:
         return hashlib.sha256(path.read_bytes()).hexdigest()

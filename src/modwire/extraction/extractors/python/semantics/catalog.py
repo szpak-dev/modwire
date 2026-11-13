@@ -146,54 +146,43 @@ class PythonSemanticCatalog:
     def resolve(self, reference: str, binding_scope: ast.AST) -> SourceResolvedTarget | SourceUnresolvedTarget:
         parts = reference.split(".")
         scope = binding_scope
+        position = 0
         while True:
-            if scope in self.unresolved_bindings and parts[0] in self.unresolved_bindings[scope]:
-                return SourceUnresolvedTarget(reason=self.unresolved_bindings[scope][parts[0]])
+            name = parts[position]
+            if scope in self.unresolved_bindings and name in self.unresolved_bindings[scope]:
+                return SourceUnresolvedTarget(reason=self.unresolved_bindings[scope][name])
             if scope in self.wildcard_scopes:
                 return SourceUnresolvedTarget(reason=SourceUnresolvedReason.EXTERNAL)
-            if parts[0] == self.receiver_name(scope):
-                if any(
-                    parent is scope
-                    and node in self.scope_identities
-                    and self.scope_identities[node].qualified_name.rsplit(".", 1)[-1] == parts[0]
-                    for node, parent in self.binding_scopes.items()
-                ):
-                    return SourceUnresolvedTarget(reason=SourceUnresolvedReason.DYNAMIC)
-                scope = self.binding_scopes[scope]
-                if len(parts) == 1:
-                    return SourceResolvedTarget(declaration_id=self.scope_identities[scope])
-                parts = parts[1:]
-                continue
-            if parts[0] in self.parameter_names(scope):
-                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.DYNAMIC)
             matches = tuple(
                 node
                 for node, parent in self.binding_scopes.items()
                 if parent is scope
                 and node in self.scope_identities
-                and self.scope_identities[node].qualified_name.rsplit(".", 1)[-1] == parts[0]
+                and self.scope_identities[node].qualified_name.rsplit(".", 1)[-1] == name
             )
+            if position == 0 and name == self.receiver_name(scope):
+                if matches:
+                    return SourceUnresolvedTarget(reason=SourceUnresolvedReason.DYNAMIC)
+                scope = self.binding_scopes[scope]
+                if len(parts) == 1:
+                    return SourceResolvedTarget(declaration_id=self.scope_identities[scope])
+                position += 1
+                continue
+            if name in self.parameter_names(scope):
+                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.DYNAMIC)
+            if len(matches) > 1:
+                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.AMBIGUOUS)
             if matches:
-                break
+                scope = matches[0]
+                position += 1
+                if position == len(parts):
+                    return SourceResolvedTarget(declaration_id=self.scope_identities[scope])
+                continue
+            if position > 0:
+                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.UNOBSERVED)
             if scope not in self.binding_scopes:
                 return SourceUnresolvedTarget(reason=SourceUnresolvedReason.EXTERNAL)
             callable_scope = scope in self.callable_kinds
             scope = self.binding_scopes[scope]
             if callable_scope:
                 scope = self.lookup_parent(scope)
-        for part in parts[1:]:
-            if len(matches) != 1:
-                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.AMBIGUOUS)
-            parent = matches[0]
-            matches = tuple(
-                node
-                for node, scope in self.binding_scopes.items()
-                if scope is parent
-                and node in self.scope_identities
-                and self.scope_identities[node].qualified_name.rsplit(".", 1)[-1] == part
-            )
-        if len(matches) == 1:
-            return SourceResolvedTarget(declaration_id=self.scope_identities[matches[0]])
-        return SourceUnresolvedTarget(
-            reason=SourceUnresolvedReason.AMBIGUOUS if matches else SourceUnresolvedReason.UNOBSERVED
-        )

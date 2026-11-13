@@ -19,6 +19,9 @@ class SourceExtraction(ValueModel):
     directories_pruned: int
 
     @model_validator(mode="after")
+    def validate_document(self) -> Self:
+        return self.validate_manifest_sources()
+
     def validate_manifest_sources(self) -> Self:
         extracted = {str(file_id) for file_id in self.files}
         manifested = {source.source_id for source in self.manifest.sources}

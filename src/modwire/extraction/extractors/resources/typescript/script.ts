@@ -42,6 +42,7 @@ class TypeScriptExtractor {
     readonly containers = new Map<ts.Node, ts.Node>();
     readonly callableNodes = new Map<CallableNode, CallableKind>();
     readonly declarationNodes = new Map<DeclarationNode, string>();
+    readonly aliasTypes = new Map<ts.TypeAliasDeclaration, ts.TypeNode>();
     readonly declarations = new Map<ts.Node, Declaration>();
     readonly callables = new Map<ts.Node, Callable>();
     readonly inventory: Record<string, Coverage> = {};
@@ -90,6 +91,11 @@ class TypeScriptExtractor {
         if (container === undefined) throw new SourceInvariantFailure(`Missing native scope at ${node.getStart(this.source)}.`);
         return container;
     }
+    aliasType(node: ts.TypeAliasDeclaration): ts.TypeNode {
+        const type = this.aliasTypes.get(node);
+        if (type === undefined) throw new SourceInvariantFailure(`Missing indexed alias type at ${node.getStart(this.source)}.`);
+        return type;
+    }
     createIdentity(node: ts.Node, family: Family, name: string, container: ts.Node): Identity {
         const parent = container === this.source ? undefined : this.identity(container);
         return { source_id: this.sourceId, content_digest: this.digest, family,
@@ -108,6 +114,11 @@ class TypeScriptExtractor {
             const name = node.name === undefined ? `<anonymous>@${node.getStart(this.source)}` : node.name.getText(this.source);
             this.identities.set(node, this.createIdentity(node, family, name, container));
             this.declarationNodes.set(node, kind);
+            if (ts.isTypeAliasDeclaration(node)) {
+                let type = node.type;
+                while (ts.isParenthesizedTypeNode(type)) type = type.type;
+                this.aliasTypes.set(node, type);
+            }
             nested = node;
         } else if (ts.isModuleDeclaration(node)) {
             this.identities.set(node, this.createIdentity(node, 'namespace', node.name.text, container));
@@ -217,7 +228,7 @@ class TypeScriptExtractor {
         if (identity.family === 'method') {
             const container = this.container(node);
             const owner = this.identities.get(container);
-            const directMember = node.parent === container || (ts.isTypeAliasDeclaration(container) && node.parent === container.type);
+            const directMember = node.parent === container || (ts.isTypeAliasDeclaration(container) && node.parent === this.aliasType(container));
             if (directMember && owner !== undefined && ['class', 'abstract_class', 'interface', 'type'].includes(owner.family)) fact.owner_declaration_id = owner;
             else { fact.owner = { kind: 'unresolved', reason: 'dynamic' }; fact.receiver_reference = node.parent.getText(this.source); }
         }
@@ -238,12 +249,12 @@ class TypeScriptExtractor {
         const fact: Declaration = { declaration_id: identity, kind, name: node.name?.getText(this.source) ?? identity.qualified_name,
             visibility: 'public', visibility_intent: 'public', declaration_annotations: this.decorators(node), line_count: this.lineCount(node),
             methods: [], abstract_methods: [], properties: [], signatures: [], placement: this.placement(node), inventory: { methods: this.coverage(), abstract_methods: this.coverage(), properties: this.coverage(), signatures: this.coverage() } };
-        const members = ts.isTypeAliasDeclaration(node) ? (ts.isTypeLiteralNode(node.type) ? node.type.members : []) : node.members;
+        let members: readonly ts.Node[];
         if (ts.isTypeAliasDeclaration(node)) {
-            let type = node.type;
-            while (ts.isParenthesizedTypeNode(type)) type = type.type;
+            const type = this.aliasType(node);
+            members = ts.isTypeLiteralNode(type) ? type.members : [];
             if (ts.isFunctionTypeNode(type) || ts.isConstructorTypeNode(type)) fact.signatures.push(this.emitSignature(type, ts.isFunctionTypeNode(type) ? 'call' : 'construct'));
-        }
+        } else members = node.members;
         for (const member of members) {
             const callable = this.callables.get(member);
             if (callable !== undefined) {

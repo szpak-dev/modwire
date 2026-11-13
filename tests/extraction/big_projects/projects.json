@@ -32,6 +32,11 @@
       {"id": "spring-boot", "owner": "spring-projects", "repo": "spring-boot", "revision": "57a1ca37c36f3cf355211aa8dea8c500b2dd3a09", "source_root": "core/spring-boot/src/main/java"},
       {"id": "elasticsearch", "owner": "elastic", "repo": "elasticsearch", "revision": "d1764a18013fa42406668a024b3490c65e035547", "source_root": "server/src/main/java"},
       {"id": "ghidra", "owner": "NationalSecurityAgency", "repo": "ghidra", "revision": "55144ec1ff28396a04d5c327fc375b90b149b944", "source_root": "Ghidra/Framework/Docking/src/main/java"}
+    ],
+    "ruby": [
+      {"id": "aws-sdk-ruby", "owner": "aws", "repo": "aws-sdk-ruby", "revision": "824e96b6d8fdf9986190718efffa1fd6ae64f51e", "source_root": "gems"},
+      {"id": "gitlab", "owner": "gitlabhq", "repo": "gitlabhq", "revision": "8e661594bdc440700168aba76921e9496207bcb9", "source_root": "app"},
+      {"id": "google-api-ruby-client", "owner": "googleapis", "repo": "google-api-ruby-client", "revision": "a08e7a711a6fea772b8396cd067e26c237b03690", "source_root": "generated"}
     ]
   }
 }

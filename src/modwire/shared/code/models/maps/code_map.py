@@ -26,6 +26,9 @@ class CodeMap(ValueModel):
     dependency_graph: DependencyGraph
 
     @model_validator(mode="after")
+    def validate_document(self) -> Self:
+        return self.validate_facts()
+
     def validate_facts(self) -> Self:
         self.validate_producer_language()
         self.validate_resolved_call_targets()

@@ -48,12 +48,12 @@ class ExtractorsApplication:
             capabilities=request.runtime.capabilities,
             relationship_capabilities=request.runtime.relationship_capabilities,
         )
-        return CodeMap(
+        return CodeMap.model_construct(
             language=language,
             producer=producer,
             extraction=resolved,
             dependency_graph=self.dependency.build(files),
-        )
+        ).validate_facts()
 
     def generate_queryable_map(self, request: ExtractionRequest, extraction: SourceExtraction) -> QueryableCodeMap:
         return QueryableCodeMap(code_map=self.generate_map(request, extraction))

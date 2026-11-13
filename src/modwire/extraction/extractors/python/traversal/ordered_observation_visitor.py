@@ -368,6 +368,12 @@ class OrderedObservationVisitor:
             self.visit(child, depth + 1, context)
 
     @visit.register
+    def visit_Delete(self, node: ast.Delete, depth: int, context: PythonTraversalContext) -> None:
+        for target in node.targets:
+            self.observe_export_mutation(target, node, context)
+            self.visit(target, depth + 1, context)
+
+    @visit.register
     def visit_Name(self, node: ast.Name, depth: int, context: PythonTraversalContext) -> None:
         self.observe_unresolved_binding(node.ctx, node.id, context)
 
