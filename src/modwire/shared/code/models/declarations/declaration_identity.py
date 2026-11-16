@@ -1,11 +1,11 @@
 from pydantic import Field
 
-from ....values.models.value_model import ValueModel
+from ..immutable_code_value import ImmutableCodeValue
 from ..sources.identity import FileId
 from .declaration_family import DeclarationFamily
 
 
-class DeclarationIdentity(ValueModel):
+class DeclarationIdentity(ImmutableCodeValue):
     source_id: FileId
     family: DeclarationFamily
     qualified_name: str = Field(min_length=1)

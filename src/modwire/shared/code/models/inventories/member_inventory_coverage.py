@@ -1,8 +1,8 @@
-from ....values.models.value_model import ValueModel
+from ..immutable_code_value import ImmutableCodeValue
 from .inventory_coverage import InventoryCoverage
 
 
-class MemberInventoryCoverage(ValueModel):
+class MemberInventoryCoverage(ImmutableCodeValue):
     methods: InventoryCoverage
     abstract_methods: InventoryCoverage
     properties: InventoryCoverage

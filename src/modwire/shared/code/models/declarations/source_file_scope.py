@@ -1,8 +1,8 @@
 from typing import Literal
 
-from ....values.models.value_model import ValueModel
+from ..immutable_code_value import ImmutableCodeValue
 from .source_scope_kind import SourceScopeKind
 
 
-class SourceFileScope(ValueModel):
+class SourceFileScope(ImmutableCodeValue):
     kind: Literal[SourceScopeKind.FILE] = SourceScopeKind.FILE

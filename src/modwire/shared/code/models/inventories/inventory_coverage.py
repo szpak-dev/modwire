@@ -2,14 +2,14 @@ from typing import Self
 
 from pydantic import model_validator
 
-from ....values.models.value_model import ValueModel
 from ..failures.code_validation_error import CodeValidationError
 from ..failures.code_violation import CodeViolation
+from ..immutable_code_value import ImmutableCodeValue
 from .inventory_limitation import InventoryLimitation
 from .inventory_status import InventoryStatus
 
 
-class InventoryCoverage(ValueModel):
+class InventoryCoverage(ImmutableCodeValue):
     status: InventoryStatus
     limitations: tuple[InventoryLimitation, ...]
 
