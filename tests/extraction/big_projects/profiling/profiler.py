@@ -1,3 +1,4 @@
+import faulthandler
 import runpy
 import sys
 import threading
@@ -48,6 +49,10 @@ class CallProfiler:
                 for (file, line, function), count in thread.calls.copy().items()
             ),
         )
+        stack_path = self.destination.with_name(snapshot.stack_dump)
+        with stack_path.with_suffix(".tmp").open("w") as stack_file:
+            faulthandler.dump_traceback(file=stack_file, all_threads=True)
+        stack_path.with_suffix(".tmp").replace(stack_path)
         temporary = self.destination.with_suffix(".tmp")
         temporary.write_text(snapshot.model_dump_json(indent=2) + "\n", encoding="utf-8")
         temporary.replace(self.destination)

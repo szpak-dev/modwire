@@ -4,4 +4,4 @@ from pydantic import BaseModel
 
 
 class ProfileDocument(BaseModel):
-    schema_version: Literal[2] = 2
+    schema_version: Literal[3] = 3

@@ -9,3 +9,4 @@ class ProfileSnapshot(ProfileDocument):
         "Per-thread named Python calls in src/modwire; generated frames and native subprocess internals excluded"
     )
     calls: tuple[ProfileCall, ...]
+    stack_dump: str = "stacks.log"

@@ -111,7 +111,7 @@ class BatchSourceReader(SourceReader):
         except OSError as error:
             raise SourceAccessError(str(root), "observe") from error
         runtime = self.manifests.observe(request)
-        return SourceObservation(
+        return SourceObservation.model_construct(
             request=request,
             entries=entries,
             files_found=len(source_paths),

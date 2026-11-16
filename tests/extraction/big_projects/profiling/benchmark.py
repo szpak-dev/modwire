@@ -23,14 +23,18 @@ class ProfileBenchmark:
     config: Path
     clone_root: Path
     output: Path
-    limit_seconds: float = 5.0
+    limit_seconds: float = 20.0
 
     def run(self, projects: list[Project]) -> int:
         self.output.mkdir(parents=True, exist_ok=False)
         source_root = Path(inspect.getfile(ModwireApplication)).parent.parent
         source_paths = tuple(
             source_root / Path(path).relative_to("src")
-            for path in subprocess.check_output(("git", "ls-files", "src"), text=True).splitlines()
+            for path in sorted(
+                subprocess.check_output(
+                    ("git", "ls-files", "--cached", "--others", "--exclude-standard", "src"), text=True
+                ).splitlines()
+            )
         )
         provenance = ProfileProvenance(
             revision=subprocess.check_output(("git", "rev-parse", "HEAD"), text=True).strip(),

@@ -41,13 +41,13 @@ class CodeMap(ValueModel):
 
     def validate_resolved_call_targets(self) -> None:
         callable_ids = {
-            item.declaration_id.canonical()
+            item.declaration_id
             for source_file in self.extraction.files.values()
             for item in source_file.canonical_callables()
         }
         if any(
             call.resolution is SourceCallResolution.RESOLVED
-            and (call.target_callable_id is None or call.target_callable_id.canonical() not in callable_ids)
+            and (call.target_callable_id is None or call.target_callable_id not in callable_ids)
             for source_file in self.extraction.files.values()
             for call in source_file.calls
         ):

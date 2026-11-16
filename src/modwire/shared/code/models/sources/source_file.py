@@ -72,7 +72,7 @@ class SourceFile(ValueModel):
         if any(self.declaration_family(item.kind) is not item.declaration_id.family for item in self.declarations):
             raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_KIND, str(self.file_id))
         callables = self.canonical_callables()
-        callable_identities = {item.declaration_id.canonical() for item in callables}
+        callable_identities = {item.declaration_id for item in callables}
         call_identities = tuple(item.identity() for item in self.calls)
         if len(call_identities) != len(set(call_identities)):
             raise CodeValidationError(CodeViolation.DUPLICATE_CALL, str(self.file_id))
@@ -80,13 +80,10 @@ class SourceFile(ValueModel):
             item.source_id != self.file_id or item.source_callable_id.source_id != self.file_id for item in self.calls
         ):
             raise CodeValidationError(CodeViolation.FOREIGN_CALL_SOURCE, str(self.file_id))
-        if any(item.source_callable_id.canonical() not in callable_identities for item in self.calls):
+        if any(item.source_callable_id not in callable_identities for item in self.calls):
             raise CodeValidationError(CodeViolation.UNKNOWN_CALL_SOURCE_CALLABLE, str(self.file_id))
-        declaration_identities = {item.declaration_id.canonical() for item in self.declarations}
-        if any(
-            relation.source_declaration_id.canonical() not in declaration_identities
-            for relation in self.declaration_relations
-        ):
+        declaration_identities = {item.declaration_id for item in self.declarations}
+        if any(relation.source_declaration_id not in declaration_identities for relation in self.declaration_relations):
             raise CodeValidationError(CodeViolation.UNKNOWN_DECLARATION_RELATION_SOURCE, str(self.file_id))
         return self
 

@@ -29,7 +29,7 @@ class SourceDeclaration(SourceSymbol):
         members = (*self.methods, *self.abstract_methods, *self.properties)
         if any(item.owner_declaration_id != self.declaration_id for item in members):
             raise CodeValidationError(CodeViolation.INCONSISTENT_MEMBER_OWNER, self.name)
-        identities = tuple(item.declaration_id.canonical() for item in members)
+        identities = tuple(item.declaration_id for item in members)
         if len(identities) != len(set(identities)):
             raise CodeValidationError(CodeViolation.DUPLICATE_MEMBER_IDENTITY, self.name)
         return self
