@@ -9,7 +9,8 @@ type CallableKind = 'function' | 'instance_method' | 'static_method' | 'construc
 interface Identity { source_id: string; content_digest: string; family: Family; qualified_name: string; ordinal: number }
 type Target = { kind: 'resolved'; declaration_id: Identity } | { kind: 'unresolved'; reason: 'external' | 'dynamic' | 'ambiguous' | 'unobserved' };
 type Container = { kind: 'file' } | { kind: 'declaration'; declaration_id: Identity };
-type Scope = Container | { kind: 'block'; container: Container; start_utf8_offset: number; end_utf8_offset: number };
+interface BlockSpan { start_utf8_offset: number; end_utf8_offset: number }
+type Scope = Container | ({ kind: 'block'; container: Container } & BlockSpan);
 interface Placement { lexical_scope: Scope; namespace: { kind: 'none' } | { kind: 'member'; namespace_reference: string; target: Target } }
 type SourceType = { kind: 'absent' | 'unsupported' } | { kind: 'reference'; name: string; arguments: SourceType[] };
 interface Parameter { name: string; type: SourceType; kind: 'positional' | 'variadic_positional'; has_default: boolean }
@@ -39,12 +40,15 @@ class TypeScriptExtractor {
     readonly source: ts.SourceFile;
     readonly digest: string;
     readonly identities = new Map<ts.Node, Identity>();
+    readonly bindingsByScope = new Map<ts.Node, Map<string, ts.Node[]>>();
+    readonly membersByContainer = new Map<ts.Node, Map<string, ts.Node[]>>();
+    readonly blockSpans = new Map<ts.Block, BlockSpan>();
     readonly containers = new Map<ts.Node, ts.Node>();
     readonly callableNodes = new Map<CallableNode, CallableKind>();
     readonly declarationNodes = new Map<DeclarationNode, string>();
     readonly aliasTypes = new Map<ts.TypeAliasDeclaration, ts.TypeNode>();
     readonly declarations = new Map<ts.Node, Declaration>();
-    readonly callables = new Map<ts.Node, Callable>();
+    readonly callables = new Map<Identity, Callable>();
     readonly inventory: Record<string, Coverage> = {};
     readonly imports: Import[] = [];
     readonly exports: Export[] = [];
@@ -105,8 +109,9 @@ class TypeScriptExtractor {
         return ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node) || ts.isArrowFunction(node) || ts.isMethodDeclaration(node)
             || ts.isMethodSignature(node) || ts.isConstructorDeclaration(node) || ts.isGetAccessorDeclaration(node) || ts.isSetAccessorDeclaration(node);
     }
-    index(node: ts.Node, container: ts.Node): void {
+    index(node: ts.Node, container: ts.Node, blocks: ts.Block[]): void {
         this.containers.set(node, container);
+        if (ts.isBlock(node)) blocks.push(node);
         let nested = container;
         if (ts.isClassDeclaration(node) || ts.isClassExpression(node) || ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node) || ts.isEnumDeclaration(node)) {
             const kind = ts.isInterfaceDeclaration(node) ? 'interface' : ts.isTypeAliasDeclaration(node) ? 'type_alias' : ts.isEnumDeclaration(node) ? 'enum' : this.modifier(node, ts.SyntaxKind.AbstractKeyword) ? 'abstract_class' : 'class';
@@ -138,7 +143,31 @@ class TypeScriptExtractor {
         } else if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) {
             if (node.initializer === undefined || !this.callableNode(node.initializer)) this.identities.set(node, this.createIdentity(node, 'value', node.name.text, container));
         }
-        ts.forEachChild(node, child => this.index(child, nested));
+        ts.forEachChild(node, child => this.index(child, nested, blocks));
+    }
+    indexBlockSpans(blocks: readonly ts.Block[]): void {
+        const boundaries = new Set<number>();
+        for (const block of blocks) { boundaries.add(block.getStart(this.source)); boundaries.add(block.end); }
+        const offsets = new Map<number, number>();
+        let position = 0; let offset = 0;
+        for (const boundary of [...boundaries].sort((left, right) => left - right)) {
+            offset += Buffer.byteLength(this.content.slice(position, boundary));
+            offsets.set(boundary, offset); position = boundary;
+        }
+        for (const block of blocks) this.blockSpans.set(block, {
+            start_utf8_offset: this.byteOffset(offsets, block.getStart(this.source)),
+            end_utf8_offset: this.byteOffset(offsets, block.end),
+        });
+    }
+    byteOffset(offsets: ReadonlyMap<number, number>, position: number): number {
+        const offset = offsets.get(position);
+        if (offset === undefined) throw new SourceInvariantFailure(`Missing indexed UTF-8 boundary at ${position}.`);
+        return offset;
+    }
+    blockSpan(block: ts.Block): BlockSpan {
+        const span = this.blockSpans.get(block);
+        if (span === undefined) throw new SourceInvariantFailure(`Missing indexed block span at ${block.getStart(this.source)}.`);
+        return span;
     }
     placement(node: ts.Node): Placement {
         const container = this.container(node);
@@ -147,7 +176,7 @@ class TypeScriptExtractor {
         let scope: Scope = enclosing;
         for (let parent = node.parent; parent !== undefined && parent !== container; parent = parent.parent) {
             if (ts.isBlock(parent) && !ts.isModuleBlock(parent)) {
-                scope = { kind: 'block', container: enclosing, start_utf8_offset: Buffer.byteLength(this.content.slice(0, parent.getStart(this.source))), end_utf8_offset: Buffer.byteLength(this.content.slice(0, parent.end)) };
+                scope = { kind: 'block', container: enclosing, ...this.blockSpan(parent) };
                 break;
             }
         }
@@ -184,6 +213,21 @@ class TypeScriptExtractor {
         }
         return this.source;
     }
+    indexBindings(): void {
+        for (const [node, identity] of this.identities) {
+            const name = identity.qualified_name.split('.').pop();
+            if (name === undefined) throw new SourceInvariantFailure('Declaration identity has no name.');
+            this.indexBinding(this.bindingsByScope, this.bindingScope(node), name, node);
+            this.indexBinding(this.membersByContainer, this.container(node), name, node);
+        }
+    }
+    indexBinding(index: Map<ts.Node, Map<string, ts.Node[]>>, scope: ts.Node, name: string, node: ts.Node): void {
+        let names = index.get(scope);
+        if (names === undefined) { names = new Map<string, ts.Node[]>(); index.set(scope, names); }
+        let nodes = names.get(name);
+        if (nodes === undefined) { nodes = []; names.set(name, nodes); }
+        nodes.push(node);
+    }
     bindings(reference: string, node: ts.Node): Identity[] {
         const parts = reference.split('.');
         let scope = this.bindingScope(node);
@@ -200,7 +244,8 @@ class TypeScriptExtractor {
         }
         let matches: ts.Node[] = [];
         while (true) {
-            matches = [...this.identities].filter(([declaration, identity]) => this.bindingScope(declaration) === scope && (memberLookup || identity.family !== 'method') && identity.qualified_name.split('.').pop() === parts[0]).map(([declaration]) => declaration);
+            const candidates = this.bindingsByScope.get(scope)?.get(parts[0]) ?? [];
+            matches = memberLookup ? candidates : candidates.filter(declaration => this.identity(declaration).family !== 'method');
             if (matches.length || scope === this.source) break;
             if (this.callableNode(scope) && scope.parameters.some(parameter => parameter.name.getText(this.source) === parts[0])) return [];
             scope = this.bindingScope(scope);
@@ -208,7 +253,7 @@ class TypeScriptExtractor {
         for (const part of parts.slice(1)) {
             if (matches.length !== 1) return [];
             const parent = matches[0];
-            matches = [...this.identities].filter(([declaration, identity]) => this.container(declaration) === parent && identity.qualified_name.split('.').pop() === part).map(([declaration]) => declaration);
+            matches = this.membersByContainer.get(parent)?.get(part) ?? [];
         }
         return matches.map(node => this.identity(node));
     }
@@ -256,7 +301,8 @@ class TypeScriptExtractor {
             if (ts.isFunctionTypeNode(type) || ts.isConstructorTypeNode(type)) fact.signatures.push(this.emitSignature(type, ts.isFunctionTypeNode(type) ? 'call' : 'construct'));
         } else members = node.members;
         for (const member of members) {
-            const callable = this.callables.get(member);
+            const identity = this.identities.get(member);
+            const callable = identity === undefined ? undefined : this.callables.get(identity);
             if (callable !== undefined) {
                 if (ts.isMethodSignature(member) || this.modifier(member, ts.SyntaxKind.AbstractKeyword)) fact.abstract_methods.push(callable);
                 else fact.methods.push(callable);
@@ -362,12 +408,13 @@ class TypeScriptExtractor {
         const visit = (node: ts.Node): void => {
             if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
                 let owner = this.container(node);
-                while (owner !== this.source && !this.callables.has(owner)) owner = this.container(owner);
-                const source = this.callables.get(owner);
+                while (owner !== this.source && !this.callables.has(this.identity(owner))) owner = this.container(owner);
+                const source = owner === this.source ? undefined : this.callables.get(this.identity(owner));
                 if (source !== undefined) {
                     const expression = node.expression.getText(this.source);
                     const target = this.resolve(expression, node);
-                    let candidates = target.kind === 'resolved' ? [...this.callables.values()].filter(callable => callable.declaration_id === target.declaration_id) : [];
+                    const callable = target.kind === 'resolved' ? this.callables.get(target.declaration_id) : undefined;
+                    let candidates = callable === undefined ? [] : [callable];
                     if (ts.isNewExpression(node) && target.kind === 'resolved') candidates = [...this.callables.values()].filter(callable => callable.kind === 'constructor' && callable.owner_declaration_id === target.declaration_id);
                     const ordinal = (ordinals.get(owner) ?? 0) + 1; ordinals.set(owner, ordinal);
                     result.push({ source_callable_id: source.declaration_id, ordinal, target_callable_id: candidates.length === 1 ? candidates[0].declaration_id : null,
@@ -378,8 +425,11 @@ class TypeScriptExtractor {
         }; visit(this.source); return result;
     }
     extract(): ExtractedFile {
-        this.index(this.source, this.source);
-        for (const [node, kind] of this.callableNodes) this.callables.set(node, this.emitCallable(node, kind));
+        const blocks: ts.Block[] = [];
+        this.index(this.source, this.source, blocks);
+        this.indexBlockSpans(blocks);
+        this.indexBindings();
+        for (const [node, kind] of this.callableNodes) this.callables.set(this.identity(node), this.emitCallable(node, kind));
         for (const [node, kind] of this.declarationNodes) this.declarations.set(node, this.emitDeclaration(node, kind));
         this.observe(this.source);
         const callables = [...this.callables.values()];

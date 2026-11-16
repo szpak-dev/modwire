@@ -320,23 +320,25 @@ class RubySourceExtractor
 
     node = node.parameters if node.is_a?(Prism::BlockParametersNode)
     return [] if node.nil?
+    return (1..node.maximum).map { |index| parameter_fact("_#{index}", "positional", false) } if node.is_a?(Prism::NumberedParametersNode)
+    return [parameter_fact("it", "positional", false)] if node.is_a?(Prism::ItParametersNode)
 
     result = []
-    node.requireds.each { |parameter| result << parameter_fact(parameter, "positional", false) }
-    node.optionals.each { |parameter| result << parameter_fact(parameter, "positional", true) }
-    result << parameter_fact(node.rest, "variadic_positional", false) if node.rest
-    node.posts.each { |parameter| result << parameter_fact(parameter, parameter_kind(parameter), false) }
+    node.requireds.each { |parameter| result << parameter_fact(parameter_name(parameter), "positional", false) }
+    node.optionals.each { |parameter| result << parameter_fact(parameter_name(parameter), "positional", true) }
+    result << parameter_fact(parameter_name(node.rest), "variadic_positional", false) if node.rest
+    node.posts.each { |parameter| result << parameter_fact(parameter_name(parameter), parameter_kind(parameter), false) }
     node.keywords.each do |parameter|
-      result << parameter_fact(parameter, "named_only", parameter.is_a?(Prism::OptionalKeywordParameterNode))
+      result << parameter_fact(parameter_name(parameter), "named_only", parameter.is_a?(Prism::OptionalKeywordParameterNode))
     end
-    result << parameter_fact(node.keyword_rest, parameter_kind(node.keyword_rest), false) if node.keyword_rest
-    result << parameter_fact(node.block, "named_only", false) if node.block
+    result << parameter_fact(parameter_name(node.keyword_rest), parameter_kind(node.keyword_rest), false) if node.keyword_rest
+    result << parameter_fact(parameter_name(node.block), "named_only", false) if node.block
     result
   end
 
-  def parameter_fact(node, kind, has_default)
+  def parameter_fact(name, kind, has_default)
     {
-      "name" => parameter_name(node),
+      "name" => name,
       "type" => absent_type,
       "kind" => kind,
       "has_default" => has_default

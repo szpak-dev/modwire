@@ -241,6 +241,7 @@ final class PhpExtractorInvariantFailure extends RuntimeException {}
 
 final class PhpStructuralIndex {
     public array $identities = [];
+    public array $identitiesByQualifiedName = [];
     public array $parents = [];
     public array $scopes = [];
     public array $namespaces = [];
@@ -287,6 +288,9 @@ final class PhpStructuralIndex {
                 $this->identities[spl_object_id($node)] = $this->createIdentity('value', $this->qualifiedName($node->name->toString(), $node), $node);
             }
         });
+        foreach ($this->identities as $key => $identity) {
+            $this->identitiesByQualifiedName[$identity['qualified_name']][] = $key;
+        }
     }
 
     public function createIdentity(string $family, string $name, Node $node): array {
@@ -333,8 +337,8 @@ final class PhpStructuralIndex {
         $prefix = $scope === null ? '' : $scope['qualified_name'];
         while (true) {
             $qualified = $prefix === '' || str_starts_with($reference, '\\') ? $name : $prefix . '.' . $name;
-            $matches = array_values(array_filter($this->identities, fn (array $identity): bool => $identity['qualified_name'] === $qualified));
-            if (count($matches) === 1) return ['kind' => 'resolved', 'declaration_id' => $matches[0]];
+            $matches = $this->identitiesByQualifiedName[$qualified] ?? [];
+            if (count($matches) === 1) return ['kind' => 'resolved', 'declaration_id' => $this->identities[$matches[0]]];
             if (count($matches) > 1) return ['kind' => 'unresolved', 'reason' => 'ambiguous'];
             if ($prefix === '') return ['kind' => 'unresolved', 'reason' => 'external'];
             $separator = strrpos($prefix, '.');
