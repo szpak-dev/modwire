@@ -59,6 +59,9 @@ class RubySourceExtractor
     raise_parse_failure(parsed.errors.first) unless parsed.success?
 
     index_declarations(parsed.value, "")
+    @declarations_by_qualified_name = @declaration_nodes.values.group_by do |declaration|
+      declaration.fetch("declaration_id").fetch("qualified_name")
+    end
     collect_body(parsed.value.statements, "", nil, {"kind" => "file"}, nil)
     @relations.each do |item|
       source = item.fetch("source_declaration_id")
@@ -264,10 +267,11 @@ class RubySourceExtractor
   def resolve_reference(reference, owner)
     absolute = reference.start_with?("::")
     name = reference.sub(/\A::/, "").gsub("::", ".")
-    prefixes = absolute ? [""] : owner.split(".").length.downto(0).map { |length| owner.split(".").take(length).join(".") }
+    owner_parts = owner.split(".")
+    prefixes = absolute ? [""] : owner_parts.length.downto(0).map { |length| owner_parts.take(length).join(".") }
     prefixes.each do |prefix|
       qualified = prefix.empty? ? name : "#{prefix}.#{name}"
-      matches = @declaration_nodes.values.select { |item| item.fetch("declaration_id").fetch("qualified_name") == qualified }
+      matches = @declarations_by_qualified_name.fetch(qualified, [])
       next if matches.empty?
       return {"kind" => "unresolved", "reason" => "ambiguous"} unless matches.length == 1
 
@@ -281,18 +285,20 @@ class RubySourceExtractor
   end
 
   def placement(scope, owner)
-    modules = @declaration_nodes.values.select do |item|
-      name = item.fetch("declaration_id").fetch("qualified_name")
-      item.fetch("kind") == "module" && (owner == name || owner.start_with?("#{name}."))
+    name = owner
+    namespace = {"kind" => "none"}
+    loop do
+      matches = @declarations_by_qualified_name.fetch(name, []).select { |item| item.fetch("kind") == "module" }
+      unless matches.empty?
+        target = matches.length == 1 ? {"kind" => "resolved", "declaration_id" => matches.first.fetch("declaration_id")} : {"kind" => "unresolved", "reason" => "ambiguous"}
+        namespace = {"kind" => "member", "namespace_reference" => name, "target" => target}
+        break
+      end
+      separator = name.rindex(".")
+      break if separator.nil?
+
+      name = name[0...separator]
     end
-    nearest = modules.group_by { |item| item.fetch("declaration_id").fetch("qualified_name") }.max_by { |name, _| name.length }
-    namespace = if nearest.nil?
-                  {"kind" => "none"}
-                else
-                  name, matches = nearest
-                  target = matches.length == 1 ? {"kind" => "resolved", "declaration_id" => matches.first.fetch("declaration_id")} : {"kind" => "unresolved", "reason" => "ambiguous"}
-                  {"kind" => "member", "namespace_reference" => name, "target" => target}
-                end
     {"lexical_scope" => scope, "namespace" => namespace}
   end
 

@@ -121,6 +121,7 @@ final class JavaSourceExtractor {
     private String sourceContent = "";
     private final Map<Node, JsonObject> identities = new IdentityHashMap<>();
     private final Map<Node, Map<String, List<Node>>> valueBindings = new IdentityHashMap<>();
+    private final Map<BlockStmt, BlockSpan> blockSpans = new IdentityHashMap<>();
     private JsonObject namespaceMembership = new JsonObject();
     private JsonObject inventory = new JsonObject();
 
@@ -128,6 +129,7 @@ final class JavaSourceExtractor {
         sourceId = sourceIdentity;
         identities.clear();
         valueBindings.clear();
+        blockSpans.clear();
         inventory = fileInventory();
         namespaceMembership = new JsonObject();
         namespaceMembership.addProperty("kind", "none");
@@ -947,9 +949,9 @@ final class JavaSourceExtractor {
                 lexical = new JsonObject();
                 lexical.addProperty("kind", "block");
                 lexical.add("container", container);
-                Range range = sourceRange(block);
-                lexical.addProperty("start_utf8_offset", byteOffset(range.begin, false));
-                lexical.addProperty("end_utf8_offset", byteOffset(range.end, true));
+                BlockSpan span = blockSpan(block);
+                lexical.addProperty("start_utf8_offset", span.startUtf8Offset());
+                lexical.addProperty("end_utf8_offset", span.endUtf8Offset());
                 break;
             }
             parent = parent.get().getParentNode();
@@ -958,6 +960,13 @@ final class JavaSourceExtractor {
         result.add("lexical_scope", lexical);
         result.add("namespace", namespaceMembership.deepCopy());
         return result;
+    }
+
+    private BlockSpan blockSpan(BlockStmt block) {
+        return blockSpans.computeIfAbsent(block, node -> {
+            Range range = sourceRange(node);
+            return new BlockSpan(byteOffset(range.begin, false), byteOffset(range.end, true));
+        });
     }
 
     private JsonObject coverage(String status) {
@@ -1110,6 +1119,8 @@ final class JavaSourceExtractor {
     }
 
     private record DeclarationKind(String kind, String family) {}
+
+    private record BlockSpan(int startUtf8Offset, int endUtf8Offset) {}
 
     private record CallableFact(
         Node node,
