@@ -669,24 +669,18 @@ class Script
     end
 
     root = arguments[1]
-    json_lines = arguments.include?("--jsonl")
     input = JSON.parse($stdin.read)
     raise ArgumentError, "Expected a JSON object mapping source ids to Ruby file paths." unless input.is_a?(Hash)
 
-    result = {}
     input.each do |source_id, path|
       unless source_id.is_a?(String) && path.is_a?(String)
         raise ArgumentError, "Expected source ids and paths to be strings."
       end
 
       extracted = RubySourceExtractor.new(root, path, source_id).extract
-      if json_lines
-        puts JSON.generate([source_id, extracted])
-      else
-        result[source_id] = extracted
-      end
+      puts JSON.generate([source_id, extracted])
+      $stdout.flush
     end
-    puts JSON.generate(result) unless json_lines
     0
   rescue SourceParseFailure => error
     warn "modwire-error:#{JSON.generate(error.document)}"

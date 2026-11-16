@@ -86,30 +86,17 @@ public final class Script {
         if (!input.isJsonObject()) {
             throw new IllegalArgumentException("Expected a JSON object mapping source ids to Java file paths.");
         }
-        boolean jsonLines = false;
-        for (String argument : arguments) {
-            if ("--jsonl".equals(argument)) {
-                jsonLines = true;
-            }
-        }
         JavaSourceExtractor extractor = new JavaSourceExtractor();
-        JsonObject result = new JsonObject();
         for (Map.Entry<String, JsonElement> entry : input.getAsJsonObject().entrySet()) {
             if (!entry.getValue().isJsonPrimitive() || !entry.getValue().getAsJsonPrimitive().isString()) {
                 throw new IllegalArgumentException("Expected source ids and paths to be strings.");
             }
             JsonObject extracted = extractor.extract(Path.of(entry.getValue().getAsString()), entry.getKey());
-            if (jsonLines) {
-                JsonArray line = new JsonArray();
-                line.add(entry.getKey());
-                line.add(extracted);
-                System.out.println(gson.toJson(line));
-            } else {
-                result.add(entry.getKey(), extracted);
-            }
-        }
-        if (!jsonLines) {
-            System.out.println(gson.toJson(result));
+            JsonArray line = new JsonArray();
+            line.add(entry.getKey());
+            line.add(extracted);
+            System.out.println(gson.toJson(line));
+            System.out.flush();
         }
     }
 }

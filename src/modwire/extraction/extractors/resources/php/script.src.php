@@ -862,25 +862,7 @@ function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRo
     ];
 }
 
-function extract_batch_from_stdin(string $sourcesRoot): array {
-    $pathsBySourceId = json_decode(stream_get_contents(STDIN), true);
-    if (!is_array($pathsBySourceId)) {
-        fwrite(STDERR, "Expected a JSON object mapping source ids to PHP file paths.\n");
-        exit(1);
-    }
-
-    $result = [];
-    foreach ($pathsBySourceId as $sourceId => $path) {
-        if (!is_string($sourceId) || !is_string($path)) {
-            fwrite(STDERR, "Expected source ids and paths to be strings.\n");
-            exit(1);
-        }
-        $result[$sourceId] = extract_file($path, $sourceId, $sourcesRoot);
-    }
-    return $result;
-}
-
-function write_batch_jsonl_from_stdin(string $sourcesRoot): void {
+function write_batch_from_stdin(string $sourcesRoot): void {
     $pathsBySourceId = json_decode(stream_get_contents(STDIN), true);
     if (!is_array($pathsBySourceId)) {
         fwrite(STDERR, "Expected a JSON object mapping source ids to PHP file paths.\n");
@@ -896,15 +878,12 @@ function write_batch_jsonl_from_stdin(string $sourcesRoot): void {
             $sourceId,
             extract_file($path, $sourceId, $sourcesRoot),
         ]) . "\n";
+        fflush(STDOUT);
     }
 }
 
 if (($argv[1] ?? null) === '--batch') {
-    if (in_array('--jsonl', $argv, true)) {
-        write_batch_jsonl_from_stdin($argv[2] ?? getcwd());
-    } else {
-        echo json_encode(extract_batch_from_stdin($argv[2] ?? getcwd()));
-    }
+    write_batch_from_stdin($argv[2] ?? getcwd());
 } else {
     echo json_encode(extract_file($argv[1], null, $argv[2] ?? dirname($argv[1])));
 }

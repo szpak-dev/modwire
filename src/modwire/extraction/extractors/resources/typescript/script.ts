@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
+import { once } from 'node:events';
 import { Project, ScriptKind, ts } from 'ts-morph';
 
 type Family = 'class' | 'abstract_class' | 'interface' | 'type' | 'namespace' | 'function' | 'method' | 'property' | 'value' | 'callable';
@@ -450,23 +451,22 @@ class Script {
         }
         return inputs;
     }
-    run(): void {
+    async run(): Promise<void> {
         const batch = process.argv[2] === '--batch';
         const root = path.resolve(process.argv[3] ?? process.cwd());
         const file = process.argv[2];
         if (file === undefined) throw new InputContractFailure('Expected a source path or --batch.');
         const inputs = batch ? this.readInput() : new Map([[path.relative(root, path.resolve(file)).replace(/\.[^/.]+$/, ''), file]]);
-        const output: Record<string, ExtractedFile> = {};
         for (const [id, file] of inputs) {
             const result = new TypeScriptExtractor(id, path.resolve(file), root, fs.readFileSync(file, 'utf8')).extract();
-            if (batch && process.argv.includes('--jsonl')) console.log(JSON.stringify([id, result]));
-            else output[id] = result;
+            if (batch) {
+                if (!process.stdout.write(JSON.stringify([id, result]) + '\n')) await once(process.stdout, 'drain');
+            } else console.log(JSON.stringify(result));
         }
-        if (!batch) console.log(JSON.stringify(Object.values(output)[0]));
-        else if (!process.argv.includes('--jsonl')) console.log(JSON.stringify(output));
     }
 }
-try { new Script().run(); } catch (error) {
-    if (error instanceof SourceParseFailure) { console.error(`modwire-error:${JSON.stringify({ code: 'source_parse', language: 'typescript', path: error.sourcePath, line: error.line, column: error.column, diagnostic: error.diagnostic })}`); process.exitCode = 1; }
-    else throw error;
-}
+new Script().run().catch((error: unknown): void => {
+    if (error instanceof SourceParseFailure) console.error(`modwire-error:${JSON.stringify({ code: 'source_parse', language: 'typescript', path: error.sourcePath, line: error.line, column: error.column, diagnostic: error.diagnostic })}`);
+    else console.error(error);
+    process.exitCode = 1;
+});

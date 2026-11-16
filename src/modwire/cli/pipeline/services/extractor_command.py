@@ -45,5 +45,5 @@ class ExtractorCommand:
         )
 
     def write(self, document: str) -> int:
-        print(document)
+        print(document, flush=True)
         return 0

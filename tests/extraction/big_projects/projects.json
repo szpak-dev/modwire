@@ -2,7 +2,7 @@
   "github": {
     "host": "github.com",
     "scheme": "https",
-    "clone_root": ".dev/big_projects",
+    "clone_root": "~/.cache/modwire/big_projects",
     "clone": {
       "depth": 1,
       "single_branch": true,

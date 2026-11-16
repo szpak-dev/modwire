@@ -12,7 +12,6 @@ from ....shared.code.models.sources.identity import FileId, ImportIdentity
 from ....shared.code.models.sources.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
-from ..models.batch_output_format import BatchOutputFormat
 from ..models.entrypoints.module_entrypoint import ModuleExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
 from .semantics.policies.import_identity_policy import PythonImportIdentityPolicy
@@ -191,7 +190,6 @@ class PythonExtractor(SourceExtractor):
             parallel_threshold=1000,
             parallel_size=1000,
             max_workers=4,
-            output_format=BatchOutputFormat.JSON,
             planner="balanced",
         )
 

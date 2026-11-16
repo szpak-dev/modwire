@@ -11,3 +11,4 @@ class BenchmarkArguments(argparse.Namespace):
     repeat: int
     only: list[str]
     profile_dir: Path | ArgumentDefault
+    profile_max_workers: int | ArgumentDefault

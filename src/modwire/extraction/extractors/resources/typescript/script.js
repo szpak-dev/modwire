@@ -227070,6 +227070,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const node_fs_1 = __importDefault(__nccwpck_require__(24));
 const node_path_1 = __importDefault(__nccwpck_require__(760));
 const node_crypto_1 = __nccwpck_require__(598);
+const node_events_1 = __nccwpck_require__(474);
 const ts_morph_1 = __nccwpck_require__(721);
 class SourceParseFailure extends Error {
     sourcePath;
@@ -227596,38 +227597,31 @@ class Script {
         }
         return inputs;
     }
-    run() {
+    async run() {
         const batch = process.argv[2] === '--batch';
         const root = node_path_1.default.resolve(process.argv[3] ?? process.cwd());
         const file = process.argv[2];
         if (file === undefined)
             throw new InputContractFailure('Expected a source path or --batch.');
         const inputs = batch ? this.readInput() : new Map([[node_path_1.default.relative(root, node_path_1.default.resolve(file)).replace(/\.[^/.]+$/, ''), file]]);
-        const output = {};
         for (const [id, file] of inputs) {
             const result = new TypeScriptExtractor(id, node_path_1.default.resolve(file), root, node_fs_1.default.readFileSync(file, 'utf8')).extract();
-            if (batch && process.argv.includes('--jsonl'))
-                console.log(JSON.stringify([id, result]));
+            if (batch) {
+                if (!process.stdout.write(JSON.stringify([id, result]) + '\n'))
+                    await (0, node_events_1.once)(process.stdout, 'drain');
+            }
             else
-                output[id] = result;
+                console.log(JSON.stringify(result));
         }
-        if (!batch)
-            console.log(JSON.stringify(Object.values(output)[0]));
-        else if (!process.argv.includes('--jsonl'))
-            console.log(JSON.stringify(output));
     }
 }
-try {
-    new Script().run();
-}
-catch (error) {
-    if (error instanceof SourceParseFailure) {
+new Script().run().catch((error) => {
+    if (error instanceof SourceParseFailure)
         console.error(`modwire-error:${JSON.stringify({ code: 'source_parse', language: 'typescript', path: error.sourcePath, line: error.line, column: error.column, diagnostic: error.diagnostic })}`);
-        process.exitCode = 1;
-    }
     else
-        throw error;
-}
+        console.error(error);
+    process.exitCode = 1;
+});
 
 
 /***/ }),
@@ -227669,6 +227663,14 @@ module.exports = require("inspector");
 
 "use strict";
 module.exports = require("node:crypto");
+
+/***/ }),
+
+/***/ 474:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:events");
 
 /***/ }),
 

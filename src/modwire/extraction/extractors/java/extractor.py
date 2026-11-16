@@ -11,7 +11,6 @@ from ....shared.code.models.sources.identity import FileId, ImportIdentity
 from ....shared.code.models.sources.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
-from ..models.batch_output_format import BatchOutputFormat
 from ..models.entrypoints.file_entrypoint import FileExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
 
@@ -178,7 +177,6 @@ class JavaExtractor(SourceExtractor):
             parallel_threshold=500,
             parallel_size=500,
             max_workers=8,
-            output_format=BatchOutputFormat.JSON_LINES,
         )
 
     def import_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:

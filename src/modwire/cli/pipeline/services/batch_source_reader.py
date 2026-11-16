@@ -9,20 +9,22 @@ from dataclasses import dataclass
 from importlib import resources
 from itertools import repeat
 from pathlib import Path
-from typing import Never
+from tempfile import TemporaryFile
+from typing import BinaryIO, Never
 
 from pydantic import ValidationError
 from wireup import injectable
 
-from ....extraction.extractors.models.batch_output_format import BatchOutputFormat
 from ....extraction.extractors.models.duplicate_identity_error import DuplicateIdentityError
 from ....extraction.extractors.models.extraction_request import ExtractionRequest
 from ....extraction.extractors.models.extractor_error import ExtractorError
 from ....extraction.extractors.models.extractor_failure_document import ExtractorFailureDocument
 from ....extraction.extractors.models.extractor_runtime import ExtractorRuntime
+from ....extraction.extractors.models.parsed_source_file import ParsedSourceFile
 from ....extraction.extractors.models.source_parse_error import SourceParseError
 from ....shared.code.contracts.identity_resolver import IdentityResolver
 from ....shared.code.contracts.path_matcher import PathMatcher
+from ....shared.code.models.failures.code_validation_error import CodeValidationError
 from ....shared.code.models.sources.identity import FileId, ImportIdentity
 from ....shared.code.models.sources.identity_kind import IdentityKind
 from ....shared.code.models.sources.scan_policy import ScanPolicy
@@ -52,7 +54,7 @@ class BatchSourceReader(SourceReader):
     files: SourceFileFactory
     paths: PathMatcher
     manifests: SourceManifestBuilder
-    outputs: Mapping[Hashable, ExtractorBatchOutputReader]
+    output: ExtractorBatchOutputReader
     planners: Mapping[Hashable, SourceBatchPlanner]
 
     def ensure_available(self, runtime: ExtractorRuntime) -> None:
@@ -263,44 +265,7 @@ class BatchSourceReader(SourceReader):
         source_paths_by_id = {source_ids_by_path[path]: path for path in source_paths}
         paths_by_source_id = {source_id: str(path) for source_id, path in source_paths_by_id.items()}
         command = [*runtime.command, *entrypoint.command_arguments(script_path), "--batch", str(root)]
-        if request.batch_config.output_format is BatchOutputFormat.JSON_LINES:
-            command.append("--jsonl")
-        try:
-            completed = subprocess.run(
-                command, input=json.dumps(paths_by_source_id), text=True, capture_output=True, check=False
-            )
-        except OSError as error:
-            raise ExtractorExecutionError(runtime.descriptor.language, -1, str(error)) from error
-        if completed.returncode != 0:
-            message = completed.stderr.strip() or completed.stdout.strip()
-            execution_error = ExtractorExecutionError(runtime.descriptor.language, completed.returncode, message)
-            marker = "modwire-error:"
-            failure_documents = tuple(
-                line.removeprefix(marker) for line in message.splitlines() if line.startswith(marker)
-            )
-            if failure_documents:
-                if len(failure_documents) != 1:
-                    raise ExtractorContractError(
-                        runtime.descriptor.language,
-                        ExtractorContractViolation.INVALID_OUTPUT,
-                        (),
-                        (),
-                        (),
-                        "extractor emitted multiple failure documents",
-                    ) from execution_error
-                self.raise_extractor_failure(failure_documents[0], execution_error)
-            raise execution_error
-        try:
-            extracted = self.outputs[request.batch_config.output_format].read(completed.stdout)
-        except ValidationError as error:
-            raise ExtractorContractError(
-                runtime.descriptor.language,
-                ExtractorContractViolation.INVALID_OUTPUT,
-                (),
-                (),
-                (),
-                str(error),
-            ) from error
+        extracted = self.run_batch(runtime.descriptor.language, command, paths_by_source_id)
         source_ids = tuple(source_id for source_id, _ in extracted)
         seen_source_ids: set[FileId] = set()
         duplicate_source_ids: set[FileId] = set()
@@ -349,6 +314,69 @@ class BatchSourceReader(SourceReader):
                 str(error),
             ) from error
         return extracted_files
+
+    def run_batch(
+        self, language: str, command: list[str], sources: Mapping[FileId, str]
+    ) -> tuple[tuple[FileId, ParsedSourceFile], ...]:
+        try:
+            with TemporaryFile() as diagnostics:
+                with subprocess.Popen(
+                    command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=diagnostics
+                ) as process:
+                    try:
+                        if process.stdin is None or process.stdout is None:
+                            raise ExtractorExecutionError(language, -1, "extractor process pipes are unavailable")
+                        try:
+                            process.stdin.write(json.dumps(sources).encode("utf-8"))
+                            process.stdin.close()
+                            extracted = tuple(self.output.read(line) for line in process.stdout)
+                        except (ValidationError, CodeValidationError, BrokenPipeError):
+                            for _ in process.stdout:
+                                pass
+                            self.validate_process(language, process, diagnostics)
+                            raise
+                        self.validate_process(language, process, diagnostics)
+                        return extracted
+                    finally:
+                        if process.poll() is None:
+                            process.kill()
+                        process.wait()
+        except OSError as error:
+            raise ExtractorExecutionError(language, -1, str(error)) from error
+        except ValidationError as error:
+            raise ExtractorContractError(
+                language,
+                ExtractorContractViolation.INVALID_OUTPUT,
+                (),
+                (),
+                (),
+                str(error),
+            ) from error
+
+    def validate_process(self, language: str, process: subprocess.Popen[bytes], diagnostics: BinaryIO) -> None:
+        exit_code = process.wait()
+        if exit_code == 0:
+            return
+        diagnostics.seek(0)
+        try:
+            message = diagnostics.read().decode("utf-8").strip()
+        except UnicodeDecodeError as error:
+            raise ExtractorExecutionError(language, exit_code, f"invalid UTF-8 stderr: {error}") from error
+        execution_error = ExtractorExecutionError(language, exit_code, message)
+        marker = "modwire-error:"
+        failure_documents = tuple(line.removeprefix(marker) for line in message.splitlines() if line.startswith(marker))
+        if failure_documents:
+            if len(failure_documents) != 1:
+                raise ExtractorContractError(
+                    language,
+                    ExtractorContractViolation.INVALID_OUTPUT,
+                    (),
+                    (),
+                    (),
+                    "extractor emitted multiple failure documents",
+                ) from execution_error
+            self.raise_extractor_failure(failure_documents[0], execution_error)
+        raise execution_error
 
     def raise_extractor_failure(self, document: str, execution_error: ExtractorExecutionError) -> Never:
         try:
