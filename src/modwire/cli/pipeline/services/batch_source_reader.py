@@ -25,6 +25,7 @@ from ....extraction.extractors.models.source_parse_error import SourceParseError
 from ....shared.code.contracts.identity_resolver import IdentityResolver
 from ....shared.code.contracts.path_matcher import PathMatcher
 from ....shared.code.models.failures.code_validation_error import CodeValidationError
+from ....shared.code.models.immutable_code_value import ImmutableCodeValue
 from ....shared.code.models.sources.identity import FileId, ImportIdentity
 from ....shared.code.models.sources.identity_kind import IdentityKind
 from ....shared.code.models.sources.scan_policy import ScanPolicy
@@ -323,13 +324,14 @@ class BatchSourceReader(SourceReader):
                 with subprocess.Popen(
                     command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=diagnostics
                 ) as process:
+                    values: dict[ImmutableCodeValue, ImmutableCodeValue] = {}
                     try:
                         if process.stdin is None or process.stdout is None:
                             raise ExtractorExecutionError(language, -1, "extractor process pipes are unavailable")
                         try:
                             process.stdin.write(json.dumps(sources).encode("utf-8"))
                             process.stdin.close()
-                            extracted = tuple(self.output.read(line) for line in process.stdout)
+                            extracted = tuple(self.output.read(line, values) for line in process.stdout)
                         except (ValidationError, CodeValidationError, BrokenPipeError):
                             for _ in process.stdout:
                                 pass
@@ -338,6 +340,7 @@ class BatchSourceReader(SourceReader):
                         self.validate_process(language, process, diagnostics)
                         return extracted
                     finally:
+                        values.clear()
                         if process.poll() is None:
                             process.kill()
                         process.wait()

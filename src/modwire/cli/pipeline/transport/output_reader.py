@@ -13,6 +13,7 @@ class ExtractorBatchOutputReader:
     def __init__(self) -> None:
         self.records = TypeAdapter(tuple[FileId, ParsedSourceFile])
 
-    def read(self, document: bytes) -> tuple[FileId, ParsedSourceFile]:
-        values: dict[ImmutableCodeValue, ImmutableCodeValue] = {}
+    def read(
+        self, document: bytes, values: dict[ImmutableCodeValue, ImmutableCodeValue]
+    ) -> tuple[FileId, ParsedSourceFile]:
         return self.records.validate_json(document, context=values)

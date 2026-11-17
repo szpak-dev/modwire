@@ -16,6 +16,3 @@ class DeclarationIdentity(ImmutableCodeValue):
         """Return the identity of a declaration in one exact source capture."""
 
         return f"{self.source_id}@{self.content_digest}::{self.family.value}:{self.ordinal}:{self.qualified_name}"
-
-    def __hash__(self) -> int:
-        return hash((self.source_id, self.family, self.qualified_name, self.ordinal, self.content_digest))
