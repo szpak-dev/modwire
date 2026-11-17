@@ -1,10 +1,18 @@
 import json
+import os
 import shutil
 
 import pytest
 from pydantic import JsonValue, TypeAdapter
 
-from modwire.application import FileId, ImportIdentity, SourceFile, SourceParseError
+from modwire.application import (
+    ExtractorContractError,
+    ExtractorContractViolation,
+    FileId,
+    ImportIdentity,
+    SourceFile,
+    SourceParseError,
+)
 
 from ..base_test import CliTestCase
 
@@ -47,6 +55,52 @@ class TestExtractorCommandTransport(CliTestCase):
         invalid.unlink()
         recovered = self.application.generate_map("python", str(self.workspace), self.scan_policy())
         assert tuple(recovered.extraction.files) == ("example.py", "example_second.py")
+
+    @pytest.mark.parametrize(
+        ("mode", "violation", "missing", "unexpected", "duplicates"),
+        (
+            ("duplicate", ExtractorContractViolation.DUPLICATE_SOURCE_IDENTITY, (), (), ("example.ts",)),
+            ("missing", ExtractorContractViolation.SOURCE_SET_MISMATCH, ("example.ts",), (), ()),
+            (
+                "unexpected",
+                ExtractorContractViolation.SOURCE_SET_MISMATCH,
+                ("example.ts",),
+                ("example_unexpected.ts",),
+                (),
+            ),
+            ("invalid", ExtractorContractViolation.INVALID_OUTPUT, (), (), ()),
+        ),
+    )
+    def test_invalid_output_rejects_the_batch_and_recovers(
+        self,
+        mode: str,
+        violation: ExtractorContractViolation,
+        missing: tuple[str, ...],
+        unexpected: tuple[str, ...],
+        duplicates: tuple[str, ...],
+    ) -> None:
+        sources = self.workspace / "sources"
+        shutil.copytree(self.repository / "tests/fixtures/implementation_manifest/typescript/canonical/src", sources)
+        runtime = self.workspace / "runtime"
+        shutil.copytree(self.repository / "tests/fixtures/command_transport/runtime", runtime)
+        (runtime / "node").chmod(0o755)
+        node = shutil.which("node")
+        assert node is not None
+
+        with pytest.MonkeyPatch.context() as environment:
+            environment.setenv("EXAMPLE_NODE", node)
+            environment.setenv("EXAMPLE_OUTPUT", mode)
+            environment.setenv("PATH", str(runtime) + os.pathsep + os.environ["PATH"])
+            with pytest.raises(ExtractorContractError) as raised:
+                self.application.generate_map("typescript", str(sources), self.scan_policy())
+
+        assert raised.value.language == "typescript"
+        assert raised.value.violation is violation
+        assert raised.value.missing_source_ids == missing
+        assert raised.value.unexpected_source_ids == unexpected
+        assert raised.value.duplicate_source_ids == duplicates
+        recovered = self.application.generate_map("typescript", str(sources), self.scan_policy())
+        assert tuple(recovered.extraction.files) == ("example.ts",)
 
     def test_empty_batch_returns_no_records(self) -> None:
         completed = self.run_python_batch_extractor(self.workspace, "{}")

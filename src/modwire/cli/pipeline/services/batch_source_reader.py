@@ -20,7 +20,6 @@ from ....extraction.extractors.models.extraction_request import ExtractionReques
 from ....extraction.extractors.models.extractor_error import ExtractorError
 from ....extraction.extractors.models.extractor_failure_document import ExtractorFailureDocument
 from ....extraction.extractors.models.extractor_runtime import ExtractorRuntime
-from ....extraction.extractors.models.parsed_source_file import ParsedSourceFile
 from ....extraction.extractors.models.source_parse_error import SourceParseError
 from ....shared.code.contracts.identity_resolver import IdentityResolver
 from ....shared.code.contracts.path_matcher import PathMatcher
@@ -263,81 +262,66 @@ class BatchSourceReader(SourceReader):
             raise ExtractorResourceError(runtime.descriptor.language, entrypoint.path) from error
         if not script_path.is_file():
             raise ExtractorResourceError(runtime.descriptor.language, str(script_path))
-        source_paths_by_id = {source_ids_by_path[path]: path for path in source_paths}
-        paths_by_source_id = {source_id: str(path) for source_id, path in source_paths_by_id.items()}
+        paths_by_source_id = {source_ids_by_path[path]: str(path) for path in source_paths}
         command = [*runtime.command, *entrypoint.command_arguments(script_path), "--batch", str(root)]
-        extracted = self.run_batch(runtime.descriptor.language, command, paths_by_source_id)
-        source_ids = tuple(source_id for source_id, _ in extracted)
-        seen_source_ids: set[FileId] = set()
-        duplicate_source_ids: set[FileId] = set()
-        for source_id in source_ids:
-            if source_id in seen_source_ids:
-                duplicate_source_ids.add(source_id)
-            else:
-                seen_source_ids.add(source_id)
-        if duplicate_source_ids:
-            raise ExtractorContractError(
-                runtime.descriptor.language,
-                ExtractorContractViolation.DUPLICATE_SOURCE_IDENTITY,
-                (),
-                (),
-                tuple(sorted(duplicate_source_ids, key=str)),
-                "extractor output contains duplicate source identities",
-            )
-        extracted_by_source_id = dict(extracted)
-        expected = set(source_paths_by_id)
-        actual = set(extracted_by_source_id)
-        if actual != expected:
-            raise ExtractorContractError(
-                runtime.descriptor.language,
-                ExtractorContractViolation.SOURCE_SET_MISMATCH,
-                tuple(sorted(expected - actual, key=str)),
-                tuple(sorted(actual - expected, key=str)),
-                (),
-                "extractor output identities do not match the requested batch",
-            )
-        extracted_files: dict[FileId, SourceFile] = {}
-        try:
-            for file_id, parsed_source_file in extracted_by_source_id.items():
-                source_path = source_paths_by_id[file_id]
-                extracted_files[file_id] = self.files.create(
-                    file_id,
-                    self.identities.import_identity(str(root), str(source_path)),
-                    parsed_source_file,
-                )
-        except ValidationError as error:
-            raise ExtractorContractError(
-                runtime.descriptor.language,
-                ExtractorContractViolation.INVALID_OUTPUT,
-                (),
-                (),
-                (),
-                str(error),
-            ) from error
-        return extracted_files
+        return self.run_batch(runtime.descriptor.language, command, paths_by_source_id, str(root))
 
     def run_batch(
-        self, language: str, command: list[str], sources: Mapping[FileId, str]
-    ) -> tuple[tuple[FileId, ParsedSourceFile], ...]:
+        self, language: str, command: list[str], sources: Mapping[FileId, str], root: str
+    ) -> dict[FileId, SourceFile]:
         try:
             with TemporaryFile() as diagnostics:
                 with subprocess.Popen(
                     command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=diagnostics
                 ) as process:
                     values: dict[ImmutableCodeValue, ImmutableCodeValue] = {}
+                    extracted: dict[FileId, SourceFile] = {}
+                    seen_source_ids: set[FileId] = set()
+                    duplicate_source_ids: set[FileId] = set()
                     try:
                         if process.stdin is None or process.stdout is None:
                             raise ExtractorExecutionError(language, -1, "extractor process pipes are unavailable")
                         try:
                             process.stdin.write(json.dumps(sources).encode("utf-8"))
                             process.stdin.close()
-                            extracted = tuple(self.output.read(line, values) for line in process.stdout)
+                            for line in process.stdout:
+                                source_id, parsed = self.output.read(line, values)
+                                if source_id in seen_source_ids:
+                                    duplicate_source_ids.add(source_id)
+                                else:
+                                    seen_source_ids.add(source_id)
+                                    if source_id in sources:
+                                        extracted[source_id] = self.files.create(
+                                            source_id,
+                                            self.identities.import_identity(root, sources[source_id]),
+                                            parsed,
+                                        )
+                                del parsed
                         except (ValidationError, CodeValidationError, BrokenPipeError):
                             for _ in process.stdout:
                                 pass
                             self.validate_process(language, process, diagnostics)
                             raise
                         self.validate_process(language, process, diagnostics)
+                        if duplicate_source_ids:
+                            raise ExtractorContractError(
+                                language,
+                                ExtractorContractViolation.DUPLICATE_SOURCE_IDENTITY,
+                                (),
+                                (),
+                                tuple(sorted(duplicate_source_ids, key=str)),
+                                "extractor output contains duplicate source identities",
+                            )
+                        expected = set(sources)
+                        if seen_source_ids != expected:
+                            raise ExtractorContractError(
+                                language,
+                                ExtractorContractViolation.SOURCE_SET_MISMATCH,
+                                tuple(sorted(expected - seen_source_ids, key=str)),
+                                tuple(sorted(seen_source_ids - expected, key=str)),
+                                (),
+                                "extractor output identities do not match the requested batch",
+                            )
                         return extracted
                     finally:
                         values.clear()

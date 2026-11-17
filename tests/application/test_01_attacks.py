@@ -323,37 +323,6 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
         assert raised.value.diagnostic == "extractor emitted multiple failure documents"
         assert isinstance(raised.value.__cause__, ExtractorExecutionError)
 
-    def test_duplicate_extractor_output_identities_report_a_contract_violation(self) -> None:
-        root = self.project({"src/example.ts": "export const exampleValue = 1;\n"})
-        runtime_directory = self.workspace / "example-duplicate-runtime"
-        runtime_directory.mkdir()
-        runtime = runtime_directory / "node"
-        runtime.write_text(
-            f"#!{sys.executable}\n"
-            "import json\n"
-            "import sys\n"
-            "if '--version' in sys.argv:\n"
-            "    print('example 1')\n"
-            "else:\n"
-            "    for source_id in json.load(sys.stdin):\n"
-            "        document = json.dumps([source_id, {}])\n"
-            "        print(document)\n"
-            "        print(document)\n",
-            encoding="utf-8",
-        )
-        runtime.chmod(0o755)
-
-        result = self.failure_consumer(root, "typescript", {**os.environ, "PATH": str(runtime_directory)})
-
-        assert result.returncode == 0, result.stderr
-        failure = json.loads(result.stdout)
-        assert failure["type"] == "ExtractorContractError"
-        assert failure["language"] == "typescript"
-        assert failure["violation"] == ExtractorContractViolation.DUPLICATE_SOURCE_IDENTITY
-        assert failure["missing_source_ids"] == []
-        assert failure["unexpected_source_ids"] == []
-        assert failure["duplicate_source_ids"] == ["src/example.ts"]
-
     def test_cache_access_reports_the_public_cache_path(self) -> None:
         cache_file = self.workspace / "example-cache-file"
         cache_file.write_text("example", encoding="utf-8")
