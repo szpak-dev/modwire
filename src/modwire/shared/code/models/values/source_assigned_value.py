@@ -2,13 +2,13 @@ from typing import Self
 
 from pydantic import model_validator
 
-from ....values.models.value_model import ValueModel
 from ..failures.code_validation_error import CodeValidationError
 from ..failures.code_violation import CodeViolation
+from ..immutable_code_value import ImmutableCodeValue
 from .source_assigned_value_kind import SourceAssignedValueKind
 
 
-class SourceAssignedValue(ValueModel):
+class SourceAssignedValue(ImmutableCodeValue):
     """Language-neutral evidence observed at one class-property assignment site."""
 
     kind: SourceAssignedValueKind

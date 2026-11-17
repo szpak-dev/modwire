@@ -96,9 +96,16 @@ class OrderedPythonSemanticReader(PythonSemanticReader):
             ):
                 identities[value.target] = self.identities.create(context, family, value.qualified_name, value.ordinal)
                 scopes[value.target] = value.binding_scope
+        bindings: dict[tuple[ast.AST, str], list[ast.AST]] = {}
+        for node, scope in scopes.items():
+            key = (scope, identities[node].qualified_name.rsplit(".", 1)[-1])
+            if key not in bindings:
+                bindings[key] = []
+            bindings[key].append(node)
         return PythonSemanticCatalog(
             scope_identities=identities,
             binding_scopes=scopes,
+            bindings={key: tuple(nodes) for key, nodes in bindings.items()},
             callable_kinds=kinds,
             inventory=observation.inventory,
             unresolved_bindings=unresolved,

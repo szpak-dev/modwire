@@ -21,7 +21,7 @@ class SourceClassProperty(ValueModel):
     owner_declaration_id: DeclarationIdentity
     name: str
     is_optional: bool
-    type: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported
+    type: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported = Field(union_mode="left_to_right")
     visibility: SourceVisibility
     member_kind: SourceMemberKind
     placement: SourcePlacement

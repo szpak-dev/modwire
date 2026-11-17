@@ -32,10 +32,12 @@ from .contribution import PythonSemanticContribution
 class PythonSemanticCatalog:
     scope_identities: dict[ast.AST, DeclarationIdentity]
     binding_scopes: dict[ast.AST, ast.AST]
+    bindings: dict[tuple[ast.AST, str], tuple[ast.AST, ...]]
     callable_kinds: dict[ast.AST, SourceCallableKind]
     inventory: PythonInventoryEvidence
     unresolved_bindings: dict[ast.AST, dict[str, SourceUnresolvedReason]]
     wildcard_scopes: frozenset[ast.AST]
+    placements: dict[ast.AST, SourcePlacement] = field(default_factory=dict[ast.AST, SourcePlacement])
     imports: tuple[SourceImport, ...] = field(default_factory=tuple)
     exports: tuple[SourceExport, ...] = field(default_factory=tuple)
     namespaces: tuple[SourceNamespace, ...] = field(default_factory=tuple)
@@ -62,10 +64,12 @@ class PythonSemanticCatalog:
         return PythonSemanticCatalog(
             scope_identities=self.scope_identities,
             binding_scopes=self.binding_scopes,
+            bindings=self.bindings,
             callable_kinds=self.callable_kinds,
             inventory=self.inventory,
             unresolved_bindings=self.unresolved_bindings,
             wildcard_scopes=self.wildcard_scopes,
+            placements=self.placements,
             imports=(*self.imports, *contribution.imports),
             exports=(*self.exports, *contribution.exports),
             namespaces=(*self.namespaces, *contribution.namespaces),
@@ -93,7 +97,11 @@ class PythonSemanticCatalog:
         return tuple(sorted(callables, key=lambda item: item.declaration_id.ordinal))
 
     def placement(self, scope: ast.AST) -> SourcePlacement:
-        return SourcePlacement(lexical_scope=self.lexical_scope(scope), namespace=SourceNoNamespace())
+        if scope not in self.placements:
+            self.placements[scope] = SourcePlacement(
+                lexical_scope=self.lexical_scope(scope), namespace=SourceNoNamespace()
+            )
+        return self.placements[scope]
 
     @singledispatchmethod
     def lexical_scope(self, scope: ast.AST) -> SourceDeclarationScope | SourceFileScope:
@@ -153,13 +161,8 @@ class PythonSemanticCatalog:
                 return SourceUnresolvedTarget(reason=self.unresolved_bindings[scope][name])
             if scope in self.wildcard_scopes:
                 return SourceUnresolvedTarget(reason=SourceUnresolvedReason.EXTERNAL)
-            matches = tuple(
-                node
-                for node, parent in self.binding_scopes.items()
-                if parent is scope
-                and node in self.scope_identities
-                and self.scope_identities[node].qualified_name.rsplit(".", 1)[-1] == name
-            )
+            key = (scope, name)
+            matches = self.bindings[key] if key in self.bindings else ()
             if position == 0 and name == self.receiver_name(scope):
                 if matches:
                     return SourceUnresolvedTarget(reason=SourceUnresolvedReason.DYNAMIC)

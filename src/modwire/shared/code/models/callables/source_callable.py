@@ -24,7 +24,7 @@ class SourceCallable(SourceSymbol):
     line_start: int
     line_end: int
     parameters: tuple[SourceParameter, ...] = Field(default_factory=tuple)
-    return_type: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported
+    return_type: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported = Field(union_mode="left_to_right")
     decorators: tuple[str, ...] = Field(default_factory=tuple)
     docstring: str = ""
 

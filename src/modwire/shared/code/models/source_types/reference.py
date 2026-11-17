@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import Field
 
@@ -11,4 +11,7 @@ from .unsupported import SourceTypeUnsupported
 class SourceTypeReference(ImmutableCodeValue):
     kind: Literal[SourceTypeKind.REFERENCE] = SourceTypeKind.REFERENCE
     name: str = Field(min_length=1)
-    arguments: tuple["SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported", ...] = ()
+    arguments: tuple[
+        Annotated["SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported", Field(union_mode="left_to_right")],
+        ...,
+    ] = ()

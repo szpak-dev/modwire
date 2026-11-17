@@ -57,16 +57,20 @@ class CodeMap(ValueModel):
         coverage = next(
             item for item in self.producer.capabilities if item.capability is FactCapability.TYPE_REFERENCES
         )
-        slots = tuple(slot for source_file in self.extraction.files.values() for slot in self.type_slots(source_file))
-        kinds = tuple(kind for slot in slots for kind in self.type_kinds(slot))
-        has_unsupported = SourceTypeKind.UNSUPPORTED in kinds
-        has_observed = any(kind in {SourceTypeKind.REFERENCE, SourceTypeKind.ABSENT} for kind in kinds)
-        if coverage.status is CapabilityStatus.SUPPORTED and has_unsupported:
+        kinds = (
+            kind
+            for source_file in self.extraction.files.values()
+            for slot in self.type_slots(source_file)
+            for kind in self.type_kinds(slot)
+        )
+        if coverage.status is CapabilityStatus.SUPPORTED and any(kind is SourceTypeKind.UNSUPPORTED for kind in kinds):
             raise CodeValidationError(
                 CodeViolation.UNSUPPORTED_TYPE_WITH_SUPPORTED_CAPABILITY,
                 self.language,
             )
-        if coverage.status is CapabilityStatus.UNSUPPORTED and has_observed:
+        if coverage.status is CapabilityStatus.UNSUPPORTED and any(
+            kind in {SourceTypeKind.REFERENCE, SourceTypeKind.ABSENT} for kind in kinds
+        ):
             raise CodeValidationError(
                 CodeViolation.OBSERVED_TYPE_WITH_UNSUPPORTED_CAPABILITY,
                 self.language,
