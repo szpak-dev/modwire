@@ -1,7 +1,8 @@
 import ast
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -18,8 +19,16 @@ class PythonCallReferenceReader(ABC):
 @injectable(as_type=PythonCallReferenceReader)
 @dataclass(frozen=True)
 class SyntaxCallReferenceReader(PythonCallReferenceReader):
+    @cached_property
+    def read_expression_dispatch(self) -> Callable[[ast.expr], PythonCallReference]:
+        return self.read_expression
+
+    @cached_property
+    def attribute_name_dispatch(self) -> Callable[[ast.expr], str]:
+        return self.attribute_name
+
     def read(self, observation: PythonCallObservation) -> PythonCallReference:
-        return self.read_expression(observation.node.func)
+        return self.read_expression_dispatch(observation.node.func)
 
     @singledispatchmethod
     def read_expression(self, node: ast.expr) -> PythonCallReference:
@@ -43,7 +52,7 @@ class SyntaxCallReferenceReader(PythonCallReferenceReader):
         expression = ast.unparse(node)
         return PythonCallReference(
             expression=expression,
-            target_name=self.attribute_name(node),
+            target_name=self.attribute_name_dispatch(node),
             is_reference=True,
         )
 
@@ -57,5 +66,5 @@ class SyntaxCallReferenceReader(PythonCallReferenceReader):
 
     @attribute_name.register
     def nested_attribute_name(self, node: ast.Attribute) -> str:
-        parent = self.attribute_name(node.value)
+        parent = self.attribute_name_dispatch(node.value)
         return f"{parent}.{node.attr}" if parent else node.attr

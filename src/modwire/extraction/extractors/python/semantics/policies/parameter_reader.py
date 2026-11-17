@@ -1,7 +1,8 @@
 import ast
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -23,8 +24,12 @@ class PythonParameterReader(ABC):
 class SyntaxParameterReader(PythonParameterReader):
     types: PythonSourceTypeReader
 
+    @cached_property
+    def visit_dispatch(self) -> Callable[[ast.AST], tuple[SourceParameter, ...]]:
+        return self.visit
+
     def read(self, candidate: PythonCallableCandidate, kind: SourceCallableKind) -> tuple[SourceParameter, ...]:
-        parameters = self.visit(candidate.node)
+        parameters = self.visit_dispatch(candidate.node)
         if (
             kind
             in {

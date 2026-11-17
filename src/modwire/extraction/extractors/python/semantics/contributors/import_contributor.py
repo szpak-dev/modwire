@@ -1,6 +1,7 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -24,6 +25,10 @@ from ..reader import PythonSemanticContributor
 class ImportSemanticContributor(PythonSemanticContributor):
     paths: PythonImportPathPolicy
 
+    @cached_property
+    def read_node_dispatch(self) -> Callable[[ast.AST, PythonImportCandidate, PythonSourceContext], SourceImport]:
+        return self.read_node
+
     @property
     def order(self) -> int:
         return 60
@@ -39,7 +44,7 @@ class ImportSemanticContributor(PythonSemanticContributor):
         )
 
     def read(self, candidate: PythonImportCandidate, context: PythonSourceContext) -> SourceImport:
-        return self.read_node(candidate.node, candidate, context)
+        return self.read_node_dispatch(candidate.node, candidate, context)
 
     @singledispatchmethod
     def read_node(

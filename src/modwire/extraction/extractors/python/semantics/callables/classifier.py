@@ -1,8 +1,8 @@
 import ast
 from abc import ABC, abstractmethod
-from collections.abc import Hashable, Mapping
+from collections.abc import Callable, Hashable, Mapping
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -13,6 +13,10 @@ from ...observations.callable_candidate import PythonCallableCandidate
 
 
 class PythonCallableRule(ABC):
+    @cached_property
+    def is_class_scope_dispatch(self) -> Callable[[ast.AST], bool]:
+        return self.is_class_scope
+
     @property
     @abstractmethod
     def order(self) -> int:

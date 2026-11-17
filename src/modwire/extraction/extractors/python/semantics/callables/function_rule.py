@@ -1,6 +1,7 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -12,6 +13,10 @@ from .classifier import PythonCallableRule
 @injectable(as_type=PythonCallableRule, qualifier="50-function")
 @dataclass(frozen=True)
 class FunctionCallableRule(PythonCallableRule):
+    @cached_property
+    def node_kind_dispatch(self) -> Callable[[ast.AST, PythonCallableCandidate], SourceCallableKind]:
+        return self.node_kind
+
     @property
     def order(self) -> int:
         return 50
@@ -20,7 +25,7 @@ class FunctionCallableRule(PythonCallableRule):
         return True
 
     def classify(self, candidate: PythonCallableCandidate) -> SourceCallableKind:
-        return self.node_kind(candidate.node, candidate)
+        return self.node_kind_dispatch(candidate.node, candidate)
 
     @singledispatchmethod
     def node_kind(self, node: ast.AST, candidate: PythonCallableCandidate) -> SourceCallableKind:

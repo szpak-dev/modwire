@@ -1,6 +1,7 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -32,6 +33,19 @@ class PropertySemanticContributor(PythonSemanticContributor):
     properties: PythonPropertyClassifier
     identities: PythonDeclarationIdentityFactory
 
+    @cached_property
+    def owner_dispatch(
+        self,
+    ) -> Callable[
+        [ast.AST, PythonPropertyCandidate, PythonSemanticCatalog],
+        tuple[SourceResolvedTarget | SourceUnresolvedTarget, SourceMemberKind],
+    ]:
+        return self.owner
+
+    @cached_property
+    def class_member_kind_dispatch(self) -> Callable[[ast.stmt], SourceMemberKind]:
+        return self.class_member_kind
+
     @property
     def order(self) -> int:
         return 20
@@ -47,7 +61,7 @@ class PropertySemanticContributor(PythonSemanticContributor):
                 and catalog.scope_identities[candidate.target].family is DeclarationFamily.TYPE
             ):
                 continue
-            owner, kind = self.owner(candidate.target, candidate, catalog)
+            owner, kind = self.owner_dispatch(candidate.target, candidate, catalog)
             if owner.kind is SourceBindingKind.UNRESOLVED or owner.declaration_id not in class_ids:
                 start, end = candidate.source_span
                 catalog.inventory.unowned_properties.append(
@@ -90,7 +104,7 @@ class PropertySemanticContributor(PythonSemanticContributor):
     ) -> tuple[SourceResolvedTarget | SourceUnresolvedTarget, SourceMemberKind]:
         return (
             SourceResolvedTarget(declaration_id=catalog.scope_identities[candidate.binding_scope]),
-            self.class_member_kind(candidate.statement),
+            self.class_member_kind_dispatch(candidate.statement),
         )
 
     @owner.register

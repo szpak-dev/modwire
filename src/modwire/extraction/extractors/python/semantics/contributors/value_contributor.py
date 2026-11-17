@@ -1,6 +1,7 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -27,6 +28,22 @@ from ..reader import PythonSemanticContributor
 @dataclass(frozen=True)
 class ValueSemanticContributor(PythonSemanticContributor):
     visibility: PythonVisibilityPolicy
+
+    @cached_property
+    def has_final_annotation_dispatch(self) -> Callable[[ast.stmt], bool]:
+        return self.has_final_annotation
+
+    @cached_property
+    def value_kind_dispatch(self) -> Callable[[ast.stmt], SourceSymbolKind]:
+        return self.value_kind
+
+    @cached_property
+    def expression_kind_dispatch(self) -> Callable[[ast.expr], SourceSymbolKind]:
+        return self.expression_kind
+
+    @cached_property
+    def value_scope_dispatch(self) -> Callable[[ast.AST], SourceValueScope]:
+        return self.value_scope
 
     @property
     def order(self) -> int:
@@ -83,13 +100,13 @@ class ValueSemanticContributor(PythonSemanticContributor):
                 if self.is_constant(candidate)
                 else SourceValueDeclarationKind.ASSIGNMENT
             ),
-            value_kind=self.value_kind(candidate.statement),
-            scope=self.value_scope(candidate.binding_scope),
+            value_kind=self.value_kind_dispatch(candidate.statement),
+            scope=self.value_scope_dispatch(candidate.binding_scope),
             placement=catalog.placement(candidate.binding_scope),
         )
 
     def is_constant(self, candidate: PythonValueCandidate) -> bool:
-        return candidate.target.id.isupper() or self.has_final_annotation(candidate.statement)
+        return candidate.target.id.isupper() or self.has_final_annotation_dispatch(candidate.statement)
 
     @singledispatchmethod
     def has_final_annotation(self, statement: ast.stmt) -> bool:
@@ -105,13 +122,13 @@ class ValueSemanticContributor(PythonSemanticContributor):
 
     @value_kind.register
     def assigned_value_kind(self, statement: ast.Assign) -> SourceSymbolKind:
-        return self.expression_kind(statement.value)
+        return self.expression_kind_dispatch(statement.value)
 
     @value_kind.register
     def annotated_value_kind(self, statement: ast.AnnAssign) -> SourceSymbolKind:
         if statement.value is None:
             return SourceSymbolKind.VALUE_UNKNOWN
-        return self.expression_kind(statement.value)
+        return self.expression_kind_dispatch(statement.value)
 
     @singledispatchmethod
     def expression_kind(self, expression: ast.expr) -> SourceSymbolKind:

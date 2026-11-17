@@ -1,6 +1,7 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -24,12 +25,32 @@ class AnnotatedInstancePropertyRule(PythonPropertyRule):
     visibility: PythonVisibilityPolicy
     types: PythonSourceTypeReader
 
+    @cached_property
+    def is_annotated_dispatch(self) -> Callable[[ast.stmt], bool]:
+        return self.is_annotated
+
+    @cached_property
+    def read_dispatch(
+        self,
+    ) -> Callable[
+        [
+            ast.stmt,
+            PythonPropertyCandidate,
+            DeclarationIdentity,
+            DeclarationIdentity,
+            SourceMemberKind,
+            SourcePlacement,
+        ],
+        SourceClassProperty,
+    ]:
+        return self.read
+
     @property
     def order(self) -> int:
         return 30
 
     def applies(self, candidate: PythonPropertyCandidate) -> bool:
-        return not self.is_class_target(candidate.target) and self.is_annotated(candidate.statement)
+        return not self.is_class_target_dispatch(candidate.target) and self.is_annotated_dispatch(candidate.statement)
 
     def classify(
         self,
@@ -39,7 +60,9 @@ class AnnotatedInstancePropertyRule(PythonPropertyRule):
         member_kind: SourceMemberKind,
         placement: SourcePlacement,
     ) -> SourceClassProperty:
-        return self.read(candidate.statement, candidate, declaration_id, owner_declaration_id, member_kind, placement)
+        return self.read_dispatch(
+            candidate.statement, candidate, declaration_id, owner_declaration_id, member_kind, placement
+        )
 
     @singledispatchmethod
     def is_annotated(self, statement: ast.stmt) -> bool:
@@ -78,12 +101,12 @@ class AnnotatedInstancePropertyRule(PythonPropertyRule):
         value_is_none = False
         if statement.value is not None:
             assigned = self.assigned_values.read_expression(statement.value)
-            value_is_none = self.value_is_none(statement.value)
+            value_is_none = self.value_is_none_dispatch(statement.value)
         return self.build(
             candidate=candidate,
             declaration_id=declaration_id,
             owner_declaration_id=owner_declaration_id,
-            is_optional=self.annotation_is_optional(statement.annotation) or value_is_none,
+            is_optional=self.annotation_is_optional_dispatch(statement.annotation) or value_is_none,
             type=self.types.read(statement.annotation),
             visibility=self.visibility.classify(candidate.name),
             member_kind=member_kind,

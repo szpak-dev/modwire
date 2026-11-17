@@ -1,6 +1,8 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass, replace
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
+from types import EllipsisType
 
 from wireup import injectable
 
@@ -32,6 +34,34 @@ from ..reader import PythonSemanticContributor
 class ExportSemanticContributor(PythonSemanticContributor):
     exports: PythonExportClassifier
     paths: PythonImportPathPolicy
+
+    @cached_property
+    def import_from_node_dispatch(
+        self,
+    ) -> Callable[[ast.AST, PythonImportCandidate, PythonSourceContext], PythonExportCandidate]:
+        return self.import_from_node
+
+    @cached_property
+    def statement_names_dispatch(self) -> Callable[[ast.stmt], tuple[bool, bool, tuple[str, ...]]]:
+        return self.statement_names
+
+    @cached_property
+    def expression_names_dispatch(self) -> Callable[[ast.expr], tuple[bool, tuple[str, ...]]]:
+        return self.expression_names
+
+    @cached_property
+    def string_value_dispatch(self) -> Callable[[ast.expr], tuple[bool, str]]:
+        return self.string_value
+
+    @cached_property
+    def literal_string_dispatch(
+        self,
+    ) -> Callable[[str | bytes | int | float | complex | bool | None | EllipsisType], tuple[bool, str]]:
+        return self.literal_string
+
+    @cached_property
+    def module_scope_dispatch(self) -> Callable[[ast.AST], bool]:
+        return self.module_scope
 
     @property
     def order(self) -> int:
@@ -85,7 +115,7 @@ class ExportSemanticContributor(PythonSemanticContributor):
     ) -> dict[str, PythonExportCandidate]:
         candidates: dict[str, PythonExportCandidate] = {}
         for candidate in imports:
-            if not self.module_scope(candidate.binding_scope):
+            if not self.module_scope_dispatch(candidate.binding_scope):
                 continue
             item = self.import_candidate(candidate, context)
             if item.name:
@@ -97,7 +127,7 @@ class ExportSemanticContributor(PythonSemanticContributor):
         candidate: PythonImportCandidate,
         context: PythonSourceContext,
     ) -> PythonExportCandidate:
-        return self.import_from_node(candidate.node, candidate, context)
+        return self.import_from_node_dispatch(candidate.node, candidate, context)
 
     @singledispatchmethod
     def import_from_node(
@@ -135,9 +165,9 @@ class ExportSemanticContributor(PythonSemanticContributor):
         found = False
         names: tuple[str, ...] = ()
         for candidate in values:
-            if candidate.target.id != "__all__" or not self.module_scope(candidate.binding_scope):
+            if candidate.target.id != "__all__" or not self.module_scope_dispatch(candidate.binding_scope):
                 continue
-            relevant, valid, incoming_names = self.statement_names(candidate.statement)
+            relevant, valid, incoming_names = self.statement_names_dispatch(candidate.statement)
             if not relevant:
                 continue
             found = True
@@ -161,14 +191,14 @@ class ExportSemanticContributor(PythonSemanticContributor):
 
     @statement_names.register
     def assignment_names(self, statement: ast.Assign) -> tuple[bool, bool, tuple[str, ...]]:
-        valid, names = self.expression_names(statement.value)
+        valid, names = self.expression_names_dispatch(statement.value)
         return (True, valid, names)
 
     @statement_names.register
     def annotated_assignment_names(self, statement: ast.AnnAssign) -> tuple[bool, bool, tuple[str, ...]]:
         if statement.value is None:
             return (False, False, ())
-        valid, names = self.expression_names(statement.value)
+        valid, names = self.expression_names_dispatch(statement.value)
         return (True, valid, names)
 
     @singledispatchmethod
@@ -186,7 +216,7 @@ class ExportSemanticContributor(PythonSemanticContributor):
     def element_names(self, elements: list[ast.expr]) -> tuple[bool, tuple[str, ...]]:
         names: list[str] = []
         for element in elements:
-            valid, name = self.string_value(element)
+            valid, name = self.string_value_dispatch(element)
             if not valid:
                 return (False, ())
             names.append(name)
@@ -198,12 +228,12 @@ class ExportSemanticContributor(PythonSemanticContributor):
 
     @string_value.register
     def constant_string_value(self, expression: ast.Constant) -> tuple[bool, str]:
-        return self.literal_string(expression.value)
+        return self.literal_string_dispatch(expression.value)
 
     @singledispatchmethod
     def literal_string(
         self,
-        value: str | bytes | int | float | complex | bool,
+        value: str | bytes | int | float | complex | bool | None | EllipsisType,
     ) -> tuple[bool, str]:
         return (False, "")
 

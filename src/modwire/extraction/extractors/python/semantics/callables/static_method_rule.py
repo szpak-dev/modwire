@@ -1,6 +1,7 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -12,12 +13,16 @@ from .classifier import PythonCallableRule
 @injectable(as_type=PythonCallableRule, qualifier="30-static-method")
 @dataclass(frozen=True)
 class StaticMethodCallableRule(PythonCallableRule):
+    @cached_property
+    def has_decorator_dispatch(self) -> Callable[[ast.AST], bool]:
+        return self.has_decorator
+
     @property
     def order(self) -> int:
         return 30
 
     def applies(self, candidate: PythonCallableCandidate) -> bool:
-        return self.is_class_scope(candidate.binding_scope) and self.has_decorator(candidate.node)
+        return self.is_class_scope_dispatch(candidate.binding_scope) and self.has_decorator_dispatch(candidate.node)
 
     def classify(self, candidate: PythonCallableCandidate) -> SourceCallableKind:
         return SourceCallableKind.STATIC_METHOD

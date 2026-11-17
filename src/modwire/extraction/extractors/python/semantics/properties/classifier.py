@@ -1,8 +1,8 @@
 import ast
 from abc import ABC, abstractmethod
-from collections.abc import Hashable, Mapping
+from collections.abc import Callable, Hashable, Mapping
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -21,6 +21,30 @@ from ...observations.property_candidate import PythonPropertyCandidate
 
 
 class PythonPropertyRule(ABC):
+    @cached_property
+    def is_class_target_dispatch(self) -> Callable[[ast.AST], bool]:
+        return self.is_class_target
+
+    @cached_property
+    def annotation_is_optional_dispatch(self) -> Callable[[ast.expr], bool]:
+        return self.annotation_is_optional
+
+    @cached_property
+    def is_union_dispatch(self) -> Callable[[ast.operator], bool]:
+        return self.is_union
+
+    @cached_property
+    def value_is_none_dispatch(self) -> Callable[[ast.expr], bool]:
+        return self.value_is_none
+
+    @cached_property
+    def expression_name_dispatch(self) -> Callable[[ast.expr], str]:
+        return self.expression_name
+
+    @cached_property
+    def optional_parameters_dispatch(self) -> Callable[[ast.AST], set[str]]:
+        return self.optional_parameters
+
     @property
     @abstractmethod
     def order(self) -> int:
@@ -91,17 +115,17 @@ class PythonPropertyRule(ABC):
 
     @annotation_is_optional.register
     def subscript_annotation_is_optional(self, node: ast.Subscript) -> bool:
-        return self.annotation_is_optional(node.value) or self.annotation_is_optional(node.slice)
+        return self.annotation_is_optional_dispatch(node.value) or self.annotation_is_optional_dispatch(node.slice)
 
     @annotation_is_optional.register
     def union_annotation_is_optional(self, node: ast.BinOp) -> bool:
-        return self.is_union(node.op) and (
-            self.annotation_is_optional(node.left) or self.annotation_is_optional(node.right)
+        return self.is_union_dispatch(node.op) and (
+            self.annotation_is_optional_dispatch(node.left) or self.annotation_is_optional_dispatch(node.right)
         )
 
     @annotation_is_optional.register
     def tuple_annotation_is_optional(self, node: ast.Tuple) -> bool:
-        return any(self.annotation_is_optional(item) for item in node.elts)
+        return any(self.annotation_is_optional_dispatch(item) for item in node.elts)
 
     @singledispatchmethod
     def is_union(self, operator: ast.operator) -> bool:
@@ -152,13 +176,13 @@ class PythonPropertyRule(ABC):
         optional = {
             argument.arg
             for argument in [*positional, *arguments.kwonlyargs]
-            if argument.annotation is not None and self.annotation_is_optional(argument.annotation)
+            if argument.annotation is not None and self.annotation_is_optional_dispatch(argument.annotation)
         }
-        optional.update(name for name, default in defaults_by_name.items() if self.value_is_none(default))
+        optional.update(name for name, default in defaults_by_name.items() if self.value_is_none_dispatch(default))
         optional.update(
             argument.arg
             for argument, default in zip(arguments.kwonlyargs, arguments.kw_defaults, strict=True)
-            if default is not None and self.value_is_none(default)
+            if default is not None and self.value_is_none_dispatch(default)
         )
         return optional
 

@@ -1,6 +1,7 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -24,12 +25,36 @@ class AssignedClassPropertyRule(PythonPropertyRule):
     assigned_values: PythonAssignedValueReader
     visibility: PythonVisibilityPolicy
 
+    @cached_property
+    def is_assignment_dispatch(self) -> Callable[[ast.stmt], bool]:
+        return self.is_assignment
+
+    @cached_property
+    def read_dispatch(
+        self,
+    ) -> Callable[
+        [
+            ast.stmt,
+            PythonPropertyCandidate,
+            DeclarationIdentity,
+            DeclarationIdentity,
+            SourceMemberKind,
+            SourcePlacement,
+        ],
+        SourceClassProperty,
+    ]:
+        return self.read
+
+    @cached_property
+    def scope_type_dispatch(self) -> Callable[[ast.AST], SourceTypeReference | SourceTypeAbsent]:
+        return self.scope_type
+
     @property
     def order(self) -> int:
         return 20
 
     def applies(self, candidate: PythonPropertyCandidate) -> bool:
-        return self.is_class_target(candidate.target) and self.is_assignment(candidate.statement)
+        return self.is_class_target_dispatch(candidate.target) and self.is_assignment_dispatch(candidate.statement)
 
     def classify(
         self,
@@ -39,7 +64,9 @@ class AssignedClassPropertyRule(PythonPropertyRule):
         member_kind: SourceMemberKind,
         placement: SourcePlacement,
     ) -> SourceClassProperty:
-        return self.read(candidate.statement, candidate, declaration_id, owner_declaration_id, member_kind, placement)
+        return self.read_dispatch(
+            candidate.statement, candidate, declaration_id, owner_declaration_id, member_kind, placement
+        )
 
     @singledispatchmethod
     def is_assignment(self, statement: ast.stmt) -> bool:
@@ -77,7 +104,7 @@ class AssignedClassPropertyRule(PythonPropertyRule):
             candidate=candidate,
             declaration_id=declaration_id,
             owner_declaration_id=owner_declaration_id,
-            is_optional=self.value_is_none(statement.value),
+            is_optional=self.value_is_none_dispatch(statement.value),
             type=self.source_type(candidate),
             visibility=self.visibility.classify(candidate.name),
             member_kind=member_kind,
@@ -86,7 +113,7 @@ class AssignedClassPropertyRule(PythonPropertyRule):
         )
 
     def source_type(self, candidate: PythonPropertyCandidate) -> SourceTypeReference | SourceTypeAbsent:
-        return self.scope_type(candidate.binding_scope)
+        return self.scope_type_dispatch(candidate.binding_scope)
 
     @singledispatchmethod
     def scope_type(self, scope: ast.AST) -> SourceTypeReference | SourceTypeAbsent:

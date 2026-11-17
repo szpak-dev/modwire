@@ -15,7 +15,7 @@ class ConstructorCallableRule(PythonCallableRule):
         return 35
 
     def applies(self, candidate: PythonCallableCandidate) -> bool:
-        return self.is_class_scope(candidate.binding_scope) and candidate.name == "__init__"
+        return self.is_class_scope_dispatch(candidate.binding_scope) and candidate.name == "__init__"
 
     def classify(self, candidate: PythonCallableCandidate) -> SourceCallableKind:
         return SourceCallableKind.CONSTRUCTOR

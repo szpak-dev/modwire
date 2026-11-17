@@ -1,7 +1,8 @@
 import ast
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -22,8 +23,12 @@ class PythonTypeAliasClassifier(ABC):
 class SyntaxTypeAliasClassifier(PythonTypeAliasClassifier):
     references: PythonExpressionReferenceReader
 
+    @cached_property
+    def statement_is_alias_dispatch(self) -> Callable[[ast.stmt], bool]:
+        return self.statement_is_alias
+
     def is_alias(self, candidate: PythonValueCandidate) -> bool:
-        return self.statement_is_alias(candidate.statement)
+        return self.statement_is_alias_dispatch(candidate.statement)
 
     @singledispatchmethod
     def statement_is_alias(self, statement: ast.stmt) -> bool:

@@ -1,7 +1,8 @@
 import ast
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -21,11 +22,15 @@ class PythonExpressionReferenceReader(ABC):
 @injectable(as_type=PythonExpressionReferenceReader)
 @dataclass(frozen=True)
 class SyntaxExpressionReferenceReader(PythonExpressionReferenceReader):
+    @cached_property
+    def visit_dispatch(self) -> Callable[[ast.expr], str]:
+        return self.visit
+
     def read(self, candidate: PythonDeclarationRelationCandidate) -> str:
         return ast.unparse(candidate.base)
 
     def read_expression(self, node: ast.expr) -> str:
-        return self.visit(node)
+        return self.visit_dispatch(node)
 
     @singledispatchmethod
     def visit(self, node: ast.expr) -> str:

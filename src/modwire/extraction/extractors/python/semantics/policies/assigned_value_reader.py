@@ -1,7 +1,8 @@
 import ast
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -32,8 +33,16 @@ class PythonAssignedValueReader(ABC):
 class SyntaxAssignedValueReader(PythonAssignedValueReader):
     references: PythonExpressionReferenceReader
 
+    @cached_property
+    def read_statement_dispatch(self) -> Callable[[ast.stmt], SourceAssignedValue]:
+        return self.read_statement
+
+    @cached_property
+    def visit_dispatch(self) -> Callable[[ast.expr], SourceAssignedValue]:
+        return self.visit
+
     def read(self, candidate: PythonValueCandidate) -> SourceAssignedValue:
-        return self.read_statement(candidate.statement)
+        return self.read_statement_dispatch(candidate.statement)
 
     @singledispatchmethod
     def read_statement(self, statement: ast.stmt) -> SourceAssignedValue:
@@ -50,7 +59,7 @@ class SyntaxAssignedValueReader(PythonAssignedValueReader):
         return self.read_expression(statement.value)
 
     def read_expression(self, node: ast.expr) -> SourceAssignedValue:
-        return self.visit(node)
+        return self.visit_dispatch(node)
 
     def unassigned(self) -> SourceAssignedValue:
         return SourceAssignedValue(kind=SourceAssignedValueKind.UNASSIGNED, expression="", reference="")

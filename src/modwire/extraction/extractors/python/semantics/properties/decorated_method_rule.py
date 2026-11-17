@@ -1,6 +1,7 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -24,12 +25,32 @@ class DecoratedMethodPropertyRule(PythonPropertyRule):
     visibility: PythonVisibilityPolicy
     types: PythonSourceTypeReader
 
+    @cached_property
+    def is_observed_method_dispatch(self) -> Callable[[ast.stmt], bool]:
+        return self.is_observed_method
+
+    @cached_property
+    def read_dispatch(
+        self,
+    ) -> Callable[
+        [
+            ast.stmt,
+            PythonPropertyCandidate,
+            DeclarationIdentity,
+            DeclarationIdentity,
+            SourceMemberKind,
+            SourcePlacement,
+        ],
+        SourceClassProperty,
+    ]:
+        return self.read
+
     @property
     def order(self) -> int:
         return 50
 
     def applies(self, candidate: PythonPropertyCandidate) -> bool:
-        return self.is_observed_method(candidate.statement)
+        return self.is_observed_method_dispatch(candidate.statement)
 
     def classify(
         self,
@@ -39,7 +60,9 @@ class DecoratedMethodPropertyRule(PythonPropertyRule):
         member_kind: SourceMemberKind,
         placement: SourcePlacement,
     ) -> SourceClassProperty:
-        return self.read(candidate.statement, candidate, declaration_id, owner_declaration_id, member_kind, placement)
+        return self.read_dispatch(
+            candidate.statement, candidate, declaration_id, owner_declaration_id, member_kind, placement
+        )
 
     @singledispatchmethod
     def is_observed_method(self, statement: ast.stmt) -> bool:
@@ -79,7 +102,7 @@ class DecoratedMethodPropertyRule(PythonPropertyRule):
             candidate=candidate,
             declaration_id=declaration_id,
             owner_declaration_id=owner_declaration_id,
-            is_optional=statement.returns is not None and self.annotation_is_optional(statement.returns),
+            is_optional=statement.returns is not None and self.annotation_is_optional_dispatch(statement.returns),
             type=self.types.read(statement.returns),
             visibility=self.visibility.classify(candidate.name),
             member_kind=member_kind,

@@ -1,6 +1,7 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -31,6 +32,18 @@ class CallableSemanticContributor(PythonSemanticContributor):
     parameters: PythonParameterReader
     types: PythonSourceTypeReader
 
+    @cached_property
+    def decorators_dispatch(self) -> Callable[[ast.AST], tuple[str, ...]]:
+        return self.decorators
+
+    @cached_property
+    def docstring_dispatch(self) -> Callable[[ast.AST], str]:
+        return self.docstring
+
+    @cached_property
+    def return_annotation_dispatch(self) -> Callable[[ast.AST], ast.expr | None]:
+        return self.return_annotation
+
     @property
     def order(self) -> int:
         return 10
@@ -47,9 +60,9 @@ class CallableSemanticContributor(PythonSemanticContributor):
             start, end = candidate.source_span
             visibility_intent = self.visibility.classify(candidate.name)
             parameters = self.parameters.read(candidate, kind)
-            return_type = self.types.read(self.return_annotation(candidate.node))
-            decorators = self.decorators(candidate.node)
-            docstring = self.docstring(candidate.node)
+            return_type = self.types.read(self.return_annotation_dispatch(candidate.node))
+            decorators = self.decorators_dispatch(candidate.node)
+            docstring = self.docstring_dispatch(candidate.node)
             placement = catalog.placement(candidate.binding_scope)
             if kind is SourceCallableKind.FUNCTION:
                 functions.append(

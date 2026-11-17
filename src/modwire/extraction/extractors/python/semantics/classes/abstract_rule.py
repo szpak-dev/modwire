@@ -1,6 +1,7 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -12,6 +13,10 @@ from .classifier import PythonClassRule
 @injectable(as_type=PythonClassRule, qualifier="10-abstract")
 @dataclass(frozen=True)
 class AbstractClassRule(PythonClassRule):
+    @cached_property
+    def is_abstract_method_dispatch(self) -> Callable[[ast.stmt], bool]:
+        return self.is_abstract_method
+
     @property
     def order(self) -> int:
         return 10
@@ -19,7 +24,7 @@ class AbstractClassRule(PythonClassRule):
     def applies(self, candidate: PythonClassCandidate) -> bool:
         node = candidate.node
         return any(ast.unparse(base) in {"ABC", "abc.ABC"} for base in node.bases) or any(
-            self.is_abstract_method(statement) for statement in node.body
+            self.is_abstract_method_dispatch(statement) for statement in node.body
         )
 
     def classify(self, candidate: PythonClassCandidate) -> DeclarationFamily:

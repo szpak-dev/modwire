@@ -1,6 +1,7 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -23,12 +24,32 @@ class AssignedInstancePropertyRule(PythonPropertyRule):
     assigned_values: PythonAssignedValueReader
     visibility: PythonVisibilityPolicy
 
+    @cached_property
+    def is_assignment_dispatch(self) -> Callable[[ast.stmt], bool]:
+        return self.is_assignment
+
+    @cached_property
+    def read_dispatch(
+        self,
+    ) -> Callable[
+        [
+            ast.stmt,
+            PythonPropertyCandidate,
+            DeclarationIdentity,
+            DeclarationIdentity,
+            SourceMemberKind,
+            SourcePlacement,
+        ],
+        SourceClassProperty,
+    ]:
+        return self.read
+
     @property
     def order(self) -> int:
         return 40
 
     def applies(self, candidate: PythonPropertyCandidate) -> bool:
-        return not self.is_class_target(candidate.target) and self.is_assignment(candidate.statement)
+        return not self.is_class_target_dispatch(candidate.target) and self.is_assignment_dispatch(candidate.statement)
 
     def classify(
         self,
@@ -38,7 +59,9 @@ class AssignedInstancePropertyRule(PythonPropertyRule):
         member_kind: SourceMemberKind,
         placement: SourcePlacement,
     ) -> SourceClassProperty:
-        return self.read(candidate.statement, candidate, declaration_id, owner_declaration_id, member_kind, placement)
+        return self.read_dispatch(
+            candidate.statement, candidate, declaration_id, owner_declaration_id, member_kind, placement
+        )
 
     @singledispatchmethod
     def is_assignment(self, statement: ast.stmt) -> bool:
@@ -72,13 +95,13 @@ class AssignedInstancePropertyRule(PythonPropertyRule):
         member_kind: SourceMemberKind,
         placement: SourcePlacement,
     ) -> SourceClassProperty:
-        optional_parameters = self.optional_parameters(candidate.binding_scope)
+        optional_parameters = self.optional_parameters_dispatch(candidate.binding_scope)
         return self.build(
             candidate=candidate,
             declaration_id=declaration_id,
             owner_declaration_id=owner_declaration_id,
-            is_optional=self.value_is_none(statement.value)
-            or self.expression_name(statement.value) in optional_parameters,
+            is_optional=self.value_is_none_dispatch(statement.value)
+            or self.expression_name_dispatch(statement.value) in optional_parameters,
             type=SourceTypeAbsent(),
             visibility=self.visibility.classify(candidate.name),
             member_kind=member_kind,
