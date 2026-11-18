@@ -3,6 +3,7 @@ from ....shared.code.models.capabilities.relationship_coverage import Relationsh
 from ....shared.code.models.maps.extractor_descriptor import ExtractorDescriptor
 from ....shared.values.models.value_model import ValueModel
 from .entrypoints.extractor_entrypoint import ExtractorEntrypoint
+from .native_output_format import NativeOutputFormat
 
 
 class ExtractorRuntime(ValueModel):
@@ -14,3 +15,4 @@ class ExtractorRuntime(ValueModel):
     command: tuple[str, ...]
     version_arguments: tuple[str, ...]
     entrypoint: ExtractorEntrypoint
+    output_format: NativeOutputFormat = NativeOutputFormat.JSONL

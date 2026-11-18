@@ -40,29 +40,32 @@ class CodeMap(ValueModel):
             raise CodeValidationError(CodeViolation.INCONSISTENT_PRODUCER_LANGUAGE, self.language)
 
     def validate_resolved_call_targets(self) -> None:
+        targets = {
+            call.target_callable_id
+            for source_file in self.extraction.files.values()
+            for call in source_file.calls
+            if call.resolution is SourceCallResolution.RESOLVED
+        }
+        if not targets:
+            return
         callable_ids = {
             item.declaration_id
             for source_file in self.extraction.files.values()
             for item in source_file.canonical_callables()
         }
-        if any(
-            call.resolution is SourceCallResolution.RESOLVED
-            and (call.target_callable_id is None or call.target_callable_id not in callable_ids)
-            for source_file in self.extraction.files.values()
-            for call in source_file.calls
-        ):
+        if not targets.issubset(callable_ids):
             raise CodeValidationError(CodeViolation.UNKNOWN_RESOLVED_CALL_TARGET, self.language)
 
     def validate_type_capability(self) -> None:
         coverage = next(
             item for item in self.producer.capabilities if item.capability is FactCapability.TYPE_REFERENCES
         )
-        kinds = (
-            kind
-            for source_file in self.extraction.files.values()
-            for slot in self.type_slots(source_file)
-            for kind in self.type_kinds(slot)
-        )
+        if coverage.status is CapabilityStatus.PARTIAL:
+            return
+        slots = {
+            id(slot): slot for source_file in self.extraction.files.values() for slot in self.type_slots(source_file)
+        }
+        kinds = (kind for slot in slots.values() for kind in self.type_kinds(slot))
         if coverage.status is CapabilityStatus.SUPPORTED and any(kind is SourceTypeKind.UNSUPPORTED for kind in kinds):
             raise CodeValidationError(
                 CodeViolation.UNSUPPORTED_TYPE_WITH_SUPPORTED_CAPABILITY,

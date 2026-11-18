@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from modwire.application import (
     DeclarationIdentity,
@@ -32,7 +32,7 @@ class FixtureSourceIdentities:
         )
 
     def declaration(self, identity: DeclarationIdentity) -> DeclarationIdentity:
-        return identity.model_copy(update={"source_id": self.sources[identity.source_id]})
+        return replace(identity, source_id=self.sources[identity.source_id])
 
     def callable[Callable: SourceCallable](self, value: Callable) -> Callable:
         return value.model_copy(
@@ -48,11 +48,10 @@ class FixtureSourceIdentities:
         )
 
     def property(self, value: SourceClassProperty) -> SourceClassProperty:
-        return value.model_copy(
-            update={
-                "declaration_id": self.declaration(value.declaration_id),
-                "owner_declaration_id": self.declaration(value.owner_declaration_id),
-            }
+        return replace(
+            value,
+            declaration_id=self.declaration(value.declaration_id),
+            owner_declaration_id=self.declaration(value.owner_declaration_id),
         )
 
     def symbol(self, value: SourceDeclaration) -> SourceDeclaration:
@@ -78,16 +77,13 @@ class FixtureSourceIdentities:
                     for item in value.values
                 ),
                 "calls": tuple(
-                    call.model_copy(
-                        update={
-                            "source_id": self.sources[call.source_id],
-                            "source_callable_id": self.declaration(call.source_callable_id),
-                            "target_callable_id": (
-                                self.declaration(call.target_callable_id)
-                                if call.target_callable_id is not None
-                                else None
-                            ),
-                        }
+                    replace(
+                        call,
+                        source_id=self.sources[call.source_id],
+                        source_callable_id=self.declaration(call.source_callable_id),
+                        target_callable_id=(
+                            self.declaration(call.target_callable_id) if call.target_callable_id is not None else None
+                        ),
                     )
                     for call in value.calls
                 ),

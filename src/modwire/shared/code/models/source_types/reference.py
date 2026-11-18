@@ -12,6 +12,6 @@ class SourceTypeReference(ImmutableCodeValue):
     kind: Literal[SourceTypeKind.REFERENCE] = SourceTypeKind.REFERENCE
     name: str = Field(min_length=1)
     arguments: tuple[
-        Annotated["SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported", Field(union_mode="left_to_right")],
+        Annotated["SourceTypeAbsent | SourceTypeReference | SourceTypeUnsupported", Field(union_mode="left_to_right")],
         ...,
     ] = ()

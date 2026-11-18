@@ -22,6 +22,58 @@ from ..base_test import CliTestCase
 
 class TestExtractorCommandTransport(CliTestCase):
     @contextmanager
+    def altered_ruby_output(self, mode: str) -> Iterator[Path]:
+        sources = self.workspace / "sources"
+        fixtures = self.repository / "tests/fixtures/implementation_manifest/ruby"
+        shutil.copytree(fixtures / "canonical/src", sources)
+        shutil.copyfile(fixtures / "no_calls/src/example.rb", sources / "example_second.rb")
+        runtime = self.workspace / "runtime"
+        runtime.mkdir()
+        shutil.copyfile(self.repository / "tests/fixtures/command_transport/runtime/ruby", runtime / "ruby")
+        (runtime / "ruby").chmod(0o755)
+        ruby = shutil.which("ruby")
+        assert ruby is not None
+        with pytest.MonkeyPatch.context() as environment:
+            environment.setenv("EXAMPLE_RUBY", ruby)
+            environment.setenv("EXAMPLE_OUTPUT", mode)
+            environment.setenv("PATH", str(runtime) + os.pathsep + os.environ["PATH"])
+            yield sources
+
+    @pytest.mark.parametrize(
+        "mode",
+        (
+            "negative",
+            "boolean",
+            "fractional",
+            "out_of_range",
+            "wrong_type",
+            "invalid_value",
+            "invalid_text",
+            "missing_table",
+        ),
+    )
+    def test_indexed_ruby_rejects_invalid_references_and_recovers(self, mode: str) -> None:
+        with self.altered_ruby_output(mode) as sources:
+            with pytest.raises(ExtractorContractError) as raised:
+                self.application.generate_map("ruby", str(sources), self.scan_policy())
+
+        assert raised.value.language == "ruby"
+        assert raised.value.violation is ExtractorContractViolation.INVALID_OUTPUT
+        recovered = self.application.generate_map("ruby", str(sources), self.scan_policy())
+        assert tuple(recovered.extraction.files) == ("example.rb", "example_second.rb")
+
+    def test_indexed_ruby_uses_a_separate_reference_table_for_each_file(self) -> None:
+        with self.altered_ruby_output("unchanged") as sources:
+            extracted = self.application.generate_map("ruby", str(sources), self.scan_policy())
+
+        recovered = self.application.generate_map("ruby", str(sources), self.scan_policy())
+        assert tuple(extracted.extraction.files) == ("example.rb", "example_second.rb")
+        for source_id, source in extracted.extraction.files.items():
+            assert source.model_dump_json(exclude_unset=True) == recovered.extraction.files[source_id].model_dump_json(
+                exclude_unset=True
+            )
+
+    @contextmanager
     def altered_typescript_output(self, mode: str) -> Iterator[Path]:
         sources = self.workspace / "sources"
         shutil.copytree(self.repository / "tests/fixtures/implementation_manifest/typescript/canonical/src", sources)

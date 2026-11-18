@@ -1,6 +1,8 @@
 import json
 from dataclasses import dataclass
+from functools import cached_property
 
+from pydantic import TypeAdapter
 from wireup import injectable
 
 from ....shared.code.models.callables.source_call import SourceCall
@@ -33,8 +35,13 @@ from ..models.manifest_symbol import ManifestSymbol
 @injectable(as_type=ManifestCompiler)
 @dataclass(frozen=True)
 class CodeMapManifestCompiler(ManifestCompiler):
-    def canonical_key(self, value: ValueModel) -> str:
-        return json.dumps(value.model_dump(mode="json"), ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+    @cached_property
+    def json_values(self) -> TypeAdapter[object]:
+        return TypeAdapter(object)
+
+    def canonical_key(self, value: ValueModel | SourceCall) -> str:
+        document: object = self.json_values.dump_python(value, mode="json")
+        return json.dumps(document, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
 
     def symbol(
         self,

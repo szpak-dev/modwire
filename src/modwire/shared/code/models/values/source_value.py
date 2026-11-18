@@ -1,8 +1,9 @@
-from typing import Self
+from typing import Annotated, Self
 
 from pydantic import model_validator
 
 from ....values.models.value_model import ValueModel
+from ....values.models.value_reference import ValueReference
 from ..declarations.declaration_family import DeclarationFamily
 from ..declarations.declaration_identity import DeclarationIdentity
 from ..declarations.source_placement import SourcePlacement
@@ -15,7 +16,7 @@ from .source_value_scope import SourceValueScope
 
 
 class SourceValue(ValueModel):
-    declaration_id: DeclarationIdentity
+    declaration_id: Annotated[DeclarationIdentity, ValueReference()]
     name: str
     visibility: SourceVisibility
     visibility_intent: SourceVisibility
@@ -23,7 +24,7 @@ class SourceValue(ValueModel):
     declaration_kind: SourceValueDeclarationKind
     value_kind: SourceSymbolKind
     scope: SourceValueScope
-    placement: SourcePlacement
+    placement: Annotated[SourcePlacement, ValueReference()]
 
     @model_validator(mode="after")
     def validate_state(self) -> Self:

@@ -20,9 +20,11 @@ from ....extraction.extractors.models.extraction_request import ExtractionReques
 from ....extraction.extractors.models.extractor_error import ExtractorError
 from ....extraction.extractors.models.extractor_failure_document import ExtractorFailureDocument
 from ....extraction.extractors.models.extractor_runtime import ExtractorRuntime
+from ....extraction.extractors.models.native_output_format import NativeOutputFormat
 from ....extraction.extractors.models.source_parse_error import SourceParseError
 from ....shared.code.contracts.identity_resolver import IdentityResolver
 from ....shared.code.contracts.path_matcher import PathMatcher
+from ....shared.code.models.declarations.declaration_identity import DeclarationIdentity
 from ....shared.code.models.failures.code_validation_error import CodeValidationError
 from ....shared.code.models.immutable_code_value import ImmutableCodeValue
 from ....shared.code.models.sources.identity import FileId, ImportIdentity
@@ -102,15 +104,18 @@ class BatchSourceReader(SourceReader):
             source_paths, files_excluded, directories_pruned = self._discover_source_files(
                 request, resolved_root, policy, limit=None
             )
-            entries = tuple(
-                SourceEntry(
-                    source_id=self.identities.file_id(str(resolved_root), str(source_path)),
-                    relative_path=source_path.relative_to(resolved_root).as_posix(),
-                    content_digest=self._content_digest(source_path),
-                    path=str(source_path),
+            with ThreadPoolExecutor(max_workers=request.batch_config.max_workers) as executor:
+                entries = tuple(
+                    SourceEntry(
+                        source_id=self.identities.file_id(str(resolved_root), str(source_path)),
+                        relative_path=source_path.relative_to(resolved_root).as_posix(),
+                        content_digest=content_digest,
+                        path=str(source_path),
+                    )
+                    for source_path, content_digest in zip(
+                        source_paths, executor.map(self._content_digest, source_paths), strict=True
+                    )
                 )
-                for source_path in source_paths
-            )
         except OSError as error:
             raise SourceAccessError(str(root), "observe") from error
         runtime = self.manifests.observe(request)
@@ -146,8 +151,8 @@ class BatchSourceReader(SourceReader):
                 "source observation does not contain requested identities",
             )
         root = Path(request.root)
-        source_paths = tuple(Path(entry.path) for entry in entries)
         source_ids_by_path = {Path(entry.path): entry.source_id for entry in entries}
+        source_paths = tuple(source_ids_by_path)
         files: dict[FileId, SourceFile] = {}
         plan = self.planners[request.batch_config.planner].plan(source_paths, request.batch_config)
         try:
@@ -175,7 +180,13 @@ class BatchSourceReader(SourceReader):
                 observation.manifest.policy,
                 limit=None,
             )
-            current = {path.relative_to(root).as_posix(): self._content_digest(path) for path in current_paths}
+            with ThreadPoolExecutor(max_workers=observation.request.batch_config.max_workers) as executor:
+                current = {
+                    path.relative_to(root).as_posix(): content_digest
+                    for path, content_digest in zip(
+                        current_paths, executor.map(self._content_digest, current_paths), strict=True
+                    )
+                }
         except OSError as error:
             raise SourceAccessError(str(root), "validate observation for") from error
         observed = {entry.relative_path: (entry.source_id, entry.content_digest) for entry in observation.entries}
@@ -241,6 +252,8 @@ class BatchSourceReader(SourceReader):
         raise SourceAccessError(path, "walk") from error
 
     def _is_excluded_path(self, policy: ScanPolicy, root: Path, path: Path) -> bool:
+        if not policy.excluded_patterns:
+            return False
         relative_path = path.relative_to(root).as_posix()
         return any(
             self.paths.match(relative_path, pattern, scope=True) is not None for pattern in policy.excluded_patterns
@@ -265,17 +278,20 @@ class BatchSourceReader(SourceReader):
             raise ExtractorResourceError(runtime.descriptor.language, str(script_path))
         paths_by_source_id = {source_ids_by_path[path]: str(path) for path in source_paths}
         command = [*runtime.command, *entrypoint.command_arguments(script_path), "--batch", str(root)]
-        return self.run_batch(runtime.descriptor.language, command, paths_by_source_id, str(root))
+        return self.run_batch(runtime, command, paths_by_source_id, str(root))
 
     def run_batch(
-        self, language: str, command: list[str], sources: Mapping[FileId, str], root: str
+        self, runtime: ExtractorRuntime, command: list[str], sources: Mapping[FileId, str], root: str
     ) -> dict[FileId, SourceFile]:
+        language = runtime.descriptor.language
         try:
             with TemporaryFile() as diagnostics:
                 with subprocess.Popen(
                     command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=diagnostics
                 ) as process:
-                    reuse = ValueReuse[ImmutableCodeValue]()
+                    reuse = ValueReuse[ImmutableCodeValue | DeclarationIdentity](
+                        indexed=runtime.output_format is NativeOutputFormat.INDEXED_JSONL
+                    )
                     extracted: dict[FileId, SourceFile] = {}
                     seen_source_ids: set[FileId] = set()
                     duplicate_source_ids: set[FileId] = set()

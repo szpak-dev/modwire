@@ -38,10 +38,8 @@ class SourceExtraction(ValueModel):
             raise CodeValidationError(CodeViolation.IMPORT_IDENTITY_INDEX_MISMATCH, "source extraction")
         digests = {source.source_id: source.content_digest for source in self.manifest.sources}
         for source_file in self.files.values():
-            if any(
-                identity.content_digest != digests[str(source_file.file_id)]
-                for identity, _ in source_file.declaration_placements()
-            ):
+            digest = digests[str(source_file.file_id)]
+            if any(item.declaration_id.content_digest != digest for item in source_file.placement_inventory):
                 raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_CAPTURE, str(source_file.file_id))
         return self
 

@@ -1,7 +1,9 @@
-from typing import Self
+from typing import Annotated, Self
 
 from pydantic import Field, model_validator
 
+from ....values.models.string_reference import StringReference
+from ....values.models.value_reference import ValueReference
 from ..declarations.declaration_identity import DeclarationIdentity
 from ..declarations.source_placement import SourcePlacement
 from ..declarations.source_symbol import SourceSymbol
@@ -16,15 +18,17 @@ from .source_parameter import SourceParameter
 
 
 class SourceCallable(SourceSymbol):
-    declaration_id: DeclarationIdentity
-    source_id: FileId
+    declaration_id: Annotated[DeclarationIdentity, ValueReference()]
+    source_id: Annotated[FileId, StringReference()]
     qualified_name: str
     kind: SourceCallableKind
-    placement: SourcePlacement
+    placement: Annotated[SourcePlacement, ValueReference()]
     line_start: int
     line_end: int
-    parameters: tuple[SourceParameter, ...] = Field(default_factory=tuple)
-    return_type: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported = Field(union_mode="left_to_right")
+    parameters: tuple[Annotated[SourceParameter, ValueReference()], ...] = Field(default_factory=tuple)
+    return_type: Annotated[SourceTypeAbsent | SourceTypeReference | SourceTypeUnsupported, ValueReference()] = Field(
+        union_mode="left_to_right"
+    )
     decorators: tuple[str, ...] = Field(default_factory=tuple)
     docstring: str = ""
 

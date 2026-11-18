@@ -6,7 +6,7 @@ from collections.abc import Callable
 from typing import Any
 
 import pytest
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 from ruamel.yaml.error import YAMLError
 
 from modwire.application import (
@@ -99,7 +99,7 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
             call["ordinal"] = ordinal
 
         with pytest.raises(ValidationError) as raised:
-            SourceCall.model_validate(call)
+            TypeAdapter(SourceCall).validate_python(call)
 
         assert raised.value.errors()[0]["loc"] == ("ordinal",)
 

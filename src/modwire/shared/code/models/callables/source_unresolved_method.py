@@ -1,7 +1,8 @@
-from typing import Self
+from typing import Annotated, Self
 
 from pydantic import Field, model_validator
 
+from ....values.models.value_reference import ValueReference
 from ..declarations.source_unresolved_target import SourceUnresolvedTarget
 from ..failures.code_validation_error import CodeValidationError
 from ..failures.code_violation import CodeViolation
@@ -11,7 +12,7 @@ from .source_callable_kind import SourceCallableKind
 
 class SourceUnresolvedMethod(SourceCallable):
     receiver_reference: str = Field(min_length=1)
-    owner: SourceUnresolvedTarget
+    owner: Annotated[SourceUnresolvedTarget, ValueReference()]
 
     @model_validator(mode="after")
     def validate_kind(self) -> Self:

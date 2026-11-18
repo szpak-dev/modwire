@@ -1,8 +1,10 @@
-from typing import Self
+from typing import Annotated, Self
 
 from pydantic import Field, model_validator
+from pydantic.dataclasses import dataclass
 
 from ....values.models.value_model import ValueModel
+from ....values.models.value_reference import ValueReference
 from ..declarations.declaration_family import DeclarationFamily
 from ..declarations.declaration_identity import DeclarationIdentity
 from ..declarations.source_placement import SourcePlacement
@@ -16,16 +18,19 @@ from .source_assigned_value import SourceAssignedValue
 from .source_member_kind import SourceMemberKind
 
 
-class SourceClassProperty(ValueModel):
-    declaration_id: DeclarationIdentity
-    owner_declaration_id: DeclarationIdentity
+@dataclass(slots=True, kw_only=True, config=ValueModel.model_config)
+class SourceClassProperty:
+    declaration_id: Annotated[DeclarationIdentity, ValueReference()]
+    owner_declaration_id: Annotated[DeclarationIdentity, ValueReference()]
     name: str
     is_optional: bool
-    type: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported = Field(union_mode="left_to_right")
+    type: Annotated[SourceTypeAbsent | SourceTypeReference | SourceTypeUnsupported, ValueReference()] = Field(
+        union_mode="left_to_right"
+    )
     visibility: SourceVisibility
     member_kind: SourceMemberKind
-    placement: SourcePlacement
-    assigned_values: tuple[SourceAssignedValue, ...] = Field(min_length=1)
+    placement: Annotated[SourcePlacement, ValueReference()]
+    assigned_values: tuple[Annotated[SourceAssignedValue, ValueReference()], ...] = Field(min_length=1)
 
     @model_validator(mode="after")
     def validate_identity(self) -> Self:

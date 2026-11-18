@@ -1,12 +1,18 @@
 from copy import copy, deepcopy
+from dataclasses import replace
 
 import pytest
+from pydantic import TypeAdapter, ValidationError
 
 from modwire.application import (
     CodeMap,
     CodeValidationError,
     CodeViolation,
+    DeclarationFamily,
     DeclarationIdentity,
+    FileId,
+    SourceDeclarationScope,
+    SourceFile,
     SourceManifest,
     SourceParameter,
     SourceParameterKind,
@@ -17,9 +23,73 @@ from .base_test import ApplicationTestCase
 
 
 class TestCodeMapReuse(ApplicationTestCase):
+    @pytest.mark.parametrize("reference", (-1, 0, True, 0.5))
+    def test_public_documents_reject_internal_value_references(self, reference: object) -> None:
+        with pytest.raises(ValidationError):
+            SourceParameter.model_validate(
+                {"name": "example", "type": reference, "kind": SourceParameterKind.POSITIONAL}
+            )
+
+    def test_type_slot_still_accepts_an_omitted_absent_discriminator(self) -> None:
+        parameter = SourceParameter.model_validate(
+            {"name": "example", "type": {}, "kind": SourceParameterKind.POSITIONAL}
+        )
+
+        assert parameter.type == SourceTypeAbsent()
+
+    @pytest.mark.parametrize("line_ending", (b"\n", b"\r\n", b"\r"))
+    def test_ruby_preserves_line_counts_for_each_line_ending(self, line_ending: bytes) -> None:
+        fixture = self.repository / "tests/fixtures/code_map_reuse/ruby_lines/example.rb"
+        root = self.workspace / "example-ruby"
+        root.mkdir()
+        (root / "example.rb").write_bytes(fixture.read_bytes().replace(b"\n", line_ending))
+
+        source = self.application.generate_map("ruby", str(root), self.scan_policy()).extraction.files[
+            FileId("example.rb")
+        ]
+
+        assert source.line_count == 4
+        assert source.code_line_count == 0
+
+    def test_ruby_keeps_imports_and_calls_in_their_authored_scopes(self) -> None:
+        root = self.repository / "tests/fixtures/code_map_reuse/ruby"
+        source = self.application.generate_map("ruby", str(root), self.scan_policy()).extraction.files[
+            FileId("example.rb")
+        ]
+
+        assert [item.path for item in source.imports] == [
+            "example/root",
+            "example/default",
+            "example/local",
+            "example/lambda-default",
+        ]
+        assert [
+            item.target_name
+            for item in source.calls
+            if item.source_callable_id.qualified_name == "Example.Owner.example_outer"
+        ] == ["require_relative", "example_call", "each", "example_items"]
+        assert [
+            item.target_name
+            for item in source.calls
+            if item.source_callable_id.qualified_name == "Example.Owner.example_outer.example_proc"
+        ] == ["example_lambda_call"]
+        assert [
+            item.target_name
+            for item in source.calls
+            if item.source_callable_id.qualified_name == "Example.Owner.example_inner"
+        ] == ["example_inner_call"]
+        anonymous = source.anonymous_callables[0]
+        assert [item.target_name for item in source.calls if item.source_callable_id == anonymous.declaration_id] == [
+            "example_block_call"
+        ]
+        owner = next(item for item in source.declarations if item.name == "Example.Owner")
+        assert [item.name for item in owner.properties] == ["example_value"]
+
     def test_editing_supplied_fields_does_not_change_another_declaration(self) -> None:
         root = self.repository / "tests/fixtures/code_map_reuse/python"
-        source = self.application.generate_map("python", str(root), self.scan_policy()).extraction.files["example.py"]
+        source = self.application.generate_map("python", str(root), self.scan_policy()).extraction.files[
+            FileId("example.py")
+        ]
         first, second = source.functions
         original = first.model_dump_json()
         fields = first.model_fields_set
@@ -36,7 +106,9 @@ class TestCodeMapReuse(ApplicationTestCase):
     @pytest.mark.parametrize("inspect_before_copy", (False, True))
     def test_copies_keep_independent_supplied_fields(self, inspect_before_copy: bool) -> None:
         root = self.repository / "tests/fixtures/code_map_reuse/python"
-        source = self.application.generate_map("python", str(root), self.scan_policy()).extraction.files["example.py"]
+        source = self.application.generate_map("python", str(root), self.scan_policy()).extraction.files[
+            FileId("example.py")
+        ]
         function = source.functions[0]
         if inspect_before_copy:
             assert "docstring" in function.model_fields_set
@@ -101,14 +173,72 @@ class TestCodeMapReuse(ApplicationTestCase):
         code_map = self.application.generate_map("python", str(root), self.scan_policy())
         source = next(iter(code_map.extraction.files.values()))
         identity = source.functions[0].declaration_id
-        restored = DeclarationIdentity.model_validate_json(identity.to_json())
-        changed = identity.model_copy(update={"ordinal": identity.ordinal + 1})
+        restored = TypeAdapter(DeclarationIdentity).validate_json(TypeAdapter(DeclarationIdentity).dump_json(identity))
+        changed = replace(identity, ordinal=identity.ordinal + 1)
         identities = {identity: "original", changed: "changed"}
 
         assert hash(identity) == hash(restored)
         assert identities[restored] == "original"
         assert identities[changed] == "changed"
         assert changed.canonical() != identity.canonical()
+
+    @pytest.mark.parametrize("deep", (False, True))
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        (
+            ("source_id", "example-other.py"),
+            ("family", DeclarationFamily.TYPE),
+            ("qualified_name", "example.other"),
+            ("ordinal", 9999),
+            ("content_digest", "1" * 64),
+        ),
+    )
+    def test_copied_identity_retains_hash_lookup_after_each_field_changes(
+        self, field: str, value: object, deep: bool
+    ) -> None:
+        root = self.repository / "tests/fixtures/code_map_reuse/python"
+        source = self.application.generate_map("python", str(root), self.scan_policy()).extraction.files[
+            FileId("example.py")
+        ]
+        identity = source.functions[0].declaration_id
+        original = {identity: "original"}
+
+        changed = replace(deepcopy(identity) if deep else copy(identity), **{field: value})
+        restored = TypeAdapter(DeclarationIdentity).validate_json(TypeAdapter(DeclarationIdentity).dump_json(changed))
+
+        assert changed != identity
+        assert {changed: "changed"}[restored] == "changed"
+        assert restored not in original
+        assert original[identity] == "original"
+
+    @pytest.mark.parametrize("self_cycle", (False, True))
+    def test_external_document_rejects_cyclic_lexical_ownership(self, self_cycle: bool) -> None:
+        root = self.repository / "tests/fixtures/code_map_reuse/python"
+        source = self.application.generate_map("python", str(root), self.scan_policy()).extraction.files[
+            FileId("example.py")
+        ]
+        first, second = source.functions
+        first_scope = SourceDeclarationScope(
+            declaration_id=first.declaration_id if self_cycle else second.declaration_id
+        )
+        second_scope = SourceDeclarationScope(declaration_id=first.declaration_id)
+        changed = source.model_copy(
+            update={
+                "functions": (
+                    first.model_copy(
+                        update={"placement": first.placement.model_copy(update={"lexical_scope": first_scope})}
+                    ),
+                    second.model_copy(
+                        update={"placement": second.placement.model_copy(update={"lexical_scope": second_scope})}
+                    ),
+                )
+            }
+        )
+
+        with pytest.raises(CodeValidationError) as raised:
+            SourceFile.model_validate_json(changed.to_json())
+
+        assert raised.value.violation is CodeViolation.CYCLIC_LEXICAL_SCOPE
 
     @pytest.mark.parametrize("deep", (False, True))
     def test_structural_copies_observe_their_own_callables_and_placements(self, deep: bool) -> None:
@@ -134,7 +264,7 @@ class TestCodeMapReuse(ApplicationTestCase):
         source_id, source = next(iter(code_map.extraction.files.items()))
         function = source.functions[0]
         changed_function = function.model_copy(
-            update={"declaration_id": function.declaration_id.model_copy(update={"content_digest": "0" * 64})}
+            update={"declaration_id": replace(function.declaration_id, content_digest="0" * 64)}
         )
         changed_source = source.model_copy(update={"functions": (changed_function,), "exports": []})
         changed = code_map.model_copy(

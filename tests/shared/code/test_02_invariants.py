@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 
 import pytest
 
@@ -107,9 +108,7 @@ class TestPublicCodeValues(ServiceTestCase):
         source_file = original.extraction.files["example.source"]
         call = source_file.calls[0]
         unknown = call.source_callable_id.model_copy(update={"qualified_name": "example_missing"})
-        tampered_file = source_file.model_copy(
-            update={"calls": (call.model_copy(update={"source_callable_id": unknown}),)}
-        )
+        tampered_file = source_file.model_copy(update={"calls": (replace(call, source_callable_id=unknown),)})
         tampered = original.model_copy(
             update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}
         )
@@ -123,9 +122,7 @@ class TestPublicCodeValues(ServiceTestCase):
         original = self.code_map_with_call()
         source_file = original.extraction.files["example.source"]
         call = source_file.calls[0]
-        tampered_file = source_file.model_copy(
-            update={"calls": (call.model_copy(update={"source_id": "example_foreign.source"}),)}
-        )
+        tampered_file = source_file.model_copy(update={"calls": (replace(call, source_id="example_foreign.source"),)})
         tampered = original.model_copy(
             update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}
         )
@@ -141,9 +138,7 @@ class TestPublicCodeValues(ServiceTestCase):
         call = source_file.calls[0]
         assert call.target_callable_id is not None
         unknown = call.target_callable_id.model_copy(update={"qualified_name": "example_missing"})
-        tampered_file = source_file.model_copy(
-            update={"calls": (call.model_copy(update={"target_callable_id": unknown}),)}
-        )
+        tampered_file = source_file.model_copy(update={"calls": (replace(call, target_callable_id=unknown),)})
         tampered = original.model_copy(
             update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}
         )

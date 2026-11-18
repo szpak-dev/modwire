@@ -1,6 +1,8 @@
 import json
 from dataclasses import dataclass
 
+from pydantic import TypeAdapter
+
 from ....shared.code.models.callables.source_call import SourceCall
 from ....shared.code.models.callables.source_call_resolution import SourceCallResolution
 from ....shared.code.models.dependencies.source_dependency_resolution import SourceDependencyResolution
@@ -57,13 +59,14 @@ class ImplementationManifestValidator:
             ("dependencies", self.dependencies),
             ("spans", self.spans),
         )
+        json_values = TypeAdapter(object)
         for subject, collection in collections:
-            keys = tuple(
-                json.dumps(item.model_dump(mode="json"), ensure_ascii=False, separators=(",", ":"), sort_keys=True)
-                for item in collection
-            )
+            keys: list[str] = []
+            for item in collection:
+                document: object = json_values.dump_python(item, mode="json")
+                keys.append(json.dumps(document, ensure_ascii=False, separators=(",", ":"), sort_keys=True))
             self.require(
-                keys == tuple(sorted(keys)),
+                keys == sorted(keys),
                 ImplementationManifestViolation.NON_CANONICAL_ORDER,
                 subject,
             )

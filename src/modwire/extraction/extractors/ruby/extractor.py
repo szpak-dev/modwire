@@ -12,6 +12,7 @@ from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
 from ..models.entrypoints.file_entrypoint import FileExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
+from ..models.native_output_format import NativeOutputFormat
 
 
 @injectable(as_type=SourceExtractor, qualifier="ruby")
@@ -22,6 +23,7 @@ class RubyExtractor(SourceExtractor):
     def __init__(self) -> None:
         self.runtime = ExtractorRuntime(
             order=4,
+            output_format=NativeOutputFormat.INDEXED_JSONL,
             descriptor=ExtractorDescriptor(
                 id="modwire.ruby.prism",
                 version="3",
@@ -191,6 +193,7 @@ class RubyExtractor(SourceExtractor):
             parallel_threshold=500,
             parallel_size=500,
             max_workers=8,
+            planner="balanced",
         )
 
     def import_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:
