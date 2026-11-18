@@ -26,4 +26,13 @@ elif mode == "unexpected":
     records[-1] = json.dumps(record)
 elif mode == "invalid":
     records.append("{")
+elif mode == "defaults":
+    record = json.loads(records[0])
+    methods = [
+        method
+        for declaration in record[1]["declarations"]
+        for method in (*declaration["methods"], *declaration["abstract_methods"])
+    ]
+    methods[0].pop("docstring")
+    records[0] = json.dumps(record)
 print("\n".join(records), end="\n" if records else "")

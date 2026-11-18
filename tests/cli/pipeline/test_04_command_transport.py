@@ -1,6 +1,9 @@
 import json
 import os
 import shutil
+from collections.abc import Iterator
+from contextlib import contextmanager
+from pathlib import Path
 
 import pytest
 from pydantic import JsonValue, TypeAdapter
@@ -18,6 +21,21 @@ from ..base_test import CliTestCase
 
 
 class TestExtractorCommandTransport(CliTestCase):
+    @contextmanager
+    def altered_typescript_output(self, mode: str) -> Iterator[Path]:
+        sources = self.workspace / "sources"
+        shutil.copytree(self.repository / "tests/fixtures/implementation_manifest/typescript/canonical/src", sources)
+        runtime = self.workspace / "runtime"
+        shutil.copytree(self.repository / "tests/fixtures/command_transport/runtime", runtime)
+        (runtime / "node").chmod(0o755)
+        node = shutil.which("node")
+        assert node is not None
+        with pytest.MonkeyPatch.context() as environment:
+            environment.setenv("EXAMPLE_NODE", node)
+            environment.setenv("EXAMPLE_OUTPUT", mode)
+            environment.setenv("PATH", str(runtime) + os.pathsep + os.environ["PATH"])
+            yield sources
+
     def copy_sources(self) -> None:
         shutil.copytree(
             self.repository / "tests/fixtures/command_transport/python/valid", self.workspace, dirs_exist_ok=True
@@ -79,18 +97,7 @@ class TestExtractorCommandTransport(CliTestCase):
         unexpected: tuple[str, ...],
         duplicates: tuple[str, ...],
     ) -> None:
-        sources = self.workspace / "sources"
-        shutil.copytree(self.repository / "tests/fixtures/implementation_manifest/typescript/canonical/src", sources)
-        runtime = self.workspace / "runtime"
-        shutil.copytree(self.repository / "tests/fixtures/command_transport/runtime", runtime)
-        (runtime / "node").chmod(0o755)
-        node = shutil.which("node")
-        assert node is not None
-
-        with pytest.MonkeyPatch.context() as environment:
-            environment.setenv("EXAMPLE_NODE", node)
-            environment.setenv("EXAMPLE_OUTPUT", mode)
-            environment.setenv("PATH", str(runtime) + os.pathsep + os.environ["PATH"])
+        with self.altered_typescript_output(mode) as sources:
             with pytest.raises(ExtractorContractError) as raised:
                 self.application.generate_map("typescript", str(sources), self.scan_policy())
 
@@ -101,6 +108,21 @@ class TestExtractorCommandTransport(CliTestCase):
         assert raised.value.duplicate_source_ids == duplicates
         recovered = self.application.generate_map("typescript", str(sources), self.scan_policy())
         assert tuple(recovered.extraction.files) == ("example.ts",)
+
+    def test_native_omitted_defaults_remain_distinct_from_explicit_defaults(self) -> None:
+        with self.altered_typescript_output("defaults") as sources:
+            source = self.application.generate_map("typescript", str(sources), self.scan_policy()).extraction.files[
+                "example.ts"
+            ]
+        callables = source.canonical_callables()
+        omitted = tuple(item for item in callables if "docstring" not in item.model_dump(exclude_unset=True))
+
+        assert len(omitted) == 1
+        assert len(callables) > 1
+        assert omitted[0].docstring == ""
+        copied = omitted[0].model_copy(update={"docstring": ""})
+        assert copied.model_dump(exclude_unset=True)["docstring"] == ""
+        assert "docstring" not in omitted[0].model_dump(exclude_unset=True)
 
     def test_empty_batch_returns_no_records(self) -> None:
         completed = self.run_python_batch_extractor(self.workspace, "{}")

@@ -1,11 +1,71 @@
+from copy import copy, deepcopy
+
 import pytest
 
-from modwire.application import CodeMap, CodeValidationError, CodeViolation, DeclarationIdentity, SourceManifest
+from modwire.application import (
+    CodeMap,
+    CodeValidationError,
+    CodeViolation,
+    DeclarationIdentity,
+    SourceManifest,
+    SourceParameter,
+    SourceParameterKind,
+    SourceTypeAbsent,
+)
 
 from .base_test import ApplicationTestCase
 
 
 class TestCodeMapReuse(ApplicationTestCase):
+    def test_editing_supplied_fields_does_not_change_another_declaration(self) -> None:
+        root = self.repository / "tests/fixtures/code_map_reuse/python"
+        source = self.application.generate_map("python", str(root), self.scan_policy()).extraction.files["example.py"]
+        first, second = source.functions
+        original = first.model_dump_json()
+        fields = first.model_fields_set
+
+        fields.remove("docstring")
+
+        assert "docstring" not in first.model_dump(exclude_unset=True)
+        assert "docstring" in second.model_dump(exclude_unset=True)
+        assert first.model_dump_json() == original
+        assert first.model_fields_set is fields
+        fields.add("docstring")
+        assert "docstring" in first.model_dump(exclude_unset=True)
+
+    @pytest.mark.parametrize("inspect_before_copy", (False, True))
+    def test_copies_keep_independent_supplied_fields(self, inspect_before_copy: bool) -> None:
+        root = self.repository / "tests/fixtures/code_map_reuse/python"
+        source = self.application.generate_map("python", str(root), self.scan_policy()).extraction.files["example.py"]
+        function = source.functions[0]
+        if inspect_before_copy:
+            assert "docstring" in function.model_fields_set
+        copies = (copy(function), deepcopy(function), function.model_copy(), function.model_copy(deep=True))
+
+        for copied in copies:
+            copied.model_fields_set.remove("docstring")
+
+        assert "docstring" in function.model_dump(exclude_unset=True)
+        for copied in copies:
+            assert "docstring" not in copied.model_dump(exclude_unset=True)
+            changed = copied.model_copy(update={"docstring": ""})
+            assert "docstring" in changed.model_dump(exclude_unset=True)
+            assert "docstring" not in copied.model_dump(exclude_unset=True)
+
+    def test_omitted_and_explicit_defaults_keep_distinct_serialization(self) -> None:
+        omitted = SourceParameter(name="example", type=SourceTypeAbsent(), kind=SourceParameterKind.POSITIONAL)
+        explicit = SourceParameter(
+            name="example", type=SourceTypeAbsent(), kind=SourceParameterKind.POSITIONAL, has_default=False
+        )
+
+        assert omitted == explicit
+        assert omitted.model_dump_json() == explicit.model_dump_json()
+        assert "has_default" not in omitted.model_dump(exclude_unset=True)
+        assert explicit.model_dump(exclude_unset=True)["has_default"] is False
+        changed = omitted.model_copy(update={"has_default": False})
+        assert changed.model_dump(exclude_unset=True)["has_default"] is False
+        assert "has_default" not in omitted.model_dump(exclude_unset=True)
+
     def test_external_manifest_rejects_a_changed_digest(self) -> None:
         root = self.repository / "tests/fixtures/code_map_reuse/python"
         manifest = self.application.generate_map("python", str(root), self.scan_policy()).extraction.manifest

@@ -30,6 +30,7 @@ from ....shared.code.models.sources.identity_kind import IdentityKind
 from ....shared.code.models.sources.scan_policy import ScanPolicy
 from ....shared.code.models.sources.source_extraction import SourceExtraction
 from ....shared.code.models.sources.source_file import SourceFile
+from ....shared.values.models.value_reuse import ValueReuse
 from ..batching.planner import SourceBatchPlanner
 from ..domain import SourceReader
 from ..models.extractor_contract_error import ExtractorContractError
@@ -274,7 +275,7 @@ class BatchSourceReader(SourceReader):
                 with subprocess.Popen(
                     command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=diagnostics
                 ) as process:
-                    values: dict[ImmutableCodeValue, ImmutableCodeValue] = {}
+                    reuse = ValueReuse[ImmutableCodeValue]()
                     extracted: dict[FileId, SourceFile] = {}
                     seen_source_ids: set[FileId] = set()
                     duplicate_source_ids: set[FileId] = set()
@@ -285,7 +286,7 @@ class BatchSourceReader(SourceReader):
                             process.stdin.write(json.dumps(sources).encode("utf-8"))
                             process.stdin.close()
                             for line in process.stdout:
-                                source_id, parsed = self.output.read(line, values)
+                                source_id, parsed = self.output.read(line, reuse)
                                 if source_id in seen_source_ids:
                                     duplicate_source_ids.add(source_id)
                                 else:
@@ -324,7 +325,7 @@ class BatchSourceReader(SourceReader):
                             )
                         return extracted
                     finally:
-                        values.clear()
+                        reuse.clear()
                         if process.poll() is None:
                             process.kill()
                         process.wait()
