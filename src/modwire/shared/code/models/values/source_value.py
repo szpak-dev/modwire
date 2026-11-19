@@ -1,6 +1,7 @@
 from typing import Annotated, Self
 
 from pydantic import model_validator
+from pydantic.dataclasses import dataclass
 
 from ....values.models.value_model import ValueModel
 from ....values.models.value_reference import ValueReference
@@ -15,7 +16,8 @@ from .source_value_declaration_kind import SourceValueDeclarationKind
 from .source_value_scope import SourceValueScope
 
 
-class SourceValue(ValueModel):
+@dataclass(slots=True, kw_only=True, config=ValueModel.model_config)
+class SourceValue:
     declaration_id: Annotated[DeclarationIdentity, ValueReference()]
     name: str
     visibility: SourceVisibility
@@ -28,13 +30,12 @@ class SourceValue(ValueModel):
 
     @model_validator(mode="after")
     def validate_state(self) -> Self:
-        value_kinds = {
-            SourceSymbolKind.VALUE_CALLABLE,
-            SourceSymbolKind.VALUE_CLASS,
-            SourceSymbolKind.VALUE_LITERAL,
-            SourceSymbolKind.VALUE_OBJECT,
-            SourceSymbolKind.VALUE_UNKNOWN,
-        }
-        if self.declaration_id.family is not DeclarationFamily.VALUE or self.value_kind not in value_kinds:
+        if self.declaration_id.family is not DeclarationFamily.VALUE or not (
+            self.value_kind is SourceSymbolKind.VALUE_CALLABLE
+            or self.value_kind is SourceSymbolKind.VALUE_CLASS
+            or self.value_kind is SourceSymbolKind.VALUE_LITERAL
+            or self.value_kind is SourceSymbolKind.VALUE_OBJECT
+            or self.value_kind is SourceSymbolKind.VALUE_UNKNOWN
+        ):
             raise CodeValidationError(CodeViolation.INCONSISTENT_VALUE_IDENTITY_FAMILY, self.name)
         return self
