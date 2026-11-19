@@ -6,8 +6,8 @@ runtime:
     pattern: ^Python (\d+\.\d+\.\d+)
   version:
     major: 3
-    minor: 12
-    patch: 11
+    minor: 14
+    patch: 2
   packages: []
 fixtures:
   source_suffixes:

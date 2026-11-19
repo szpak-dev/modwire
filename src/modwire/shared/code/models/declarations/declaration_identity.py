@@ -19,7 +19,7 @@ class DeclarationIdentity:
     content_digest: Annotated[str, StringReference()] = Field(pattern=r"^[0-9a-f]{64}$")
 
     def __hash__(self) -> int:
-        return hash((self.source_id, self.ordinal))
+        return hash(self.source_id) ^ self.ordinal
 
     def canonical(self) -> str:
         """Return the identity of a declaration in one exact source capture."""

@@ -27,6 +27,8 @@ class SourceDeclaration(SourceSymbol):
 
     @model_validator(mode="after")
     def validate_members(self) -> Self:
+        if not (self.methods or self.abstract_methods or self.properties):
+            return self
         identities: set[DeclarationIdentity] = set()
         for members in (self.methods, self.abstract_methods, self.properties):
             for item in members:

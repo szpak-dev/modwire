@@ -95,39 +95,44 @@ public final class Script {
         BufferedWriter output = new BufferedWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8), 65536);
         int workers = 2;
         ExecutorService executor = Executors.newFixedThreadPool(workers);
-        ArrayDeque<Future<NativeFileResult>> pending = new ArrayDeque<>();
+        ArrayDeque<Future<String>> pending = new ArrayDeque<>();
+        ThreadLocal<JavaSourceExtractor> extractors = ThreadLocal.withInitial(JavaSourceExtractor::new);
         Iterator<Map.Entry<String, JsonElement>> sources = input.getAsJsonObject().entrySet().iterator();
         try {
-            for (int worker = 0; worker < workers && sources.hasNext(); worker++) {
-                pending.addLast(submit(executor, new JavaSourceExtractor(), sources.next()));
+            for (int worker = 0; worker < workers * 4 && sources.hasNext(); worker++) {
+                pending.addLast(submit(executor, extractors, sources.next()));
             }
             while (!pending.isEmpty()) {
-                NativeFileResult result = complete(pending.removeFirst());
-                result.extractor().writeRecord(new JsonWriter(output), result.facts());
+                String result = complete(pending.removeFirst());
+                output.write(result);
                 output.write('\n');
                 output.flush();
                 if (sources.hasNext()) {
-                    pending.addLast(submit(executor, result.extractor(), sources.next()));
+                    pending.addLast(submit(executor, extractors, sources.next()));
                 }
             }
         } finally {
-            for (Future<NativeFileResult> result : pending) result.cancel(true);
+            for (Future<String> result : pending) result.cancel(true);
             executor.shutdownNow();
         }
     }
 
-    private Future<NativeFileResult> submit(
-        ExecutorService executor, JavaSourceExtractor extractor, Map.Entry<String, JsonElement> entry
+    private Future<String> submit(
+        ExecutorService executor, ThreadLocal<JavaSourceExtractor> extractors, Map.Entry<String, JsonElement> entry
     ) {
         if (!entry.getValue().isJsonPrimitive() || !entry.getValue().getAsJsonPrimitive().isString()) {
             throw new IllegalArgumentException("Expected source ids and paths to be strings.");
         }
-        return executor.submit(() -> new NativeFileResult(
-            extractor, extractor.extract(Path.of(entry.getValue().getAsString()), entry.getKey())
-        ));
+        return executor.submit(() -> {
+            JavaSourceExtractor extractor = extractors.get();
+            JsonObject facts = extractor.extract(Path.of(entry.getValue().getAsString()), entry.getKey());
+            java.io.StringWriter output = new java.io.StringWriter();
+            extractor.writeRecord(new JsonWriter(output), facts);
+            return output.toString();
+        });
     }
 
-    private NativeFileResult complete(Future<NativeFileResult> pending) throws IOException {
+    private String complete(Future<String> pending) throws IOException {
         try {
             return pending.get();
         } catch (InterruptedException error) {
@@ -142,8 +147,6 @@ public final class Script {
         }
     }
 }
-
-record NativeFileResult(JavaSourceExtractor extractor, JsonObject facts) {}
 
 final class NativeValueTable {
     final String name;
