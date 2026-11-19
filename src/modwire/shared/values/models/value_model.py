@@ -8,7 +8,9 @@ from .value_reuse import ValueReuse
 
 
 class ValueModel(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True, arbitrary_types_allowed=True, validate_default=True)
+    model_config = ConfigDict(
+        extra="forbid", frozen=True, arbitrary_types_allowed=True, validate_default=True, defer_build=True
+    )
 
     @model_validator(mode="after")
     def reuse(self, info: ValidationInfo[ValueReuse[Self] | None]) -> Self:

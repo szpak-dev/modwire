@@ -38,6 +38,9 @@ class PythonSemanticCatalog:
     unresolved_bindings: dict[ast.AST, dict[str, SourceUnresolvedReason]]
     wildcard_scopes: frozenset[ast.AST]
     placements: dict[ast.AST, SourcePlacement] = field(default_factory=dict[ast.AST, SourcePlacement])
+    receiver_names: dict[ast.AST, str] = field(default_factory=dict[ast.AST, str])
+    parameter_bindings: dict[ast.AST, tuple[str, ...]] = field(default_factory=dict[ast.AST, tuple[str, ...]])
+    lookup_parents: dict[ast.AST, ast.AST] = field(default_factory=dict[ast.AST, ast.AST])
     imports: tuple[SourceImport, ...] = field(default_factory=tuple)
     exports: tuple[SourceExport, ...] = field(default_factory=tuple)
     namespaces: tuple[SourceNamespace, ...] = field(default_factory=tuple)
@@ -70,6 +73,9 @@ class PythonSemanticCatalog:
             unresolved_bindings=self.unresolved_bindings,
             wildcard_scopes=self.wildcard_scopes,
             placements=self.placements,
+            receiver_names=self.receiver_names,
+            parameter_bindings=self.parameter_bindings,
+            lookup_parents=self.lookup_parents,
             imports=(*self.imports, *contribution.imports),
             exports=(*self.exports, *contribution.exports),
             namespaces=(*self.namespaces, *contribution.namespaces),
@@ -111,12 +117,17 @@ class PythonSemanticCatalog:
     def module_scope(self, scope: ast.Module) -> SourceDeclarationScope | SourceFileScope:
         return SourceFileScope()
 
-    @singledispatchmethod
     def receiver_name(self, node: ast.AST) -> str:
+        if node not in self.receiver_names:
+            self.receiver_names[node] = self.read_receiver_name(node)
+        return self.receiver_names[node]
+
+    @singledispatchmethod
+    def read_receiver_name(self, node: ast.AST) -> str:
         return ""
 
-    @receiver_name.register(ast.FunctionDef)
-    @receiver_name.register(ast.AsyncFunctionDef)
+    @read_receiver_name.register(ast.FunctionDef)
+    @read_receiver_name.register(ast.AsyncFunctionDef)
     def function_receiver(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> str:
         if self.callable_kinds[node] not in {
             SourceCallableKind.INSTANCE_METHOD,
@@ -127,13 +138,18 @@ class PythonSemanticCatalog:
         arguments = (*node.args.posonlyargs, *node.args.args)
         return arguments[0].arg if arguments else ""
 
-    @singledispatchmethod
     def parameter_names(self, scope: ast.AST) -> tuple[str, ...]:
+        if scope not in self.parameter_bindings:
+            self.parameter_bindings[scope] = self.read_parameter_names(scope)
+        return self.parameter_bindings[scope]
+
+    @singledispatchmethod
+    def read_parameter_names(self, scope: ast.AST) -> tuple[str, ...]:
         return ()
 
-    @parameter_names.register(ast.FunctionDef)
-    @parameter_names.register(ast.AsyncFunctionDef)
-    @parameter_names.register(ast.Lambda)
+    @read_parameter_names.register(ast.FunctionDef)
+    @read_parameter_names.register(ast.AsyncFunctionDef)
+    @read_parameter_names.register(ast.Lambda)
     def callable_parameters(self, scope: ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda) -> tuple[str, ...]:
         arguments = scope.args
         names = tuple(item.arg for item in (*arguments.posonlyargs, *arguments.args, *arguments.kwonlyargs))
@@ -143,11 +159,16 @@ class PythonSemanticCatalog:
             names = (*names, arguments.kwarg.arg)
         return names
 
-    @singledispatchmethod
     def lookup_parent(self, scope: ast.AST) -> ast.AST:
+        if scope not in self.lookup_parents:
+            self.lookup_parents[scope] = self.read_lookup_parent(scope)
+        return self.lookup_parents[scope]
+
+    @singledispatchmethod
+    def read_lookup_parent(self, scope: ast.AST) -> ast.AST:
         return scope
 
-    @lookup_parent.register
+    @read_lookup_parent.register
     def skip_class_lookup(self, scope: ast.ClassDef) -> ast.AST:
         return self.lookup_parent(self.binding_scopes[scope])
 

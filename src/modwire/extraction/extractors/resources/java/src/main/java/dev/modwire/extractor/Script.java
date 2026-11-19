@@ -45,6 +45,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,6 +53,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.IdentityHashMap;
 import java.util.HexFormat;
+import java.util.Iterator;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import com.github.javaparser.ast.stmt.BlockStmt;
@@ -86,19 +92,58 @@ public final class Script {
         if (!input.isJsonObject()) {
             throw new IllegalArgumentException("Expected a JSON object mapping source ids to Java file paths.");
         }
-        JavaSourceExtractor extractor = new JavaSourceExtractor();
         BufferedWriter output = new BufferedWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8), 65536);
-        for (Map.Entry<String, JsonElement> entry : input.getAsJsonObject().entrySet()) {
-            if (!entry.getValue().isJsonPrimitive() || !entry.getValue().getAsJsonPrimitive().isString()) {
-                throw new IllegalArgumentException("Expected source ids and paths to be strings.");
+        int workers = 2;
+        ExecutorService executor = Executors.newFixedThreadPool(workers);
+        ArrayDeque<Future<NativeFileResult>> pending = new ArrayDeque<>();
+        Iterator<Map.Entry<String, JsonElement>> sources = input.getAsJsonObject().entrySet().iterator();
+        try {
+            for (int worker = 0; worker < workers && sources.hasNext(); worker++) {
+                pending.addLast(submit(executor, new JavaSourceExtractor(), sources.next()));
             }
-            JsonObject extracted = extractor.extract(Path.of(entry.getValue().getAsString()), entry.getKey());
-            extractor.writeRecord(new JsonWriter(output), extracted);
-            output.write('\n');
-            output.flush();
+            while (!pending.isEmpty()) {
+                NativeFileResult result = complete(pending.removeFirst());
+                result.extractor().writeRecord(new JsonWriter(output), result.facts());
+                output.write('\n');
+                output.flush();
+                if (sources.hasNext()) {
+                    pending.addLast(submit(executor, result.extractor(), sources.next()));
+                }
+            }
+        } finally {
+            for (Future<NativeFileResult> result : pending) result.cancel(true);
+            executor.shutdownNow();
+        }
+    }
+
+    private Future<NativeFileResult> submit(
+        ExecutorService executor, JavaSourceExtractor extractor, Map.Entry<String, JsonElement> entry
+    ) {
+        if (!entry.getValue().isJsonPrimitive() || !entry.getValue().getAsJsonPrimitive().isString()) {
+            throw new IllegalArgumentException("Expected source ids and paths to be strings.");
+        }
+        return executor.submit(() -> new NativeFileResult(
+            extractor, extractor.extract(Path.of(entry.getValue().getAsString()), entry.getKey())
+        ));
+    }
+
+    private NativeFileResult complete(Future<NativeFileResult> pending) throws IOException {
+        try {
+            return pending.get();
+        } catch (InterruptedException error) {
+            Thread.currentThread().interrupt();
+            throw new ExtractorInvariantFailure("Java extraction worker was interrupted.", error);
+        } catch (ExecutionException error) {
+            Throwable cause = error.getCause();
+            if (cause instanceof IOException failure) throw failure;
+            if (cause instanceof RuntimeException failure) throw failure;
+            if (cause instanceof Error failure) throw failure;
+            throw new ExtractorInvariantFailure("Java extraction worker raised an unexpected checked failure.", cause);
         }
     }
 }
+
+record NativeFileResult(JavaSourceExtractor extractor, JsonObject facts) {}
 
 final class NativeValueTable {
     final String name;

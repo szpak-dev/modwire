@@ -209,7 +209,7 @@ class RubySourceExtractor
         "declaration_id" => identity(module_declaration ? "type" : "class", name, ordinal(node)),
         "kind" => module_declaration ? "module" : "class", "name" => name,
         "visibility" => "public", "visibility_intent" => "public", "declaration_annotations" => [],
-        "line_count" => line_count(node), "methods" => [], "abstract_methods" => [], "properties" => {}, "signatures" => [],
+        "line_count" => line_count(node.location.start_line, node.location.end_line), "methods" => [], "abstract_methods" => [], "properties" => {}, "signatures" => [],
         "inventory" => member_inventory
       }
       owner = name
@@ -372,10 +372,13 @@ class RubySourceExtractor
 
   def callable_fact(node, name, qualified_name, kind, visibility, lexical_scope, owner)
     family = CALLABLE_FAMILIES.fetch(kind, "method")
+    location = node.location
+    first_line = location.start_line
+    last_line = location.end_line
     {"declaration_id" => identity(family, qualified_name, ordinal(node)), "source_id" => @source_id_reference,
      "name" => name, "qualified_name" => qualified_name, "kind" => kind,
      "visibility" => visibility, "visibility_intent" => visibility, "declaration_annotations" => [],
-     "line_start" => node.location.start_line, "line_end" => node.location.end_line, "line_count" => line_count(node),
+     "line_start" => first_line, "line_end" => last_line, "line_count" => line_count(first_line, last_line),
      "parameters" => parameters(node.parameters), "return_type" => absent_type, "decorators" => [], "docstring" => "",
      "placement" => placement(lexical_scope, owner)}
   end
@@ -571,7 +574,7 @@ class RubySourceExtractor
       collect_body(node.value.body, owner, declaration, declaration_scope(fact.fetch("declaration_id")), nil)
     else
       @values << {"declaration_id" => identity("value", qualified, ordinal(node)), "name" => name,
-        "visibility" => "private", "visibility_intent" => "private", "line_count" => line_count(node),
+        "visibility" => "private", "visibility_intent" => "private", "line_count" => line_count(node.location.start_line, node.location.end_line),
         "declaration_kind" => "assignment", "value_kind" => LITERAL_NODES.include?(node.value.class) ? "value_literal" : "value_unknown",
         "scope" => lexical_scope.fetch("kind") == "file" ? "module" : "local", "placement" => placement(lexical_scope, owner)}
       collect_body(node.value, owner, declaration, lexical_scope, nil)
@@ -600,7 +603,7 @@ class RubySourceExtractor
       "name" => name,
       "visibility" => "public",
       "visibility_intent" => "public",
-      "line_count" => line_count(node),
+      "line_count" => line_count(node.location.start_line, node.location.end_line),
       "declaration_kind" => "constant",
       "value_kind" => value_kind,
       "scope" => lexical_scope.fetch("kind") == "file" ? "module" : "local",
@@ -781,8 +784,8 @@ class RubySourceExtractor
     node.location.start_offset + 1
   end
 
-  def line_count(node)
-    count = node.location.end_line - node.location.start_line + 1
+  def line_count(first_line, last_line)
+    count = last_line - first_line + 1
     count < 1 ? 1 : count
   end
 

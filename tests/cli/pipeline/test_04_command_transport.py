@@ -1,8 +1,10 @@
 import json
 import os
 import shutil
+import subprocess
 from collections.abc import Iterator
 from contextlib import contextmanager
+from importlib import resources
 from pathlib import Path
 
 import pytest
@@ -21,6 +23,58 @@ from ..base_test import CliTestCase
 
 
 class TestExtractorCommandTransport(CliTestCase):
+    def run_java_batch(self, sources: dict[str, str]) -> subprocess.CompletedProcess[str]:
+        runtime = self.application.extraction.request("java", str(self.workspace)).runtime
+        entrypoint = runtime.entrypoint
+        with resources.as_file(resources.files(entrypoint.package).joinpath(entrypoint.path)) as script:
+            return subprocess.run(
+                (*runtime.command, *entrypoint.command_arguments(script), "--batch", str(self.workspace)),
+                input=json.dumps(sources),
+                capture_output=True,
+                text=True,
+                check=False,
+                timeout=15,
+            )
+
+    def test_java_batch_keeps_requested_order_across_reused_workers(self) -> None:
+        fixture = self.repository / "tests/fixtures/call_occurrences/java"
+        sources = {
+            "example_third": str(fixture / "ExampleMixedCalls.java"),
+            "example_first": str(fixture / "ExampleCalls.java"),
+            "example_fourth": str(fixture / "ExampleMixedCalls.java"),
+            "example_second": str(fixture / "ExampleCalls.java"),
+            "example_last": str(fixture / "ExampleMixedCalls.java"),
+        }
+
+        completed = self.run_java_batch(sources)
+
+        assert completed.returncode == 0, completed.stderr
+        records = [TypeAdapter(dict[str, JsonValue]).validate_json(line) for line in completed.stdout.splitlines()]
+        assert [record["source_id"] for record in records] == list(sources)
+        for record in records:
+            texts = TypeAdapter(list[str]).validate_python(record["texts"])
+            assert texts[0] == record["source_id"]
+
+    @pytest.mark.parametrize("invalid_position", (0, 1, 2))
+    def test_java_batch_reports_the_first_input_failure_in_order(self, invalid_position: int) -> None:
+        valid = self.repository / "tests/fixtures/call_occurrences/java/ExampleCalls.java"
+        invalid = self.repository / "tests/fixtures/code_map_reuse/native_failure/java/Broken.java"
+        sources = {f"example_{index}": str(invalid if index == invalid_position else valid) for index in range(3)}
+
+        completed = self.run_java_batch(sources)
+
+        assert completed.returncode == 1
+        records = [TypeAdapter(dict[str, JsonValue]).validate_json(line) for line in completed.stdout.splitlines()]
+        assert [record["source_id"] for record in records] == list(sources)[:invalid_position]
+        assert completed.stderr.startswith("modwire-error:")
+        assert "Broken.java" in completed.stderr
+
+    def test_java_empty_batch_returns_no_records(self) -> None:
+        completed = self.run_java_batch({})
+
+        assert completed.returncode == 0, completed.stderr
+        assert completed.stdout == ""
+
     @contextmanager
     def altered_ruby_output(self, mode: str) -> Iterator[Path]:
         sources = self.workspace / "sources"

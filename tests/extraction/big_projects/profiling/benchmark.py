@@ -24,7 +24,7 @@ class ProfileBenchmark:
     config: Path
     clone_root: Path
     output: Path
-    limit_seconds: float = 20.0
+    limit_seconds: float = 15.0
     rss_limit_bytes: int = 2 * 1024**3
     process_limit: int = 4
     max_workers: int = 2

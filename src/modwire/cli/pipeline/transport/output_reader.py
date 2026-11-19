@@ -17,6 +17,7 @@ class ExtractorBatchOutputReader:
     def __init__(self) -> None:
         self.records = TypeAdapter(tuple[FileId, ParsedSourceFile], config=ConfigDict(cache_strings="keys"))
         self.indexed_records = TypeAdapter(IndexedSourceRecord)
+        self.indexed_records.rebuild()
 
     def read(
         self, document: bytes, reuse: ValueReuse[ImmutableCodeValue | DeclarationIdentity]

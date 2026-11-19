@@ -1,5 +1,4 @@
 import ast
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import cached_property, singledispatchmethod
 
@@ -18,6 +17,7 @@ from ..observations.property_candidate import PythonPropertyCandidate
 from ..observations.source_observation import PythonSourceObservation
 from ..observations.value_candidate import PythonValueCandidate
 from .context import PythonTraversalContext
+from .dispatch import PythonObservationDispatch
 
 
 @dataclass
@@ -37,14 +37,26 @@ class OrderedObservationVisitor:
     unresolved_bindings: dict[ast.AST, set[str]] = field(default_factory=dict[ast.AST, set[str]])
 
     @cached_property
-    def node_dispatch(self) -> Callable[[ast.AST, int, PythonTraversalContext], None]:
-        return self.visit
+    def dispatch(self) -> PythonObservationDispatch:
+        return PythonObservationDispatch(
+            visit=self.visit,
+            observe_property_method=self.observe_property_method,
+            observe_call=self.observe_call,
+            bind_lambda=self.bind_lambda,
+            bind_lambda_name=self.bind_lambda_name,
+            observe_assignment=self.observe_assignment,
+            observe_class_property=self.observe_class_property,
+            observe_unresolved_binding=self.observe_unresolved_binding,
+            observe_export_mutation=self.observe_export_mutation,
+            limit_exports=self.limit_exports,
+            limit_property_scope=self.limit_property_scope,
+        )
 
     def read(self, tree: ast.Module) -> PythonSourceObservation:
         try:
-            self.node_dispatch(tree, 0, PythonTraversalContext(tree, ""))
+            self.dispatch.visit(tree, 0, PythonTraversalContext(tree, ""))
         finally:
-            del self.node_dispatch
+            del self.dispatch
         return PythonSourceObservation(
             classes=tuple(self.classes),
             values=tuple(self.values),
@@ -72,7 +84,7 @@ class OrderedObservationVisitor:
     @singledispatchmethod
     def visit(self, node: ast.AST, depth: int, context: PythonTraversalContext) -> None:
         for child in ast.iter_child_nodes(node):
-            self.node_dispatch(child, depth + 1, context)
+            self.dispatch.visit(child, depth + 1, context)
 
     @visit.register
     def visit_ClassDef(self, node: ast.ClassDef, depth: int, context: PythonTraversalContext) -> None:
@@ -88,10 +100,10 @@ class OrderedObservationVisitor:
         self.inventory.properties[node] = []
         self.declaration_relations.extend(PythonDeclarationRelationCandidate(candidate, base) for base in node.bases)
         for expression in (*node.decorator_list, *node.bases, *(keyword.value for keyword in node.keywords)):
-            self.node_dispatch(expression, depth + 1, context)
+            self.dispatch.visit(expression, depth + 1, context)
         nested = PythonTraversalContext(node, candidate.qualified_name)
         for statement in node.body:
-            self.node_dispatch(statement, depth + 1, nested)
+            self.dispatch.visit(statement, depth + 1, nested)
 
     @visit.register(ast.FunctionDef)
     @visit.register(ast.AsyncFunctionDef)
@@ -111,15 +123,15 @@ class OrderedObservationVisitor:
             self.source_span(node),
         )
         self.callables.append(candidate)
-        self.observe_property_method(context.binding_scope, node, candidate.source_span, ordinal)
+        self.dispatch.observe_property_method(context.binding_scope, node, candidate.source_span, ordinal)
         for expression in (*node.decorator_list, *node.args.defaults):
-            self.node_dispatch(expression, depth + 1, context)
+            self.dispatch.visit(expression, depth + 1, context)
         for expression in node.args.kw_defaults:
             if expression is not None:
-                self.node_dispatch(expression, depth + 1, context)
+                self.dispatch.visit(expression, depth + 1, context)
         nested = PythonTraversalContext(node, candidate.qualified_name)
         for statement in node.body:
-            self.node_dispatch(statement, depth + 1, nested)
+            self.dispatch.visit(statement, depth + 1, nested)
 
     @singledispatchmethod
     def observe_property_method(
@@ -155,18 +167,18 @@ class OrderedObservationVisitor:
         )
         self.callables.append(candidate)
         for expression in node.args.defaults:
-            self.node_dispatch(expression, depth + 1, context)
+            self.dispatch.visit(expression, depth + 1, context)
         for expression in node.args.kw_defaults:
             if expression is not None:
-                self.node_dispatch(expression, depth + 1, context)
-        self.node_dispatch(node.body, depth + 1, PythonTraversalContext(node, candidate.qualified_name))
+                self.dispatch.visit(expression, depth + 1, context)
+        self.dispatch.visit(node.body, depth + 1, PythonTraversalContext(node, candidate.qualified_name))
 
     @visit.register
     def visit_Call(self, node: ast.Call, depth: int, context: PythonTraversalContext) -> None:
-        self.observe_export_mutation(node.func, node, context)
-        self.observe_call(context.binding_scope, node)
+        self.dispatch.observe_export_mutation(node.func, node, context)
+        self.dispatch.observe_call(context.binding_scope, node)
         for child in ast.iter_child_nodes(node):
-            self.node_dispatch(child, depth + 1, context)
+            self.dispatch.visit(child, depth + 1, context)
 
     @singledispatchmethod
     def observe_call(self, scope: ast.AST, node: ast.Call) -> None:
@@ -183,17 +195,17 @@ class OrderedObservationVisitor:
     @visit.register
     def visit_Assign(self, node: ast.Assign, depth: int, context: PythonTraversalContext) -> None:
         for target in node.targets:
-            self.observe_assignment(target, node, context)
+            self.dispatch.observe_assignment(target, node, context)
         if len(node.targets) == 1:
-            self.bind_lambda(node.value, node.targets[0])
-        self.node_dispatch(node.value, depth + 1, context)
+            self.dispatch.bind_lambda(node.value, node.targets[0])
+        self.dispatch.visit(node.value, depth + 1, context)
 
     @visit.register
     def visit_AnnAssign(self, node: ast.AnnAssign, depth: int, context: PythonTraversalContext) -> None:
-        self.observe_assignment(node.target, node, context)
+        self.dispatch.observe_assignment(node.target, node, context)
         if node.value is not None:
-            self.bind_lambda(node.value, node.target)
-            self.node_dispatch(node.value, depth + 1, context)
+            self.dispatch.bind_lambda(node.value, node.target)
+            self.dispatch.visit(node.value, depth + 1, context)
 
     @singledispatchmethod
     def bind_lambda(self, value: ast.expr, target: ast.expr) -> None:
@@ -201,7 +213,7 @@ class OrderedObservationVisitor:
 
     @bind_lambda.register
     def lambda_binding(self, value: ast.Lambda, target: ast.expr) -> None:
-        self.bind_lambda_name(target, value)
+        self.dispatch.bind_lambda_name(target, value)
 
     @singledispatchmethod
     def bind_lambda_name(self, target: ast.expr, value: ast.Lambda) -> None:
@@ -215,8 +227,8 @@ class OrderedObservationVisitor:
     def observe_assignment(
         self, target: ast.expr, statement: ast.Assign | ast.AnnAssign, context: PythonTraversalContext
     ) -> None:
-        self.observe_export_mutation(target, statement, context)
-        self.node_dispatch(target, 0, context)
+        self.dispatch.observe_export_mutation(target, statement, context)
+        self.dispatch.visit(target, 0, context)
         limitation = self.inventory_limitation(
             statement,
             InventoryLimitationKind.UNSUPPORTED_SYNTAX,
@@ -224,7 +236,7 @@ class OrderedObservationVisitor:
         )
         self.inventory.values.append(limitation)
         self.inventory.callable_values.append(limitation)
-        self.limit_property_scope(context.binding_scope, limitation)
+        self.dispatch.limit_property_scope(context.binding_scope, limitation)
 
     @observe_assignment.register
     def name_assignment(
@@ -239,7 +251,7 @@ class OrderedObservationVisitor:
             self.source_span(statement),
         )
         self.values.append(candidate)
-        self.observe_class_property(context.binding_scope, statement, candidate)
+        self.dispatch.observe_class_property(context.binding_scope, statement, candidate)
 
     @singledispatchmethod
     def observe_class_property(
@@ -320,7 +332,7 @@ class OrderedObservationVisitor:
                 self.source_span(node),
             )
         )
-        self.node_dispatch(node.value, depth + 1, context)
+        self.dispatch.visit(node.value, depth + 1, context)
 
     @visit.register
     def visit_exception_handler(self, node: ast.ExceptHandler, depth: int, context: PythonTraversalContext) -> None:
@@ -332,9 +344,9 @@ class OrderedObservationVisitor:
                 description="Exception target binding is outside the represented value inventory.",
             )
             self.inventory.values.append(limitation)
-            self.limit_property_scope(context.binding_scope, limitation)
+            self.dispatch.limit_property_scope(context.binding_scope, limitation)
         for child in ast.iter_child_nodes(node):
-            self.node_dispatch(child, depth + 1, context)
+            self.dispatch.visit(child, depth + 1, context)
 
     @visit.register(ast.For)
     @visit.register(ast.AsyncFor)
@@ -370,20 +382,20 @@ class OrderedObservationVisitor:
         )
         self.inventory.values.append(limitation)
         self.inventory.callable_values.append(limitation)
-        self.limit_property_scope(context.binding_scope, limitation)
-        self.observe_export_mutation(node, node, context)
+        self.dispatch.limit_property_scope(context.binding_scope, limitation)
+        self.dispatch.observe_export_mutation(node, node, context)
         for child in ast.iter_child_nodes(node):
-            self.node_dispatch(child, depth + 1, context)
+            self.dispatch.visit(child, depth + 1, context)
 
     @visit.register
     def visit_Delete(self, node: ast.Delete, depth: int, context: PythonTraversalContext) -> None:
         for target in node.targets:
-            self.observe_export_mutation(target, node, context)
-            self.node_dispatch(target, depth + 1, context)
+            self.dispatch.observe_export_mutation(target, node, context)
+            self.dispatch.visit(target, depth + 1, context)
 
     @visit.register
     def visit_Name(self, node: ast.Name, depth: int, context: PythonTraversalContext) -> None:
-        self.observe_unresolved_binding(node.ctx, node.id, context)
+        self.dispatch.observe_unresolved_binding(node.ctx, node.id, context)
 
     @singledispatchmethod
     def observe_unresolved_binding(
@@ -419,14 +431,14 @@ class OrderedObservationVisitor:
         if node.name is not None:
             self.record_unresolved_binding(node.name, context)
         for child in ast.iter_child_nodes(node):
-            self.node_dispatch(child, depth + 1, context)
+            self.dispatch.visit(child, depth + 1, context)
 
     @visit.register
     def visit_mapping_binding(self, node: ast.MatchMapping, depth: int, context: PythonTraversalContext) -> None:
         if node.rest is not None:
             self.record_unresolved_binding(node.rest, context)
         for child in ast.iter_child_nodes(node):
-            self.node_dispatch(child, depth + 1, context)
+            self.dispatch.visit(child, depth + 1, context)
 
     @singledispatchmethod
     def observe_export_mutation(
@@ -438,21 +450,21 @@ class OrderedObservationVisitor:
     def augmented_export_mutation(
         self, target: ast.AugAssign, node: ast.stmt | ast.expr, context: PythonTraversalContext
     ) -> None:
-        self.observe_export_mutation(target.target, node, context)
+        self.dispatch.observe_export_mutation(target.target, node, context)
 
     @observe_export_mutation.register(ast.Attribute)
     @observe_export_mutation.register(ast.Subscript)
     def attribute_export_mutation(
         self, target: ast.Attribute | ast.Subscript, node: ast.stmt | ast.expr, context: PythonTraversalContext
     ) -> None:
-        self.observe_export_mutation(target.value, node, context)
+        self.dispatch.observe_export_mutation(target.value, node, context)
 
     @observe_export_mutation.register
     def named_export_mutation(
         self, target: ast.Name, node: ast.stmt | ast.expr, context: PythonTraversalContext
     ) -> None:
         if target.id == "__all__":
-            self.limit_exports(context.binding_scope, node)
+            self.dispatch.limit_exports(context.binding_scope, node)
 
     @singledispatchmethod
     def limit_exports(self, scope: ast.AST, node: ast.stmt | ast.expr) -> None:
