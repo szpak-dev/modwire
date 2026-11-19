@@ -12,6 +12,7 @@ from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
 from ..models.entrypoints.file_entrypoint import FileExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
+from ..models.native_output_format import NativeOutputFormat
 
 
 @injectable(as_type=SourceExtractor, qualifier="php")
@@ -22,9 +23,10 @@ class PhpExtractor(SourceExtractor):
     def __init__(self) -> None:
         self.runtime = ExtractorRuntime(
             order=2,
+            output_format=NativeOutputFormat.INDEXED_JSONL,
             descriptor=ExtractorDescriptor(
                 id="modwire.php.php-parser",
-                version="4",
+                version="5",
                 language="php",
                 runtime="php",
             ),

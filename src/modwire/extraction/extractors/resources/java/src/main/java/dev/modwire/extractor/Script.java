@@ -4,7 +4,8 @@ import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.Problem;
 import com.github.javaparser.Range;
-import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.JavaParserAdapter;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
@@ -29,12 +30,15 @@ import com.github.javaparser.ast.expr.ObjectCreationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithModifiers;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.stream.JsonWriter;
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -59,7 +63,6 @@ import com.github.javaparser.ast.expr.LambdaExpr;
 import com.github.javaparser.ast.expr.MethodReferenceExpr;
 
 public final class Script {
-    private final Gson gson = new GsonBuilder().serializeNulls().create();
 
     public static void main(String[] arguments) {
         try {
@@ -77,9 +80,6 @@ public final class Script {
         if (arguments.length < 2 || !"--batch".equals(arguments[0])) {
             throw new IllegalArgumentException("Expected --batch followed by the Java source root.");
         }
-        StaticJavaParser.setConfiguration(
-            new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_25)
-        );
         JsonElement input = JsonParser.parseReader(
             new java.io.InputStreamReader(System.in, StandardCharsets.UTF_8)
         );
@@ -87,26 +87,109 @@ public final class Script {
             throw new IllegalArgumentException("Expected a JSON object mapping source ids to Java file paths.");
         }
         JavaSourceExtractor extractor = new JavaSourceExtractor();
+        BufferedWriter output = new BufferedWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8), 65536);
         for (Map.Entry<String, JsonElement> entry : input.getAsJsonObject().entrySet()) {
             if (!entry.getValue().isJsonPrimitive() || !entry.getValue().getAsJsonPrimitive().isString()) {
                 throw new IllegalArgumentException("Expected source ids and paths to be strings.");
             }
             JsonObject extracted = extractor.extract(Path.of(entry.getValue().getAsString()), entry.getKey());
-            JsonArray line = new JsonArray();
-            line.add(entry.getKey());
-            line.add(extracted);
-            System.out.println(gson.toJson(line));
-            System.out.flush();
+            extractor.writeRecord(new JsonWriter(output), extracted);
+            output.write('\n');
+            output.flush();
+        }
+    }
+}
+
+final class NativeValueTable {
+    final String name;
+    final List<JsonElement> values = new ArrayList<>();
+
+    NativeValueTable(String name) {
+        this.name = name;
+    }
+
+    <T extends JsonElement> T add(T value) {
+        values.add(value);
+        return value;
+    }
+}
+
+final class NativeSourceRecord {
+    final NativeValueTable texts = new NativeValueTable("texts");
+    final NativeValueTable identities = new NativeValueTable("identities");
+    final NativeValueTable targets = new NativeValueTable("targets");
+    final NativeValueTable types = new NativeValueTable("types");
+    final NativeValueTable coverages = new NativeValueTable("coverages");
+    final NativeValueTable memberInventories = new NativeValueTable("member_inventories");
+    final NativeValueTable namespaces = new NativeValueTable("namespaces");
+    final NativeValueTable placements = new NativeValueTable("placements");
+    final NativeValueTable assignments = new NativeValueTable("assignments");
+    final NativeValueTable parameters = new NativeValueTable("parameters");
+    private final Map<JsonElement, Integer> references = new IdentityHashMap<>();
+
+    void write(JsonWriter output, String sourceId, JsonObject facts) throws IOException {
+        output.setSerializeNulls(true);
+        output.beginObject().name("source_id").value(sourceId);
+        int offset = 0;
+        for (NativeValueTable table : List.of(texts, identities, targets, types, coverages,
+                memberInventories, namespaces, placements, assignments, parameters)) {
+            Map<JsonElement, Integer> unique = new LinkedHashMap<>();
+            int tableOffset = offset;
+            for (JsonElement value : table.values) {
+                int index = unique.computeIfAbsent(value, key -> tableOffset + unique.size());
+                references.put(value, index);
+            }
+            output.name(table.name).beginArray();
+            for (JsonElement value : unique.keySet()) writeValue(output, value, offset);
+            output.endArray();
+            offset += unique.size();
+        }
+        output.name("facts");
+        writeValue(output, facts, offset);
+        output.endObject();
+    }
+
+    private void writeValue(JsonWriter output, JsonElement value, int referenceLimit) throws IOException {
+        Integer reference = references.get(value);
+        if (reference != null && reference < referenceLimit) {
+            output.value(reference);
+        } else if (value.isJsonObject()) {
+            output.beginObject();
+            for (Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+                output.name(entry.getKey());
+                writeValue(output, entry.getValue(), referenceLimit);
+            }
+            output.endObject();
+        } else if (value.isJsonArray()) {
+            output.beginArray();
+            for (JsonElement child : value.getAsJsonArray()) writeValue(output, child, referenceLimit);
+            output.endArray();
+        } else if (value.isJsonNull()) {
+            output.nullValue();
+        } else {
+            JsonPrimitive primitive = value.getAsJsonPrimitive();
+            if (primitive.isString()) output.value(primitive.getAsString());
+            else if (primitive.isBoolean()) output.value(primitive.getAsBoolean());
+            else output.value(primitive.getAsNumber());
         }
     }
 }
 
 final class JavaSourceExtractor {
+    private final JavaParserAdapter parser = JavaParserAdapter.of(new JavaParser(
+        new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_25)
+    ));
     private final List<CallableFact> callableFacts = new ArrayList<>();
+    private NativeSourceRecord record = new NativeSourceRecord();
+    private JsonElement sourceIdValue = JsonNull.INSTANCE;
+    private JsonElement contentDigestValue = JsonNull.INSTANCE;
     private String sourceId = "";
     private String contentDigest = "";
     private String sourceContent = "";
+    private int[] lineOffsets = new int[0];
+    private int[] utf8Offsets = new int[0];
     private final Map<Node, JsonObject> identities = new IdentityHashMap<>();
+    private final Map<Node, Map<String, List<Node>>> declarationBindings = new IdentityHashMap<>();
     private final Map<Node, Map<String, List<Node>>> valueBindings = new IdentityHashMap<>();
     private final Map<BlockStmt, BlockSpan> blockSpans = new IdentityHashMap<>();
     private JsonObject namespaceMembership = new JsonObject();
@@ -114,24 +197,30 @@ final class JavaSourceExtractor {
 
     JsonObject extract(Path path, String sourceIdentity) throws IOException {
         sourceId = sourceIdentity;
+        record = new NativeSourceRecord();
+        sourceIdValue = record.texts.add(new JsonPrimitive(sourceId));
         identities.clear();
+        declarationBindings.clear();
         valueBindings.clear();
         blockSpans.clear();
         inventory = fileInventory();
         namespaceMembership = new JsonObject();
         namespaceMembership.addProperty("kind", "none");
+        record.namespaces.add(namespaceMembership);
         callableFacts.clear();
 
         String content = Files.readString(path, StandardCharsets.UTF_8);
         sourceContent = content;
+        indexSourcePositions();
         try {
             contentDigest = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(content.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException error) {
             throw new ExtractorInvariantFailure("SHA-256 is unavailable.", error);
         }
+        contentDigestValue = record.texts.add(new JsonPrimitive(contentDigest));
         CompilationUnit unit;
         try {
-            unit = StaticJavaParser.parse(content);
+            unit = parser.parse(content);
         } catch (ParseProblemException error) {
             Problem problem = error.getProblems().get(0);
             Range location = problem.getLocation()
@@ -188,6 +277,11 @@ final class JavaSourceExtractor {
                 limitInventory("callable_values", node, "Method references require a resolved external binding and do not declare a callable body.");
             }
         });
+        for (Map.Entry<Node, JsonObject> entry : identities.entrySet()) {
+            declarationBindings.computeIfAbsent(bindingScope(entry.getKey()), scope -> new HashMap<>())
+                .computeIfAbsent(lastPart(entry.getValue().get("qualified_name").getAsString()), name -> new ArrayList<>())
+                .add(entry.getKey());
+        }
         for (JsonElement value : relations) {
             JsonObject relation = value.getAsJsonObject();
             Node source = identities.entrySet().stream()
@@ -216,6 +310,10 @@ final class JavaSourceExtractor {
         return result;
     }
 
+    void writeRecord(JsonWriter output, JsonObject facts) throws IOException {
+        record.write(output, sourceId, facts);
+    }
+
     private JsonArray namespaces(CompilationUnit unit) {
         JsonArray namespaces = new JsonArray();
         unit.getPackageDeclaration().ifPresent(declaration -> {
@@ -224,12 +322,14 @@ final class JavaSourceExtractor {
             JsonObject identity = declarationIdentity("namespace", declaration.getNameAsString(), ordinal(declaration));
             namespace.add("declaration_id", identity);
             namespace.add("placement", placement(declaration));
+            namespaceMembership = new JsonObject();
+            record.namespaces.add(namespaceMembership);
             namespaceMembership.addProperty("kind", "member");
             namespaceMembership.addProperty("namespace_reference", declaration.getNameAsString());
             JsonObject target = new JsonObject();
             target.addProperty("kind", "resolved");
             target.add("declaration_id", identity);
-            namespaceMembership.add("target", target);
+            namespaceMembership.add("target", record.targets.add(target));
             namespaces.add(namespace);
         });
         return namespaces;
@@ -299,7 +399,7 @@ final class JavaSourceExtractor {
         collectCallableDeclarations(declaration, declaration.getMembers(), identity, qualifiedName, methods, abstractMethods, callables);
 
         JsonObject fact = new JsonObject();
-        fact.add("declaration_id", identity.deepCopy());
+        fact.add("declaration_id", identity);
         fact.add("placement", placement(declaration));
         fact.add("inventory", memberInventory());
         fact.addProperty("kind", kind.kind());
@@ -389,7 +489,7 @@ final class JavaSourceExtractor {
         value.addProperty("expression", "");
         value.addProperty("reference", "");
         JsonArray assignedValues = new JsonArray();
-        assignedValues.add(value);
+        assignedValues.add(record.assignments.add(value));
 
         JsonObject property = new JsonObject();
         property.add(
@@ -400,7 +500,7 @@ final class JavaSourceExtractor {
                 ordinal(declaration)
             )
         );
-        property.add("owner_declaration_id", ownerIdentity.deepCopy());
+        property.add("owner_declaration_id", ownerIdentity);
         property.add("placement", placement(declaration));
         property.addProperty("name", name);
         property.addProperty("is_optional", false);
@@ -570,7 +670,7 @@ final class JavaSourceExtractor {
         identities.put(declaration, identity);
         callable.add("declaration_id", identity);
         callable.add("placement", placement(declaration));
-        callable.addProperty("source_id", sourceId);
+        callable.add("source_id", sourceIdValue);
         callable.addProperty("name", name);
         callable.addProperty("qualified_name", qualifiedName);
         callable.addProperty("kind", kind);
@@ -584,7 +684,7 @@ final class JavaSourceExtractor {
         callable.add("return_type", sourceType(returnAnnotation));
         callable.add("decorators", annotationsForNode(declaration));
         callable.addProperty("docstring", "");
-        if ("method".equals(family)) callable.add("owner_declaration_id", ownerIdentity.deepCopy());
+        if ("method".equals(family)) callable.add("owner_declaration_id", ownerIdentity);
         return callable;
     }
 
@@ -596,7 +696,7 @@ final class JavaSourceExtractor {
             fact.add("type", sourceType(parameter.getType().toString()));
             fact.addProperty("kind", parameter.isVarArgs() ? "variadic_positional" : "positional");
             fact.addProperty("has_default", false);
-            result.add(fact);
+            result.add(record.parameters.add(fact));
         }
         return result;
     }
@@ -606,28 +706,28 @@ final class JavaSourceExtractor {
         JsonObject type = new JsonObject();
         if (value.isEmpty()) {
             type.addProperty("kind", "absent");
-            return type;
+            return record.types.add(type);
         }
         if (value.contains("?") || value.contains("[") || value.contains("&") || value.contains("|")) {
             type.addProperty("kind", "unsupported");
-            return type;
+            return record.types.add(type);
         }
         int genericStart = value.indexOf('<');
         if (genericStart < 0) {
             type.addProperty("kind", "reference");
             type.addProperty("name", value);
             type.add("arguments", new JsonArray());
-            return type;
+            return record.types.add(type);
         }
         if (!value.endsWith(">")) {
             type.addProperty("kind", "unsupported");
-            return type;
+            return record.types.add(type);
         }
         String name = value.substring(0, genericStart).strip();
         List<String> arguments = genericArguments(value.substring(genericStart + 1, value.length() - 1));
         if (name.isEmpty() || arguments.isEmpty()) {
             type.addProperty("kind", "unsupported");
-            return type;
+            return record.types.add(type);
         }
         JsonArray typeArguments = new JsonArray();
         for (String argument : arguments) {
@@ -636,7 +736,7 @@ final class JavaSourceExtractor {
         type.addProperty("kind", "reference");
         type.addProperty("name", name);
         type.add("arguments", typeArguments);
-        return type;
+        return record.types.add(type);
     }
 
     private List<String> genericArguments(String content) {
@@ -685,7 +785,7 @@ final class JavaSourceExtractor {
 
     private JsonObject relation(JsonObject identity, String kind, String target) {
         JsonObject relation = new JsonObject();
-        relation.add("source_declaration_id", identity.deepCopy());
+        relation.add("source_declaration_id", identity);
         relation.addProperty("kind", kind);
         relation.addProperty("target_reference", target);
         return relation;
@@ -751,15 +851,15 @@ final class JavaSourceExtractor {
         List<CallableFact> candidates
     ) {
         JsonObject call = new JsonObject();
-        call.add("source_callable_id", source.json().getAsJsonObject("declaration_id").deepCopy());
+        call.add("source_callable_id", source.json().getAsJsonObject("declaration_id"));
         call.addProperty("ordinal", ordinal);
         call.add(
             "target_callable_id",
             candidates.size() == 1
-                ? candidates.get(0).json().getAsJsonObject("declaration_id").deepCopy()
+                ? candidates.get(0).json().getAsJsonObject("declaration_id")
                 : JsonNull.INSTANCE
         );
-        call.addProperty("source_id", sourceId);
+        call.add("source_id", sourceIdValue);
         call.addProperty("line", beginLine(expression));
         call.addProperty("expression", rendered);
         call.addProperty("resolution", candidates.size() == 1 ? "resolved" : "unresolved");
@@ -781,12 +881,12 @@ final class JavaSourceExtractor {
 
     private JsonObject declarationIdentity(String family, String qualifiedName, long ordinal) {
         JsonObject identity = new JsonObject();
-        identity.addProperty("source_id", sourceId);
-        identity.addProperty("content_digest", contentDigest);
+        identity.add("source_id", sourceIdValue);
+        identity.add("content_digest", contentDigestValue);
         identity.addProperty("family", family);
         identity.addProperty("qualified_name", qualifiedName);
         identity.addProperty("ordinal", ordinal);
-        return identity;
+        return record.identities.add(identity);
     }
 
     private DeclarationKind declarationKind(TypeDeclaration<?> declaration) {
@@ -908,16 +1008,39 @@ final class JavaSourceExtractor {
         return Optional.empty();
     }
 
-    private int byteOffset(com.github.javaparser.Position position, boolean inclusiveEnd) {
-        int offset = 0;
-        for (int line = 1; line < position.line; line++) {
-            int newline = sourceContent.indexOf('\n', offset);
-            if (newline < 0) throw new ExtractorInvariantFailure("Java source range lies outside " + sourceId, null);
-            offset = newline + 1;
+    private void indexSourcePositions() {
+        int lines = 1;
+        for (int index = 0; index < sourceContent.length(); index++) {
+            if (endsLine(index)) lines++;
         }
-        offset += position.column - 1 + (inclusiveEnd ? 1 : 0);
+        lineOffsets = new int[lines];
+        utf8Offsets = new int[sourceContent.length() + 1];
+        int line = 1;
+        for (int index = 0; index < sourceContent.length(); index++) {
+            char character = sourceContent.charAt(index);
+            if (endsLine(index)) lineOffsets[line++] = index + 1;
+            int width = character < 0x80 ? 1 : character < 0x800 ? 2 : 3;
+            if (Character.isSurrogate(character)) {
+                width = Character.isLowSurrogate(character) && index > 0
+                    && Character.isHighSurrogate(sourceContent.charAt(index - 1)) ? 3 : 1;
+            }
+            utf8Offsets[index + 1] = utf8Offsets[index] + width;
+        }
+    }
+
+    private boolean endsLine(int index) {
+        char character = sourceContent.charAt(index);
+        return character == '\n' || character == '\r'
+            && (index + 1 == sourceContent.length() || sourceContent.charAt(index + 1) != '\n');
+    }
+
+    private int byteOffset(com.github.javaparser.Position position, boolean inclusiveEnd) {
+        if (position.line < 1 || position.line > lineOffsets.length) {
+            throw new ExtractorInvariantFailure("Java source range lies outside " + sourceId, null);
+        }
+        int offset = lineOffsets[position.line - 1] + position.column - 1 + (inclusiveEnd ? 1 : 0);
         if (offset > sourceContent.length()) throw new ExtractorInvariantFailure("Java source column lies outside " + sourceId, null);
-        return sourceContent.substring(0, offset).getBytes(StandardCharsets.UTF_8).length;
+        return utf8Offsets[offset];
     }
 
     private JsonObject placement(Node node) {
@@ -945,8 +1068,8 @@ final class JavaSourceExtractor {
         }
         JsonObject result = new JsonObject();
         result.add("lexical_scope", lexical);
-        result.add("namespace", namespaceMembership.deepCopy());
-        return result;
+        result.add("namespace", namespaceMembership);
+        return record.placements.add(result);
     }
 
     private BlockSpan blockSpan(BlockStmt block) {
@@ -960,7 +1083,7 @@ final class JavaSourceExtractor {
         JsonObject result = new JsonObject();
         result.addProperty("status", status);
         result.add("limitations", new JsonArray());
-        return result;
+        return record.coverages.add(result);
     }
 
     private JsonObject fileInventory() {
@@ -974,7 +1097,7 @@ final class JavaSourceExtractor {
         JsonObject result = new JsonObject();
         for (String name : List.of("methods", "abstract_methods", "properties")) result.add(name, coverage("complete"));
         result.add("signatures", coverage("not_applicable"));
-        return result;
+        return record.memberInventories.add(result);
     }
 
     private void limitInventory(String family, Node node, String description) {
@@ -1022,19 +1145,20 @@ final class JavaSourceExtractor {
     }
 
     private List<Node> bindings(String name, Node scope, Node source, boolean valueReference) {
-        return identities.entrySet().stream()
-            .filter(entry -> bindingScope(entry.getKey()) == scope)
-            .filter(entry -> lastPart(entry.getValue().get("qualified_name").getAsString()).equals(name))
-            .filter(entry -> valueReference || List.of("class", "abstract_class", "interface", "type").contains(entry.getValue().get("family").getAsString()))
-            .filter(entry -> visibleBinding(entry.getKey(), scope, source))
-            .map(Map.Entry::getKey).toList();
+        Map<String, List<Node>> names = declarationBindings.get(scope);
+        if (names == null) return List.of();
+        List<Node> candidates = names.get(name);
+        if (candidates == null) return List.of();
+        return candidates.stream()
+            .filter(node -> valueReference || List.of("class", "abstract_class", "interface", "type").contains(identities.get(node).get("family").getAsString()))
+            .filter(node -> visibleBinding(node, scope, source)).toList();
     }
 
     private JsonObject unresolvedTarget(String reason) {
         JsonObject target = new JsonObject();
         target.addProperty("kind", "unresolved");
         target.addProperty("reason", reason);
-        return target;
+        return record.targets.add(target);
     }
 
     private JsonObject resolveTarget(String reference, Node source, boolean valueReference) {
@@ -1072,7 +1196,7 @@ final class JavaSourceExtractor {
                 JsonObject target = new JsonObject();
                 target.addProperty("kind", "resolved");
                 target.add("declaration_id", identities.get(scope));
-                return target;
+                return record.targets.add(target);
             }
         }
     }

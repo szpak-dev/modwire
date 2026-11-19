@@ -1,3 +1,4 @@
+import shutil
 from copy import copy, deepcopy
 from dataclasses import replace
 
@@ -16,6 +17,8 @@ from modwire.application import (
     SourceManifest,
     SourceParameter,
     SourceParameterKind,
+    SourceParseError,
+    SourceScopeKind,
     SourceTypeAbsent,
 )
 
@@ -23,6 +26,42 @@ from .base_test import ApplicationTestCase
 
 
 class TestCodeMapReuse(ApplicationTestCase):
+    @pytest.mark.parametrize("language", ("php", "java"))
+    def test_native_batch_parse_failure_preserves_diagnostics_and_recovers(self, language: str) -> None:
+        root = self.workspace / language
+        shutil.copytree(self.repository / f"tests/fixtures/implementation_manifest/{language}/canonical/src", root)
+        broken = self.repository / f"tests/fixtures/code_map_reuse/native_failure/{language}/Broken.{language}"
+        target = root / broken.name
+        shutil.copyfile(broken, target)
+
+        with pytest.raises(SourceParseError) as raised:
+            self.application.generate_map(language, str(root), self.scan_policy())
+
+        assert raised.value.language == language
+        assert raised.value.line >= 1
+        assert raised.value.column >= 1
+        target.unlink()
+        recovered = self.application.generate_map(language, str(root), self.scan_policy())
+        assert tuple(recovered.extraction.files) == (f"Example.{language}",)
+
+    @pytest.mark.parametrize("line_ending", (b"\n", b"\r\n", b"\r"))
+    def test_java_preserves_utf8_block_offsets_after_multibyte_text(self, line_ending: bytes) -> None:
+        fixture = self.repository / "tests/fixtures/code_map_reuse/java/Example.java"
+        root = self.workspace / "example-java"
+        root.mkdir()
+        content = fixture.read_bytes().replace(b"\n", line_ending)
+        (root / "Example.java").write_bytes(content)
+
+        source = self.application.generate_map("java", str(root), self.scan_policy()).extraction.files[
+            FileId("Example.java")
+        ]
+        value = next(item for item in source.values if item.name == "exampleValue")
+        scope = value.placement.lexical_scope
+        assert scope.kind is SourceScopeKind.BLOCK
+        expected_start = content.index(b"{", content.index(b"if"))
+        assert scope.start_utf8_offset == expected_start
+        assert scope.end_utf8_offset == content.index(b"}", expected_start) + 1
+
     @pytest.mark.parametrize("reference", (-1, 0, True, 0.5))
     def test_public_documents_reject_internal_value_references(self, reference: object) -> None:
         with pytest.raises(ValidationError):

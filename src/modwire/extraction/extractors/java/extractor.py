@@ -13,6 +13,7 @@ from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
 from ..models.entrypoints.file_entrypoint import FileExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
+from ..models.native_output_format import NativeOutputFormat
 
 
 @injectable(as_type=SourceExtractor, qualifier="java")
@@ -23,9 +24,10 @@ class JavaExtractor(SourceExtractor):
     def __init__(self) -> None:
         self.runtime = ExtractorRuntime(
             order=3,
+            output_format=NativeOutputFormat.INDEXED_JSONL,
             descriptor=ExtractorDescriptor(
                 id="modwire.java.javaparser",
-                version="3",
+                version="4",
                 language="java",
                 runtime="java",
             ),

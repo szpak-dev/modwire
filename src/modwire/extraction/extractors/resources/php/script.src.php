@@ -13,6 +13,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt;
 use PhpParser\ParserFactory;
+use PhpParser\Parser;
 use PhpParser\PrettyPrinter\Standard;
 
 function line_count_for_content(string $content): int {
@@ -103,21 +104,18 @@ function imported_symbol_name(string $path): string {
     return end($parts) ?: '';
 }
 
-function walk_nodes(array $nodes, callable $callback, array $parents = []): void {
-    foreach ($nodes as $node) {
-        if (!$node instanceof Node) {
-            continue;
+function walk_nodes(Node|array $nodes, callable $callback, array $parents = []): void {
+    if (is_array($nodes)) {
+        foreach ($nodes as $node) {
+            if ($node instanceof Node) walk_nodes($node, $callback, $parents);
         }
-        $callback($node, $parents);
-        $nextParents = [...$parents, $node];
-        foreach ($node->getSubNodeNames() as $name) {
-            $child = $node->{$name};
-            if ($child instanceof Node) {
-                walk_nodes([$child], $callback, $nextParents);
-            } elseif (is_array($child)) {
-                walk_nodes($child, $callback, $nextParents);
-            }
-        }
+        return;
+    }
+    $callback($nodes, $parents);
+    $parents[] = $nodes;
+    foreach ($nodes->getSubNodeNames() as $name) {
+        $child = $nodes->{$name};
+        if ($child instanceof Node || is_array($child)) walk_nodes($child, $callback, $parents);
     }
 }
 
@@ -183,18 +181,18 @@ function type_annotation(Node|Name|string|null $type): string {
     return node_name($type);
 }
 
-function source_type(Node|Name|string|null $type): array {
+function source_type(Node|Name|string|null $type, NativeSourceRecord $record): NativeValueReference {
     if ($type === null || $type === '') {
-        return ['kind' => 'absent'];
+        return $record->value('types', ['kind' => 'absent']);
     }
     if ($type instanceof Name || $type instanceof Node\Identifier || is_string($type)) {
-        return [
+        return $record->value('types', [
             'kind' => 'reference',
             'name' => type_annotation($type),
             'arguments' => [],
-        ];
+        ]);
     }
-    return ['kind' => 'unsupported'];
+    return $record->value('types', ['kind' => 'unsupported']);
 }
 
 function type_is_optional(Node|Name|string|null $type): bool {
@@ -228,18 +226,84 @@ function declaration_annotations(Stmt\ClassLike $node): array {
     return $annotations;
 }
 
-function parameter_definitions(array $params): array {
-    return array_map(fn (Param $param): array => [
+function parameter_definitions(array $params, NativeSourceRecord $record): array {
+    return array_map(fn (Param $param): NativeValueReference => $record->value('parameters', [
         'name' => var_name($param->var),
-        'type' => source_type($param->type),
+        'type' => source_type($param->type, $record),
         'kind' => $param->variadic ? 'variadic_positional' : 'positional',
         'has_default' => $param->default !== null || $param->variadic,
-    ], $params);
+    ]), $params);
 }
 
 final class PhpExtractorInvariantFailure extends RuntimeException {}
 
+final class NativeValueReference implements JsonSerializable, ArrayAccess {
+    public int $index = 0;
+
+    public function __construct(public readonly array|string $document) {}
+    public function jsonSerialize(): int { return $this->index; }
+    public function __serialize(): array { return [spl_object_id($this)]; }
+    public function offsetExists(mixed $offset): bool { return isset($this->document[$offset]); }
+    public function offsetGet(mixed $offset): mixed { return $this->document[$offset]; }
+    public function offsetSet(mixed $offset, mixed $value): void {
+        throw new PhpExtractorInvariantFailure('Native values are immutable.');
+    }
+    public function offsetUnset(mixed $offset): void {
+        throw new PhpExtractorInvariantFailure('Native values are immutable.');
+    }
+}
+
+final class NativeValueTable {
+    private array $values = [];
+
+    public function add(array|string $document): NativeValueReference {
+        $key = serialize($document);
+        return $this->values[$key] ??= new NativeValueReference($document);
+    }
+
+    public function encode(int $offset): array {
+        $documents = [];
+        foreach ($this->values as $value) {
+            $value->index = $offset++;
+            $documents[] = $value->document;
+        }
+        return $documents;
+    }
+}
+
+final class NativeSourceRecord {
+    private array $tables = [];
+    public readonly NativeValueReference $sourceId;
+    public readonly NativeValueReference $contentDigest;
+
+    public function __construct(string $sourceId, string $contentDigest) {
+        foreach (['texts', 'identities', 'targets', 'types', 'coverages', 'member_inventories',
+                  'namespaces', 'placements', 'assignments', 'parameters'] as $name) {
+            $this->tables[$name] = new NativeValueTable();
+        }
+        $this->sourceId = $this->value('texts', $sourceId);
+        $this->contentDigest = $this->value('texts', $contentDigest);
+    }
+
+    public function value(string $table, array|string $document): NativeValueReference {
+        return $this->tables[$table]->add($document);
+    }
+
+    public function encode(array $facts): array {
+        $record = ['source_id' => $this->sourceId->document];
+        $offset = 0;
+        foreach ($this->tables as $name => $table) {
+            $record[$name] = $table->encode($offset);
+            $offset += count($record[$name]);
+        }
+        $record['facts'] = $facts;
+        return $record;
+    }
+}
+
 final class PhpStructuralIndex {
+    public readonly NativeSourceRecord $record;
+    public array $nodes = [];
     public array $identities = [];
     public array $identitiesByQualifiedName = [];
     public array $parents = [];
@@ -248,8 +312,11 @@ final class PhpStructuralIndex {
     public array $limitations = [];
 
     public function __construct(public readonly string $sourceId, public readonly string $contentDigest, array $nodes) {
+        $this->record = new NativeSourceRecord($sourceId, $contentDigest);
         walk_nodes($nodes, function (Node $node, array $parents): void {
-            $this->parents[spl_object_id($node)] = $parents;
+            $id = spl_object_id($node);
+            $this->nodes[$id] = $node;
+            $this->parents[$id] = $parents;
             if ($node instanceof Stmt\Foreach_ || $node instanceof Stmt\Catch_ || $node instanceof Expr\AssignRef ||
                 ($node instanceof Expr\Assign && !($node->var instanceof Expr\Variable && is_string($node->var->name)))) {
                 $this->limit('values', $node, 'Binding target is not represented as a named source value.');
@@ -293,9 +360,13 @@ final class PhpStructuralIndex {
         }
     }
 
-    public function createIdentity(string $family, string $name, Node $node): array {
-        return ['source_id' => $this->sourceId, 'content_digest' => $this->contentDigest,
-            'family' => $family, 'qualified_name' => $name, 'ordinal' => declaration_ordinal($node)];
+    public function visit(callable $callback): void {
+        foreach ($this->nodes as $id => $node) $callback($node, $this->parents[$id]);
+    }
+
+    public function createIdentity(string $family, string $name, Node $node): NativeValueReference {
+        return $this->record->value('identities', ['source_id' => $this->record->sourceId, 'content_digest' => $this->record->contentDigest,
+            'family' => $family, 'qualified_name' => $name, 'ordinal' => declaration_ordinal($node)]);
     }
 
     public function qualifiedName(string $name, Node $node): string {
@@ -308,55 +379,58 @@ final class PhpStructuralIndex {
             'location' => ['kind' => 'source', 'start_line' => $node->getStartLine(), 'end_line' => $node->getEndLine()]];
     }
 
-    public function nearestIdentity(array $parents): ?array {
-        foreach (array_reverse($parents) as $parent) {
+    public function nearestIdentity(array $parents): ?NativeValueReference {
+        for ($position = count($parents) - 1; $position >= 0; $position--) {
+            $parent = $parents[$position];
             if (isset($this->scopes[spl_object_id($parent)])) return $this->scopes[spl_object_id($parent)];
         }
         return null;
     }
 
-    public function placement(Node $node): array {
+    public function placement(Node $node): NativeValueReference {
         $parents = $this->parents[spl_object_id($node)];
         $parent = $this->nearestIdentity($parents);
         $scope = $parent === null ? ['kind' => 'file'] : ['kind' => 'declaration', 'declaration_id' => $parent];
         $namespace = ['kind' => 'none'];
-        foreach (array_reverse($parents) as $ancestor) {
+        for ($position = count($parents) - 1; $position >= 0; $position--) {
+            $ancestor = $parents[$position];
             if ($ancestor instanceof Stmt\Namespace_) {
                 $identity = $this->identities[spl_object_id($ancestor)];
                 $namespace = ['kind' => 'member', 'namespace_reference' => $identity['qualified_name'],
-                    'target' => ['kind' => 'resolved', 'declaration_id' => $identity]];
+                    'target' => $this->record->value('targets', ['kind' => 'resolved', 'declaration_id' => $identity])];
                 break;
             }
         }
-        return ['lexical_scope' => $scope, 'namespace' => $namespace];
+        return $this->record->value('placements', ['lexical_scope' => $scope,
+            'namespace' => $this->record->value('namespaces', $namespace)]);
     }
 
-    public function resolve(string $reference, Node $source): array {
+    public function resolve(string $reference, Node $source): NativeValueReference {
         $name = str_replace('\\', '.', ltrim($reference, '\\'));
         $scope = $this->nearestIdentity($this->parents[spl_object_id($source)]);
         $prefix = $scope === null ? '' : $scope['qualified_name'];
         while (true) {
             $qualified = $prefix === '' || str_starts_with($reference, '\\') ? $name : $prefix . '.' . $name;
             $matches = $this->identitiesByQualifiedName[$qualified] ?? [];
-            if (count($matches) === 1) return ['kind' => 'resolved', 'declaration_id' => $this->identities[$matches[0]]];
-            if (count($matches) > 1) return ['kind' => 'unresolved', 'reason' => 'ambiguous'];
-            if ($prefix === '') return ['kind' => 'unresolved', 'reason' => 'external'];
+            if (count($matches) === 1) return $this->record->value('targets', ['kind' => 'resolved', 'declaration_id' => $this->identities[$matches[0]]]);
+            if (count($matches) > 1) return $this->record->value('targets', ['kind' => 'unresolved', 'reason' => 'ambiguous']);
+            if ($prefix === '') return $this->record->value('targets', ['kind' => 'unresolved', 'reason' => 'external']);
             $separator = strrpos($prefix, '.');
             $prefix = $separator === false ? '' : substr($prefix, 0, $separator);
         }
     }
 }
 
-function inventory_coverage(array $limitations = [], string $status = 'complete'): array {
-    return ['status' => $limitations === [] ? $status : 'incomplete', 'limitations' => $limitations];
+function inventory_coverage(NativeSourceRecord $record, array $limitations = [], string $status = 'complete'): NativeValueReference {
+    return $record->value('coverages', ['status' => $limitations === [] ? $status : 'incomplete', 'limitations' => $limitations]);
 }
 
-function member_inventory(): array {
-    return ['methods' => inventory_coverage(), 'abstract_methods' => inventory_coverage(),
-        'properties' => inventory_coverage(), 'signatures' => inventory_coverage([], 'not_applicable')];
+function member_inventory(NativeSourceRecord $record): NativeValueReference {
+    return $record->value('member_inventories', ['methods' => inventory_coverage($record), 'abstract_methods' => inventory_coverage($record),
+        'properties' => inventory_coverage($record), 'signatures' => inventory_coverage($record, [], 'not_applicable')]);
 }
 
-function source_export_entry(string $name, string $kind, array $identity): array {
+function source_export_entry(string $name, string $kind, NativeValueReference $identity): array {
     return [
         'name' => $name,
         'local_name' => $name,
@@ -376,7 +450,7 @@ function source_export_entry(string $name, string $kind, array $identity): array
 function source_callable_entry(
     PhpStructuralIndex $index,
     string $name,
-    ?array $ownerDeclarationId,
+    ?NativeValueReference $ownerDeclarationId,
     string $kind,
     string $visibility,
     Node $node,
@@ -387,7 +461,7 @@ function source_callable_entry(
 ): array {
     $entry = [
         'declaration_id' => $index->identities[spl_object_id($node)],
-        'source_id' => $index->sourceId,
+        'source_id' => $index->record->sourceId,
         'placement' => $index->placement($node),
         'name' => $name,
         'qualified_name' => $index->identities[spl_object_id($node)]['qualified_name'],
@@ -399,7 +473,7 @@ function source_callable_entry(
         'line_end' => $node->getEndLine(),
         'line_count' => line_span($node),
         'parameters' => $parameters,
-        'return_type' => source_type($returnType),
+        'return_type' => source_type($returnType, $index->record),
         'decorators' => [],
         'docstring' => '',
     ];
@@ -438,7 +512,7 @@ function source_value_entry(
 
 function source_property_entry(
     PhpStructuralIndex $index,
-    array $ownerDeclarationId,
+    NativeValueReference $ownerDeclarationId,
     string $name,
     Node $node,
     Node|Name|string|null $type,
@@ -452,14 +526,14 @@ function source_property_entry(
         'placement' => $index->placement($node),
         'name' => $name,
         'is_optional' => $isOptional,
-        'type' => source_type($type),
+        'type' => source_type($type, $index->record),
         'visibility' => $visibility,
         'member_kind' => $memberKind,
-        'assigned_values' => [[
+        'assigned_values' => [$index->record->value('assignments', [
             'kind' => 'unsupported',
             'expression' => '',
             'reference' => '',
-        ]],
+        ])],
     ];
 }
 
@@ -526,11 +600,11 @@ function source_text(Node $node, string $content): string {
     return substr($content, $node->getStartFilePos(), $node->getEndFilePos() - $node->getStartFilePos() + 1);
 }
 
-function collect_imports(array $nodes, string $content, PhpStructuralIndex $index): array {
+function collect_imports(string $content, PhpStructuralIndex $index): array {
     $imports = [];
     $statementId = 0;
 
-    walk_nodes($nodes, function (Node $node, array $parents) use ($content, $index, &$imports, &$statementId): void {
+    $index->visit(function (Node $node, array $parents) use ($content, $index, &$imports, &$statementId): void {
         if (!$node instanceof Stmt\Use_ && !$node instanceof Stmt\GroupUse) {
             return;
         }
@@ -571,11 +645,11 @@ function collect_imports(array $nodes, string $content, PhpStructuralIndex $inde
     return $imports;
 }
 
-function collect_definitions(array $nodes, PhpStructuralIndex $index, array $callables): array {
+function collect_definitions(PhpStructuralIndex $index, array $callables): array {
     $declarations = [];
     $exports = [];
     $relations = [];
-    walk_nodes($nodes, function (Node $node, array $parents) use ($index, $callables, &$declarations, &$exports, &$relations): void {
+    $index->visit(function (Node $node, array $parents) use ($index, $callables, &$declarations, &$exports, &$relations): void {
         if ($node instanceof Stmt\Function_) {
             $identity = $index->identities[spl_object_id($node)];
             $exports[] = source_export_entry($identity['qualified_name'], 'function', $identity);
@@ -628,14 +702,14 @@ function collect_definitions(array $nodes, PhpStructuralIndex $index, array $cal
         $declarations[] = ['declaration_id' => $identity, 'kind' => $kind, 'name' => $identity['qualified_name'],
             'visibility' => 'public', 'visibility_intent' => 'public', 'declaration_annotations' => declaration_annotations($node),
             'line_count' => line_span($node), 'methods' => $methods, 'abstract_methods' => $abstract, 'properties' => $properties,
-            'signatures' => [], 'inventory' => member_inventory(), 'placement' => $index->placement($node)];
+            'signatures' => [], 'inventory' => member_inventory($index->record), 'placement' => $index->placement($node)];
         if ($node->name !== null) $exports[] = source_export_entry($identity['qualified_name'],
             in_array($kind, ['trait', 'enum'], true) ? 'type' : $kind, $identity);
     });
     return ['declarations' => $declarations, 'exports' => $exports, 'declaration_relations' => $relations];
 }
 
-function collect_values_and_callables(array $nodes, PhpStructuralIndex $index): array {
+function collect_values_and_callables(PhpStructuralIndex $index): array {
     $values = [];
     $callables = [];
     $callableRanges = [];
@@ -645,7 +719,7 @@ function collect_values_and_callables(array $nodes, PhpStructuralIndex $index): 
         $callableRanges[spl_object_id($node)] = $entry['declaration_id'];
     };
 
-    walk_nodes($nodes, function (Node $node, array $parents) use (
+    $index->visit(function (Node $node, array $parents) use (
         $index,
         &$values,
         $addCallable
@@ -701,7 +775,7 @@ function collect_values_and_callables(array $nodes, PhpStructuralIndex $index): 
                 'function',
                 'public',
                 $node,
-                parameter_definitions($node->params),
+                parameter_definitions($node->params, $index->record),
                 $node->returnType
             ), $node);
             return;
@@ -720,7 +794,7 @@ function collect_values_and_callables(array $nodes, PhpStructuralIndex $index): 
                 $kind,
                 member_visibility($node),
                 $node,
-                parameter_definitions($node->params),
+                parameter_definitions($node->params, $index->record),
                 $node->returnType
             ), $node);
             return;
@@ -737,7 +811,7 @@ function collect_values_and_callables(array $nodes, PhpStructuralIndex $index): 
                 $bound ? 'callable_value' : 'anonymous',
                 'private',
                 $node,
-                parameter_definitions($node->params),
+                parameter_definitions($node->params, $index->record),
                 $node->returnType,
                 'assignment',
                 function_parent($parents) === null ? 'module' : 'local'
@@ -752,10 +826,10 @@ function collect_values_and_callables(array $nodes, PhpStructuralIndex $index): 
     ];
 }
 
-function collect_calls(array $nodes, PhpStructuralIndex $index, array $callables, array $callableRanges): array {
+function collect_calls(PhpStructuralIndex $index, array $callables, array $callableRanges): array {
     $calls = [];
     $nextOrdinalByOwner = array_fill_keys(array_keys($callableRanges), 1);
-    walk_nodes($nodes, function (Node $node, array $parents) use (&$calls, &$nextOrdinalByOwner, $index, $callableRanges, $callables): void {
+    $index->visit(function (Node $node, array $parents) use (&$calls, &$nextOrdinalByOwner, $index, $callableRanges, $callables): void {
         if (!$node instanceof Expr\FuncCall && !$node instanceof Expr\MethodCall && !$node instanceof Expr\NullsafeMethodCall && !$node instanceof Expr\StaticCall && !$node instanceof Expr\New_) return;
         $owner = function_parent($parents);
         if ($owner === null) return;
@@ -788,14 +862,14 @@ function collect_calls(array $nodes, PhpStructuralIndex $index, array $callables
             } elseif ($callable['declaration_id'] === $target['declaration_id']) $candidates[] = $callable['declaration_id'];
         }
         $calls[] = ['source_callable_id' => $range, 'ordinal' => $nextOrdinalByOwner[spl_object_id($owner)]++,
-            'target_callable_id' => count($candidates) === 1 ? $candidates[0] : null, 'source_id' => $index->sourceId,
+            'target_callable_id' => count($candidates) === 1 ? $candidates[0] : null, 'source_id' => $index->record->sourceId,
             'line' => $node->getStartLine(), 'expression' => $expression === '' ? (new Standard())->prettyPrintExpr($node) : $expression,
             'resolution' => count($candidates) === 1 ? 'resolved' : ($dynamic ? 'dynamic' : 'unresolved'), 'target_name' => expression_target_name($expression)];
     });
     return $calls;
 }
 
-function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRoot = null): array {
+function extract_file(Parser $parser, string $path, ?string $sourceId = null, ?string $sourcesRoot = null): array {
     $content = file_get_contents($path);
     if ($content === false) {
         fwrite(STDERR, "Unable to read PHP file: {$path}\n");
@@ -803,7 +877,7 @@ function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRo
     }
 
     try {
-        $nodes = (new ParserFactory())->createForHostVersion()->parse($content) ?? [];
+        $nodes = $parser->parse($content) ?? [];
     } catch (Error $error) {
         if ($error->getStartLine() < 1 || !$error->hasColumnInfo()) {
             throw new PhpExtractorInvariantFailure("PHP parser omitted the source parse location for {$path}.", previous: $error);
@@ -823,19 +897,19 @@ function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRo
     $root = $sourcesRoot ?? dirname($path);
     $resolvedSourceId = $sourceId ?? source_id_for_path($path, $root);
     $index = new PhpStructuralIndex($resolvedSourceId, hash('sha256', $content), $nodes);
-    $graph = collect_values_and_callables($nodes, $index);
-    $definitions = collect_definitions($nodes, $index, $graph['callables']);
+    $graph = collect_values_and_callables($index);
+    $definitions = collect_definitions($index, $graph['callables']);
     foreach ($graph['values'] as $value) {
         if ($value['declaration_kind'] === 'constant' && $value['scope'] === 'module') {
             $definitions['exports'][] = source_export_entry($value['name'], 'value', $value['declaration_id']);
         }
     }
     $inventory = [];
-    foreach (['declarations', 'functions', 'values', 'callable_values', 'anonymous_callables', 'namespaces', 'exports'] as $family) $inventory[$family] = inventory_coverage($index->limitations[$family] ?? []);
-    $inventory['unresolved_methods'] = inventory_coverage([], 'not_applicable');
+    foreach (['declarations', 'functions', 'values', 'callable_values', 'anonymous_callables', 'namespaces', 'exports'] as $family) $inventory[$family] = inventory_coverage($index->record, $index->limitations[$family] ?? []);
+    $inventory['unresolved_methods'] = inventory_coverage($index->record, [], 'not_applicable');
 
-    return [
-        'imports' => collect_imports($nodes, $content, $index),
+    return $index->record->encode([
+        'imports' => collect_imports($content, $index),
         'exports' => $definitions['exports'],
         'namespaces' => $index->namespaces,
         'inventory' => $inventory,
@@ -854,15 +928,16 @@ function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRo
             $graph['callables'],
             fn (array $callable): bool => $callable['kind'] === 'anonymous'
         )),
-        'calls' => collect_calls($nodes, $index, $graph['callables'], $graph['callable_ranges']),
+        'calls' => collect_calls($index, $graph['callables'], $graph['callable_ranges']),
         'declaration_relations' => $definitions['declaration_relations'],
         'line_count' => line_count_for_content($content),
         'code_line_count' => code_line_count_for_content($content),
         'public_symbol_count' => count($definitions['exports']),
-    ];
+    ]);
 }
 
 function write_batch_from_stdin(string $sourcesRoot): void {
+    $parser = (new ParserFactory())->createForHostVersion();
     $pathsBySourceId = json_decode(stream_get_contents(STDIN), true);
     if (!is_array($pathsBySourceId)) {
         fwrite(STDERR, "Expected a JSON object mapping source ids to PHP file paths.\n");
@@ -874,10 +949,7 @@ function write_batch_from_stdin(string $sourcesRoot): void {
             fwrite(STDERR, "Expected source ids and paths to be strings.\n");
             exit(1);
         }
-        echo json_encode([
-            $sourceId,
-            extract_file($path, $sourceId, $sourcesRoot),
-        ]) . "\n";
+        echo json_encode(extract_file($parser, $path, $sourceId, $sourcesRoot), JSON_THROW_ON_ERROR) . "\n";
         fflush(STDOUT);
     }
 }
@@ -885,5 +957,5 @@ function write_batch_from_stdin(string $sourcesRoot): void {
 if (($argv[1] ?? null) === '--batch') {
     write_batch_from_stdin($argv[2] ?? getcwd());
 } else {
-    echo json_encode(extract_file($argv[1], null, $argv[2] ?? dirname($argv[1])));
+    echo json_encode(extract_file((new ParserFactory())->createForHostVersion(), $argv[1], null, $argv[2] ?? dirname($argv[1])));
 }
