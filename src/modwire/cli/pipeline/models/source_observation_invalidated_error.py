@@ -1,11 +1,12 @@
 from ....extraction.extractors.models.extraction_error import ExtractionError
 from ....shared.code.models.sources.identity import FileId
+from ....shared.failures.models.modwire_error_code import ModwireErrorCode
 
 
 class SourceObservationInvalidatedError(ExtractionError):
     """Report exact source identities that changed after their observation."""
 
-    code = "source_observation_invalidated"
+    code = ModwireErrorCode.SOURCE_OBSERVATION_INVALIDATED
 
     def __init__(
         self,

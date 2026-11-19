@@ -21,9 +21,11 @@ class SourceImportResolver(ImportResolver):
         modules = ImportIdentityIndex()
         symbols = ImportIdentityIndex()
         for file_id, source_file in files.items():
-            module = self._normalize(source_file.import_identity)
             for identity in identities[file_id]:
                 modules.add("", self._normalize(identity), file_id)
+            if not source_file.exports:
+                continue
+            module = self._normalize(source_file.import_identity)
             parent = module.rsplit("/", 1)[0] if "/" in module else ""
             for exported in source_file.exports:
                 symbols.add(exported.name.casefold(), parent, file_id)
@@ -85,5 +87,4 @@ class SourceImportResolver(ImportResolver):
         return candidates
 
     def _normalize(self, value: str) -> str:
-        parts = str(value).replace("\\", "/").strip("/").split("/")
-        return "/".join(re.sub("[^a-z0-9]", "", part.casefold()) for part in parts)
+        return re.sub("[^a-z0-9/]", "", str(value).replace("\\", "/").strip("/").casefold())

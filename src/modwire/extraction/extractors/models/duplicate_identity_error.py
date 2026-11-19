@@ -1,12 +1,13 @@
 from ....shared.code.models.sources.identity import FileId
 from ....shared.code.models.sources.identity_kind import IdentityKind
+from ....shared.failures.models.modwire_error_code import ModwireErrorCode
 from .extraction_error import ExtractionError
 
 
 class DuplicateIdentityError(ExtractionError):
     """Report two source files that claim the same extracted identity."""
 
-    code = "duplicate_identity"
+    code = ModwireErrorCode.DUPLICATE_IDENTITY
 
     def __init__(
         self,

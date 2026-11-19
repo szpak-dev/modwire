@@ -1,10 +1,11 @@
+from ....shared.failures.models.modwire_error_code import ModwireErrorCode
 from .extractor_error import ExtractorError
 
 
 class SourceParseError(ExtractorError):
     """Report source text rejected by an extractor's parser."""
 
-    code = "source_parse"
+    code = ModwireErrorCode.SOURCE_PARSE
 
     def __init__(
         self,

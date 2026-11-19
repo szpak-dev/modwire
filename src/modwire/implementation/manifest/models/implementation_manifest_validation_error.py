@@ -1,3 +1,4 @@
+from ....shared.failures.models.modwire_error_code import ModwireErrorCode
 from .implementation_manifest_error import ImplementationManifestError
 from .implementation_manifest_violation import ImplementationManifestViolation
 
@@ -5,7 +6,7 @@ from .implementation_manifest_violation import ImplementationManifestViolation
 class ImplementationManifestValidationError(ImplementationManifestError):
     """Report canonical implementation facts that violate the manifest contract."""
 
-    code = "implementation_manifest_validation"
+    code = ModwireErrorCode.IMPLEMENTATION_MANIFEST_VALIDATION
 
     def __init__(self, violation: ImplementationManifestViolation, subject: str) -> None:
         self.violation = violation

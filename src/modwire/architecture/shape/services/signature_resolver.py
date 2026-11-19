@@ -6,6 +6,8 @@ from ....shared.code.models.callables.source_signature import SourceSignature
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, SymbolShapeResolverInterface
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
+from ..models.shape_rule_kind import ShapeRuleKind
+from ..models.shape_symbol_kind import ShapeSymbolKind
 from ..models.shape_violation import ShapeViolation
 
 
@@ -52,10 +54,10 @@ class SignatureResolver(SymbolShapeResolverInterface, BaseShapeResolver):
         violations = [
             self.limit_violation(
                 source_id=source_id,
-                rule_name="max_declared_args",
+                rule_name=ShapeRuleKind.MAX_DECLARED_ARGS,
                 actual=signature.declared_args,
                 limit=config.max_declared_args,
-                symbol_kind="signature",
+                symbol_kind=ShapeSymbolKind.SIGNATURE,
                 symbol_name=symbol_name,
             )
         ]
@@ -63,10 +65,10 @@ class SignatureResolver(SymbolShapeResolverInterface, BaseShapeResolver):
             violations.append(
                 ShapeViolation(
                     source_id=source_id,
-                    rule_name="allow_optional_method_args",
+                    rule_name=ShapeRuleKind.ALLOW_OPTIONAL_METHOD_ARGS,
                     actual=True,
                     limit=False,
-                    symbol_kind="signature",
+                    symbol_kind=ShapeSymbolKind.SIGNATURE,
                     symbol_name=symbol_name,
                 )
             )

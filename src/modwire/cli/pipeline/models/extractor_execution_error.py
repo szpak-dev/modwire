@@ -1,10 +1,11 @@
 from ....extraction.extractors.models.extractor_error import ExtractorError
+from ....shared.failures.models.modwire_error_code import ModwireErrorCode
 
 
 class ExtractorExecutionError(ExtractorError):
     """Report a native extractor process that exited unsuccessfully."""
 
-    code = "extractor_execution"
+    code = ModwireErrorCode.EXTRACTOR_EXECUTION
 
     def __init__(self, language: str, exit_code: int, diagnostic: str) -> None:
         self.language = language

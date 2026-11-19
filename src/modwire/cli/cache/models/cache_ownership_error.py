@@ -1,10 +1,11 @@
+from ....shared.failures.models.modwire_error_code import ModwireErrorCode
 from .cache_error import CacheError
 
 
 class CacheOwnershipError(CacheError):
     """Report a cache path that cannot be safely used by Modwire."""
 
-    code = "cache_ownership"
+    code = ModwireErrorCode.CACHE_OWNERSHIP
 
     def __init__(self, path: str, reason: str) -> None:
         self.path = path

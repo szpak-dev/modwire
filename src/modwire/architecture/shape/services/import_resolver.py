@@ -6,6 +6,8 @@ from ....shared.code.models.sources.import_crossing_type import ImportCrossingTy
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, ShapeResolverInterface
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
+from ..models.shape_rule_kind import ShapeRuleKind
+from ..models.shape_symbol_kind import ShapeSymbolKind
 from ..models.shape_violation import ShapeViolation
 
 
@@ -30,10 +32,10 @@ class ImportResolver(ShapeResolverInterface, BaseShapeResolver):
                 violations.append(
                     ShapeViolation(
                         source_id=source_id,
-                        rule_name="allow_import_aliases",
+                        rule_name=ShapeRuleKind.ALLOW_IMPORT_ALIASES,
                         actual=False,
                         limit=False,
-                        symbol_kind="import",
+                        symbol_kind=ShapeSymbolKind.IMPORT,
                         symbol_name=source_import.normalized_path,
                     )
                 )
@@ -41,10 +43,10 @@ class ImportResolver(ShapeResolverInterface, BaseShapeResolver):
                 violations.append(
                     ShapeViolation(
                         source_id=source_id,
-                        rule_name="allowed_import_crossing_types",
+                        rule_name=ShapeRuleKind.ALLOWED_IMPORT_CROSSING_TYPES,
                         actual=source_import.crossing_type,
                         limit=",".join(config.allowed_import_crossing_types),
-                        symbol_kind="import",
+                        symbol_kind=ShapeSymbolKind.IMPORT,
                         symbol_name=source_import.normalized_path,
                     )
                 )
@@ -56,10 +58,10 @@ class ImportResolver(ShapeResolverInterface, BaseShapeResolver):
                 violations.append(
                     ShapeViolation(
                         source_id=source_id,
-                        rule_name="require_joined_imports",
+                        rule_name=ShapeRuleKind.REQUIRE_JOINED_IMPORTS,
                         actual=True,
                         limit=True,
-                        symbol_kind="import",
+                        symbol_kind=ShapeSymbolKind.IMPORT,
                         symbol_name=source_import.join_key,
                     )
                 )

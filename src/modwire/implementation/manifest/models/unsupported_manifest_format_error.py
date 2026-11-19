@@ -1,3 +1,4 @@
+from ....shared.failures.models.modwire_error_code import ModwireErrorCode
 from .implementation_manifest_error import ImplementationManifestError
 from .manifest_format import ManifestFormat
 
@@ -5,7 +6,7 @@ from .manifest_format import ManifestFormat
 class UnsupportedManifestFormatError(ImplementationManifestError):
     """Report an implementation-manifest format with no matching serializer."""
 
-    code = "unsupported_manifest_format"
+    code = ModwireErrorCode.UNSUPPORTED_MANIFEST_FORMAT
 
     def __init__(self, format: ManifestFormat, supported_formats: tuple[ManifestFormat, ...]) -> None:
         self.format = format

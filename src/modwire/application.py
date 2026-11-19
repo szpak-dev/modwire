@@ -18,6 +18,8 @@ from .architecture.report.models.report_node import ReportNode
 from .architecture.shape.models.architecture_shape_error import ArchitectureShapeError
 from .architecture.shape.models.architecture_shape_validation_error import ArchitectureShapeValidationError
 from .architecture.shape.models.architecture_shape_violation import ArchitectureShapeViolation
+from .architecture.shape.models.shape_rule_kind import ShapeRuleKind
+from .architecture.shape.models.shape_symbol_kind import ShapeSymbolKind
 from .cli.cache.models.cache_access_error import CacheAccessError
 from .cli.cache.models.cache_error import CacheError
 from .cli.cache.models.cache_options import CacheOptions
@@ -43,6 +45,7 @@ from .cli.pipeline.models.pipeline_violation import PipelineViolation
 from .cli.pipeline.models.source_access_error import SourceAccessError
 from .cli.pipeline.models.source_observation import SourceObservation
 from .cli.pipeline.models.source_observation_invalidated_error import SourceObservationInvalidatedError
+from .extraction.extractors.models.batch_planner_kind import BatchPlannerKind
 from .extraction.extractors.models.duplicate_identity_error import DuplicateIdentityError
 from .extraction.extractors.models.extraction_error import ExtractionError
 from .extraction.extractors.models.extractor_error import ExtractorError
@@ -167,8 +170,14 @@ from .shared.code.models.values.source_value import SourceValue
 from .shared.code.models.values.source_value_declaration_kind import SourceValueDeclarationKind
 from .shared.code.models.values.source_value_scope import SourceValueScope
 from .shared.failures.models.modwire_error import ModwireError
+from .shared.failures.models.modwire_error_code import ModwireErrorCode
 
 __all__ = [
+    "ShapeRuleKind",
+    "ShapeSymbolKind",
+
+    "BatchPlannerKind",
+    "ModwireErrorCode",
     "FileInventoryCoverage",
     "InventoryCoverage",
     "InventoryLimitation",

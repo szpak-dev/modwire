@@ -1,4 +1,5 @@
 from ....shared.values.models.value_model import ValueModel
+from .batch_planner_kind import BatchPlannerKind
 
 
 class BatchConfig(ValueModel):
@@ -6,4 +7,4 @@ class BatchConfig(ValueModel):
     parallel_threshold: int = 0
     parallel_size: int = 0
     max_workers: int = 1
-    planner: str = "fixed"
+    planner: BatchPlannerKind = BatchPlannerKind.FIXED

@@ -1,10 +1,11 @@
+from ....shared.failures.models.modwire_error_code import ModwireErrorCode
 from .extraction_error import ExtractionError
 
 
 class UnsupportedLanguageError(ExtractionError):
     """Report a language for which no source extractor is registered."""
 
-    code = "unsupported_language"
+    code = ModwireErrorCode.UNSUPPORTED_LANGUAGE
 
     def __init__(self, language: str, supported_languages: tuple[str, ...]) -> None:
         self.language = language

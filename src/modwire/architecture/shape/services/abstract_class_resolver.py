@@ -6,6 +6,8 @@ from ....shared.code.models.declarations.source_declaration import SourceDeclara
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, SymbolShapeResolverInterface
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
+from ..models.shape_rule_kind import ShapeRuleKind
+from ..models.shape_symbol_kind import ShapeSymbolKind
 from ..models.shape_violation import ShapeViolation
 
 
@@ -39,18 +41,18 @@ class AbstractClassResolver(SymbolShapeResolverInterface, BaseShapeResolver):
         violations = [
             self.limit_violation(
                 source_id=source_id,
-                rule_name="max_class_lines",
+                rule_name=ShapeRuleKind.MAX_CLASS_LINES,
                 actual=abstract_class.line_count,
                 limit=config.max_class_lines,
-                symbol_kind="abstract_class",
+                symbol_kind=ShapeSymbolKind.ABSTRACT_CLASS,
                 symbol_name=abstract_class.name,
             ),
             self.limit_violation(
                 source_id=source_id,
-                rule_name="max_methods_per_class",
+                rule_name=ShapeRuleKind.MAX_METHODS_PER_CLASS,
                 actual=method_count,
                 limit=config.max_methods_per_class,
-                symbol_kind="abstract_class",
+                symbol_kind=ShapeSymbolKind.ABSTRACT_CLASS,
                 symbol_name=abstract_class.name,
             ),
         ]

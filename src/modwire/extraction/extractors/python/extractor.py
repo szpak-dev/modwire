@@ -12,6 +12,7 @@ from ....shared.code.models.sources.identity import FileId, ImportIdentity
 from ....shared.code.models.sources.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
+from ..models.batch_planner_kind import BatchPlannerKind
 from ..models.entrypoints.module_entrypoint import ModuleExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
 from .semantics.policies.import_identity_policy import PythonImportIdentityPolicy
@@ -190,7 +191,7 @@ class PythonExtractor(SourceExtractor):
             parallel_threshold=1000,
             parallel_size=1000,
             max_workers=4,
-            planner="balanced",
+            planner=BatchPlannerKind.BALANCED,
         )
 
     def import_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:

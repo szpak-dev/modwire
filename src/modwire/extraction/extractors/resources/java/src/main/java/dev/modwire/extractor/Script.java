@@ -248,16 +248,15 @@ final class JavaSourceExtractor {
         unit.walk(node -> {
             if (node instanceof Parameter parameter) indexValueBinding(parameter.getNameAsString(), parameter);
             else if (node instanceof VariableDeclarator variable) indexValueBinding(variable.getNameAsString(), variable);
-            String owner = nearestIdentity(node).map(value -> value.get("qualified_name").getAsString())
-                .orElseGet(() -> unit.getPackageDeclaration().map(declaration -> declaration.getNameAsString()).orElse(""));
             if (node instanceof TypeDeclaration<?> declaration) {
-                collectType(declaration, owner, declarations, callables, relations);
+                collectType(declaration, ownerName(node, unit), declarations, callables, relations);
             } else if (node instanceof ObjectCreationExpr creation && creation.getAnonymousClassBody().isPresent()) {
-                collectAnonymousType(creation, creation.getAnonymousClassBody().get(), owner, declarations, callables);
+                collectAnonymousType(creation, creation.getAnonymousClassBody().get(), ownerName(node, unit), declarations, callables);
                 relations.add(relation(identities.get(node), "extends", creation.getType().toString()));
             } else if (node instanceof EnumConstantDeclaration constant && !constant.getClassBody().isEmpty()) {
-                collectAnonymousType(constant, constant.getClassBody(), owner, declarations, callables);
+                collectAnonymousType(constant, constant.getClassBody(), ownerName(node, unit), declarations, callables);
             } else if (node instanceof LambdaExpr lambda) {
+                String owner = ownerName(node, unit);
                 Node parent = lambda.getParentNode().orElseThrow(() -> new ExtractorInvariantFailure("Lambda has no native parent.", null));
                 boolean bound = parent instanceof VariableDeclarator;
                 String name = bound ? ((VariableDeclarator) parent).getNameAsString() : "<anonymous>@" + ordinal(lambda);
@@ -272,7 +271,7 @@ final class JavaSourceExtractor {
                 callableFacts.add(new CallableFact(lambda, fact, name, owner, qualified, false));
             } else if (node instanceof VariableDeclarator variable && variable.getParentNode().filter(FieldDeclaration.class::isInstance).isEmpty()
                 && variable.getInitializer().filter(LambdaExpr.class::isInstance).isEmpty()) {
-                values.add(value(variable, owner));
+                values.add(value(variable, ownerName(node, unit)));
             } else if (node instanceof MethodReferenceExpr) {
                 limitInventory("callable_values", node, "Method references require a resolved external binding and do not declare a callable body.");
             }
@@ -285,7 +284,7 @@ final class JavaSourceExtractor {
         for (JsonElement value : relations) {
             JsonObject relation = value.getAsJsonObject();
             Node source = identities.entrySet().stream()
-                .filter(entry -> entry.getValue().equals(relation.getAsJsonObject("source_declaration_id")))
+                .filter(entry -> entry.getValue() == relation.getAsJsonObject("source_declaration_id"))
                 .map(Map.Entry::getKey).findFirst()
                 .orElseThrow(() -> new ExtractorInvariantFailure("Relation source has no indexed native declaration.", null));
             relation.add("target", resolveTarget(relation.get("target_reference").getAsString(), source, false));
@@ -304,8 +303,9 @@ final class JavaSourceExtractor {
         result.add("anonymous_callables", anonymousCallables);
         result.add("calls", calls());
         result.add("declaration_relations", relations);
-        result.addProperty("line_count", content.split("\\R", -1).length);
-        result.addProperty("code_line_count", codeLineCount(content));
+        String[] lines = content.split("\\R", -1);
+        result.addProperty("line_count", lines.length);
+        result.addProperty("code_line_count", codeLineCount(lines));
         result.addProperty("public_symbol_count", publicSymbolCount(declarations));
         return result;
     }
@@ -795,16 +795,12 @@ final class JavaSourceExtractor {
         JsonArray calls = new JsonArray();
         for (CallableFact source : callableFacts) {
             List<Node> expressions = new ArrayList<>();
-            for (MethodCallExpr expression : source.node().findAll(MethodCallExpr.class)) {
-                if (belongsTo(expression, source.node())) {
+            source.node().walk(expression -> {
+                if ((expression instanceof MethodCallExpr || expression instanceof ObjectCreationExpr)
+                    && belongsTo(expression, source.node())) {
                     expressions.add(expression);
                 }
-            }
-            for (ObjectCreationExpr expression : source.node().findAll(ObjectCreationExpr.class)) {
-                if (belongsTo(expression, source.node())) {
-                    expressions.add(expression);
-                }
-            }
+            });
             expressions.sort((left, right) -> {
                 int start = sourceRange(left).begin.compareTo(sourceRange(right).begin);
                 return start != 0 ? start : sourceRange(right).end.compareTo(sourceRange(left).end);
@@ -838,8 +834,8 @@ final class JavaSourceExtractor {
         if (!target.get("kind").getAsString().equals("resolved")) return List.of();
         JsonObject identity = target.getAsJsonObject("declaration_id");
         return callableFacts.stream().filter(fact -> constructor
-            ? fact.constructor() && fact.json().getAsJsonObject("owner_declaration_id").equals(identity)
-            : fact.json().getAsJsonObject("declaration_id").equals(identity)).toList();
+            ? fact.constructor() && fact.json().getAsJsonObject("owner_declaration_id") == identity
+            : fact.json().getAsJsonObject("declaration_id") == identity).toList();
     }
 
     private JsonObject call(
@@ -960,10 +956,10 @@ final class JavaSourceExtractor {
         return count;
     }
 
-    private int codeLineCount(String content) {
+    private int codeLineCount(String[] lines) {
         int count = 0;
         boolean inBlockComment = false;
-        for (String line : content.split("\\R", -1)) {
+        for (String line : lines) {
             String remaining = line.strip();
             if (inBlockComment) {
                 int end = remaining.indexOf("*/");
@@ -996,6 +992,11 @@ final class JavaSourceExtractor {
     private Range sourceRange(Node node) {
         return node.getRange().orElseThrow(() -> new ExtractorInvariantFailure(
             "Java parser omitted the source range for " + node.getClass().getSimpleName() + " in " + sourceId, null));
+    }
+
+    private String ownerName(Node node, CompilationUnit unit) {
+        return nearestIdentity(node).map(value -> value.get("qualified_name").getAsString())
+            .orElseGet(() -> unit.getPackageDeclaration().map(declaration -> declaration.getNameAsString()).orElse(""));
     }
 
     private Optional<JsonObject> nearestIdentity(Node node) {
@@ -1165,8 +1166,8 @@ final class JavaSourceExtractor {
         int generic = reference.indexOf('<');
         String name = generic < 0 ? reference : reference.substring(0, generic);
         Node scope = bindingScope(source);
-        CompilationUnit unit = source.findCompilationUnit().orElseThrow(() -> new ExtractorInvariantFailure("Declaration has no source unit.", null));
-        String packageName = unit.getPackageDeclaration().map(declaration -> declaration.getNameAsString()).orElse("");
+        String packageName = namespaceMembership.has("namespace_reference")
+            ? namespaceMembership.get("namespace_reference").getAsString() : "";
         String[] parts = name.split("\\.");
         int first = 0;
         boolean memberLookup = parts[0].equals("this");
@@ -1181,7 +1182,7 @@ final class JavaSourceExtractor {
         while (true) {
             if (valueReference && position < parts.length - 1 && shadowsReceiver(parts[position], scope, source)) return unresolvedTarget("dynamic");
             List<Node> matches = bindings(parts[position], scope, source, valueReference);
-            if (matches.isEmpty() && position == 0 && scope == unit && !packageName.isEmpty() && name.startsWith(packageName + ".")) {
+            if (matches.isEmpty() && position == 0 && scope instanceof CompilationUnit && !packageName.isEmpty() && name.startsWith(packageName + ".")) {
                 position = packageName.split("\\.").length;
                 continue;
             }

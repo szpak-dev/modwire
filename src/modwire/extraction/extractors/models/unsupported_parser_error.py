@@ -1,10 +1,11 @@
+from ....shared.failures.models.modwire_error_code import ModwireErrorCode
 from .extraction_error import ExtractionError
 
 
 class UnsupportedParserError(ExtractionError):
     """Report a language for which no in-process source parser is registered."""
 
-    code = "unsupported_parser"
+    code = ModwireErrorCode.UNSUPPORTED_PARSER
 
     def __init__(self, language: str, supported_languages: tuple[str, ...]) -> None:
         self.language = language

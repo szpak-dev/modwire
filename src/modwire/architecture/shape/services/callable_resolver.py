@@ -7,6 +7,8 @@ from ....shared.code.models.callables.source_callable_kind import SourceCallable
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, SymbolShapeResolverInterface
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
+from ..models.shape_rule_kind import ShapeRuleKind
+from ..models.shape_symbol_kind import ShapeSymbolKind
 from ..models.shape_violation import ShapeViolation
 
 
@@ -25,7 +27,7 @@ class CallableResolver(SymbolShapeResolverInterface, BaseShapeResolver):
         violations: list[ShapeViolation] = []
         for result in self.realm_results(architecture_map, architecture_map.code_map.callables().all()):
             if result.item.kind is SourceCallableKind.FUNCTION:
-                symbol_kind = "function"
+                symbol_kind = ShapeSymbolKind.FUNCTION
                 line_limit = config.max_function_lines
                 allow_optional_args = config.allow_optional_function_args
             elif result.item.kind in (
@@ -34,7 +36,7 @@ class CallableResolver(SymbolShapeResolverInterface, BaseShapeResolver):
                 SourceCallableKind.STATIC_METHOD,
                 SourceCallableKind.CONSTRUCTOR,
             ):
-                symbol_kind = "method"
+                symbol_kind = ShapeSymbolKind.METHOD
                 line_limit = config.max_method_lines
                 allow_optional_args = config.allow_optional_method_args
             else:
@@ -55,13 +57,17 @@ class CallableResolver(SymbolShapeResolverInterface, BaseShapeResolver):
         self,
         *,
         source_id: str,
-        symbol_kind: str,
+        symbol_kind: ShapeSymbolKind,
         symbol: SourceCallable,
         line_limit: int,
         allow_optional_args: bool,
         config: ShapeRules,
     ) -> tuple[ShapeViolation, ...]:
-        line_rule = "max_function_lines" if symbol_kind == "function" else "max_method_lines"
+        line_rule = (
+            ShapeRuleKind.MAX_FUNCTION_LINES
+            if symbol_kind == ShapeSymbolKind.FUNCTION
+            else ShapeRuleKind.MAX_METHOD_LINES
+        )
         violations = [
             self.limit_violation(
                 source_id=source_id,
@@ -73,7 +79,7 @@ class CallableResolver(SymbolShapeResolverInterface, BaseShapeResolver):
             ),
             self.limit_violation(
                 source_id=source_id,
-                rule_name="max_declared_args",
+                rule_name=ShapeRuleKind.MAX_DECLARED_ARGS,
                 actual=len(symbol.parameters),
                 limit=config.max_declared_args,
                 symbol_kind=symbol_kind,
@@ -84,9 +90,9 @@ class CallableResolver(SymbolShapeResolverInterface, BaseShapeResolver):
             violations.append(
                 ShapeViolation(
                     source_id=source_id,
-                    rule_name="allow_optional_function_args"
-                    if symbol_kind == "function"
-                    else "allow_optional_method_args",
+                    rule_name=ShapeRuleKind.ALLOW_OPTIONAL_FUNCTION_ARGS
+                    if symbol_kind == ShapeSymbolKind.FUNCTION
+                    else ShapeRuleKind.ALLOW_OPTIONAL_METHOD_ARGS,
                     actual=True,
                     limit=False,
                     symbol_kind=symbol_kind,

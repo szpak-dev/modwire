@@ -1,9 +1,10 @@
+from ....shared.failures.models.modwire_error_code import ModwireErrorCode
 from .pipeline_error import PipelineError
 from .pipeline_violation import PipelineViolation
 
 
 class PipelineValidationError(PipelineError):
-    code = "pipeline_validation"
+    code = ModwireErrorCode.PIPELINE_VALIDATION
 
     def __init__(self, violation: PipelineViolation, subject: str) -> None:
         self.violation = violation
