@@ -134,13 +134,216 @@
     ]
   },
   "spans": [],
-  "owners": {
-    "ExampleContract.exampleMethod": "ExampleContract",
-    "ExampleOwner.constructor": "ExampleOwner",
-    "ExampleOwner.exampleMethod": "ExampleOwner",
-    "ExampleOwner.exampleProperty": "ExampleOwner",
-    "ExampleOther.exampleMethod": "ExampleOther"
-  },
+  "owners": [
+    [
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "method",
+        "qualified_name": "ExampleContract.exampleMethod",
+        "ordinal": 192,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      },
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "interface",
+        "qualified_name": "ExampleContract",
+        "ordinal": 1,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      }
+    ],
+    [
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "method",
+        "qualified_name": "ExampleOwner.constructor",
+        "ordinal": 402,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      },
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 352,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      }
+    ],
+    [
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "method",
+        "qualified_name": "ExampleOwner.exampleMethod",
+        "ordinal": 455,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      },
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 352,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      }
+    ],
+    [
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "method",
+        "qualified_name": "ExampleOwner.exampleMethod",
+        "ordinal": 504,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      },
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 352,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      }
+    ],
+    [
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "method",
+        "qualified_name": "ExampleOwner.exampleMethod",
+        "ordinal": 553,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      },
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 352,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      }
+    ],
+    [
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "method",
+        "qualified_name": "ExampleOwner.exampleProperty",
+        "ordinal": 657,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      },
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 352,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      }
+    ],
+    [
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "method",
+        "qualified_name": "ExampleOwner.exampleProperty",
+        "ordinal": 716,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      },
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 352,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      }
+    ],
+    [
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "method",
+        "qualified_name": "ExampleOther.exampleMethod",
+        "ordinal": 821,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      },
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleOther",
+        "ordinal": 759,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      }
+    ],
+    [
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "property",
+        "qualified_name": "ExampleAlias.exampleValue",
+        "ordinal": 269,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      },
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "type",
+        "qualified_name": "ExampleAlias",
+        "ordinal": 240,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      }
+    ],
+    [
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "property",
+        "qualified_name": "ExampleOtherAlias.exampleValue",
+        "ordinal": 327,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      },
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "type",
+        "qualified_name": "ExampleOtherAlias",
+        "ordinal": 293,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      }
+    ],
+    [
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "property",
+        "qualified_name": "ExampleOwner.exampleValue",
+        "ordinal": 414,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      },
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 352,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      }
+    ],
+    [
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "property",
+        "qualified_name": "ExampleOwner.exampleProperty",
+        "ordinal": 657,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      },
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 352,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      }
+    ],
+    [
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "property",
+        "qualified_name": "ExampleOther.exampleValue",
+        "ordinal": 791,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      },
+      {
+        "source_id": "typescript/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleOther",
+        "ordinal": 759,
+        "content_digest": "f02c844dcce8a041945d5042439e00248ebeaa62448c3631cb5d5f92e4f57664"
+      }
+    ]
+  ],
   "parameters": {
     "exampleParameters": [
       {
@@ -975,5 +1178,6 @@
         }
       }
     ]
-  ]
+  ],
+  "unresolved_methods": []
 }

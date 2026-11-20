@@ -335,10 +335,10 @@ class TypeScriptExtractor {
     normalized(specifier: string): string {
         return specifier.startsWith('.') ? path.relative(this.root, path.resolve(path.dirname(this.filePath), specifier)).split(path.sep).join('/').replace(/\.[^/.]+$/, '') : specifier;
     }
-    export(name: string, local: string, node: ts.Node, specifier = '', isDefault = false): void {
+    export(name: string, local: string, node: ts.Node, specifier = '', isDefault = false, bindingNode: ts.Node = node): void {
         const reexport = specifier !== '';
         const references = this.bindings(local, node);
-        const own = this.identities.get(node);
+        const own = this.identities.get(bindingNode);
         const binding: Export['binding'] = reexport ? { kind: 'unresolved', reason: 'external' } : own !== undefined ? { kind: 'resolved', declaration_ids: [own] }
             : references.length ? { kind: 'resolved', declaration_ids: references } : { kind: 'unresolved', reason: 'unobserved' };
         const family = binding.kind === 'resolved' ? binding.declaration_ids[0].family : 'unknown';
@@ -408,7 +408,7 @@ class TypeScriptExtractor {
             else if (ts.isNamespaceExport(node.exportClause)) this.export(node.exportClause.name.text, '*', node, module);
             else for (const element of node.exportClause.elements) this.export(element.name.text, element.propertyName?.text ?? element.name.text, node, module);
         }
-        if (ts.isExportAssignment(node)) this.export('default', node.expression.getText(this.source), node, '', true);
+        if (ts.isExportAssignment(node)) this.export(node.isExportEquals ? 'export=' : 'default', node.expression.getText(this.source), node, '', !node.isExportEquals, node.expression);
         ts.forEachChild(node, child => this.observe(child));
     }
     calls(): Call[] {

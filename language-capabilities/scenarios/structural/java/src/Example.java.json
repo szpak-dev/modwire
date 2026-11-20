@@ -115,13 +115,200 @@
   ],
   "signatures": {},
   "spans": [],
-  "owners": {
-    "example.ExampleOwner.ExampleNested.exampleMethod": "example.ExampleOwner.ExampleNested",
-    "example.ExampleOwner.exampleMethod": "example.ExampleOwner",
-    "example.ExampleOwner.exampleParameters": "example.ExampleOwner",
-    "example.ExampleOwner.exampleTypes": "example.ExampleOwner",
-    "example.ExampleOther.exampleMethod": "example.ExampleOther"
-  },
+  "owners": [
+    [
+      {
+        "source_id": "java/src/Example.java",
+        "family": "method",
+        "qualified_name": "example.ExampleOwner.ExampleNested.exampleMethod",
+        "ordinal": 51539607561,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      },
+      {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "example.ExampleOwner.ExampleNested",
+        "ordinal": 47244640261,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      }
+    ],
+    [
+      {
+        "source_id": "java/src/Example.java",
+        "family": "method",
+        "qualified_name": "example.ExampleOwner.exampleMethod",
+        "ordinal": 60129542149,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      },
+      {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "example.ExampleOwner",
+        "ordinal": 38654705665,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      }
+    ],
+    [
+      {
+        "source_id": "java/src/Example.java",
+        "family": "method",
+        "qualified_name": "example.ExampleOwner.exampleMethod",
+        "ordinal": 64424509445,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      },
+      {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "example.ExampleOwner",
+        "ordinal": 38654705665,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      }
+    ],
+    [
+      {
+        "source_id": "java/src/Example.java",
+        "family": "method",
+        "qualified_name": "example.ExampleOwner.exampleParameters",
+        "ordinal": 68719476741,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      },
+      {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "example.ExampleOwner",
+        "ordinal": 38654705665,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      }
+    ],
+    [
+      {
+        "source_id": "java/src/Example.java",
+        "family": "method",
+        "qualified_name": "example.ExampleOwner.exampleTypes",
+        "ordinal": 73014444037,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      },
+      {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "example.ExampleOwner",
+        "ordinal": 38654705665,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      }
+    ],
+    [
+      {
+        "source_id": "java/src/Example.java",
+        "family": "method",
+        "qualified_name": "example.ExampleOther.exampleMethod",
+        "ordinal": 103079215109,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      },
+      {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "example.ExampleOther",
+        "ordinal": 94489280513,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      }
+    ],
+    [
+      {
+        "source_id": "java/src/Example.java",
+        "family": "property",
+        "qualified_name": "example.ExampleOwner.exampleValue",
+        "ordinal": 42949672986,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      },
+      {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "example.ExampleOwner",
+        "ordinal": 38654705665,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      }
+    ],
+    [
+      {
+        "source_id": "java/src/Example.java",
+        "family": "property",
+        "qualified_name": "example.ExampleOther.exampleValue",
+        "ordinal": 98784247817,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      },
+      {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "example.ExampleOther",
+        "ordinal": 94489280513,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      }
+    ],
+    [
+      {
+        "source_id": "java/src/Example.java",
+        "family": "property",
+        "qualified_name": "example.ExampleRecord.exampleName",
+        "ordinal": 115964117014,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      },
+      {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "example.ExampleRecord",
+        "ordinal": 115964116993,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      }
+    ],
+    [
+      {
+        "source_id": "java/src/Example.java",
+        "family": "property",
+        "qualified_name": "example.ExampleRecord.exampleCount",
+        "ordinal": 115964117034,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      },
+      {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "example.ExampleRecord",
+        "ordinal": 115964116993,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      }
+    ],
+    [
+      {
+        "source_id": "java/src/Example.java",
+        "family": "property",
+        "qualified_name": "example.ExampleStatus.EXAMPLE_READY",
+        "ordinal": 120259084310,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      },
+      {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "example.ExampleStatus",
+        "ordinal": 120259084289,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      }
+    ],
+    [
+      {
+        "source_id": "java/src/Example.java",
+        "family": "property",
+        "qualified_name": "example.ExampleStatus.EXAMPLE_DONE",
+        "ordinal": 120259084325,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      },
+      {
+        "source_id": "java/src/Example.java",
+        "family": "class",
+        "qualified_name": "example.ExampleStatus",
+        "ordinal": 120259084289,
+        "content_digest": "25373d4d2623cbc1c7dd2a635fd27a1ed7c7f410a0929a6d7e15a81c49d0abb8"
+      }
+    ]
+  ],
   "parameters": {
     "example.ExampleOwner.exampleParameters": [
       {
@@ -1150,5 +1337,6 @@
         }
       }
     ]
-  ]
+  ],
+  "unresolved_methods": []
 }

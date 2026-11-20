@@ -1,3 +1,5 @@
+import shutil
+
 import pytest
 
 from modwire.application import SourceParseError
@@ -6,39 +8,17 @@ from .base_test import NativeExtractionTestCase
 
 
 class TestExtractionRecovery(NativeExtractionTestCase):
-    @pytest.mark.parametrize(
-        ("language", "name", "invalid", "valid"),
-        (
-            ("python", "example.py", "class 1example:\n", "class ExampleValue: pass\n"),
-            (
-                "typescript",
-                "example.ts",
-                "export class {",
-                "export class ExampleValue {}\n",
-            ),
-            ("php", "example.php", "<?php class {", "<?php class ExampleValue {}\n"),
-            (
-                "java",
-                "ExampleValue.java",
-                "class ExampleValue { void example_invalid( }",
-                "class ExampleValue {}\n",
-            ),
-        ),
-    )
-    def test_failed_extraction_does_not_poison_the_application(
-        self,
-        language: str,
-        name: str,
-        invalid: str,
-        valid: str,
-    ) -> None:
-        self.write_files({name: invalid})
+    @pytest.mark.parametrize("language", ("python", "typescript", "php", "java", "ruby"))
+    def test_failed_extraction_does_not_poison_the_application(self, language: str) -> None:
+        fixtures = self.repository / "tests/fixtures/extraction_lifecycle" / language
+        source = next((fixtures / "invalid").iterdir())
+        shutil.copyfile(source, self.workspace / source.name)
         with pytest.raises(SourceParseError):
             self.extract_project(language)
-        self.write_files({name: valid})
+        shutil.copytree(fixtures / "valid", self.workspace, dirs_exist_ok=True)
         result = self.extract_project(language)
-        assert tuple(result.extraction.files) == (name,)
-        assert result.extraction.files[name].declarations[0].name == "ExampleValue"
+        assert tuple(result.extraction.files) == (source.name,)
+        assert result.extraction.files[source.name].declarations[0].name == "ExampleValue"
 
     def test_removed_sources_disappear_on_the_next_request(self) -> None:
         self.write_files({"example_first.py": "", "example_second.py": ""})

@@ -345,3 +345,7 @@ scenarios:
     canonical: typescript/src/example.ts
   - authored: typescript_payloads/src/example.ts
     canonical: typescript_payloads/src/example.ts
+  - authored: typescript_exports/src/default_callable.ts
+    canonical: typescript_exports/src/default_callable.ts
+  - authored: typescript_exports/src/export_equals.ts
+    canonical: typescript_exports/src/export_equals.ts

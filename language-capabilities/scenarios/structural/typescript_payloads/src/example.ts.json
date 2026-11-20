@@ -37,7 +37,7 @@
   ],
   "signatures": {},
   "spans": [],
-  "owners": {},
+  "owners": [],
   "parameters": {},
   "returns": {},
   "gaps": {
@@ -479,5 +479,6 @@
         }
       }
     ]
-  ]
+  ],
+  "unresolved_methods": []
 }

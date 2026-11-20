@@ -26,6 +26,7 @@ from modwire.application import (
     SourceTypeKind,
     SourceTypeReference,
     SourceTypeUnsupported,
+    SourceUnresolvedMethod,
 )
 
 from .claim_result import ClaimResult
@@ -628,38 +629,21 @@ class FixtureClaimEvaluator:
             Conclusion.DECLARATIONS,
         )
         owners = tuple(
-            (method.qualified_name, method.owner_declaration_id.qualified_name)
+            (member.declaration_id, member.owner_declaration_id)
             for declaration in source.declarations
-            for method in (*declaration.methods, *declaration.abstract_methods)
+            for member in (*declaration.methods, *declaration.abstract_methods, *declaration.properties)
         )
-        ownership = tuple(
-            self.compare(
-                f"{source.file_id}:{Conclusion.OWNERSHIP}:{name.value}",
-                json.dumps([owner.value]),
-                json.dumps(sorted({owner_name for callable_name, owner_name in owners if callable_name == name.value})),
-                Discrepancy.WRONG_OWNER if any(item[0] == name.value for item in owners) else Discrepancy.MISSING,
-                (Conclusion.OWNERSHIP,),
-                81,
-            )
-            for name, owner in expected.owners.items()
-        )
-        located_owners = tuple(
-            self.compare(
-                f"{source.file_id}:{Conclusion.OWNERSHIP}:{span.owner.value}:owner at authored span",
-                json.dumps([expected.owners[span.owner].value]),
-                json.dumps(
-                    [
-                        method.owner_declaration_id.qualified_name
-                        for declaration in source.declarations
-                        for method in (*declaration.methods, *declaration.abstract_methods)
-                        if method.line_start == span.start.root and method.line_end == span.end.root
-                    ]
-                ),
-                Discrepancy.WRONG_OWNER,
-                (Conclusion.OWNERSHIP,),
-                81,
-            )
-            for span in expected.spans
+        ownership = self.compare(
+            f"{source.file_id}:{Conclusion.OWNERSHIP}:exact member owners",
+            TypeAdapter(tuple[tuple[DeclarationIdentity, DeclarationIdentity], ...])
+            .dump_json(tuple(sorted(expected.owners, key=lambda item: item[0].ordinal)))
+            .decode(),
+            TypeAdapter(tuple[tuple[DeclarationIdentity, DeclarationIdentity], ...])
+            .dump_json(tuple(sorted(owners, key=lambda item: item[0].ordinal)))
+            .decode(),
+            Discrepancy.WRONG_OWNER,
+            (Conclusion.OWNERSHIP,),
+            81,
         )
         signatures = tuple(
             self.compare(
@@ -726,6 +710,28 @@ class FixtureClaimEvaluator:
             for gap in (model_gaps[identifier],)
         )
         structure = (
+            self.compare(
+                f"{source.file_id}:{Conclusion.CALLABLES}:authored spans",
+                json.dumps(sorted((item.owner.value, item.start.root, item.end.root) for item in expected.spans)),
+                json.dumps(
+                    sorted(
+                        (item.qualified_name, item.line_start, item.line_end)
+                        for item in callables
+                        if item.qualified_name in {span.owner.value for span in expected.spans}
+                    )
+                ),
+                Discrepancy.INCORRECT,
+                (Conclusion.CALLABLES,),
+                81,
+            ),
+            self.compare(
+                f"{source.file_id}:{Conclusion.OWNERSHIP}:unresolved methods",
+                TypeAdapter(tuple[SourceUnresolvedMethod, ...]).dump_json(expected.unresolved_methods).decode(),
+                TypeAdapter(tuple[SourceUnresolvedMethod, ...]).dump_json(source.unresolved_methods).decode(),
+                Discrepancy.INCORRECT,
+                (Conclusion.OWNERSHIP,),
+                81,
+            ),
             self.compare(
                 f"{source.file_id}:{Conclusion.DECLARATIONS}:placements",
                 TypeAdapter(tuple[tuple[DeclarationIdentity, SourcePlacement], ...])
@@ -825,8 +831,7 @@ class FixtureClaimEvaluator:
         return (
             *inventories,
             namespaces,
-            *ownership,
-            *located_owners,
+            ownership,
             *signatures,
             *parameters,
             *returns,

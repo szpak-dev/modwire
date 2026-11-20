@@ -119,7 +119,11 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
 
         assert not report.conforms and not report.regression_passes
         assert set(report.results) == set(self.contract.matrix.languages)
-        assert sum(len(maps[ScenarioId("structural")].extraction.files) for maps in report.observations.values()) == 7
+        assert {
+            source
+            for maps in report.observations.values()
+            for source in maps[ScenarioId("structural")].extraction.files
+        } == set(self.contract.matrix.catalog.scenarios[ScenarioId("structural")].sources)
         assert all(
             result.expected and result.actual and result.owner_issue > 0
             for scenarios in report.results.values()
@@ -305,6 +309,47 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             self.application, language, CodeMap.model_validate_json(payload), binding
         )
         assert any(Discrepancy.FALSE_COMPLETENESS in result.discrepancies for result in findings)
+
+    def test_matrix_rejects_swapped_exact_owners_with_the_same_qualified_name(self) -> None:
+        language = LanguageId("ruby")
+        binding = self.structural_binding(language.value)
+        original = self.application.generate_map(
+            language.value, str(self.contract.binding_root(binding)), self.contract.binding_policy(binding)
+        )
+        source = original.extraction.files["ruby/src/example.rb"]
+        first, second = (item for item in source.declarations if item.name == "ExampleOwner")
+        first_method = next(item for item in first.methods if item.name == "initialize")
+        second_method = next(item for item in second.methods if item.name == "example_reopened")
+        assert first.declaration_id != second.declaration_id
+        changed_first = first.model_copy(
+            update={
+                "methods": tuple(item for item in first.methods if item != first_method)
+                + (second_method.model_copy(update={"owner_declaration_id": first.declaration_id}),)
+            }
+        )
+        changed_second = second.model_copy(
+            update={
+                "methods": tuple(item for item in second.methods if item != second_method)
+                + (first_method.model_copy(update={"owner_declaration_id": second.declaration_id}),)
+            }
+        )
+        replacements = {first.declaration_id: changed_first, second.declaration_id: changed_second}
+        declarations = tuple(
+            replacements[item.declaration_id] if item.declaration_id in replacements else item
+            for item in source.declarations
+        )
+        files = {**original.extraction.files, source.file_id: source.model_copy(update={"declarations": declarations})}
+        changed = original.model_copy(update={"extraction": original.extraction.model_copy(update={"files": files})})
+        changed = CodeMap.model_validate_json(changed.to_json())
+
+        assert not any(
+            result.owner_issue == 81 and result.discrepancies
+            for result in self.contract.evaluate_binding(self.application, language, original, binding)
+        )
+        assert any(
+            result.owner_issue == 81 and Discrepancy.WRONG_OWNER in result.discrepancies
+            for result in self.contract.evaluate_binding(self.application, language, changed, binding)
+        )
 
     def test_local_inventory_limitations_cannot_be_erased(self) -> None:
         language = LanguageId("ruby")

@@ -116,16 +116,168 @@
   ],
   "signatures": {},
   "spans": [],
-  "owners": {
-    "ExampleOwner.ExampleNested.example_method": "ExampleOwner.ExampleNested",
-    "ExampleOwner.initialize": "ExampleOwner",
-    "ExampleOwner.example_method": "ExampleOwner",
-    "ExampleOwner.example_direct": "ExampleOwner",
-    "ExampleOwner.example_singleton": "ExampleOwner",
-    "ExampleOwner.example_forward": "ExampleOwner",
-    "ExampleOther.example_method": "ExampleOther",
-    "ExampleOwner.example_reopened": "ExampleOwner"
-  },
+  "owners": [
+    [
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "method",
+        "qualified_name": "ExampleOwner.ExampleNested.example_method",
+        "ordinal": 276,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      },
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner.ExampleNested",
+        "ordinal": 252,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "method",
+        "qualified_name": "ExampleOwner.initialize",
+        "ordinal": 347,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      },
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 107,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_method",
+        "ordinal": 421,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      },
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 107,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_direct",
+        "ordinal": 607,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      },
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 107,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_singleton",
+        "ordinal": 691,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      },
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 107,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_forward",
+        "ordinal": 765,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      },
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 107,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "method",
+        "qualified_name": "ExampleOther.example_method",
+        "ordinal": 846,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      },
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleOther",
+        "ordinal": 825,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_reopened",
+        "ordinal": 930,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      },
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 909,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "property",
+        "qualified_name": "ExampleOwner.example_value",
+        "ordinal": 234,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      },
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 107,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "property",
+        "qualified_name": "ExampleOwner.@example_value",
+        "ordinal": 381,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      },
+      {
+        "source_id": "ruby/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 107,
+        "content_digest": "cb7528dd61b4cf3233199b8f9bb8e6d338cb5f141c8ec4b63a0b045408c7baad"
+      }
+    ]
+  ],
   "parameters": {
     "ExampleOwner.initialize": [
       {
@@ -959,5 +1111,6 @@
         }
       }
     ]
-  ]
+  ],
+  "unresolved_methods": []
 }

@@ -341,3 +341,11 @@ scenarios:
     canonical: ruby/src/example.rb
   - authored: ruby_receivers/src/example.rb
     canonical: ruby_receivers/src/example.rb
+  - authored: ruby_ownership/src/dynamic_singleton.rb
+    canonical: ruby_ownership/src/dynamic_singleton.rb
+  - authored: ruby_ownership/src/qualified_declaration.rb
+    canonical: ruby_ownership/src/qualified_declaration.rb
+  - authored: ruby_ownership/src/qualified_receiver.rb
+    canonical: ruby_ownership/src/qualified_receiver.rb
+  - authored: ruby_ownership/src/singleton_owner.rb
+    canonical: ruby_ownership/src/singleton_owner.rb

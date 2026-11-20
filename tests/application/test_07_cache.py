@@ -1,11 +1,14 @@
 import hashlib
 import json
 import os
+import shutil
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from copy import copy
 from pathlib import Path
 from typing import Any
+
+import pytest
 
 from modwire.application import CacheOptions, CacheStage
 
@@ -28,12 +31,14 @@ class TestPersistentCache(ApplicationTestCase):
             encoding="utf-8",
         )
 
-    def test_public_map_diagnostics_distinguish_cold_and_warm_cache_stages(self) -> None:
-        root = self.project({"src/example.py": "def example_function():\n    return 1\n"})
+    @pytest.mark.parametrize("language", ("python", "ruby"))
+    def test_public_map_diagnostics_distinguish_cold_and_warm_cache_stages(self, language: str) -> None:
+        root = self.workspace / "sources"
+        shutil.copytree(self.repository / "tests/fixtures/cache_edits" / language / "before", root)
         options = self.cache_options("example-diagnostics")
 
-        cold = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
-        warm = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+        cold = self.application.generate_map_cached_with_diagnostics(language, root, self.scan_policy(), options)
+        warm = self.application.generate_map_cached_with_diagnostics(language, root, self.scan_policy(), options)
 
         assert cold.value == warm.value
         assert cold.outcome(CacheStage.EXTRACTION).to_dict() == {
@@ -80,14 +85,15 @@ class TestPersistentCache(ApplicationTestCase):
         assert extraction.invalidated == 0
         assert (code_map.hits, code_map.misses, code_map.computed, code_map.stored) == (0, 1, 1, 1)
 
-    def test_public_map_diagnostics_report_invalidated_entries(self) -> None:
-        root = self.project({"src/example.py": "class ExampleValue:\n    pass\n"})
+    @pytest.mark.parametrize("language", ("python", "ruby"))
+    def test_public_map_diagnostics_report_invalidated_entries(self, language: str) -> None:
+        root = self.repository / "tests/fixtures/cache_edits" / language / "before"
         options = self.cache_options("example-invalidated-diagnostics")
-        expected = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+        expected = self.application.generate_map_cached_with_diagnostics(language, root, self.scan_policy(), options)
         for path in (self.workspace / "cache").rglob("*.cache"):
             path.write_bytes(b"not-a-cache-entry")
 
-        recovered = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
+        recovered = self.application.generate_map_cached_with_diagnostics(language, root, self.scan_policy(), options)
 
         assert recovered.value == expected.value
         assert recovered.outcome(CacheStage.EXTRACTION).invalidated == 1
@@ -172,13 +178,15 @@ class TestPersistentCache(ApplicationTestCase):
         assert warm.outcome(CacheStage.REPORTS).hits == 1
         assert warm.outcome(CacheStage.REPORTS).misses == 0
 
-    def test_warm_code_map_matches_the_uncached_public_result(self) -> None:
-        root = self.project({"src/example.py": "def example_function():\n    return 1\n"})
+    @pytest.mark.parametrize("language", ("python", "ruby"))
+    def test_warm_code_map_matches_the_uncached_public_result(self, language: str) -> None:
+        root = self.workspace / "sources"
+        shutil.copytree(self.repository / "tests/fixtures/cache_edits" / language / "before", root)
         options = self.cache_options("example-warm")
 
-        expected = self.application.generate_map("python", root, self.scan_policy())
-        cold = self.application.generate_map_cached("python", root, self.scan_policy(), options)
-        warm = self.application.generate_map_cached("python", root, self.scan_policy(), options)
+        expected = self.application.generate_map(language, root, self.scan_policy())
+        cold = self.application.generate_map_cached(language, root, self.scan_policy(), options)
+        warm = self.application.generate_map_cached(language, root, self.scan_policy(), options)
 
         assert cold == expected
         assert warm == expected
@@ -248,16 +256,23 @@ class TestPersistentCache(ApplicationTestCase):
         assert recovered["total_bytes"] == sum(path.stat().st_size for path in entries)
         assert recovered["entry_count"] == len(entries)
 
-    def test_same_size_edit_invalidates_cached_source_content(self) -> None:
-        root = self.project({"src/example.py": "def example_one():\n    return 1\n"})
+    @pytest.mark.parametrize("language", ("python", "ruby"))
+    def test_same_size_edit_invalidates_cached_source_content(self, language: str) -> None:
+        root = self.workspace / "sources"
+        shutil.copytree(self.repository / "tests/fixtures/cache_edits" / language / "before", root)
         options = self.cache_options("example-edit")
-        before = self.application.generate_queryable_map_cached("python", root, self.scan_policy(), options)
+        before = self.application.generate_queryable_map_cached(language, root, self.scan_policy(), options)
 
-        (root / "src/example.py").write_text("def example_two():\n    return 1\n", encoding="utf-8")
-        after = self.application.generate_queryable_map_cached("python", root, self.scan_policy(), options)
+        shutil.copytree(self.repository / "tests/fixtures/cache_edits" / language / "after", root, dirs_exist_ok=True)
+        after = self.application.generate_queryable_map_cached(language, root, self.scan_policy(), options)
 
         assert before.functions().first().item.name == "example_one"
         assert after.functions().first().item.name == "example_two"
+        before_source = next(iter(before.code_map.extraction.files.values()))
+        after_source = next(iter(after.code_map.extraction.files.values()))
+        assert {identity for identity, _ in before_source.declaration_placements()}.isdisjoint(
+            identity for identity, _ in after_source.declaration_placements()
+        )
 
     def test_source_set_changes_track_additions_deletions_and_renames(self) -> None:
         root = self.project({"src/example_first.py": "class ExampleFirst:\n    pass\n"})

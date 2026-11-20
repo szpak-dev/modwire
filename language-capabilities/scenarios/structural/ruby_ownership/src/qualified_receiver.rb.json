@@ -1,0 +1,240 @@
+{
+  "declarations": [
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOuter",
+      "declaration_kind": "module"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOuter.ExampleTarget",
+      "declaration_kind": "class"
+    }
+  ],
+  "callables": [
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOuter.ExampleTarget.example_method",
+      "callable_kind": "type_method"
+    }
+  ],
+  "attributes": [],
+  "namespaces": [
+    {
+      "kind": "namespace",
+      "qualified_name": "ExampleOuter",
+      "namespace_kind": "module"
+    }
+  ],
+  "signatures": {},
+  "spans": [
+    {
+      "kind": "exact_span",
+      "owner": "ExampleOuter.ExampleTarget.example_method",
+      "start": 6,
+      "end": 7
+    }
+  ],
+  "owners": [
+    [
+      {
+        "source_id": "ruby_ownership/src/qualified_receiver.rb",
+        "family": "method",
+        "qualified_name": "ExampleOuter.ExampleTarget.example_method",
+        "ordinal": 54,
+        "content_digest": "fbc93d14f34b75926dc2f4614c4edde96b91770d0c65cadac5270959418bbd5f"
+      },
+      {
+        "source_id": "ruby_ownership/src/qualified_receiver.rb",
+        "family": "class",
+        "qualified_name": "ExampleOuter.ExampleTarget",
+        "ordinal": 23,
+        "content_digest": "fbc93d14f34b75926dc2f4614c4edde96b91770d0c65cadac5270959418bbd5f"
+      }
+    ]
+  ],
+  "unresolved_methods": [],
+  "parameters": {},
+  "returns": {},
+  "gaps": {},
+  "placements": [
+    [
+      {
+        "source_id": "ruby_ownership/src/qualified_receiver.rb",
+        "family": "type",
+        "qualified_name": "ExampleOuter",
+        "ordinal": 1,
+        "content_digest": "fbc93d14f34b75926dc2f4614c4edde96b91770d0c65cadac5270959418bbd5f"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/qualified_receiver.rb",
+        "family": "class",
+        "qualified_name": "ExampleOuter.ExampleTarget",
+        "ordinal": 23,
+        "content_digest": "fbc93d14f34b75926dc2f4614c4edde96b91770d0c65cadac5270959418bbd5f"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/qualified_receiver.rb",
+            "family": "type",
+            "qualified_name": "ExampleOuter",
+            "ordinal": 1,
+            "content_digest": "fbc93d14f34b75926dc2f4614c4edde96b91770d0c65cadac5270959418bbd5f"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "ExampleOuter",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "ruby_ownership/src/qualified_receiver.rb",
+              "family": "type",
+              "qualified_name": "ExampleOuter",
+              "ordinal": 1,
+              "content_digest": "fbc93d14f34b75926dc2f4614c4edde96b91770d0c65cadac5270959418bbd5f"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/qualified_receiver.rb",
+        "family": "namespace",
+        "qualified_name": "ExampleOuter",
+        "ordinal": 1,
+        "content_digest": "fbc93d14f34b75926dc2f4614c4edde96b91770d0c65cadac5270959418bbd5f"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/qualified_receiver.rb",
+        "family": "method",
+        "qualified_name": "ExampleOuter.ExampleTarget.example_method",
+        "ordinal": 54,
+        "content_digest": "fbc93d14f34b75926dc2f4614c4edde96b91770d0c65cadac5270959418bbd5f"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ]
+  ],
+  "exports": [],
+  "relations": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "member_inventories": [
+    [
+      {
+        "source_id": "ruby_ownership/src/qualified_receiver.rb",
+        "family": "type",
+        "qualified_name": "ExampleOuter",
+        "ordinal": 1,
+        "content_digest": "fbc93d14f34b75926dc2f4614c4edde96b91770d0c65cadac5270959418bbd5f"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/qualified_receiver.rb",
+        "family": "class",
+        "qualified_name": "ExampleOuter.ExampleTarget",
+        "ordinal": 23,
+        "content_digest": "fbc93d14f34b75926dc2f4614c4edde96b91770d0c65cadac5270959418bbd5f"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ]
+  ]
+}

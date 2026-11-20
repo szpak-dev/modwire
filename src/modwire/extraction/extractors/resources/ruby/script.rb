@@ -99,6 +99,7 @@ class RubySourceExtractor
     @callable_facts = []
     @relations = []
     @declaration_nodes = {}
+    @declarations_by_qualified_name = {}
     @call_nodes = {}
     @loads = []
     @namespaces_by_owner = {}
@@ -128,9 +129,6 @@ class RubySourceExtractor
     raise_parse_failure(parsed.errors.first) unless parsed.success?
 
     index_nodes(parsed.value, "", nil)
-    @declarations_by_qualified_name = @declaration_nodes.values.group_by do |declaration|
-      declaration.fetch("declaration_id").fetch("qualified_name")
-    end
     collect_body(parsed.value.statements, "", nil, {"kind" => "file"}, nil)
     @relations.each do |item|
       source = item.fetch("source_declaration_id")
@@ -212,6 +210,7 @@ class RubySourceExtractor
         "line_count" => line_count(node.location.start_line, node.location.end_line), "methods" => [], "abstract_methods" => [], "properties" => {}, "signatures" => [],
         "inventory" => member_inventory
       }
+      (@declarations_by_qualified_name[name] ||= []) << @declaration_nodes.fetch(node)
       owner = name
       nested_calls = nil
     when :call_node
@@ -248,12 +247,12 @@ class RubySourceExtractor
     case statement.type
     when :class_node, :module_node
       fact = @declaration_nodes.fetch(statement)
-      fact["placement"] = placement(lexical_scope, owner)
-      @declarations << fact
       name = fact.fetch("declaration_id").fetch("qualified_name")
+      fact["placement"] = placement(lexical_scope, name.rpartition(".").first)
+      @declarations << fact
       if statement.is_a?(Prism::ModuleNode)
         @namespaces << {"kind" => "module", "declaration_id" => identity("namespace", name, ordinal(statement)),
-                       "placement" => placement(lexical_scope, owner)}
+                       "placement" => fact.fetch("placement")}
       elsif statement.superclass
         @relations << relation(fact.fetch("declaration_id"), "extends", statement.superclass.slice)
       end
@@ -263,11 +262,11 @@ class RubySourceExtractor
       collect_callable(statement, owner, declaration, lexical_scope, singleton_target, visibility)
       return visibility
     when :singleton_class_node
-      target = receiver_target(statement.expression, owner, declaration)
+      target = receiver_target(statement.expression, owner, declaration, singleton_target)
       container = lexical_scope.fetch("kind") == "block" ? lexical_scope.fetch("container") : lexical_scope
       block_scope = {"kind" => "block", "container" => container,
                      "start_utf8_offset" => statement.location.start_offset, "end_utf8_offset" => statement.location.end_offset}
-      collect_body(statement.body, owner, declaration, block_scope, target)
+      collect_body(statement.body, owner, target_declaration(target, declaration), block_scope, target)
       return visibility
     when :constant_write_node, :constant_path_write_node
       collect_constant(statement, owner, lexical_scope)
@@ -277,7 +276,7 @@ class RubySourceExtractor
       return visibility
     when :instance_variable_write_node
       if declaration
-        collect_property(statement.name.name, statement, declaration, lexical_scope, owner)
+        collect_property(statement.name.name, statement, declaration, lexical_scope, owner, singleton_target ? "static" : "instance")
       else
         @limitations["values"] << limitation(statement, "unresolved_ownership", "Instance variable receiver has no exact source declaration.")
       end
@@ -299,10 +298,14 @@ class RubySourceExtractor
         end
         return visibility
       end
-      if statement.receiver.nil? && ATTRIBUTES.include?(statement.name) && declaration
+      if statement.receiver.nil? && ATTRIBUTES.include?(statement.name)
+        unless declaration
+          @limitations["values"] << limitation(statement, "unresolved_ownership", "Attribute receiver has no exact source declaration.")
+          return visibility
+        end
         arguments(statement).each do |argument|
           if argument.is_a?(Prism::SymbolNode) || argument.is_a?(Prism::StringNode)
-            collect_property(argument.unescaped, argument, declaration, lexical_scope, owner)
+            collect_property(argument.unescaped, argument, declaration, lexical_scope, owner, singleton_target ? "static" : "instance")
           else
             entry = declaration.fetch("inventory").fetch("properties")
             declaration.fetch("inventory")["properties"] = coverage(entry.fetch("limitations") + [limitation(statement, "dynamic_structure", "Attribute name requires runtime evaluation.")])
@@ -321,7 +324,7 @@ class RubySourceExtractor
 
   def collect_callable(node, owner, declaration, lexical_scope, singleton_target, visibility)
     target = if node.receiver
-               receiver_target(node.receiver, owner, declaration)
+               receiver_target(node.receiver, owner, declaration, singleton_target)
              elsif singleton_target
                singleton_target
              elsif declaration
@@ -354,11 +357,7 @@ class RubySourceExtractor
       @functions << fact
     elsif target.fetch("kind") == "resolved"
       fact["owner_declaration_id"] = target.fetch("declaration_id")
-      exact_owner = if declaration && declaration.fetch("declaration_id").equal?(target.fetch("declaration_id"))
-                      declaration
-                    else
-                      @declarations_by_qualified_name.fetch(target_owner).find { |item| item.fetch("declaration_id") == target.fetch("declaration_id") }
-                    end
+      exact_owner = target_declaration(target, declaration)
       exact_owner.fetch("methods") << fact
       body_declaration = exact_owner
     else
@@ -383,19 +382,34 @@ class RubySourceExtractor
      "placement" => placement(lexical_scope, owner)}
   end
 
-  def collect_property(name, node, declaration, lexical_scope, owner)
+  def collect_property(name, node, declaration, lexical_scope, owner, member_kind)
     properties = declaration.fetch("properties")
-    return if properties.key?(name)
+    key = [name, member_kind]
+    return if properties.key?(key)
 
     owner_id = declaration.fetch("declaration_id")
-    properties[name] = {"declaration_id" => identity("property", "#{owner_id.fetch("qualified_name")}.#{name}", ordinal(node)),
+    properties[key] = {"declaration_id" => identity("property", "#{owner_id.fetch("qualified_name")}.#{name}", ordinal(node)),
       "owner_declaration_id" => owner_id, "name" => name, "is_optional" => false, "type" => absent_type,
-      "visibility" => "public", "member_kind" => "instance", "placement" => placement(lexical_scope, owner),
+      "visibility" => "public", "member_kind" => member_kind, "placement" => placement(lexical_scope, owner),
       "assigned_values" => [@unassigned]}
   end
 
-  def receiver_target(receiver, owner, declaration)
+  def target_declaration(target, declaration)
+    return nil unless target.fetch("kind") == "resolved"
+
+    identity = target.fetch("declaration_id")
+    return declaration if declaration && declaration.fetch("declaration_id").equal?(identity)
+
+    @declarations_by_qualified_name.fetch(identity.fetch("qualified_name")).find { |item| item.fetch("declaration_id") == identity }
+  end
+
+  def receiver_target(receiver, owner, declaration, singleton_target)
     if self_receiver?(receiver)
+      if singleton_target
+        return singleton_target if singleton_target.fetch("kind") == "unresolved"
+
+        return target_fact({"kind" => "unresolved", "reason" => "unobserved"})
+      end
       return target_fact(declaration ? {"kind" => "resolved", "declaration_id" => declaration.fetch("declaration_id")} : {"kind" => "unresolved", "reason" => "dynamic"})
     end
     reference = constant_reference(receiver)
@@ -741,10 +755,23 @@ class RubySourceExtractor
   end
 
   def self_receiver?(node)
-    node.is_a?(Prism::SelfNode)
+    receiver_expression(node).is_a?(Prism::SelfNode)
+  end
+
+  def receiver_expression(node)
+    while node.is_a?(Prism::ParenthesesNode)
+      node = node.body
+      if node.is_a?(Prism::StatementsNode)
+        return nil unless node.body.length == 1
+
+        node = node.body.first
+      end
+    end
+    node
   end
 
   def constant_reference(node)
+    node = receiver_expression(node)
     return nil unless node.is_a?(Prism::ConstantReadNode) || node.is_a?(Prism::ConstantPathNode)
 
     node.full_name
@@ -761,7 +788,14 @@ class RubySourceExtractor
           end
     absolute = raw.start_with?("::")
     normalized = raw.sub(/\A::/, "").gsub("::", ".")
-    if !absolute && !owner.empty? && !normalized.include?(".")
+    if !absolute && !owner.empty?
+      if normalized.include?(".")
+        qualifier, _, name = normalized.rpartition(".")
+        target = reference_target(qualifier, owner)
+        return "#{target.fetch("declaration_id").fetch("qualified_name")}.#{name}" if target.fetch("kind") == "resolved"
+
+        return normalized
+      end
       "#{owner}.#{normalized}"
     else
       normalized

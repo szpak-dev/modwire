@@ -3,6 +3,7 @@ from typing import Self
 from pydantic import model_validator
 
 from modwire.application import (
+    DeclarationFamily,
     DeclarationIdentity,
     FileInventoryCoverage,
     MemberInventoryCoverage,
@@ -14,6 +15,7 @@ from modwire.application import (
     SourceTypeAbsent,
     SourceTypeReference,
     SourceTypeUnsupported,
+    SourceUnresolvedMethod,
 )
 
 from ...fixture_model import FixtureModel
@@ -35,7 +37,8 @@ class SourceFactExpectation(FixtureModel):
     namespaces: tuple[NamespaceObservation, ...]
     signatures: dict[QualifiedName, tuple[SourceSignature, ...]]
     spans: tuple[ExactSpanObservation, ...]
-    owners: dict[QualifiedName, QualifiedName]
+    owners: tuple[tuple[DeclarationIdentity, DeclarationIdentity], ...]
+    unresolved_methods: tuple[SourceUnresolvedMethod, ...]
     parameters: dict[QualifiedName, tuple[SourceParameter, ...]]
     returns: dict[QualifiedName, SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported]
     placements: tuple[tuple[DeclarationIdentity, SourcePlacement], ...]
@@ -49,12 +52,24 @@ class SourceFactExpectation(FixtureModel):
     def validate_targets(self) -> Self:
         callables = {item.qualified_name.value for item in self.callables}
         declarations = {item.qualified_name.value for item in self.declarations}
-        selected = {name.value for name in (*self.owners, *self.parameters, *self.returns)}
+        selected = {name.value for name in (*self.parameters, *self.returns)}
         if not selected <= callables:
             raise ScenarioContractError(ScenarioViolation.UNKNOWN_EVIDENCE, "selected callable")
-        if not {owner.value for owner in self.owners.values()} <= declarations:
+        members = {
+            identity
+            for identity, _ in self.placements
+            if identity.family in (DeclarationFamily.METHOD, DeclarationFamily.PROPERTY)
+        }
+        owners = {identity for identity, _ in self.member_inventories}
+        unresolved = {method.declaration_id for method in self.unresolved_methods}
+        if (
+            not unresolved <= members
+            or {member for member, _ in self.owners} != members - unresolved
+            or len(self.owners) != len(members - unresolved)
+            or not {owner for _, owner in self.owners} <= owners
+        ):
             raise ScenarioContractError(ScenarioViolation.UNKNOWN_EVIDENCE, "selected owner")
-        if not {span.owner.value for span in self.spans} <= {owner.value for owner in self.owners}:
+        if not {span.owner.value for span in self.spans} <= callables:
             raise ScenarioContractError(ScenarioViolation.UNKNOWN_EVIDENCE, "owner at authored span")
         if not {owner.value for owner in self.signatures} <= declarations:
             raise ScenarioContractError(ScenarioViolation.UNKNOWN_EVIDENCE, "signature owner")

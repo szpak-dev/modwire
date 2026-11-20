@@ -8,3 +8,9 @@ sources:
   java/src/Example.java: language-capabilities/scenarios/structural/java/src/Example.java.json
   ruby/src/example.rb: language-capabilities/scenarios/structural/ruby/src/example.rb.json
   ruby_receivers/src/example.rb: language-capabilities/scenarios/structural/ruby_receivers/src/example.rb.json
+  ruby_ownership/src/dynamic_singleton.rb: language-capabilities/scenarios/structural/ruby_ownership/src/dynamic_singleton.rb.json
+  ruby_ownership/src/qualified_declaration.rb: language-capabilities/scenarios/structural/ruby_ownership/src/qualified_declaration.rb.json
+  ruby_ownership/src/qualified_receiver.rb: language-capabilities/scenarios/structural/ruby_ownership/src/qualified_receiver.rb.json
+  ruby_ownership/src/singleton_owner.rb: language-capabilities/scenarios/structural/ruby_ownership/src/singleton_owner.rb.json
+  typescript_exports/src/default_callable.ts: language-capabilities/scenarios/structural/typescript_exports/src/default_callable.ts.json
+  typescript_exports/src/export_equals.ts: language-capabilities/scenarios/structural/typescript_exports/src/export_equals.ts.json

@@ -29,9 +29,24 @@
       "end": 7
     }
   ],
-  "owners": {
-    "ExampleTarget.example_named": "ExampleTarget"
-  },
+  "owners": [
+    [
+      {
+        "source_id": "ruby_receivers/src/example.rb",
+        "family": "method",
+        "qualified_name": "ExampleTarget.example_named",
+        "ordinal": 51,
+        "content_digest": "6fde94b4aab6cbb6077e9f4d6ca3b68e3b1ea49ad493b3aa15589862fe5bded9"
+      },
+      {
+        "source_id": "ruby_receivers/src/example.rb",
+        "family": "class",
+        "qualified_name": "ExampleTarget",
+        "ordinal": 1,
+        "content_digest": "6fde94b4aab6cbb6077e9f4d6ca3b68e3b1ea49ad493b3aa15589862fe5bded9"
+      }
+    ]
+  ],
   "parameters": {
     "ExampleTarget.example_named": [
       {
@@ -197,5 +212,6 @@
         }
       }
     ]
-  ]
+  ],
+  "unresolved_methods": []
 }

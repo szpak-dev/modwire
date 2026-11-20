@@ -177,11 +177,11 @@ class RubyExtractor(SourceExtractor):
             file_extensions=(".rb",),
             command=("ruby",),
             version_arguments=(
-                "-rprism",
                 "-e",
                 (
-                    'abort "Ruby 4.0.x and Prism 1.9.x are required." unless '
-                    'RUBY_VERSION.start_with?("4.0.") && Prism::VERSION.start_with?("1.9."); '
+                    'abort "Ruby 4.0.x is required." unless RUBY_VERSION.start_with?("4.0."); '
+                    'require "prism"; '
+                    'abort "Prism 1.9.x is required." unless Prism::VERSION.start_with?("1.9."); '
                     'print "ruby #{RUBY_VERSION}; prism #{Prism::VERSION}"'
                 ),
             ),

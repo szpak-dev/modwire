@@ -102,14 +102,152 @@
   ],
   "signatures": {},
   "spans": [],
-  "owners": {
-    "Example.ExampleTrait.exampleTraitMethod": "Example.ExampleTrait",
-    "Example.ExampleOwner.__construct": "Example.ExampleOwner",
-    "Example.ExampleOwner.exampleMethod": "Example.ExampleOwner",
-    "Example.ExampleOwner.exampleTypes": "Example.ExampleOwner",
-    "Example.ExampleOther.exampleMethod": "Example.ExampleOther",
-    "Example.<anonymous>@866.exampleMethod": "Example.<anonymous>@866"
-  },
+  "owners": [
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "Example.ExampleTrait.exampleTraitMethod",
+        "ordinal": 153,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "source_id": "php/src/Example.php",
+        "family": "type",
+        "qualified_name": "Example.ExampleTrait",
+        "ordinal": 128,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "Example.ExampleOwner.__construct",
+        "ordinal": 316,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleOwner",
+        "ordinal": 216,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "Example.ExampleOwner.exampleMethod",
+        "ordinal": 397,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleOwner",
+        "ordinal": 216,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "Example.ExampleOwner.exampleTypes",
+        "ordinal": 561,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleOwner",
+        "ordinal": 216,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "Example.ExampleOther.exampleMethod",
+        "ordinal": 759,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleOther",
+        "ordinal": 704,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "Example.<anonymous>@866.exampleMethod",
+        "ordinal": 911,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.<anonymous>@866",
+        "ordinal": 866,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "property",
+        "qualified_name": "Example.ExampleOwner.exampleValue",
+        "ordinal": 344,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleOwner",
+        "ordinal": 216,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "property",
+        "qualified_name": "Example.ExampleOther.exampleValue",
+        "ordinal": 740,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleOther",
+        "ordinal": 704,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "property",
+        "qualified_name": "Example.<anonymous>@866.exampleValue",
+        "ordinal": 892,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.<anonymous>@866",
+        "ordinal": 866,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      }
+    ]
+  ],
   "parameters": {
     "Example.ExampleOwner.exampleMethod": [
       {
@@ -1306,5 +1444,6 @@
         }
       }
     ]
-  ]
+  ],
+  "unresolved_methods": []
 }

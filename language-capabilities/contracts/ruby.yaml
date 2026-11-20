@@ -41,6 +41,10 @@ fixtures:
     sources:
     - ruby/src/example.rb
     - ruby_receivers/src/example.rb
+    - ruby_ownership/src/dynamic_singleton.rb
+    - ruby_ownership/src/qualified_declaration.rb
+    - ruby_ownership/src/qualified_receiver.rb
+    - ruby_ownership/src/singleton_owner.rb
 capabilities:
   sources:
     status: supported

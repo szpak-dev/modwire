@@ -40,6 +40,8 @@ fixtures:
     sources:
     - typescript/src/example.ts
     - typescript_payloads/src/example.ts
+    - typescript_exports/src/default_callable.ts
+    - typescript_exports/src/export_equals.ts
 capabilities:
   sources:
     status: supported

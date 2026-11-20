@@ -160,16 +160,11 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
         assert raised.value.root == str(missing)
 
     @pytest.mark.parametrize(
-        ("language", "path", "source", "executable"),
-        (
-            ("typescript", "src/example.ts", "export const exampleValue = 1;\n", "node"),
-            ("java", "src/ExampleValue.java", "public class ExampleValue {}\n", "java"),
-        ),
+        ("language", "executable"),
+        (("typescript", "node"), ("java", "java"), ("ruby", "ruby")),
     )
-    def test_unavailable_extractor_reports_the_runtime_contract(
-        self, language: str, path: str, source: str, executable: str
-    ) -> None:
-        root = self.project({path: source})
+    def test_unavailable_extractor_reports_the_runtime_contract(self, language: str, executable: str) -> None:
+        root = self.repository / "tests/fixtures/extraction_lifecycle" / language / "valid"
 
         result = self.failure_consumer(root, language, {**os.environ, "PATH": ""})
 
