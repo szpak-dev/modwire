@@ -8,6 +8,7 @@ runtime:
     major: 24
     minor: 2
     patch: 0
+  rejected_versions: []
   packages: []
 fixtures:
   source_suffixes:
@@ -42,6 +43,10 @@ fixtures:
     - typescript_payloads/src/example.ts
     - typescript_exports/src/default_callable.ts
     - typescript_exports/src/export_equals.ts
+    - typescript_exports/src/parenthesized_default.ts
+    - typescript_exports/src/wrapped_callable.ts
+    - typescript_exports/src/wrapped_identifier.ts
+    - typescript_exports/src/wrapped_namespace.ts
 capabilities:
   sources:
     status: supported

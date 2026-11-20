@@ -8,6 +8,7 @@ runtime:
     major: 3
     minor: 14
     patch: 2
+  rejected_versions: []
   packages: []
 fixtures:
   source_suffixes:

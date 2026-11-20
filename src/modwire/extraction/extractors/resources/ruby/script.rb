@@ -129,7 +129,7 @@ class RubySourceExtractor
     raise_parse_failure(parsed.errors.first) unless parsed.success?
 
     index_nodes(parsed.value, "", nil)
-    collect_body(parsed.value.statements, "", nil, {"kind" => "file"}, nil)
+    collect_body(parsed.value.statements, "", nil, {"kind" => "file"}, nil, :unresolved)
     @relations.each do |item|
       source = item.fetch("source_declaration_id")
       item["target"] = resolve_reference(item.fetch("target_reference"), source.fetch("qualified_name"))
@@ -230,20 +230,20 @@ class RubySourceExtractor
     end
   end
 
-  def collect_body(node, owner, declaration, lexical_scope, singleton_target)
+  def collect_body(node, owner, declaration, lexical_scope, singleton_target, instance_member_kind)
     return if node.nil?
 
     if node.is_a?(Prism::StatementsNode)
       visibility = "public"
       node.body.each do |statement|
-        visibility = collect_statement(statement, owner, declaration, lexical_scope, singleton_target, visibility)
+        visibility = collect_statement(statement, owner, declaration, lexical_scope, singleton_target, instance_member_kind, visibility)
       end
     else
-      collect_statement(node, owner, declaration, lexical_scope, singleton_target, "public")
+      collect_statement(node, owner, declaration, lexical_scope, singleton_target, instance_member_kind, "public")
     end
   end
 
-  def collect_statement(statement, owner, declaration, lexical_scope, singleton_target, visibility)
+  def collect_statement(statement, owner, declaration, lexical_scope, singleton_target, instance_member_kind, visibility)
     case statement.type
     when :class_node, :module_node
       fact = @declaration_nodes.fetch(statement)
@@ -256,7 +256,7 @@ class RubySourceExtractor
       elsif statement.superclass
         @relations << relation(fact.fetch("declaration_id"), "extends", statement.superclass.slice)
       end
-      collect_body(statement.body, name, fact, declaration_scope(fact.fetch("declaration_id")), nil)
+      collect_body(statement.body, name, fact, declaration_scope(fact.fetch("declaration_id")), nil, :static)
       return visibility
     when :def_node
       collect_callable(statement, owner, declaration, lexical_scope, singleton_target, visibility)
@@ -266,27 +266,27 @@ class RubySourceExtractor
       container = lexical_scope.fetch("kind") == "block" ? lexical_scope.fetch("container") : lexical_scope
       block_scope = {"kind" => "block", "container" => container,
                      "start_utf8_offset" => statement.location.start_offset, "end_utf8_offset" => statement.location.end_offset}
-      collect_body(statement.body, owner, target_declaration(target, declaration), block_scope, target)
+      collect_body(statement.body, owner, target_declaration(target, declaration), block_scope, target, :unresolved)
       return visibility
     when :constant_write_node, :constant_path_write_node
-      collect_constant(statement, owner, lexical_scope)
+      collect_constant(statement, owner, declaration, lexical_scope, singleton_target, instance_member_kind)
       return visibility
     when :local_variable_write_node
-      collect_local_value(statement, owner, declaration, lexical_scope)
+      collect_local_value(statement, owner, declaration, lexical_scope, singleton_target, instance_member_kind)
       return visibility
     when :instance_variable_write_node
-      if declaration
-        collect_property(statement.name.name, statement, declaration, lexical_scope, owner, singleton_target ? "static" : "instance")
+      if declaration && instance_member_kind != :unresolved
+        collect_property(statement.name.name, statement, declaration, lexical_scope, owner, instance_member_kind.to_s)
       else
         @limitations["values"] << limitation(statement, "unresolved_ownership", "Instance variable receiver has no exact source declaration.")
       end
-      collect_body(statement.value, owner, declaration, lexical_scope, singleton_target)
+      collect_body(statement.value, owner, declaration, lexical_scope, singleton_target, instance_member_kind)
       return visibility
     when :lambda_node, :block_node
       name = "<lambda@#{statement.location.start_offset}>"
       fact = callable_fact(statement, name, lexical_name(name, lexical_scope), "anonymous", visibility, lexical_scope, owner)
       @callable_facts << {"node" => statement, "json" => fact, "owner" => owner}
-      collect_body(statement.body, owner, declaration, declaration_scope(fact.fetch("declaration_id")), nil)
+      collect_body(statement.body, owner, declaration, declaration_scope(fact.fetch("declaration_id")), singleton_target, instance_member_kind)
       return visibility
     when :call_node
       if statement.receiver.nil? && VISIBILITIES.include?(statement.name)
@@ -318,7 +318,7 @@ class RubySourceExtractor
       @limitations["unresolved_methods"] << limitation(statement, "unsupported_syntax", "Method alias binding is not represented.")
       declaration.fetch("inventory")["methods"] = coverage(@limitations["unresolved_methods"]) if declaration
     end
-    statement.each_child_node { |child| collect_body(child, owner, declaration, lexical_scope, singleton_target) }
+    statement.each_child_node { |child| collect_body(child, owner, declaration, lexical_scope, singleton_target, instance_member_kind) }
     visibility
   end
 
@@ -366,7 +366,7 @@ class RubySourceExtractor
       @unresolved_methods << fact
     end
     @callable_facts << {"node" => node, "json" => fact, "owner" => target_owner}
-    collect_body(node.body, target_owner, body_declaration, declaration_scope(fact.fetch("declaration_id")), nil)
+    collect_body(node.body, target_owner, body_declaration, declaration_scope(fact.fetch("declaration_id")), nil, singleton ? :static : :instance)
   end
 
   def callable_fact(node, name, qualified_name, kind, visibility, lexical_scope, owner)
@@ -578,24 +578,24 @@ class RubySourceExtractor
     container.fetch("kind") == "file" ? name : "#{container.fetch("declaration_id").fetch("qualified_name")}.#{name}"
   end
 
-  def collect_local_value(node, owner, declaration, lexical_scope)
+  def collect_local_value(node, owner, declaration, lexical_scope, singleton_target, instance_member_kind)
     name = node.name.name
     qualified = lexical_name(name, lexical_scope)
     if node.value.is_a?(Prism::LambdaNode)
       fact = callable_fact(node.value, name, qualified, "callable_value", "private", lexical_scope, owner)
       fact.merge!("declaration_kind" => "assignment", "value_kind" => "value_callable", "scope" => lexical_scope.fetch("kind") == "file" ? "module" : "local")
       @callable_facts << {"node" => node.value, "json" => fact, "owner" => owner}
-      collect_body(node.value.body, owner, declaration, declaration_scope(fact.fetch("declaration_id")), nil)
+      collect_body(node.value.body, owner, declaration, declaration_scope(fact.fetch("declaration_id")), singleton_target, instance_member_kind)
     else
       @values << {"declaration_id" => identity("value", qualified, ordinal(node)), "name" => name,
         "visibility" => "private", "visibility_intent" => "private", "line_count" => line_count(node.location.start_line, node.location.end_line),
         "declaration_kind" => "assignment", "value_kind" => LITERAL_NODES.include?(node.value.class) ? "value_literal" : "value_unknown",
         "scope" => lexical_scope.fetch("kind") == "file" ? "module" : "local", "placement" => placement(lexical_scope, owner)}
-      collect_body(node.value, owner, declaration, lexical_scope, nil)
+      collect_body(node.value, owner, declaration, lexical_scope, singleton_target, instance_member_kind)
     end
   end
 
-  def collect_constant(node, owner, lexical_scope)
+  def collect_constant(node, owner, declaration, lexical_scope, singleton_target, instance_member_kind)
     name_node = node.is_a?(Prism::ConstantPathWriteNode) ? node.target : node
     name = declaration_name(name_node, owner)
     value = node.value
@@ -609,7 +609,7 @@ class RubySourceExtractor
                    "value_unknown"
                  end
     if value.is_a?(Prism::LambdaNode)
-      collect_callable_constant(node, value, name, lexical_scope, owner)
+      collect_callable_constant(node, value, name, lexical_scope, owner, declaration, singleton_target, instance_member_kind)
       return
     end
     @values << {
@@ -623,16 +623,16 @@ class RubySourceExtractor
       "scope" => constant_scope(owner),
       "placement" => placement(lexical_scope, owner)
     }
-    collect_body(value, owner, nil, lexical_scope, nil)
+    collect_body(value, owner, nil, lexical_scope, nil, :unresolved)
   end
 
-  def collect_callable_constant(node, value, name, lexical_scope, owner)
+  def collect_callable_constant(node, value, name, lexical_scope, owner, declaration, singleton_target, instance_member_kind)
     fact = callable_fact(value, name, name, "callable_value", "public", lexical_scope, owner)
     fact["declaration_id"] = identity("value", name, ordinal(node))
     fact.merge!("declaration_kind" => "constant", "value_kind" => "value_callable",
                 "scope" => constant_scope(owner))
     @callable_facts << {"node" => value, "json" => fact, "owner" => owner}
-    collect_body(value.body, owner, nil, declaration_scope(fact.fetch("declaration_id")), nil)
+    collect_body(value.body, owner, declaration, declaration_scope(fact.fetch("declaration_id")), singleton_target, instance_member_kind)
   end
 
   def constant_scope(owner)

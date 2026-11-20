@@ -8,6 +8,10 @@ runtime:
     major: 4
     minor: 0
     patch: 7
+  rejected_versions:
+  - major: 2
+    minor: 6
+    patch: 10
   packages:
   - manager: gem
     name: prism
@@ -45,6 +49,8 @@ fixtures:
     - ruby_ownership/src/qualified_declaration.rb
     - ruby_ownership/src/qualified_receiver.rb
     - ruby_ownership/src/singleton_owner.rb
+    - ruby_ownership/src/member_context.rb
+    - ruby_ownership/src/generated_receiver.rb
 capabilities:
   sources:
     status: supported

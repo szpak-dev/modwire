@@ -14,6 +14,7 @@ class RuntimeRequirement(FixtureModel):
     probe: RuntimeVersionProbe
     version: RuntimeVersion
     packages: tuple[RuntimePackageRequirement, ...]
+    rejected_versions: tuple[RuntimeVersion, ...]
 
     @model_validator(mode="after")
     def validate_packages(self) -> Self:

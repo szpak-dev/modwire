@@ -1,5 +1,6 @@
 import os
 import shutil
+from pathlib import Path
 
 import pytest
 
@@ -11,6 +12,8 @@ from modwire.application import (
     UnsupportedLanguageError,
 )
 
+from ...support.code_map_fixture.fixture_contract import PolyglotFixtureContract
+from ...support.code_map_fixture.language_capability_matrix.values.names.language_id import LanguageId
 from .base_test import NativeExtractionTestCase
 
 
@@ -75,9 +78,18 @@ class TestNativeExtractionAttacks(NativeExtractionTestCase):
 
     def test_incompatible_ruby_fails_before_loading_prism_and_recovers(self) -> None:
         root = self.repository / "tests/fixtures/extraction_lifecycle/ruby/valid"
+        contract = PolyglotFixtureContract(self.repository)
+        requirement = contract.matrix.languages[LanguageId("ruby")].contract.runtime
+        assert "MODWIRE_TEST_REJECTED_RUBY" in os.environ, "Configure the rejected Ruby described in contributing."
+        executable = Path(os.environ["MODWIRE_TEST_REJECTED_RUBY"])
+        assert executable.is_absolute() and executable.is_file()
+        rejected_bin = self.workspace / "rejected-runtime"
+        rejected_bin.mkdir()
+        (rejected_bin / requirement.runtime.value).symlink_to(executable)
         with pytest.MonkeyPatch.context() as environment:
-            environment.setenv("PATH", "/usr/bin" + os.pathsep + os.environ["PATH"])
+            environment.setenv("PATH", str(rejected_bin) + os.pathsep + os.environ["PATH"])
             environment.setenv("RUBYOPT", "")
+            contract.runtime.validate_version(str(executable), requirement, requirement.rejected_versions[0])
             with pytest.raises(ExtractorExecutionError) as raised:
                 self.application.generate_map("ruby", str(root), self.scan_policy())
         assert raised.value.language == "ruby"

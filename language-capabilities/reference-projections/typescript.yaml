@@ -349,3 +349,11 @@ scenarios:
     canonical: typescript_exports/src/default_callable.ts
   - authored: typescript_exports/src/export_equals.ts
     canonical: typescript_exports/src/export_equals.ts
+  - authored: typescript_exports/src/parenthesized_default.ts
+    canonical: typescript_exports/src/parenthesized_default.ts
+  - authored: typescript_exports/src/wrapped_callable.ts
+    canonical: typescript_exports/src/wrapped_callable.ts
+  - authored: typescript_exports/src/wrapped_identifier.ts
+    canonical: typescript_exports/src/wrapped_identifier.ts
+  - authored: typescript_exports/src/wrapped_namespace.ts
+    canonical: typescript_exports/src/wrapped_namespace.ts

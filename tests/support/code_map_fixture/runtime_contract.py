@@ -5,6 +5,8 @@ from typing import assert_never
 
 from modwire.application import ExtractorDescriptor, ModwireApplication
 
+from .language_capability_matrix.contracts.runtime.requirement import RuntimeRequirement
+from .language_capability_matrix.contracts.runtime.version import RuntimeVersion
 from .language_capability_matrix.matrix import LanguageCapabilityMatrix
 from .language_capability_matrix.values.enums.runtime_package_manager import RuntimePackageManager
 from .language_capability_matrix.values.names.language_id import LanguageId
@@ -32,6 +34,7 @@ class FixtureRuntimeContract:
                 "runtime": requirement.runtime.value,
                 "version": requirement.version.text(),
                 "packages": packages,
+                "rejected_versions": [version.text() for version in requirement.rejected_versions],
             }
         return json.dumps(runtimes, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
 
@@ -69,22 +72,7 @@ class FixtureRuntimeContract:
                 requirement.version.text(),
                 "executable not found",
             )
-        completed = subprocess.run(
-            (executable, *requirement.probe.arguments), capture_output=True, check=False, text=True
-        )
-        output = f"{completed.stdout}\n{completed.stderr}".strip()
-        observed = requirement.probe.pattern.search(output)
-        if completed.returncode != 0 or observed is None:
-            raise RuntimeContractError(
-                RuntimeViolation.PROBE_FAILED, requirement.runtime.value, requirement.version.text(), output
-            )
-        if observed.group(1) != requirement.version.text():
-            raise RuntimeContractError(
-                RuntimeViolation.VERSION_MISMATCH,
-                requirement.runtime.value,
-                requirement.version.text(),
-                observed.group(1),
-            )
+        self.validate_version(executable, requirement, requirement.version)
         for package in requirement.packages:
             if package.manager is RuntimePackageManager.GEM:
                 completed = subprocess.run(
@@ -108,6 +96,19 @@ class FixtureRuntimeContract:
                     )
             else:
                 assert_never(package.manager)
+
+    def validate_version(self, executable: str, requirement: RuntimeRequirement, version: RuntimeVersion) -> None:
+        completed = subprocess.run(
+            (executable, *requirement.probe.arguments), capture_output=True, check=False, text=True
+        )
+        output = f"{completed.stdout}\n{completed.stderr}".strip()
+        observed = requirement.probe.pattern.search(output)
+        if completed.returncode != 0 or observed is None:
+            raise RuntimeContractError(RuntimeViolation.PROBE_FAILED, requirement.runtime.value, version.text(), output)
+        if observed.group(1) != version.text():
+            raise RuntimeContractError(
+                RuntimeViolation.VERSION_MISMATCH, requirement.runtime.value, version.text(), observed.group(1)
+            )
 
     def install_packages(self) -> None:
         for bundle in self.matrix.languages.values():

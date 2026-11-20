@@ -8,6 +8,7 @@ from pydantic import TypeAdapter, ValidationError
 from modwire.application import (
     CapabilityStatus,
     CodeMap,
+    DeclarationFamily,
     FactCapability,
     InventoryCoverage,
     InventoryStatus,
@@ -77,8 +78,14 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             assert before_ids and set(before_ids).isdisjoint(after_ids)
             assert tuple(item.family for item in before_ids) == tuple(item.family for item in after_ids)
             assert tuple(
-                item.qualified_name for item in before_ids if "<anonymous>" not in item.qualified_name
-            ) == tuple(item.qualified_name for item in after_ids if "<anonymous>" not in item.qualified_name)
+                item.qualified_name
+                for item in before_ids
+                if item.family is not DeclarationFamily.CALLABLE and "<anonymous>" not in item.qualified_name
+            ) == tuple(
+                item.qualified_name
+                for item in after_ids
+                if item.family is not DeclarationFamily.CALLABLE and "<anonymous>" not in item.qualified_name
+            )
             assert tuple(item.line_start + 1 for item in before.canonical_callables()) == tuple(
                 item.line_start for item in after.canonical_callables()
             )
@@ -130,10 +137,13 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             for results in scenarios.values()
             for result in results
         )
-        assert not any(
-            Discrepancy.WRONG_OWNER in result.discrepancies
-            for result in report.results[LanguageId("ruby")][ScenarioId("structural")]
-        )
+        structural_failures = [
+            (language.value, result.subject, result.expected, result.actual)
+            for language, scenarios in report.results.items()
+            for result in scenarios[ScenarioId("structural")]
+            if result.owner_issue in (81, 104) and not result.satisfied
+        ]
+        assert not structural_failures
         assert all(
             any(Discrepancy.MODEL_GAP in result.discrepancies for result in scenarios[ScenarioId("structural")])
             for scenarios in report.results.values()

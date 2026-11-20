@@ -337,7 +337,9 @@ class TypeScriptExtractor {
     }
     export(name: string, local: string, node: ts.Node, specifier = '', isDefault = false, bindingNode: ts.Node = node): void {
         const reexport = specifier !== '';
-        const references = this.bindings(local, node);
+        while (ts.isParenthesizedExpression(bindingNode) || ts.isAsExpression(bindingNode) || ts.isTypeAssertionExpression(bindingNode)
+            || ts.isNonNullExpression(bindingNode) || ts.isSatisfiesExpression(bindingNode)) bindingNode = bindingNode.expression;
+        const references = this.bindings(bindingNode === node ? local : bindingNode.getText(this.source), node);
         const own = this.identities.get(bindingNode);
         const binding: Export['binding'] = reexport ? { kind: 'unresolved', reason: 'external' } : own !== undefined ? { kind: 'resolved', declaration_ids: [own] }
             : references.length ? { kind: 'resolved', declaration_ids: references } : { kind: 'unresolved', reason: 'unobserved' };
