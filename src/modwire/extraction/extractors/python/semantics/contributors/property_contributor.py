@@ -53,7 +53,7 @@ class PropertySemanticContributor(PythonSemanticContributor):
     def contribute(
         self, observation: PythonSourceObservation, catalog: PythonSemanticCatalog, context: PythonSourceContext
     ) -> PythonSemanticContribution:
-        by_class: dict[DeclarationIdentity, dict[str, SourceClassProperty]] = {}
+        by_class: dict[DeclarationIdentity, dict[tuple[str, SourceMemberKind], SourceClassProperty]] = {}
         class_ids = {catalog.scope_identities[item.node] for item in observation.classes}
         for candidate in observation.properties:
             if (
@@ -82,9 +82,8 @@ class PropertySemanticContributor(PythonSemanticContributor):
                 candidate, identity, owner_id, kind, catalog.placement(candidate.binding_scope)
             )
             properties = by_class[owner_id]
-            properties[candidate.name] = (
-                self.merge(properties[candidate.name], incoming) if candidate.name in properties else incoming
-            )
+            key = (candidate.name, kind)
+            properties[key] = self.merge(properties[key], incoming) if key in properties else incoming
         return PythonSemanticContribution(
             properties={owner: tuple(items.values()) for owner, items in by_class.items()}
         )
@@ -112,19 +111,14 @@ class PropertySemanticContributor(PythonSemanticContributor):
         self, target: ast.Attribute, candidate: PythonPropertyCandidate, catalog: PythonSemanticCatalog
     ) -> tuple[SourceResolvedTarget | SourceUnresolvedTarget, SourceMemberKind]:
         receiver = ast.unparse(target.value)
-        scope = candidate.binding_scope
+        owner, scope = catalog.resolve(receiver, candidate.binding_scope)
         if scope in catalog.callable_kinds and receiver == catalog.receiver_name(scope):
             kind = catalog.callable_kinds[scope]
-            if kind in {
-                SourceCallableKind.INSTANCE_METHOD,
-                SourceCallableKind.CONSTRUCTOR,
-                SourceCallableKind.TYPE_METHOD,
-            }:
-                return (
-                    catalog.resolve(receiver, scope),
-                    SourceMemberKind.STATIC if kind is SourceCallableKind.TYPE_METHOD else SourceMemberKind.INSTANCE,
-                )
-        return (catalog.resolve(receiver, scope), SourceMemberKind.STATIC)
+            return (
+                owner,
+                SourceMemberKind.STATIC if kind is SourceCallableKind.TYPE_METHOD else SourceMemberKind.INSTANCE,
+            )
+        return owner, SourceMemberKind.STATIC
 
     @singledispatchmethod
     def class_member_kind(self, statement: ast.stmt) -> SourceMemberKind:
@@ -143,9 +137,7 @@ class PropertySemanticContributor(PythonSemanticContributor):
             is_optional=current.is_optional or incoming.is_optional,
             type=current.type if current.type.kind is not SourceTypeKind.ABSENT else incoming.type,
             visibility=current.visibility,
-            member_kind=SourceMemberKind.INSTANCE
-            if SourceMemberKind.INSTANCE in {current.member_kind, incoming.member_kind}
-            else SourceMemberKind.STATIC,
+            member_kind=current.member_kind,
             assigned_values=(*current.assigned_values, *incoming.assigned_values),
             placement=current.placement,
         )

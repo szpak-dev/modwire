@@ -34,6 +34,7 @@ fixtures:
     root: tests/fixtures/structural_fidelity
     sources:
     - python/src/example.py
+    - python/src/receiver_context.py
 capabilities:
   sources:
     status: supported
@@ -73,7 +74,7 @@ relationships:
     inventory: supported
   member:
     semantics: partial
-    inventory: supported
+    inventory: partial
   dependency:
     semantics: supported
     inventory: supported
@@ -259,6 +260,12 @@ scenarios:
     observation: {kind: attribute, owner: ExampleBase, name: example_value, member_kind: instance}
   - kind: capability
     capability: attributes
+    evidence: boundary
+    state: absent
+    observation: {kind: attribute, owner: ExampleBase, name: example_runtime_member, member_kind: instance}
+  - kind: relationship
+    relationship: member
+    aspect: inventory
     evidence: boundary
     state: absent
     observation: {kind: attribute, owner: ExampleBase, name: example_runtime_member, member_kind: instance}

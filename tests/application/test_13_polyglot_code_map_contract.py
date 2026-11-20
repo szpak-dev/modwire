@@ -75,16 +75,25 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             after = shifted.extraction.files[key]
             before_ids = tuple(identity for identity, _ in before.declaration_placements())
             after_ids = tuple(identity for identity, _ in after.declaration_placements())
+            before_unresolved = {item.declaration_id for item in before.unresolved_methods}
+            after_unresolved = {item.declaration_id for item in after.unresolved_methods}
             assert before_ids and set(before_ids).isdisjoint(after_ids)
             assert tuple(item.family for item in before_ids) == tuple(item.family for item in after_ids)
             assert tuple(
                 item.qualified_name
                 for item in before_ids
-                if item.family is not DeclarationFamily.CALLABLE and "<anonymous>" not in item.qualified_name
+                if item.family is not DeclarationFamily.CALLABLE
+                and "<anonymous>" not in item.qualified_name
+                and item not in before_unresolved
             ) == tuple(
                 item.qualified_name
                 for item in after_ids
-                if item.family is not DeclarationFamily.CALLABLE and "<anonymous>" not in item.qualified_name
+                if item.family is not DeclarationFamily.CALLABLE
+                and "<anonymous>" not in item.qualified_name
+                and item not in after_unresolved
+            )
+            assert tuple(item.name for item in before.unresolved_methods) == tuple(
+                item.name for item in after.unresolved_methods
             )
             assert tuple(item.line_start + 1 for item in before.canonical_callables()) == tuple(
                 item.line_start for item in after.canonical_callables()

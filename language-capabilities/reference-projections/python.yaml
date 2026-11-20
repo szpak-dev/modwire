@@ -337,3 +337,5 @@ scenarios:
   mappings:
   - authored: python/src/example.py
     canonical: python/src/example.py
+  - authored: python/src/receiver_context.py
+    canonical: python/src/receiver_context.py

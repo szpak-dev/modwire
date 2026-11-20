@@ -1,0 +1,657 @@
+{
+  "declarations": [
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleReceiver",
+      "declaration_kind": "class"
+    }
+  ],
+  "callables": [
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleReceiver.example_type",
+      "callable_kind": "type_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleReceiver.example_type.example_captured",
+      "callable_kind": "function"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleReceiver.example_instance",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleReceiver.example_instance.example_captured",
+      "callable_kind": "function"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleReceiver.example_instance.example_shadowed",
+      "callable_kind": "function"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleReceiver.example_instance.example_rebound",
+      "callable_kind": "function"
+    }
+  ],
+  "attributes": [
+    {
+      "kind": "attribute",
+      "owner": "ExampleReceiver",
+      "name": "example_shared",
+      "member_kind": "static"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleReceiver",
+      "name": "example_direct_type",
+      "member_kind": "static"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleReceiver",
+      "name": "example_captured_type",
+      "member_kind": "static"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleReceiver",
+      "name": "example_shared",
+      "member_kind": "instance"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleReceiver",
+      "name": "example_direct_instance",
+      "member_kind": "instance"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleReceiver",
+      "name": "example_captured_instance",
+      "member_kind": "instance"
+    }
+  ],
+  "namespaces": [],
+  "signatures": {},
+  "spans": [],
+  "owners": [
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "method",
+        "qualified_name": "ExampleReceiver.example_type",
+        "ordinal": 21474836485,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 4294967297,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "method",
+        "qualified_name": "ExampleReceiver.example_instance",
+        "ordinal": 47244640261,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 4294967297,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "property",
+        "qualified_name": "ExampleReceiver.example_shared",
+        "ordinal": 8589934597,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 4294967297,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "property",
+        "qualified_name": "ExampleReceiver.example_direct_type",
+        "ordinal": 25769803785,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 4294967297,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "property",
+        "qualified_name": "ExampleReceiver.example_captured_type",
+        "ordinal": 38654705677,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 4294967297,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "property",
+        "qualified_name": "ExampleReceiver.example_shared",
+        "ordinal": 51539607561,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 4294967297,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "property",
+        "qualified_name": "ExampleReceiver.example_direct_instance",
+        "ordinal": 60129542153,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 4294967297,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "property",
+        "qualified_name": "ExampleReceiver.example_captured_instance",
+        "ordinal": 73014444045,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 4294967297,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      }
+    ]
+  ],
+  "unresolved_methods": [],
+  "parameters": {},
+  "returns": {},
+  "gaps": {},
+  "placements": [
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 4294967297,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "value",
+        "qualified_name": "ExampleReceiver.example_instance.example_rebound.self",
+        "ordinal": 98784247821,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/receiver_context.py",
+            "family": "function",
+            "qualified_name": "ExampleReceiver.example_instance.example_rebound",
+            "ordinal": 94489280521,
+            "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "method",
+        "qualified_name": "ExampleReceiver.example_type",
+        "ordinal": 21474836485,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/receiver_context.py",
+            "family": "class",
+            "qualified_name": "ExampleReceiver",
+            "ordinal": 4294967297,
+            "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "function",
+        "qualified_name": "ExampleReceiver.example_type.example_captured",
+        "ordinal": 34359738377,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/receiver_context.py",
+            "family": "method",
+            "qualified_name": "ExampleReceiver.example_type",
+            "ordinal": 21474836485,
+            "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "method",
+        "qualified_name": "ExampleReceiver.example_instance",
+        "ordinal": 47244640261,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/receiver_context.py",
+            "family": "class",
+            "qualified_name": "ExampleReceiver",
+            "ordinal": 4294967297,
+            "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "function",
+        "qualified_name": "ExampleReceiver.example_instance.example_captured",
+        "ordinal": 68719476745,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/receiver_context.py",
+            "family": "method",
+            "qualified_name": "ExampleReceiver.example_instance",
+            "ordinal": 47244640261,
+            "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "function",
+        "qualified_name": "ExampleReceiver.example_instance.example_shadowed",
+        "ordinal": 81604378633,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/receiver_context.py",
+            "family": "method",
+            "qualified_name": "ExampleReceiver.example_instance",
+            "ordinal": 47244640261,
+            "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "function",
+        "qualified_name": "ExampleReceiver.example_instance.example_rebound",
+        "ordinal": 94489280521,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/receiver_context.py",
+            "family": "method",
+            "qualified_name": "ExampleReceiver.example_instance",
+            "ordinal": 47244640261,
+            "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "property",
+        "qualified_name": "ExampleReceiver.example_shared",
+        "ordinal": 8589934597,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/receiver_context.py",
+            "family": "class",
+            "qualified_name": "ExampleReceiver",
+            "ordinal": 4294967297,
+            "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "property",
+        "qualified_name": "ExampleReceiver.example_direct_type",
+        "ordinal": 25769803785,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/receiver_context.py",
+            "family": "method",
+            "qualified_name": "ExampleReceiver.example_type",
+            "ordinal": 21474836485,
+            "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "property",
+        "qualified_name": "ExampleReceiver.example_captured_type",
+        "ordinal": 38654705677,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/receiver_context.py",
+            "family": "function",
+            "qualified_name": "ExampleReceiver.example_type.example_captured",
+            "ordinal": 34359738377,
+            "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "property",
+        "qualified_name": "ExampleReceiver.example_shared",
+        "ordinal": 51539607561,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/receiver_context.py",
+            "family": "method",
+            "qualified_name": "ExampleReceiver.example_instance",
+            "ordinal": 47244640261,
+            "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "property",
+        "qualified_name": "ExampleReceiver.example_direct_instance",
+        "ordinal": 60129542153,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/receiver_context.py",
+            "family": "method",
+            "qualified_name": "ExampleReceiver.example_instance",
+            "ordinal": 47244640261,
+            "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "property",
+        "qualified_name": "ExampleReceiver.example_captured_instance",
+        "ordinal": 73014444045,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/receiver_context.py",
+            "family": "function",
+            "qualified_name": "ExampleReceiver.example_instance.example_captured",
+            "ordinal": 68719476745,
+            "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ]
+  ],
+  "exports": [
+    {
+      "name": "ExampleReceiver",
+      "local_name": "ExampleReceiver",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "python/src/receiver_context.py",
+            "family": "class",
+            "qualified_name": "ExampleReceiver",
+            "ordinal": 4294967297,
+            "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+          }
+        ]
+      }
+    }
+  ],
+  "relations": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
+  "member_inventories": [
+    [
+      {
+        "source_id": "python/src/receiver_context.py",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 4294967297,
+        "content_digest": "55efb0828742511af95f38a8ce45e763ed507cea1c3e4f0a2560b599ff361dc6"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "incomplete",
+          "limitations": [
+            {
+              "kind": "unresolved_ownership",
+              "location": {
+                "kind": "source",
+                "start_line": 20,
+                "end_line": 20
+              },
+              "description": "Property receiver self.example_unknown has no exact source owner."
+            },
+            {
+              "kind": "unresolved_ownership",
+              "location": {
+                "kind": "source",
+                "start_line": 24,
+                "end_line": 24
+              },
+              "description": "Property receiver self.example_unknown has no exact source owner."
+            }
+          ]
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ]
+  ]
+}

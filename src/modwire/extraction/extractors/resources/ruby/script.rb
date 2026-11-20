@@ -259,10 +259,10 @@ class RubySourceExtractor
       collect_body(statement.body, name, fact, declaration_scope(fact.fetch("declaration_id")), nil, :static)
       return visibility
     when :def_node
-      collect_callable(statement, owner, declaration, lexical_scope, singleton_target, visibility)
+      collect_callable(statement, owner, declaration, lexical_scope, singleton_target, instance_member_kind, visibility)
       return visibility
     when :singleton_class_node
-      target = receiver_target(statement.expression, owner, declaration, singleton_target)
+      target = receiver_target(statement.expression, owner, declaration, singleton_target, instance_member_kind)
       container = lexical_scope.fetch("kind") == "block" ? lexical_scope.fetch("container") : lexical_scope
       block_scope = {"kind" => "block", "container" => container,
                      "start_utf8_offset" => statement.location.start_offset, "end_utf8_offset" => statement.location.end_offset}
@@ -322,9 +322,9 @@ class RubySourceExtractor
     visibility
   end
 
-  def collect_callable(node, owner, declaration, lexical_scope, singleton_target, visibility)
+  def collect_callable(node, owner, declaration, lexical_scope, singleton_target, instance_member_kind, visibility)
     target = if node.receiver
-               receiver_target(node.receiver, owner, declaration, singleton_target)
+               receiver_target(node.receiver, owner, declaration, singleton_target, instance_member_kind)
              elsif singleton_target
                singleton_target
              elsif declaration
@@ -403,14 +403,14 @@ class RubySourceExtractor
     @declarations_by_qualified_name.fetch(identity.fetch("qualified_name")).find { |item| item.fetch("declaration_id") == identity }
   end
 
-  def receiver_target(receiver, owner, declaration, singleton_target)
+  def receiver_target(receiver, owner, declaration, singleton_target, instance_member_kind)
     if self_receiver?(receiver)
       if singleton_target
         return singleton_target if singleton_target.fetch("kind") == "unresolved"
 
         return target_fact({"kind" => "unresolved", "reason" => "unobserved"})
       end
-      return target_fact(declaration ? {"kind" => "resolved", "declaration_id" => declaration.fetch("declaration_id")} : {"kind" => "unresolved", "reason" => "dynamic"})
+      return target_fact(declaration && instance_member_kind == :static ? {"kind" => "resolved", "declaration_id" => declaration.fetch("declaration_id")} : {"kind" => "unresolved", "reason" => "dynamic"})
     end
     reference = constant_reference(receiver)
     reference.nil? ? target_fact({"kind" => "unresolved", "reason" => "dynamic"}) : resolve_reference(reference, owner)

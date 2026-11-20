@@ -1,0 +1,537 @@
+{
+  "declarations": [
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleReceiver",
+      "declaration_kind": "class"
+    }
+  ],
+  "callables": [
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleReceiver.example_instance",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "self.example_nested_instance",
+      "callable_kind": "type_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "<singleton@114>.example_nested_singleton",
+      "callable_kind": "type_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleReceiver.example_explicit_type",
+      "callable_kind": "type_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleReceiver.example_type",
+      "callable_kind": "type_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleReceiver.example_nested_type",
+      "callable_kind": "type_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleReceiver.example_nested_type_singleton",
+      "callable_kind": "type_method"
+    }
+  ],
+  "attributes": [],
+  "namespaces": [],
+  "signatures": {},
+  "spans": [
+    {
+      "kind": "exact_span",
+      "owner": "ExampleReceiver.example_instance",
+      "start": 2,
+      "end": 11
+    },
+    {
+      "kind": "exact_span",
+      "owner": "self.example_nested_instance",
+      "start": 3,
+      "end": 4
+    },
+    {
+      "kind": "exact_span",
+      "owner": "<singleton@114>.example_nested_singleton",
+      "start": 6,
+      "end": 7
+    },
+    {
+      "kind": "exact_span",
+      "owner": "ExampleReceiver.example_explicit_type",
+      "start": 9,
+      "end": 10
+    },
+    {
+      "kind": "exact_span",
+      "owner": "ExampleReceiver.example_type",
+      "start": 13,
+      "end": 20
+    },
+    {
+      "kind": "exact_span",
+      "owner": "ExampleReceiver.example_nested_type",
+      "start": 14,
+      "end": 15
+    },
+    {
+      "kind": "exact_span",
+      "owner": "ExampleReceiver.example_nested_type_singleton",
+      "start": 17,
+      "end": 18
+    }
+  ],
+  "owners": [
+    [
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleReceiver.example_instance",
+        "ordinal": 25,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 1,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleReceiver.example_explicit_type",
+        "ordinal": 166,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 1,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleReceiver.example_type",
+        "ordinal": 225,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 1,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleReceiver.example_nested_type",
+        "ordinal": 251,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 1,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleReceiver.example_nested_type_singleton",
+        "ordinal": 312,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 1,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      }
+    ]
+  ],
+  "unresolved_methods": [
+    {
+      "declaration_id": {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "method",
+        "qualified_name": "self.example_nested_instance",
+        "ordinal": 50,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      "source_id": "ruby_ownership/src/receiver_context.rb",
+      "name": "example_nested_instance",
+      "qualified_name": "self.example_nested_instance",
+      "kind": "type_method",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "declaration_annotations": [],
+      "line_start": 3,
+      "line_end": 4,
+      "line_count": 2,
+      "parameters": [],
+      "return_type": {
+        "kind": "absent"
+      },
+      "decorators": [],
+      "docstring": "",
+      "placement": {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/receiver_context.rb",
+            "family": "method",
+            "qualified_name": "ExampleReceiver.example_instance",
+            "ordinal": 25,
+            "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "receiver_reference": "self",
+      "owner": {
+        "kind": "unresolved",
+        "reason": "dynamic"
+      }
+    },
+    {
+      "declaration_id": {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "method",
+        "qualified_name": "<singleton@114>.example_nested_singleton",
+        "ordinal": 115,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      "source_id": "ruby_ownership/src/receiver_context.rb",
+      "name": "example_nested_singleton",
+      "qualified_name": "<singleton@114>.example_nested_singleton",
+      "kind": "type_method",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "declaration_annotations": [],
+      "line_start": 6,
+      "line_end": 7,
+      "line_count": 2,
+      "parameters": [],
+      "return_type": {
+        "kind": "absent"
+      },
+      "decorators": [],
+      "docstring": "",
+      "placement": {
+        "lexical_scope": {
+          "kind": "block",
+          "container": {
+            "kind": "declaration",
+            "declaration_id": {
+              "source_id": "ruby_ownership/src/receiver_context.rb",
+              "family": "method",
+              "qualified_name": "ExampleReceiver.example_instance",
+              "ordinal": 25,
+              "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+            }
+          },
+          "start_utf8_offset": 94,
+          "end_utf8_offset": 160
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "receiver_reference": "<singleton@114>",
+      "owner": {
+        "kind": "unresolved",
+        "reason": "dynamic"
+      }
+    }
+  ],
+  "parameters": {},
+  "returns": {},
+  "gaps": {},
+  "placements": [
+    [
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 1,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleReceiver.example_instance",
+        "ordinal": 25,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/receiver_context.rb",
+            "family": "class",
+            "qualified_name": "ExampleReceiver",
+            "ordinal": 1,
+            "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "method",
+        "qualified_name": "self.example_nested_instance",
+        "ordinal": 50,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/receiver_context.rb",
+            "family": "method",
+            "qualified_name": "ExampleReceiver.example_instance",
+            "ordinal": 25,
+            "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "method",
+        "qualified_name": "<singleton@114>.example_nested_singleton",
+        "ordinal": 115,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      {
+        "lexical_scope": {
+          "kind": "block",
+          "container": {
+            "kind": "declaration",
+            "declaration_id": {
+              "source_id": "ruby_ownership/src/receiver_context.rb",
+              "family": "method",
+              "qualified_name": "ExampleReceiver.example_instance",
+              "ordinal": 25,
+              "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+            }
+          },
+          "start_utf8_offset": 94,
+          "end_utf8_offset": 160
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleReceiver.example_explicit_type",
+        "ordinal": 166,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/receiver_context.rb",
+            "family": "method",
+            "qualified_name": "ExampleReceiver.example_instance",
+            "ordinal": 25,
+            "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleReceiver.example_type",
+        "ordinal": 225,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/receiver_context.rb",
+            "family": "class",
+            "qualified_name": "ExampleReceiver",
+            "ordinal": 1,
+            "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleReceiver.example_nested_type",
+        "ordinal": 251,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/receiver_context.rb",
+            "family": "method",
+            "qualified_name": "ExampleReceiver.example_type",
+            "ordinal": 225,
+            "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleReceiver.example_nested_type_singleton",
+        "ordinal": 312,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      {
+        "lexical_scope": {
+          "kind": "block",
+          "container": {
+            "kind": "declaration",
+            "declaration_id": {
+              "source_id": "ruby_ownership/src/receiver_context.rb",
+              "family": "method",
+              "qualified_name": "ExampleReceiver.example_type",
+              "ordinal": 225,
+              "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+            }
+          },
+          "start_utf8_offset": 291,
+          "end_utf8_offset": 362
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ]
+  ],
+  "exports": [],
+  "relations": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "member_inventories": [
+    [
+      {
+        "source_id": "ruby_ownership/src/receiver_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleReceiver",
+        "ordinal": 1,
+        "content_digest": "fee11a7d0829d703ab9f949fd488aa971d4344286f7b3ae8d50593e513fbdf12"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ]
+  ]
+}

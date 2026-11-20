@@ -30,12 +30,13 @@ class DeclarationRelationSemanticContributor(PythonSemanticContributor):
         relations: list[SourceDeclarationRelation] = []
         for candidate in observation.declaration_relations:
             reference = self.references.read(candidate)
+            target, _ = catalog.resolve(reference, candidate.source.binding_scope)
             relations.append(
                 SourceDeclarationRelation(
                     source_declaration_id=catalog.scope_identities[candidate.source.node],
                     kind=SourceDeclarationRelationKind.EXTENDS,
                     target_reference=reference,
-                    target=catalog.resolve(reference, candidate.source.binding_scope),
+                    target=target,
                 )
             )
         return PythonSemanticContribution(declaration_relations=tuple(relations))

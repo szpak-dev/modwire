@@ -50,6 +50,7 @@ fixtures:
     - ruby_ownership/src/qualified_receiver.rb
     - ruby_ownership/src/singleton_owner.rb
     - ruby_ownership/src/member_context.rb
+    - ruby_ownership/src/receiver_context.rb
     - ruby_ownership/src/generated_receiver.rb
 capabilities:
   sources:

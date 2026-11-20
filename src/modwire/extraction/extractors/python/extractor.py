@@ -156,10 +156,10 @@ class PythonExtractor(SourceExtractor):
                         "Declared member and callable types, static calls, and assigned values are preserved "
                         "without resolving dynamic types or runtime mutation."
                     ),
-                    inventory=CapabilityStatus.SUPPORTED,
+                    inventory=CapabilityStatus.PARTIAL,
                     inventory_explanation=(
-                        "Every supported static member, callable type, call, and assigned-value fact in included "
-                        "Python sources is emitted deterministically."
+                        "Members with exact source owners are emitted deterministically; "
+                        "unresolved property receivers retain local inventory limitations."
                     ),
                 ),
                 RelationshipCoverage(

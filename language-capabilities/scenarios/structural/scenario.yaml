@@ -1,6 +1,8 @@
 kind: source_facts
 policy: {}
 sources:
+  python/src/receiver_context.py: language-capabilities/scenarios/structural/python/src/receiver_context.py.json
+  ruby_ownership/src/receiver_context.rb: language-capabilities/scenarios/structural/ruby_ownership/src/receiver_context.rb.json
   ruby_ownership/src/member_context.rb: language-capabilities/scenarios/structural/ruby_ownership/src/member_context.rb.json
   typescript_exports/src/parenthesized_default.ts: language-capabilities/scenarios/structural/typescript_exports/src/parenthesized_default.ts.json
   typescript_exports/src/wrapped_callable.ts: language-capabilities/scenarios/structural/typescript_exports/src/wrapped_callable.ts.json

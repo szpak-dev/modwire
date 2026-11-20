@@ -172,40 +172,42 @@ class PythonSemanticCatalog:
     def skip_class_lookup(self, scope: ast.ClassDef) -> ast.AST:
         return self.lookup_parent(self.binding_scopes[scope])
 
-    def resolve(self, reference: str, binding_scope: ast.AST) -> SourceResolvedTarget | SourceUnresolvedTarget:
+    def resolve(
+        self, reference: str, binding_scope: ast.AST
+    ) -> tuple[SourceResolvedTarget | SourceUnresolvedTarget, ast.AST]:
         parts = reference.split(".")
         scope = binding_scope
         position = 0
         while True:
             name = parts[position]
             if scope in self.unresolved_bindings and name in self.unresolved_bindings[scope]:
-                return SourceUnresolvedTarget(reason=self.unresolved_bindings[scope][name])
+                return SourceUnresolvedTarget(reason=self.unresolved_bindings[scope][name]), scope
             if scope in self.wildcard_scopes:
-                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.EXTERNAL)
+                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.EXTERNAL), scope
             key = (scope, name)
             matches = self.bindings[key] if key in self.bindings else ()
             if position == 0 and name == self.receiver_name(scope):
                 if matches:
-                    return SourceUnresolvedTarget(reason=SourceUnresolvedReason.DYNAMIC)
-                scope = self.binding_scopes[scope]
+                    return SourceUnresolvedTarget(reason=SourceUnresolvedReason.DYNAMIC), scope
                 if len(parts) == 1:
-                    return SourceResolvedTarget(declaration_id=self.scope_identities[scope])
+                    return SourceResolvedTarget(declaration_id=self.scope_identities[self.binding_scopes[scope]]), scope
+                scope = self.binding_scopes[scope]
                 position += 1
                 continue
             if name in self.parameter_names(scope):
-                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.DYNAMIC)
+                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.DYNAMIC), scope
             if len(matches) > 1:
-                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.AMBIGUOUS)
+                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.AMBIGUOUS), scope
             if matches:
                 scope = matches[0]
                 position += 1
                 if position == len(parts):
-                    return SourceResolvedTarget(declaration_id=self.scope_identities[scope])
+                    return SourceResolvedTarget(declaration_id=self.scope_identities[scope]), scope
                 continue
             if position > 0:
-                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.UNOBSERVED)
+                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.UNOBSERVED), scope
             if scope not in self.binding_scopes:
-                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.EXTERNAL)
+                return SourceUnresolvedTarget(reason=SourceUnresolvedReason.EXTERNAL), scope
             callable_scope = scope in self.callable_kinds
             scope = self.binding_scopes[scope]
             if callable_scope:

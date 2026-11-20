@@ -351,5 +351,7 @@ scenarios:
     canonical: ruby_ownership/src/singleton_owner.rb
   - authored: ruby_ownership/src/member_context.rb
     canonical: ruby_ownership/src/member_context.rb
+  - authored: ruby_ownership/src/receiver_context.rb
+    canonical: ruby_ownership/src/receiver_context.rb
   - authored: ruby_ownership/src/generated_receiver.rb
     canonical: ruby_ownership/src/generated_receiver.rb

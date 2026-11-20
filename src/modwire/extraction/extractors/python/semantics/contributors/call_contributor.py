@@ -35,7 +35,7 @@ class CallSemanticContributor(PythonSemanticContributor):
         candidates: list[PythonCallCandidate] = []
         for call in observation.calls:
             reference = self.references.read(call)
-            target = catalog.resolve(reference.expression, call.binding_scope)
+            target, _ = catalog.resolve(reference.expression, call.binding_scope)
             resolved: list[DeclarationIdentity] = []
             if target.kind is SourceBindingKind.RESOLVED:
                 if target.declaration_id in callables:
