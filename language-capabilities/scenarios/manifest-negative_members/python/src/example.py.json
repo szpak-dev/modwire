@@ -14,7 +14,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleValue",
+            "ordinal": 4294967297,
+            "content_digest": "64c509f74ea974519040bf8ac9a078e1c70dcdf213c027ab30128db3ebb9f22f"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "declarations": [
@@ -28,22 +40,51 @@
         "source_id": "python/src/example.py",
         "family": "class",
         "qualified_name": "ExampleValue",
-        "ordinal": 4294967297
+        "ordinal": 4294967297,
+        "content_digest": "64c509f74ea974519040bf8ac9a078e1c70dcdf213c027ab30128db3ebb9f22f"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "properties": [
         {
           "declaration_id": {
             "source_id": "python/src/example.py",
             "family": "property",
             "qualified_name": "ExampleValue.example_declared",
-            "ordinal": 8589934597
+            "ordinal": 8589934597,
+            "content_digest": "64c509f74ea974519040bf8ac9a078e1c70dcdf213c027ab30128db3ebb9f22f"
           },
           "owner_declaration_id": {
             "source_id": "python/src/example.py",
             "family": "class",
             "qualified_name": "ExampleValue",
-            "ordinal": 4294967297
+            "ordinal": 4294967297,
+            "content_digest": "64c509f74ea974519040bf8ac9a078e1c70dcdf213c027ab30128db3ebb9f22f"
           },
           "name": "example_declared",
           "is_optional": false,
@@ -53,6 +94,21 @@
           },
           "visibility": "public",
           "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "python/src/example.py",
+                "family": "class",
+                "qualified_name": "ExampleValue",
+                "ordinal": 4294967297,
+                "content_digest": "64c509f74ea974519040bf8ac9a078e1c70dcdf213c027ab30128db3ebb9f22f"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "assigned_values": [
             {
               "kind": "unassigned",
@@ -65,6 +121,41 @@
     }
   ],
   "functions": [],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 5,
   "code_line_count": 3,
   "public_symbol_count": 1

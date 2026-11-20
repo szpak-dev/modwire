@@ -2,8 +2,10 @@ from typing import Annotated
 
 from pydantic import Field, GetCoreSchemaHandler, ValidationInfo
 from pydantic.json_schema import SkipJsonSchema
-from pydantic_core import CoreSchema, PydanticCustomError, core_schema
+from pydantic_core import CoreSchema, core_schema
 
+from .value_reference_error import ValueReferenceError
+from .value_reference_violation import ValueReferenceViolation
 from .value_reuse import ValueReuse
 
 
@@ -29,12 +31,8 @@ class ValueReference:
     def resolve(self, index: int, info: ValidationInfo[ValueReuse[object] | None]) -> object:
         reuse = info.context
         if reuse is None or not reuse.indexed:
-            raise PydanticCustomError("value_reference_context", "Value references require indexed transport.")
+            raise ValueReferenceError(ValueReferenceViolation.MISSING_CONTEXT, index)
         try:
             return reuse.references[index]
         except IndexError as error:
-            raise PydanticCustomError(
-                "value_reference_index",
-                "Reference {index} is outside the validated value table.",
-                {"index": index},
-            ) from error
+            raise ValueReferenceError(ValueReferenceViolation.INVALID_INDEX, index) from error

@@ -14,7 +14,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 1,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/nested/example.ts",
+            "family": "function",
+            "qualified_name": "exampleValue",
+            "ordinal": 1,
+            "content_digest": "9d9d32294aad7b23d08b439c66eef082d75bc1d859d44c2bb2eb6346d2fdb98f"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "functions": [
@@ -28,10 +40,19 @@
         "source_id": "typescript/src/nested/example.ts",
         "family": "function",
         "qualified_name": "exampleValue",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "9d9d32294aad7b23d08b439c66eef082d75bc1d859d44c2bb2eb6346d2fdb98f"
       },
       "source_id": "typescript/src/nested/example.ts",
       "qualified_name": "exampleValue",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 1,
       "line_end": 3,
       "return_type": {
@@ -41,6 +62,41 @@
       "kind": "function"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 4,
   "code_line_count": 3,
   "public_symbol_count": 1

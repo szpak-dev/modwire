@@ -14,7 +14,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/Example.php",
+            "family": "function",
+            "qualified_name": "exampleTarget",
+            "ordinal": 7,
+            "content_digest": "2bfcd05a38d339c2eb3b458c5d78caa2b213a334582c7b855de92c652a0093b4"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
       "name": "exampleSource",
@@ -27,7 +39,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/Example.php",
+            "family": "function",
+            "qualified_name": "exampleSource",
+            "ordinal": 91,
+            "content_digest": "2bfcd05a38d339c2eb3b458c5d78caa2b213a334582c7b855de92c652a0093b4"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "functions": [
@@ -41,10 +65,19 @@
         "source_id": "php/src/Example.php",
         "family": "function",
         "qualified_name": "exampleTarget",
-        "ordinal": 7
+        "ordinal": 7,
+        "content_digest": "2bfcd05a38d339c2eb3b458c5d78caa2b213a334582c7b855de92c652a0093b4"
       },
       "source_id": "php/src/Example.php",
       "qualified_name": "exampleTarget",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 2,
       "line_end": 5,
       "parameters": [
@@ -73,10 +106,19 @@
         "source_id": "php/src/Example.php",
         "family": "function",
         "qualified_name": "exampleSource",
-        "ordinal": 91
+        "ordinal": 91,
+        "content_digest": "2bfcd05a38d339c2eb3b458c5d78caa2b213a334582c7b855de92c652a0093b4"
       },
       "source_id": "php/src/Example.php",
       "qualified_name": "exampleSource",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 7,
       "line_end": 11,
       "parameters": [
@@ -102,14 +144,16 @@
         "source_id": "php/src/Example.php",
         "family": "function",
         "qualified_name": "exampleSource",
-        "ordinal": 91
+        "ordinal": 91,
+        "content_digest": "2bfcd05a38d339c2eb3b458c5d78caa2b213a334582c7b855de92c652a0093b4"
       },
       "ordinal": 1,
       "target_callable_id": {
         "source_id": "php/src/Example.php",
         "family": "function",
         "qualified_name": "exampleTarget",
-        "ordinal": 7
+        "ordinal": 7,
+        "content_digest": "2bfcd05a38d339c2eb3b458c5d78caa2b213a334582c7b855de92c652a0093b4"
       },
       "source_id": "php/src/Example.php",
       "line": 9,
@@ -122,14 +166,16 @@
         "source_id": "php/src/Example.php",
         "family": "function",
         "qualified_name": "exampleSource",
-        "ordinal": 91
+        "ordinal": 91,
+        "content_digest": "2bfcd05a38d339c2eb3b458c5d78caa2b213a334582c7b855de92c652a0093b4"
       },
       "ordinal": 2,
       "target_callable_id": {
         "source_id": "php/src/Example.php",
         "family": "function",
         "qualified_name": "exampleTarget",
-        "ordinal": 7
+        "ordinal": 7,
+        "content_digest": "2bfcd05a38d339c2eb3b458c5d78caa2b213a334582c7b855de92c652a0093b4"
       },
       "source_id": "php/src/Example.php",
       "line": 10,
@@ -138,6 +184,41 @@
       "target_name": "exampleTarget"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 12,
   "code_line_count": 10,
   "public_symbol_count": 2

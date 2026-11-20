@@ -13,9 +13,36 @@
         "source_id": "ruby/src/example.rb",
         "family": "class",
         "qualified_name": "ExampleCalls",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "9935a9d6fd023021ecc256cc4ef3b7cc1746a01d2a7f281849c3029b8abc7e9e"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "example_target",
@@ -27,11 +54,27 @@
             "source_id": "ruby/src/example.rb",
             "family": "method",
             "qualified_name": "ExampleCalls.example_target",
-            "ordinal": 22
+            "ordinal": 22,
+            "content_digest": "9935a9d6fd023021ecc256cc4ef3b7cc1746a01d2a7f281849c3029b8abc7e9e"
           },
           "source_id": "ruby/src/example.rb",
           "qualified_name": "ExampleCalls.example_target",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "class",
+                "qualified_name": "ExampleCalls",
+                "ordinal": 1,
+                "content_digest": "9935a9d6fd023021ecc256cc4ef3b7cc1746a01d2a7f281849c3029b8abc7e9e"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 2,
           "line_end": 4,
           "parameters": [
@@ -50,7 +93,8 @@
             "source_id": "ruby/src/example.rb",
             "family": "class",
             "qualified_name": "ExampleCalls",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "9935a9d6fd023021ecc256cc4ef3b7cc1746a01d2a7f281849c3029b8abc7e9e"
           }
         },
         {
@@ -63,11 +107,27 @@
             "source_id": "ruby/src/example.rb",
             "family": "method",
             "qualified_name": "ExampleCalls.example_source",
-            "ordinal": 83
+            "ordinal": 83,
+            "content_digest": "9935a9d6fd023021ecc256cc4ef3b7cc1746a01d2a7f281849c3029b8abc7e9e"
           },
           "source_id": "ruby/src/example.rb",
           "qualified_name": "ExampleCalls.example_source",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "class",
+                "qualified_name": "ExampleCalls",
+                "ordinal": 1,
+                "content_digest": "9935a9d6fd023021ecc256cc4ef3b7cc1746a01d2a7f281849c3029b8abc7e9e"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 6,
           "line_end": 9,
           "parameters": [
@@ -86,7 +146,8 @@
             "source_id": "ruby/src/example.rb",
             "family": "class",
             "qualified_name": "ExampleCalls",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "9935a9d6fd023021ecc256cc4ef3b7cc1746a01d2a7f281849c3029b8abc7e9e"
           }
         }
       ]
@@ -99,14 +160,16 @@
         "source_id": "ruby/src/example.rb",
         "family": "method",
         "qualified_name": "ExampleCalls.example_source",
-        "ordinal": 83
+        "ordinal": 83,
+        "content_digest": "9935a9d6fd023021ecc256cc4ef3b7cc1746a01d2a7f281849c3029b8abc7e9e"
       },
       "ordinal": 1,
       "target_callable_id": {
         "source_id": "ruby/src/example.rb",
         "family": "method",
         "qualified_name": "ExampleCalls.example_target",
-        "ordinal": 22
+        "ordinal": 22,
+        "content_digest": "9935a9d6fd023021ecc256cc4ef3b7cc1746a01d2a7f281849c3029b8abc7e9e"
       },
       "source_id": "ruby/src/example.rb",
       "line": 7,
@@ -119,14 +182,16 @@
         "source_id": "ruby/src/example.rb",
         "family": "method",
         "qualified_name": "ExampleCalls.example_source",
-        "ordinal": 83
+        "ordinal": 83,
+        "content_digest": "9935a9d6fd023021ecc256cc4ef3b7cc1746a01d2a7f281849c3029b8abc7e9e"
       },
       "ordinal": 2,
       "target_callable_id": {
         "source_id": "ruby/src/example.rb",
         "family": "method",
         "qualified_name": "ExampleCalls.example_target",
-        "ordinal": 22
+        "ordinal": 22,
+        "content_digest": "9935a9d6fd023021ecc256cc4ef3b7cc1746a01d2a7f281849c3029b8abc7e9e"
       },
       "source_id": "ruby/src/example.rb",
       "line": 8,
@@ -135,6 +200,41 @@
       "target_name": "example_target"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 11,
   "code_line_count": 9,
   "public_symbol_count": 1

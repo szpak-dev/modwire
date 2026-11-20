@@ -32,158 +32,189 @@ mappings:
       family: class
       qualified_name: PlaceOrder
       ordinal: 100
+      content_digest: 1f713cdab086b229c40b1f3fb0c29ea73ad06cd8fa06905968aa38a581479ea7
     canonical:
       source_id: src/commerce/orders/application/actions/place_order
       family: class
       qualified_name: PlaceOrder
       ordinal: 1
+      content_digest: 2cbefec70e40f100376fb791b7e3f74a3676a83fc179ddc4633750c8d354b97d
   - authored:
       source_id: src/commerce/orders/domain/model/order.rb
       family: class
       qualified_name: Order
       ordinal: 1
+      content_digest: 7aa24491baf759cac5ad3b33c22a621792405eba3efbb4818162691e80e1cc0f
     canonical:
       source_id: src/commerce/orders/domain/model/order
       family: class
       qualified_name: Order
       ordinal: 1
+      content_digest: bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c
   - authored:
       source_id: src/commerce/orders/domain/services/order_policy.rb
       family: class
       qualified_name: OrderPolicy
       ordinal: 36
+      content_digest: dde974d8f0e5d57effc280a9578354c8d1cb094768e4e2f1b0d8e7062f9f921e
     canonical:
       source_id: src/commerce/orders/domain/services/order_policy
       family: class
       qualified_name: OrderPolicy
       ordinal: 1
+      content_digest: d82d07bd9dce9fc1c62477d072e3370ad6b8feed9f4eea2c551c3c63480c3fff
   - authored:
       source_id: src/commerce/orders/infrastructure/repositories/order_repository.rb
       family: class
       qualified_name: OrderRepository
       ordinal: 61
+      content_digest: 794e2df52a6a166b526b670169e81758c55a1dfff3a977fc48b36d9d0935768b
     canonical:
       source_id: src/commerce/orders/infrastructure/repositories/order_repository
       family: class
       qualified_name: OrderRepository
       ordinal: 1
+      content_digest: 8a9278a880c844bf505c547b0aaab46c65658407b2cc723b043f74d59380e5f9
   - authored:
       source_id: src/commerce/orders/interfaces/http/order_controller.rb
       family: class
       qualified_name: OrderController
       ordinal: 103
+      content_digest: 3e064e09039bd5a4dc988fe03754c365fb57675c727fc1b178cf03b6de627899
     canonical:
       source_id: src/commerce/orders/interfaces/http/order_controller
       family: class
       qualified_name: OrderController
       ordinal: 1
+      content_digest: 11f683815938f3033acfb9ff0b60fcf560beaecac99ca3c41f5ee109d88bf3a5
   - authored:
       source_id: src/commerce/payments/application/actions/capture_payment.rb
       family: class
       qualified_name: CapturePayment
       ordinal: 48
+      content_digest: 19d1e1170b9fe15208be47eec3cd2d44e2861a6b757954d46b0359c83e379bd4
     canonical:
       source_id: src/commerce/payments/application/actions/capture_payment
       family: class
       qualified_name: CapturePayment
       ordinal: 1
+      content_digest: 523b46d792c6200f7ddd9aa36d4c398f63cdd56473d8dc74176abfc2b6b47362
   - authored:
       source_id: src/commerce/payments/domain/model/payment.rb
       family: class
       qualified_name: Payment
       ordinal: 1
+      content_digest: dd619cf79c95b4c4773b1a64c3903e24329784cb8132bb8e4d02431be03c50f5
     canonical:
       source_id: src/commerce/payments/domain/model/例/payment
       family: class
       qualified_name: Payment
       ordinal: 1
+      content_digest: bc6cc5364afc862be73da3810fbfeaec32a272b4027c0f3bf0af04cc5cb073e3
   callables:
   - authored:
       source_id: src/commerce/orders/application/actions/place_order.rb
       family: method
       qualified_name: PlaceOrder.place
       ordinal: 172
+      content_digest: 1f713cdab086b229c40b1f3fb0c29ea73ad06cd8fa06905968aa38a581479ea7
     canonical:
       source_id: src/commerce/orders/application/actions/place_order
       family: method
       qualified_name: PlaceOrder.place
       ordinal: 1
+      content_digest: 2cbefec70e40f100376fb791b7e3f74a3676a83fc179ddc4633750c8d354b97d
   - authored:
       source_id: src/commerce/orders/domain/model/order.rb
       family: method
       qualified_name: Order.mark_placed
       ordinal: 119
+      content_digest: 7aa24491baf759cac5ad3b33c22a621792405eba3efbb4818162691e80e1cc0f
     canonical:
       source_id: src/commerce/orders/domain/model/order
       family: method
       qualified_name: Order.mark_placed
       ordinal: 2
+      content_digest: bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c
   - authored:
       source_id: src/commerce/orders/domain/model/order.rb
       family: method
       qualified_name: Order.is_placed
       ordinal: 163
+      content_digest: 7aa24491baf759cac5ad3b33c22a621792405eba3efbb4818162691e80e1cc0f
     canonical:
       source_id: src/commerce/orders/domain/model/order
       family: method
       qualified_name: Order.is_placed
       ordinal: 1
+      content_digest: bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c
   - authored:
       source_id: src/commerce/orders/domain/services/order_policy.rb
       family: method
       qualified_name: OrderPolicy.allows
       ordinal: 56
+      content_digest: dde974d8f0e5d57effc280a9578354c8d1cb094768e4e2f1b0d8e7062f9f921e
     canonical:
       source_id: src/commerce/orders/domain/services/order_policy
       family: method
       qualified_name: OrderPolicy.allows
       ordinal: 1
+      content_digest: d82d07bd9dce9fc1c62477d072e3370ad6b8feed9f4eea2c551c3c63480c3fff
   - authored:
       source_id: src/commerce/orders/infrastructure/repositories/order_repository.rb
       family: method
       qualified_name: OrderRepository.save
       ordinal: 132
+      content_digest: 794e2df52a6a166b526b670169e81758c55a1dfff3a977fc48b36d9d0935768b
     canonical:
       source_id: src/commerce/orders/infrastructure/repositories/order_repository
       family: method
       qualified_name: OrderRepository.save
       ordinal: 1
+      content_digest: 8a9278a880c844bf505c547b0aaab46c65658407b2cc723b043f74d59380e5f9
   - authored:
       source_id: src/commerce/orders/interfaces/http/order_controller.rb
       family: method
       qualified_name: OrderController.handle
       ordinal: 180
+      content_digest: 3e064e09039bd5a4dc988fe03754c365fb57675c727fc1b178cf03b6de627899
     canonical:
       source_id: src/commerce/orders/interfaces/http/order_controller
       family: method
       qualified_name: OrderController.handle
       ordinal: 1
+      content_digest: 11f683815938f3033acfb9ff0b60fcf560beaecac99ca3c41f5ee109d88bf3a5
   - authored:
       source_id: src/commerce/payments/application/actions/capture_payment.rb
       family: method
       qualified_name: CapturePayment.capture
       ordinal: 71
+      content_digest: 19d1e1170b9fe15208be47eec3cd2d44e2861a6b757954d46b0359c83e379bd4
     canonical:
       source_id: src/commerce/payments/application/actions/capture_payment
       family: method
       qualified_name: CapturePayment.capture
       ordinal: 1
+      content_digest: 523b46d792c6200f7ddd9aa36d4c398f63cdd56473d8dc74176abfc2b6b47362
   - authored:
       source_id: src/commerce/payments/domain/model/payment.rb
       family: method
       qualified_name: Payment.capture
       ordinal: 104
+      content_digest: dd619cf79c95b4c4773b1a64c3903e24329784cb8132bb8e4d02431be03c50f5
     canonical:
       source_id: src/commerce/payments/domain/model/例/payment
       family: method
       qualified_name: Payment.capture
       ordinal: 1
+      content_digest: bc6cc5364afc862be73da3810fbfeaec32a272b4027c0f3bf0af04cc5cb073e3
   parameters:
   - authored_callable:
       source_id: src/commerce/orders/application/actions/place_order.rb
       family: method
       qualified_name: PlaceOrder.place
       ordinal: 172
+      content_digest: 1f713cdab086b229c40b1f3fb0c29ea73ad06cd8fa06905968aa38a581479ea7
     authored: order
     canonical: order
   - authored_callable:
@@ -191,6 +222,7 @@ mappings:
       family: method
       qualified_name: OrderPolicy.allows
       ordinal: 56
+      content_digest: dde974d8f0e5d57effc280a9578354c8d1cb094768e4e2f1b0d8e7062f9f921e
     authored: order
     canonical: order
   - authored_callable:
@@ -198,6 +230,7 @@ mappings:
       family: method
       qualified_name: OrderRepository.save
       ordinal: 132
+      content_digest: 794e2df52a6a166b526b670169e81758c55a1dfff3a977fc48b36d9d0935768b
     authored: order
     canonical: order
   - authored_callable:
@@ -205,6 +238,7 @@ mappings:
       family: method
       qualified_name: OrderController.handle
       ordinal: 180
+      content_digest: 3e064e09039bd5a4dc988fe03754c365fb57675c727fc1b178cf03b6de627899
     authored: order_id
     canonical: order_id
   - authored_callable:
@@ -212,6 +246,7 @@ mappings:
       family: method
       qualified_name: CapturePayment.capture
       ordinal: 71
+      content_digest: 19d1e1170b9fe15208be47eec3cd2d44e2861a6b757954d46b0359c83e379bd4
     authored: payment
     canonical: payment
 scenarios:

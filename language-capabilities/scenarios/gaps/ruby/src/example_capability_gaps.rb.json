@@ -13,21 +13,66 @@
       "statement_id": 1,
       "join_key": "json",
       "uses_joined_import": false,
-      "resolution": "external"
+      "resolution": "external",
+      "target_file_id": null,
+      "imported_symbols": []
     }
   ],
+  "exports": [],
   "namespaces": [
     {
       "kind": "module",
-      "qualified_name": "ExampleIncluded"
+      "declaration_id": {
+        "source_id": "ruby/src/example_capability_gaps.rb",
+        "family": "namespace",
+        "qualified_name": "ExampleIncluded",
+        "ordinal": 73,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+      },
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     },
     {
       "kind": "module",
-      "qualified_name": "ExamplePrepended"
+      "declaration_id": {
+        "source_id": "ruby/src/example_capability_gaps.rb",
+        "family": "namespace",
+        "qualified_name": "ExamplePrepended",
+        "ordinal": 163,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+      },
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     },
     {
       "kind": "module",
-      "qualified_name": "ExampleExtended"
+      "declaration_id": {
+        "source_id": "ruby/src/example_capability_gaps.rb",
+        "family": "namespace",
+        "qualified_name": "ExampleExtended",
+        "ordinal": 192,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+      },
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     }
   ],
   "declarations": [
@@ -41,9 +86,36 @@
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "type",
         "qualified_name": "ExampleIncluded",
-        "ordinal": 73
+        "ordinal": 73,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "kind": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "example_included",
@@ -55,11 +127,38 @@
             "source_id": "ruby/src/example_capability_gaps.rb",
             "family": "method",
             "qualified_name": "ExampleIncluded.example_included",
-            "ordinal": 98
+            "ordinal": 98,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
           },
           "source_id": "ruby/src/example_capability_gaps.rb",
           "qualified_name": "ExampleIncluded.example_included",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "kind": "declaration",
+              "declaration_id": {
+                "source_id": "ruby/src/example_capability_gaps.rb",
+                "family": "type",
+                "qualified_name": "ExampleIncluded",
+                "ordinal": 73,
+                "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+              }
+            },
+            "namespace": {
+              "kind": "member",
+              "namespace_reference": "ExampleIncluded",
+              "target": {
+                "kind": "resolved",
+                "declaration_id": {
+                  "source_id": "ruby/src/example_capability_gaps.rb",
+                  "family": "type",
+                  "qualified_name": "ExampleIncluded",
+                  "ordinal": 73,
+                  "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+                }
+              }
+            }
+          },
           "line_start": 7,
           "line_end": 9,
           "parameters": [
@@ -68,20 +167,27 @@
               "type": {
                 "kind": "absent"
               },
-              "kind": "positional"
+              "kind": "positional",
+              "has_default": false
             }
           ],
           "return_type": {
             "kind": "absent"
           },
+          "decorators": [],
+          "docstring": "",
           "owner_declaration_id": {
             "source_id": "ruby/src/example_capability_gaps.rb",
             "family": "type",
             "qualified_name": "ExampleIncluded",
-            "ordinal": 73
+            "ordinal": 73,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
           }
         }
-      ]
+      ],
+      "abstract_methods": [],
+      "properties": [],
+      "signatures": []
     },
     {
       "name": "ExamplePrepended",
@@ -93,9 +199,40 @@
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "type",
         "qualified_name": "ExamplePrepended",
-        "ordinal": 163
+        "ordinal": 163,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
-      "kind": "module"
+      "kind": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
+      "methods": [],
+      "abstract_methods": [],
+      "properties": [],
+      "signatures": []
     },
     {
       "name": "ExampleExtended",
@@ -107,23 +244,91 @@
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "type",
         "qualified_name": "ExampleExtended",
-        "ordinal": 192
+        "ordinal": 192,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
-      "kind": "module"
+      "kind": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
+      "methods": [],
+      "abstract_methods": [],
+      "properties": [],
+      "signatures": []
     },
     {
       "name": "ExampleBase",
       "visibility": "public",
       "visibility_intent": "public",
-      "line_count": 38,
+      "line_count": 40,
       "declaration_annotations": [],
       "declaration_id": {
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "class",
         "qualified_name": "ExampleBase",
-        "ordinal": 287
+        "ordinal": 287,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "incomplete",
+          "limitations": [
+            {
+              "kind": "dynamic_structure",
+              "location": {
+                "kind": "source",
+                "start_line": 59,
+                "end_line": 59
+              },
+              "description": "Attribute name requires runtime evaluation."
+            }
+          ]
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "initialize",
@@ -135,11 +340,27 @@
             "source_id": "ruby/src/example_capability_gaps.rb",
             "family": "method",
             "qualified_name": "ExampleBase.initialize",
-            "ordinal": 516
+            "ordinal": 516,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
           },
           "source_id": "ruby/src/example_capability_gaps.rb",
           "qualified_name": "ExampleBase.initialize",
           "kind": "constructor",
+          "placement": {
+            "lexical_scope": {
+              "kind": "declaration",
+              "declaration_id": {
+                "source_id": "ruby/src/example_capability_gaps.rb",
+                "family": "class",
+                "qualified_name": "ExampleBase",
+                "ordinal": 287,
+                "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+              }
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 30,
           "line_end": 32,
           "parameters": [
@@ -148,7 +369,8 @@
               "type": {
                 "kind": "absent"
               },
-              "kind": "positional"
+              "kind": "positional",
+              "has_default": false
             },
             {
               "name": "example_optional",
@@ -163,14 +385,16 @@
               "type": {
                 "kind": "absent"
               },
-              "kind": "variadic_positional"
+              "kind": "variadic_positional",
+              "has_default": false
             },
             {
               "name": "example_named",
               "type": {
                 "kind": "absent"
               },
-              "kind": "named_only"
+              "kind": "named_only",
+              "has_default": false
             },
             {
               "name": "example_default",
@@ -185,24 +409,29 @@
               "type": {
                 "kind": "absent"
               },
-              "kind": "variadic_named"
+              "kind": "variadic_named",
+              "has_default": false
             },
             {
               "name": "example_block",
               "type": {
                 "kind": "absent"
               },
-              "kind": "named_only"
+              "kind": "named_only",
+              "has_default": false
             }
           ],
           "return_type": {
             "kind": "absent"
           },
+          "decorators": [],
+          "docstring": "",
           "owner_declaration_id": {
             "source_id": "ruby/src/example_capability_gaps.rb",
             "family": "class",
             "qualified_name": "ExampleBase",
-            "ordinal": 287
+            "ordinal": 287,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
           }
         },
         {
@@ -215,11 +444,27 @@
             "source_id": "ruby/src/example_capability_gaps.rb",
             "family": "method",
             "qualified_name": "ExampleBase.example_local",
-            "ordinal": 730
+            "ordinal": 730,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
           },
           "source_id": "ruby/src/example_capability_gaps.rb",
           "qualified_name": "ExampleBase.example_local",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "kind": "declaration",
+              "declaration_id": {
+                "source_id": "ruby/src/example_capability_gaps.rb",
+                "family": "class",
+                "qualified_name": "ExampleBase",
+                "ordinal": 287,
+                "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+              }
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 34,
           "line_end": 36,
           "parameters": [
@@ -228,17 +473,21 @@
               "type": {
                 "kind": "absent"
               },
-              "kind": "positional"
+              "kind": "positional",
+              "has_default": false
             }
           ],
           "return_type": {
             "kind": "absent"
           },
+          "decorators": [],
+          "docstring": "",
           "owner_declaration_id": {
             "source_id": "ruby/src/example_capability_gaps.rb",
             "family": "class",
             "qualified_name": "ExampleBase",
-            "ordinal": 287
+            "ordinal": 287,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
           }
         },
         {
@@ -251,11 +500,27 @@
             "source_id": "ruby/src/example_capability_gaps.rb",
             "family": "method",
             "qualified_name": "ExampleBase.example_calls",
-            "ordinal": 790
+            "ordinal": 790,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
           },
           "source_id": "ruby/src/example_capability_gaps.rb",
           "qualified_name": "ExampleBase.example_calls",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "kind": "declaration",
+              "declaration_id": {
+                "source_id": "ruby/src/example_capability_gaps.rb",
+                "family": "class",
+                "qualified_name": "ExampleBase",
+                "ordinal": 287,
+                "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+              }
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 38,
           "line_end": 42,
           "parameters": [
@@ -264,17 +529,21 @@
               "type": {
                 "kind": "absent"
               },
-              "kind": "positional"
+              "kind": "positional",
+              "has_default": false
             }
           ],
           "return_type": {
             "kind": "absent"
           },
+          "decorators": [],
+          "docstring": "",
           "owner_declaration_id": {
             "source_id": "ruby/src/example_capability_gaps.rb",
             "family": "class",
             "qualified_name": "ExampleBase",
-            "ordinal": 287
+            "ordinal": 287,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
           }
         },
         {
@@ -287,11 +556,27 @@
             "source_id": "ruby/src/example_capability_gaps.rb",
             "family": "method",
             "qualified_name": "ExampleBase.example_forwarding",
-            "ordinal": 960
+            "ordinal": 960,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
           },
           "source_id": "ruby/src/example_capability_gaps.rb",
           "qualified_name": "ExampleBase.example_forwarding",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "kind": "declaration",
+              "declaration_id": {
+                "source_id": "ruby/src/example_capability_gaps.rb",
+                "family": "class",
+                "qualified_name": "ExampleBase",
+                "ordinal": 287,
+                "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+              }
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 44,
           "line_end": 46,
           "parameters": [
@@ -300,17 +585,21 @@
               "type": {
                 "kind": "absent"
               },
-              "kind": "variadic_positional"
+              "kind": "variadic_positional",
+              "has_default": false
             }
           ],
           "return_type": {
             "kind": "absent"
           },
+          "decorators": [],
+          "docstring": "",
           "owner_declaration_id": {
             "source_id": "ruby/src/example_capability_gaps.rb",
             "family": "class",
             "qualified_name": "ExampleBase",
-            "ordinal": 287
+            "ordinal": 287,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
           }
         },
         {
@@ -323,11 +612,27 @@
             "source_id": "ruby/src/example_capability_gaps.rb",
             "family": "method",
             "qualified_name": "ExampleBase.example_hidden",
-            "ordinal": 1020
+            "ordinal": 1020,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
           },
           "source_id": "ruby/src/example_capability_gaps.rb",
           "qualified_name": "ExampleBase.example_hidden",
           "kind": "type_method",
+          "placement": {
+            "lexical_scope": {
+              "kind": "declaration",
+              "declaration_id": {
+                "source_id": "ruby/src/example_capability_gaps.rb",
+                "family": "class",
+                "qualified_name": "ExampleBase",
+                "ordinal": 287,
+                "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+              }
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 48,
           "line_end": 50,
           "parameters": [
@@ -336,20 +641,118 @@
               "type": {
                 "kind": "absent"
               },
-              "kind": "positional"
+              "kind": "positional",
+              "has_default": false
             }
           ],
           "return_type": {
             "kind": "absent"
           },
+          "decorators": [],
+          "docstring": "",
           "owner_declaration_id": {
             "source_id": "ruby/src/example_capability_gaps.rb",
             "family": "class",
             "qualified_name": "ExampleBase",
-            "ordinal": 287
+            "ordinal": 287,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
           }
         }
-      ]
+      ],
+      "abstract_methods": [],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "ruby/src/example_capability_gaps.rb",
+            "family": "property",
+            "qualified_name": "ExampleBase.example_generated_attribute",
+            "ordinal": 428,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example_capability_gaps.rb",
+            "family": "class",
+            "qualified_name": "ExampleBase",
+            "ordinal": 287,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+          },
+          "name": "example_generated_attribute",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "kind": "declaration",
+              "declaration_id": {
+                "source_id": "ruby/src/example_capability_gaps.rb",
+                "family": "class",
+                "qualified_name": "ExampleBase",
+                "ordinal": 287,
+                "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+              }
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
+          "assigned_values": [
+            {
+              "kind": "unassigned",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        },
+        {
+          "declaration_id": {
+            "source_id": "ruby/src/example_capability_gaps.rb",
+            "family": "property",
+            "qualified_name": "ExampleBase.@example_generated_attribute",
+            "ordinal": 676,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example_capability_gaps.rb",
+            "family": "class",
+            "qualified_name": "ExampleBase",
+            "ordinal": 287,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+          },
+          "name": "@example_generated_attribute",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "kind": "declaration",
+              "declaration_id": {
+                "source_id": "ruby/src/example_capability_gaps.rb",
+                "family": "method",
+                "qualified_name": "ExampleBase.initialize",
+                "ordinal": 516,
+                "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+              }
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
+          "assigned_values": [
+            {
+              "kind": "unassigned",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        }
+      ],
+      "signatures": []
     },
     {
       "name": "ExampleRuntime",
@@ -361,9 +764,40 @@
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "class",
         "qualified_name": "ExampleRuntime",
-        "ordinal": 1333
+        "ordinal": 1371,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
-      "kind": "class"
+      "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
+      "methods": [],
+      "abstract_methods": [],
+      "properties": [],
+      "signatures": []
     }
   ],
   "functions": [],
@@ -372,8 +806,33 @@
       "declaration_id": {
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "value",
+        "qualified_name": "example_dependency",
+        "ordinal": 17,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+      },
+      "name": "example_dependency",
+      "visibility": "private",
+      "visibility_intent": "private",
+      "line_count": 1,
+      "declaration_kind": "assignment",
+      "value_kind": "value_literal",
+      "scope": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    },
+    {
+      "declaration_id": {
+        "source_id": "ruby/src/example_capability_gaps.rb",
+        "family": "value",
         "qualified_name": "ExampleDynamicNamespace",
-        "ordinal": 220
+        "ordinal": 220,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "name": "ExampleDynamicNamespace",
       "visibility": "public",
@@ -381,14 +840,23 @@
       "line_count": 1,
       "declaration_kind": "constant",
       "value_kind": "value_unknown",
-      "scope": "module"
+      "scope": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     },
     {
       "declaration_id": {
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "value",
         "qualified_name": "ExampleGenerated",
-        "ordinal": 257
+        "ordinal": 257,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "name": "ExampleGenerated",
       "visibility": "public",
@@ -396,14 +864,23 @@
       "line_count": 1,
       "declaration_kind": "constant",
       "value_kind": "value_unknown",
-      "scope": "module"
+      "scope": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     },
     {
       "declaration_id": {
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "value",
         "qualified_name": "ExampleBase.EXAMPLE_LITERAL",
-        "ordinal": 386
+        "ordinal": 386,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "name": "ExampleBase.EXAMPLE_LITERAL",
       "visibility": "public",
@@ -411,14 +888,30 @@
       "line_count": 1,
       "declaration_kind": "constant",
       "value_kind": "value_literal",
-      "scope": "module"
+      "scope": "member",
+      "placement": {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby/src/example_capability_gaps.rb",
+            "family": "class",
+            "qualified_name": "ExampleBase",
+            "ordinal": 287,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     },
     {
       "declaration_id": {
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "value",
         "qualified_name": "ExampleRuntimeBase",
-        "ordinal": 1299
+        "ordinal": 1337,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "name": "ExampleRuntimeBase",
       "visibility": "public",
@@ -426,23 +919,157 @@
       "line_count": 1,
       "declaration_kind": "constant",
       "value_kind": "value_unknown",
-      "scope": "module"
+      "scope": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    }
+  ],
+  "callable_values": [],
+  "anonymous_callables": [
+    {
+      "name": "<lambda@463>",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/example_capability_gaps.rb",
+        "family": "callable",
+        "qualified_name": "ExampleBase.<lambda@463>",
+        "ordinal": 464,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+      },
+      "source_id": "ruby/src/example_capability_gaps.rb",
+      "qualified_name": "ExampleBase.<lambda@463>",
+      "kind": "anonymous",
+      "placement": {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby/src/example_capability_gaps.rb",
+            "family": "class",
+            "qualified_name": "ExampleBase",
+            "ordinal": 287,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "line_start": 29,
+      "line_end": 29,
+      "parameters": [],
+      "return_type": {
+        "kind": "absent"
+      },
+      "decorators": [],
+      "docstring": ""
+    },
+    {
+      "name": "<lambda@1166>",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 4,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/example_capability_gaps.rb",
+        "family": "callable",
+        "qualified_name": "ExampleBase.<lambda@1166>",
+        "ordinal": 1167,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+      },
+      "source_id": "ruby/src/example_capability_gaps.rb",
+      "qualified_name": "ExampleBase.<lambda@1166>",
+      "kind": "anonymous",
+      "placement": {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby/src/example_capability_gaps.rb",
+            "family": "class",
+            "qualified_name": "ExampleBase",
+            "ordinal": 287,
+            "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "line_start": 54,
+      "line_end": 57,
+      "parameters": [
+        {
+          "name": "example_generated_parameter",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "positional",
+          "has_default": false
+        }
+      ],
+      "return_type": {
+        "kind": "absent"
+      },
+      "decorators": [],
+      "docstring": ""
     }
   ],
   "calls": [
     {
       "source_callable_id": {
         "source_id": "ruby/src/example_capability_gaps.rb",
+        "family": "callable",
+        "qualified_name": "ExampleBase.<lambda@463>",
+        "ordinal": 464,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "ruby/src/example_capability_gaps.rb",
+      "line": 29,
+      "expression": "params(example_value: String).returns(String)",
+      "resolution": "dynamic",
+      "target_name": "returns"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "ruby/src/example_capability_gaps.rb",
+        "family": "callable",
+        "qualified_name": "ExampleBase.<lambda@463>",
+        "ordinal": 464,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+      },
+      "ordinal": 2,
+      "target_callable_id": null,
+      "source_id": "ruby/src/example_capability_gaps.rb",
+      "line": 29,
+      "expression": "params(example_value: String)",
+      "resolution": "unresolved",
+      "target_name": "params"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "method",
         "qualified_name": "ExampleBase.example_calls",
-        "ordinal": 790
+        "ordinal": 790,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "ordinal": 1,
       "target_callable_id": {
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "method",
         "qualified_name": "ExampleBase.example_local",
-        "ordinal": 730
+        "ordinal": 730,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "source_id": "ruby/src/example_capability_gaps.rb",
       "line": 39,
@@ -455,7 +1082,8 @@
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "method",
         "qualified_name": "ExampleBase.example_calls",
-        "ordinal": 790
+        "ordinal": 790,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "ordinal": 2,
       "target_callable_id": null,
@@ -470,7 +1098,8 @@
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "method",
         "qualified_name": "ExampleBase.example_calls",
-        "ordinal": 790
+        "ordinal": 790,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "ordinal": 3,
       "target_callable_id": null,
@@ -485,20 +1114,38 @@
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "method",
         "qualified_name": "ExampleBase.example_forwarding",
-        "ordinal": 960
+        "ordinal": 960,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "ordinal": 1,
       "target_callable_id": {
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "method",
         "qualified_name": "ExampleBase.example_calls",
-        "ordinal": 790
+        "ordinal": 790,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "source_id": "ruby/src/example_capability_gaps.rb",
       "line": 45,
       "expression": "example_calls(...)",
       "resolution": "resolved",
       "target_name": "example_calls"
+    },
+    {
+      "source_callable_id": {
+        "source_id": "ruby/src/example_capability_gaps.rb",
+        "family": "callable",
+        "qualified_name": "ExampleBase.<lambda@1166>",
+        "ordinal": 1167,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+      },
+      "ordinal": 1,
+      "target_callable_id": null,
+      "source_id": "ruby/src/example_capability_gaps.rb",
+      "line": 55,
+      "expression": "example_generated_call(example_generated_parameter)",
+      "resolution": "unresolved",
+      "target_name": "example_generated_call"
     }
   ],
   "declaration_relations": [
@@ -507,43 +1154,116 @@
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "class",
         "qualified_name": "ExampleBase",
-        "ordinal": 287
+        "ordinal": 287,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "kind": "includes",
-      "target_reference": "ExampleIncluded"
+      "target_reference": "ExampleIncluded",
+      "target": {
+        "kind": "resolved",
+        "declaration_id": {
+          "source_id": "ruby/src/example_capability_gaps.rb",
+          "family": "type",
+          "qualified_name": "ExampleIncluded",
+          "ordinal": 73,
+          "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+        }
+      }
     },
     {
       "source_declaration_id": {
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "class",
         "qualified_name": "ExampleBase",
-        "ordinal": 287
+        "ordinal": 287,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "kind": "prepends",
-      "target_reference": "ExamplePrepended"
+      "target_reference": "ExamplePrepended",
+      "target": {
+        "kind": "resolved",
+        "declaration_id": {
+          "source_id": "ruby/src/example_capability_gaps.rb",
+          "family": "type",
+          "qualified_name": "ExamplePrepended",
+          "ordinal": 163,
+          "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+        }
+      }
     },
     {
       "source_declaration_id": {
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "class",
         "qualified_name": "ExampleBase",
-        "ordinal": 287
+        "ordinal": 287,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "kind": "extends_singleton",
-      "target_reference": "ExampleExtended"
+      "target_reference": "ExampleExtended",
+      "target": {
+        "kind": "resolved",
+        "declaration_id": {
+          "source_id": "ruby/src/example_capability_gaps.rb",
+          "family": "type",
+          "qualified_name": "ExampleExtended",
+          "ordinal": 192,
+          "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
+        }
+      }
     },
     {
       "source_declaration_id": {
         "source_id": "ruby/src/example_capability_gaps.rb",
         "family": "class",
         "qualified_name": "ExampleRuntime",
-        "ordinal": 1333
+        "ordinal": 1371,
+        "content_digest": "6cf1388e13e9e79968f9688650dc993fcce73df6939522093a69339049d4ab0b"
       },
       "kind": "extends",
-      "target_reference": "ExampleRuntimeBase"
+      "target_reference": "ExampleRuntimeBase",
+      "target": {
+        "kind": "unresolved",
+        "reason": "external"
+      }
     }
   ],
-  "line_count": 66,
-  "code_line_count": 48,
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "line_count": 68,
+  "code_line_count": 49,
   "public_symbol_count": 9
 }

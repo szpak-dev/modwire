@@ -1,3 +1,4 @@
+import json
 import shutil
 from pathlib import Path
 
@@ -8,6 +9,8 @@ from modwire.application import (
     CapabilityStatus,
     CodeMap,
     FactCapability,
+    InventoryCoverage,
+    InventoryStatus,
     RelationshipCoverage,
     RelationshipFamily,
 )
@@ -49,6 +52,66 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         shutil.copytree(self.repository / "tests/fixtures/structural_fidelity", root)
         return root
 
+    @pytest.mark.parametrize("language", ("python", "typescript", "php", "java", "ruby"))
+    def test_snapshot_identity_distinguishes_unchanged_unrelated_and_shifted_sources(self, language: str) -> None:
+        binding = self.structural_binding(language)
+        root = self.copy_structural_sources()
+        policy = self.contract.binding_policy(binding)
+        original = self.application.generate_map(language, str(root), policy)
+        repeated = self.application.generate_map(language, str(root), policy)
+        assert original.extraction.files == repeated.extraction.files
+
+        unrelated = self.repository / self.contract.matrix.languages[LanguageId(language)].contract.manifests.root.value
+        shutil.copytree(unrelated / "no_calls", root / "unrelated")
+        augmented = self.application.generate_map(language, str(root), policy)
+        assert augmented.extraction.files_found > original.extraction.files_found
+        assert all(augmented.extraction.files[key] == source for key, source in original.extraction.files.items())
+
+        for key in original.extraction.files:
+            shutil.copyfile(self.repository / "tests/fixtures/identity_edits/shifted" / key, root / key)
+        shifted = self.application.generate_map(language, str(root), policy)
+        for key, before in original.extraction.files.items():
+            after = shifted.extraction.files[key]
+            before_ids = tuple(identity for identity, _ in before.declaration_placements())
+            after_ids = tuple(identity for identity, _ in after.declaration_placements())
+            assert before_ids and set(before_ids).isdisjoint(after_ids)
+            assert tuple(item.family for item in before_ids) == tuple(item.family for item in after_ids)
+            assert tuple(
+                item.qualified_name for item in before_ids if "<anonymous>" not in item.qualified_name
+            ) == tuple(item.qualified_name for item in after_ids if "<anonymous>" not in item.qualified_name)
+            assert tuple(item.line_start + 1 for item in before.canonical_callables()) == tuple(
+                item.line_start for item in after.canonical_callables()
+            )
+
+    @pytest.mark.parametrize("language", ("typescript", "java"))
+    @pytest.mark.parametrize("variant", ("inserted", "reordered"))
+    def test_overload_edits_do_not_claim_cross_revision_identity(self, language: str, variant: str) -> None:
+        root = self.copy_structural_sources()
+        binding = self.structural_binding(language)
+        before = self.application.generate_map(language, str(root), self.contract.binding_policy(binding))
+        shutil.copytree(
+            self.repository / "tests/fixtures/identity_edits" / variant / language, root / language, dirs_exist_ok=True
+        )
+        after = self.application.generate_map(language, str(root), self.contract.binding_policy(binding))
+        original = tuple(
+            method
+            for source in before.extraction.files.values()
+            for method in source.canonical_callables()
+            if method.qualified_name.endswith("ExampleOwner.exampleMethod")
+        )
+        changed = tuple(
+            method
+            for source in after.extraction.files.values()
+            for method in source.canonical_callables()
+            if method.qualified_name.endswith("ExampleOwner.exampleMethod")
+        )
+        assert len(changed) == len(original) + (1 if variant == "inserted" else 0)
+        assert len({item.declaration_id for item in changed}) == len(changed)
+        assert {item.declaration_id for item in original}.isdisjoint(item.declaration_id for item in changed)
+        if variant == "reordered":
+            assert original[0].parameters == changed[1].parameters
+            assert original[1].parameters == changed[0].parameters
+
     def test_matrix_report_retains_five_language_gaps_and_native_provenance(self) -> None:
         output = self.workspace / "matrix.json"
         assert ExtractionMatrixCommand(self.application).run((str(self.repository), str(output))) == 1
@@ -63,7 +126,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             for results in scenarios.values()
             for result in results
         )
-        assert any(
+        assert not any(
             Discrepancy.WRONG_OWNER in result.discrepancies
             for result in report.results[LanguageId("ruby")][ScenarioId("structural")]
         )
@@ -82,12 +145,9 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         self.copy_matrix_repository()
         source = self.workspace / "language-capabilities/scenarios/structural/python/src/example.py.json"
         original = source.read_text()
-        source.write_text(
-            "\n".join(
-                '    "local_inventory": {"owner_issue": 999}' if '"local_inventory":' in line else line
-                for line in original.splitlines()
-            )
-        )
+        invalid = json.loads(original)
+        invalid["gaps"]["type_parameters"] = {"owner_issue": 999}
+        source.write_text(json.dumps(invalid))
         output = self.workspace / "matrix.json"
         command = ExtractionMatrixCommand(self.application)
         assert command.run((str(self.workspace), str(output))) == 2
@@ -96,7 +156,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         source.write_text(original)
 
         catalogue = self.workspace / "language-capabilities/scenarios/catalog.yaml"
-        catalogue.write_text(catalogue.read_text().replace("owner_issue: 104", "owner_issue: 999"))
+        catalogue.write_text(catalogue.read_text().replace("owner_issue: 106", "owner_issue: 999"))
         assert command.run((str(self.workspace), str(output))) == 1
         report = ExtractionMatrixReport.model_validate_json(output.read_text())
         findings = tuple(
@@ -104,16 +164,18 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             for cases in report.results.values()
             for results in cases.values()
             for result in results
-            if result.subject.endswith(":local_inventory")
+            if result.subject.endswith(":type_parameters")
         )
-        assert len(findings) == 6
+        assert len(findings) == 3
         assert all(result.owner_issue == 999 for result in findings)
 
     def test_removed_evidence_cannot_be_replaced_by_unrelated_passing_scenarios(self) -> None:
         self.copy_matrix_repository()
         catalogue = self.workspace / "language-capabilities/scenarios/catalog.yaml"
         document = LanguageCapabilityMatrixReader().read_document(catalogue, ScenarioCatalogDocument)
-        removed = tuple(name for name, gap in document.model_gaps.items() if gap.conclusion is Conclusion.QUALIFIERS)
+        removed = tuple(
+            name for name, gap in document.model_gaps.items() if gap.conclusion is Conclusion.TYPE_DECLARATIONS
+        )
         for name in removed:
             del document.model_gaps[name]
         python = LanguageId("python")
@@ -143,8 +205,8 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         assert ExtractionMatrixCommand(self.application).run((str(self.workspace), str(output))) == 1
         report = ExtractionMatrixReport.model_validate_json(output.read_text())
         assert not report.conforms and not report.regression_passes
-        assert next(line for line in report.table().splitlines() if line.startswith("| C09 |")) == (
-            "| C09 | unassessed | unassessed | unassessed | unassessed | unassessed |"
+        assert next(line for line in report.table().splitlines() if line.startswith("| C08 |")) == (
+            "| C08 | unassessed | unassessed | N/A | unassessed | N/A |"
         )
         missing = report.results[python][ScenarioId("obligation-C02")]
         assert missing[0].discrepancies == (Discrepancy.UNASSESSED,)
@@ -174,7 +236,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
     def test_failed_extraction_keeps_other_native_evidence_available(self) -> None:
         self.copy_matrix_repository()
         source = self.workspace / "tests/fixtures/structural_fidelity/python/src/example.py"
-        source.write_text("def broken(:\n")
+        shutil.copyfile(self.repository / "tests/fixtures/command_transport/python/invalid/example_invalid.py", source)
         report = PolyglotFixtureContract(self.workspace).assess(self.application, "test", "test")
 
         assert not report.conforms and not report.regression_passes
@@ -200,7 +262,7 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         assert property_result.satisfied
 
         source = root / "java/src/Example.java"
-        source.write_text(source.read_text().replace("    int exampleValue;\n", "", 1))
+        shutil.copyfile(self.repository / "tests/fixtures/matrix_attacks/missing_java_property/Example.java", source)
         after = self.application.generate_map(java.value, str(root), self.contract.binding_policy(binding))
         assert any(
             result.subject == property_result.subject and Discrepancy.MISSING in result.discrepancies
@@ -209,19 +271,19 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
         ruby = LanguageId("ruby")
         binding = self.structural_binding(ruby.value)
         before = self.application.generate_map(ruby.value, str(root), self.contract.binding_policy(binding))
-        assert any(
+        assert not any(
             Discrepancy.WRONG_OWNER in result.discrepancies
             for result in self.contract.evaluate_binding(self.application, ruby, before, binding)
         )
         source = root / "ruby_receivers/src/example.rb"
-        source.write_text(source.read_text().replace("class ExampleContainer", "class ExampleTarget", 1))
+        shutil.copyfile(self.repository / "tests/fixtures/matrix_attacks/wrong_ruby_owner/example.rb", source)
         after = self.application.generate_map(ruby.value, str(root), self.contract.binding_policy(binding))
-        assert not any(
+        assert any(
             Discrepancy.WRONG_OWNER in result.discrepancies
             for result in self.contract.evaluate_binding(self.application, ruby, after, binding)
         )
 
-    def test_empty_unsupported_inventory_cannot_be_relabelled_complete(self) -> None:
+    def test_incomplete_local_inventory_cannot_support_a_complete_producer_claim(self) -> None:
         language = LanguageId("ruby")
         binding = self.structural_binding(language.value)
         actual = self.application.generate_map(
@@ -243,7 +305,41 @@ class TestPolyglotCodeMapContract(ApplicationTestCase):
             self.application, language, CodeMap.model_validate_json(payload), binding
         )
         assert any(Discrepancy.FALSE_COMPLETENESS in result.discrepancies for result in findings)
-        assert any(Discrepancy.FALSE_SUPPORT in result.discrepancies for result in findings)
+
+    def test_local_inventory_limitations_cannot_be_erased(self) -> None:
+        language = LanguageId("ruby")
+        binding = self.structural_binding(language.value)
+        actual = self.application.generate_map(
+            language.value, str(self.contract.binding_root(binding)), self.contract.binding_policy(binding)
+        )
+        files = dict(actual.extraction.files)
+        source = next(
+            source
+            for source in files.values()
+            if any(item.inventory.methods.limitations for item in source.declarations)
+        )
+        declarations = tuple(
+            declaration.model_copy(
+                update={
+                    "inventory": declaration.inventory.model_copy(
+                        update={
+                            "methods": InventoryCoverage(status=InventoryStatus.COMPLETE, limitations=()),
+                        }
+                    ),
+                }
+            )
+            if declaration.inventory.methods.limitations
+            else declaration
+            for declaration in source.declarations
+        )
+        files[source.file_id] = source.model_copy(update={"declarations": declarations})
+        changed = actual.model_copy(update={"extraction": actual.extraction.model_copy(update={"files": files})})
+        changed = CodeMap.model_validate_json(changed.to_json())
+        findings = self.contract.evaluate_binding(self.application, language, changed, binding)
+        assert any(
+            result.subject.endswith(":member inventories") and Discrepancy.FALSE_COMPLETENESS in result.discrepancies
+            for result in findings
+        )
 
     def copy_contract_documents(self) -> None:
         shutil.copyfile(

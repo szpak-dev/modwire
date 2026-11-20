@@ -13,7 +13,8 @@
         "source_id": "src/commerce/orders/infrastructure/repositories/order_repository",
         "family": "class",
         "qualified_name": "OrderRepository",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "8a9278a880c844bf505c547b0aaab46c65658407b2cc723b043f74d59380e5f9"
       },
       "kind": "class",
       "methods": [
@@ -27,7 +28,8 @@
             "source_id": "src/commerce/orders/infrastructure/repositories/order_repository",
             "family": "method",
             "qualified_name": "OrderRepository.save",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "8a9278a880c844bf505c547b0aaab46c65658407b2cc723b043f74d59380e5f9"
           },
           "source_id": "src/commerce/orders/infrastructure/repositories/order_repository",
           "qualified_name": "OrderRepository.save",
@@ -50,14 +52,91 @@
             "source_id": "src/commerce/orders/infrastructure/repositories/order_repository",
             "family": "class",
             "qualified_name": "OrderRepository",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "8a9278a880c844bf505c547b0aaab46c65658407b2cc723b043f74d59380e5f9"
+          },
+          "placement": {
+            "lexical_scope": {
+              "kind": "declaration",
+              "declaration_id": {
+                "source_id": "src/commerce/orders/infrastructure/repositories/order_repository",
+                "family": "class",
+                "qualified_name": "OrderRepository",
+                "ordinal": 1,
+                "content_digest": "8a9278a880c844bf505c547b0aaab46c65658407b2cc723b043f74d59380e5f9"
+              }
+            },
+            "namespace": {
+              "kind": "none"
+            }
           }
         }
-      ]
+      ],
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
     }
   ],
   "functions": [],
   "line_count": 0,
   "code_line_count": 0,
-  "public_symbol_count": 1
+  "public_symbol_count": 1,
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "unresolved_methods": []
 }

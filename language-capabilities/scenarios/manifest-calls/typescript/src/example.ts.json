@@ -14,7 +14,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 1,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example.ts",
+            "family": "function",
+            "qualified_name": "exampleTarget",
+            "ordinal": 1,
+            "content_digest": "05b8bece40390aca447db97720623290cfc909a987d319b6e6a24f9b1be967bd"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
       "name": "exampleSource",
@@ -27,7 +39,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 91,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example.ts",
+            "family": "function",
+            "qualified_name": "exampleSource",
+            "ordinal": 91,
+            "content_digest": "05b8bece40390aca447db97720623290cfc909a987d319b6e6a24f9b1be967bd"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "functions": [
@@ -41,10 +65,19 @@
         "source_id": "typescript/src/example.ts",
         "family": "function",
         "qualified_name": "exampleTarget",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "05b8bece40390aca447db97720623290cfc909a987d319b6e6a24f9b1be967bd"
       },
       "source_id": "typescript/src/example.ts",
       "qualified_name": "exampleTarget",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 1,
       "line_end": 3,
       "parameters": [
@@ -73,10 +106,19 @@
         "source_id": "typescript/src/example.ts",
         "family": "function",
         "qualified_name": "exampleSource",
-        "ordinal": 91
+        "ordinal": 91,
+        "content_digest": "05b8bece40390aca447db97720623290cfc909a987d319b6e6a24f9b1be967bd"
       },
       "source_id": "typescript/src/example.ts",
       "qualified_name": "exampleSource",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 5,
       "line_end": 8,
       "parameters": [
@@ -102,14 +144,16 @@
         "source_id": "typescript/src/example.ts",
         "family": "function",
         "qualified_name": "exampleSource",
-        "ordinal": 91
+        "ordinal": 91,
+        "content_digest": "05b8bece40390aca447db97720623290cfc909a987d319b6e6a24f9b1be967bd"
       },
       "ordinal": 1,
       "target_callable_id": {
         "source_id": "typescript/src/example.ts",
         "family": "function",
         "qualified_name": "exampleTarget",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "05b8bece40390aca447db97720623290cfc909a987d319b6e6a24f9b1be967bd"
       },
       "source_id": "typescript/src/example.ts",
       "line": 6,
@@ -122,14 +166,16 @@
         "source_id": "typescript/src/example.ts",
         "family": "function",
         "qualified_name": "exampleSource",
-        "ordinal": 91
+        "ordinal": 91,
+        "content_digest": "05b8bece40390aca447db97720623290cfc909a987d319b6e6a24f9b1be967bd"
       },
       "ordinal": 2,
       "target_callable_id": {
         "source_id": "typescript/src/example.ts",
         "family": "function",
         "qualified_name": "exampleTarget",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "05b8bece40390aca447db97720623290cfc909a987d319b6e6a24f9b1be967bd"
       },
       "source_id": "typescript/src/example.ts",
       "line": 7,
@@ -138,6 +184,41 @@
       "target_name": "exampleTarget"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 9,
   "code_line_count": 7,
   "public_symbol_count": 2

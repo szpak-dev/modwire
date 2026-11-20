@@ -85,8 +85,11 @@ class RubyExtractor(SourceExtractor):
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.ATTRIBUTES,
-                    status=CapabilityStatus.UNSUPPORTED,
-                    explanation="Ruby instance, class, and generated attributes are not extracted.",
+                    status=CapabilityStatus.PARTIAL,
+                    explanation=(
+                        "Instance writes and literal attribute declarations are preserved; "
+                        "dynamic attribute names remain incomplete."
+                    ),
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.ASSIGNED_VALUES,
@@ -152,8 +155,8 @@ class RubyExtractor(SourceExtractor):
                     ),
                     inventory=CapabilityStatus.PARTIAL,
                     inventory_explanation=(
-                        "Declared method and static call evidence is emitted, but attributes and assigned-value "
-                        "relationship evidence are not available."
+                        "Declared methods, literal attributes and static calls are emitted; dynamic members, "
+                        "aliases and assigned-value relationship evidence remain incomplete."
                     ),
                 ),
                 RelationshipCoverage(

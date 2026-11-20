@@ -3,6 +3,7 @@ import json
 import os
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from copy import copy
 from pathlib import Path
 from typing import Any
 
@@ -189,9 +190,9 @@ class TestPersistentCache(ApplicationTestCase):
         policy = self.scan_policy()
         self.application.generate_map_cached("python", root, policy, options)
         request = self.application.extraction.request("python", str(root))
-        changed_request = request.model_copy(
-            update={"batch_config": request.batch_config.model_copy(update={"size": request.batch_config.size + 1})}
-        )
+        changed_strategy = copy(request.strategy)
+        changed_strategy.batch_config = request.batch_config.model_copy(update={"size": request.batch_config.size + 1})
+        changed_request = request.model_copy(update={"strategy": changed_strategy})
 
         changed_observation = self.application.cli.observe(changed_request, policy)
         changed_plan = self.application.cli.prepare_cache(changed_observation)

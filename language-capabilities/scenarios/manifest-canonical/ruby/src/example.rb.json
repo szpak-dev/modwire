@@ -19,15 +19,57 @@
   "namespaces": [
     {
       "kind": "module",
-      "qualified_name": "ExampleFormatting"
+      "declaration_id": {
+        "source_id": "ruby/src/example.rb",
+        "family": "namespace",
+        "qualified_name": "ExampleFormatting",
+        "ordinal": 17,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+      },
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     },
     {
       "kind": "module",
-      "qualified_name": "ExampleValidation"
+      "declaration_id": {
+        "source_id": "ruby/src/example.rb",
+        "family": "namespace",
+        "qualified_name": "ExampleValidation",
+        "ordinal": 114,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+      },
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     },
     {
       "kind": "module",
-      "qualified_name": "ExampleClassMethods"
+      "declaration_id": {
+        "source_id": "ruby/src/example.rb",
+        "family": "namespace",
+        "qualified_name": "ExampleClassMethods",
+        "ordinal": 144,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+      },
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     }
   ],
   "declarations": [
@@ -41,9 +83,36 @@
         "source_id": "ruby/src/example.rb",
         "family": "type",
         "qualified_name": "ExampleFormatting",
-        "ordinal": 17
+        "ordinal": 17,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "kind": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "example_format",
@@ -55,11 +124,38 @@
             "source_id": "ruby/src/example.rb",
             "family": "method",
             "qualified_name": "ExampleFormatting.example_format",
-            "ordinal": 44
+            "ordinal": 44,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
           },
           "source_id": "ruby/src/example.rb",
           "qualified_name": "ExampleFormatting.example_format",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "type",
+                "qualified_name": "ExampleFormatting",
+                "ordinal": 17,
+                "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "ExampleFormatting",
+              "target": {
+                "declaration_id": {
+                  "source_id": "ruby/src/example.rb",
+                  "family": "type",
+                  "qualified_name": "ExampleFormatting",
+                  "ordinal": 17,
+                  "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
           "line_start": 4,
           "line_end": 6,
           "parameters": [
@@ -78,7 +174,8 @@
             "source_id": "ruby/src/example.rb",
             "family": "type",
             "qualified_name": "ExampleFormatting",
-            "ordinal": 17
+            "ordinal": 17,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
           }
         }
       ]
@@ -93,9 +190,36 @@
         "source_id": "ruby/src/example.rb",
         "family": "type",
         "qualified_name": "ExampleValidation",
-        "ordinal": 114
+        "ordinal": 114,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
-      "kind": "module"
+      "kind": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
     },
     {
       "name": "ExampleClassMethods",
@@ -107,9 +231,36 @@
         "source_id": "ruby/src/example.rb",
         "family": "type",
         "qualified_name": "ExampleClassMethods",
-        "ordinal": 144
+        "ordinal": 144,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
-      "kind": "module"
+      "kind": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
     },
     {
       "name": "ExampleAbstract",
@@ -121,9 +272,36 @@
         "source_id": "ruby/src/example.rb",
         "family": "class",
         "qualified_name": "ExampleAbstract",
-        "ordinal": 176
+        "ordinal": 176,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "initialize",
@@ -135,11 +313,27 @@
             "source_id": "ruby/src/example.rb",
             "family": "method",
             "qualified_name": "ExampleAbstract.initialize",
-            "ordinal": 375
+            "ordinal": 375,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
           },
           "source_id": "ruby/src/example.rb",
           "qualified_name": "ExampleAbstract.initialize",
           "kind": "constructor",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "class",
+                "qualified_name": "ExampleAbstract",
+                "ordinal": 176,
+                "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 23,
           "line_end": 25,
           "parameters": [
@@ -158,7 +352,8 @@
             "source_id": "ruby/src/example.rb",
             "family": "class",
             "qualified_name": "ExampleAbstract",
-            "ordinal": 176
+            "ordinal": 176,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
           }
         },
         {
@@ -171,11 +366,27 @@
             "source_id": "ruby/src/example.rb",
             "family": "method",
             "qualified_name": "ExampleAbstract.example_required",
-            "ordinal": 446
+            "ordinal": 446,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
           },
           "source_id": "ruby/src/example.rb",
           "qualified_name": "ExampleAbstract.example_required",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "class",
+                "qualified_name": "ExampleAbstract",
+                "ordinal": 176,
+                "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 27,
           "line_end": 31,
           "parameters": [
@@ -238,7 +449,8 @@
             "source_id": "ruby/src/example.rb",
             "family": "class",
             "qualified_name": "ExampleAbstract",
-            "ordinal": 176
+            "ordinal": 176,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
           }
         },
         {
@@ -251,11 +463,27 @@
             "source_id": "ruby/src/example.rb",
             "family": "method",
             "qualified_name": "ExampleAbstract.example_type_method",
-            "ordinal": 820
+            "ordinal": 820,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
           },
           "source_id": "ruby/src/example.rb",
           "qualified_name": "ExampleAbstract.example_type_method",
           "kind": "type_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "class",
+                "qualified_name": "ExampleAbstract",
+                "ordinal": 176,
+                "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 33,
           "line_end": 35,
           "parameters": [
@@ -274,7 +502,8 @@
             "source_id": "ruby/src/example.rb",
             "family": "class",
             "qualified_name": "ExampleAbstract",
-            "ordinal": 176
+            "ordinal": 176,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
           }
         },
         {
@@ -287,11 +516,27 @@
             "source_id": "ruby/src/example.rb",
             "family": "method",
             "qualified_name": "ExampleAbstract.example_protected",
-            "ordinal": 904
+            "ordinal": 904,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
           },
           "source_id": "ruby/src/example.rb",
           "qualified_name": "ExampleAbstract.example_protected",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "class",
+                "qualified_name": "ExampleAbstract",
+                "ordinal": 176,
+                "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 39,
           "line_end": 41,
           "return_type": {
@@ -301,7 +546,8 @@
             "source_id": "ruby/src/example.rb",
             "family": "class",
             "qualified_name": "ExampleAbstract",
-            "ordinal": 176
+            "ordinal": 176,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
           }
         },
         {
@@ -314,11 +560,27 @@
             "source_id": "ruby/src/example.rb",
             "family": "method",
             "qualified_name": "ExampleAbstract.example_private",
-            "ordinal": 964
+            "ordinal": 964,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
           },
           "source_id": "ruby/src/example.rb",
           "qualified_name": "ExampleAbstract.example_private",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "class",
+                "qualified_name": "ExampleAbstract",
+                "ordinal": 176,
+                "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 45,
           "line_end": 47,
           "return_type": {
@@ -328,8 +590,56 @@
             "source_id": "ruby/src/example.rb",
             "family": "class",
             "qualified_name": "ExampleAbstract",
-            "ordinal": 176
+            "ordinal": 176,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
           }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "property",
+            "qualified_name": "ExampleAbstract.@example_name",
+            "ordinal": 408,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 176,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+          },
+          "name": "@example_name",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "method",
+                "qualified_name": "ExampleAbstract.initialize",
+                "ordinal": 375,
+                "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
+          "assigned_values": [
+            {
+              "kind": "unassigned",
+              "expression": "",
+              "reference": ""
+            }
+          ]
         }
       ]
     },
@@ -343,9 +653,36 @@
         "source_id": "ruby/src/example.rb",
         "family": "class",
         "qualified_name": "ExampleImplementation",
-        "ordinal": 1017
+        "ordinal": 1017,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "example_execute",
@@ -357,11 +694,27 @@
             "source_id": "ruby/src/example.rb",
             "family": "method",
             "qualified_name": "ExampleImplementation.example_execute",
-            "ordinal": 1065
+            "ordinal": 1065,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
           },
           "source_id": "ruby/src/example.rb",
           "qualified_name": "ExampleImplementation.example_execute",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "class",
+                "qualified_name": "ExampleImplementation",
+                "ordinal": 1017,
+                "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 51,
           "line_end": 53,
           "parameters": [
@@ -380,7 +733,8 @@
             "source_id": "ruby/src/example.rb",
             "family": "class",
             "qualified_name": "ExampleImplementation",
-            "ordinal": 1017
+            "ordinal": 1017,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
           }
         }
       ]
@@ -393,7 +747,8 @@
         "source_id": "ruby/src/example.rb",
         "family": "value",
         "qualified_name": "ExampleAbstract.EXAMPLE_CONSTANT",
-        "ordinal": 286
+        "ordinal": 286,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "name": "ExampleAbstract.EXAMPLE_CONSTANT",
       "visibility": "public",
@@ -401,7 +756,22 @@
       "line_count": 1,
       "declaration_kind": "constant",
       "value_kind": "value_literal",
-      "scope": "module"
+      "scope": "member",
+      "placement": {
+        "lexical_scope": {
+          "declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 176,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+          },
+          "kind": "declaration"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     }
   ],
   "callable_values": [
@@ -415,10 +785,26 @@
         "source_id": "ruby/src/example.rb",
         "family": "value",
         "qualified_name": "ExampleAbstract.EXAMPLE_CALLBACK",
-        "ordinal": 317
+        "ordinal": 317,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "source_id": "ruby/src/example.rb",
       "qualified_name": "ExampleAbstract.EXAMPLE_CALLBACK",
+      "placement": {
+        "lexical_scope": {
+          "declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 176,
+            "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+          },
+          "kind": "declaration"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 21,
       "line_end": 21,
       "parameters": [
@@ -434,7 +820,7 @@
         "kind": "absent"
       },
       "declaration_kind": "constant",
-      "scope": "module",
+      "scope": "member",
       "kind": "callable_value"
     }
   ],
@@ -444,7 +830,8 @@
         "source_id": "ruby/src/example.rb",
         "family": "method",
         "qualified_name": "ExampleFormatting.example_format",
-        "ordinal": 44
+        "ordinal": 44,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "ordinal": 1,
       "target_callable_id": null,
@@ -459,7 +846,8 @@
         "source_id": "ruby/src/example.rb",
         "family": "method",
         "qualified_name": "ExampleAbstract.example_required",
-        "ordinal": 446
+        "ordinal": 446,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "ordinal": 1,
       "target_callable_id": null,
@@ -474,14 +862,15 @@
         "source_id": "ruby/src/example.rb",
         "family": "method",
         "qualified_name": "ExampleAbstract.example_required",
-        "ordinal": 446
+        "ordinal": 446,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "ordinal": 2,
       "target_callable_id": null,
       "source_id": "ruby/src/example.rb",
       "line": 29,
       "expression": "JSON.generate(items: example_items, named: example_named, default: example_default, options: example_options)",
-      "resolution": "unresolved",
+      "resolution": "dynamic",
       "target_name": "generate"
     },
     {
@@ -489,7 +878,8 @@
         "source_id": "ruby/src/example.rb",
         "family": "method",
         "qualified_name": "ExampleAbstract.example_required",
-        "ordinal": 446
+        "ordinal": 446,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "ordinal": 3,
       "target_callable_id": null,
@@ -504,14 +894,16 @@
         "source_id": "ruby/src/example.rb",
         "family": "method",
         "qualified_name": "ExampleAbstract.example_private",
-        "ordinal": 964
+        "ordinal": 964,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "ordinal": 1,
       "target_callable_id": {
         "source_id": "ruby/src/example.rb",
         "family": "method",
         "qualified_name": "ExampleAbstract.example_protected",
-        "ordinal": 904
+        "ordinal": 904,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "source_id": "ruby/src/example.rb",
       "line": 46,
@@ -524,7 +916,8 @@
         "source_id": "ruby/src/example.rb",
         "family": "method",
         "qualified_name": "ExampleImplementation.example_execute",
-        "ordinal": 1065
+        "ordinal": 1065,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "ordinal": 1,
       "target_callable_id": null,
@@ -541,42 +934,121 @@
         "source_id": "ruby/src/example.rb",
         "family": "class",
         "qualified_name": "ExampleAbstract",
-        "ordinal": 176
+        "ordinal": 176,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "kind": "includes",
-      "target_reference": "ExampleFormatting"
+      "target_reference": "ExampleFormatting",
+      "target": {
+        "declaration_id": {
+          "source_id": "ruby/src/example.rb",
+          "family": "type",
+          "qualified_name": "ExampleFormatting",
+          "ordinal": 17,
+          "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+        },
+        "kind": "resolved"
+      }
     },
     {
       "source_declaration_id": {
         "source_id": "ruby/src/example.rb",
         "family": "class",
         "qualified_name": "ExampleAbstract",
-        "ordinal": 176
+        "ordinal": 176,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "kind": "prepends",
-      "target_reference": "ExampleValidation"
+      "target_reference": "ExampleValidation",
+      "target": {
+        "declaration_id": {
+          "source_id": "ruby/src/example.rb",
+          "family": "type",
+          "qualified_name": "ExampleValidation",
+          "ordinal": 114,
+          "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+        },
+        "kind": "resolved"
+      }
     },
     {
       "source_declaration_id": {
         "source_id": "ruby/src/example.rb",
         "family": "class",
         "qualified_name": "ExampleAbstract",
-        "ordinal": 176
+        "ordinal": 176,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "kind": "extends_singleton",
-      "target_reference": "ExampleClassMethods"
+      "target_reference": "ExampleClassMethods",
+      "target": {
+        "declaration_id": {
+          "source_id": "ruby/src/example.rb",
+          "family": "type",
+          "qualified_name": "ExampleClassMethods",
+          "ordinal": 144,
+          "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+        },
+        "kind": "resolved"
+      }
     },
     {
       "source_declaration_id": {
         "source_id": "ruby/src/example.rb",
         "family": "class",
         "qualified_name": "ExampleImplementation",
-        "ordinal": 1017
+        "ordinal": 1017,
+        "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
       },
       "kind": "extends",
-      "target_reference": "ExampleAbstract"
+      "target_reference": "ExampleAbstract",
+      "target": {
+        "declaration_id": {
+          "source_id": "ruby/src/example.rb",
+          "family": "class",
+          "qualified_name": "ExampleAbstract",
+          "ordinal": 176,
+          "content_digest": "338a953549be7351e97622f78cbe2025d0d110bfdca44e8d5947b37b970e9e2d"
+        },
+        "kind": "resolved"
+      }
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 55,
   "code_line_count": 41,
   "public_symbol_count": 6

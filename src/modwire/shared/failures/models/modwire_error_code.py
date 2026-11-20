@@ -38,3 +38,4 @@ class ModwireErrorCode(StrEnum):
     UNSUPPORTED_LANGUAGE = "unsupported_language"
     UNSUPPORTED_MANIFEST_FORMAT = "unsupported_manifest_format"
     UNSUPPORTED_PARSER = "unsupported_parser"
+    VALUE_REFERENCE = "value_reference"

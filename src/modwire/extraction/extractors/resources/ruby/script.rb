@@ -606,7 +606,7 @@ class RubySourceExtractor
       "line_count" => line_count(node.location.start_line, node.location.end_line),
       "declaration_kind" => "constant",
       "value_kind" => value_kind,
-      "scope" => lexical_scope.fetch("kind") == "file" ? "module" : "local",
+      "scope" => constant_scope(owner),
       "placement" => placement(lexical_scope, owner)
     }
     collect_body(value, owner, nil, lexical_scope, nil)
@@ -616,9 +616,13 @@ class RubySourceExtractor
     fact = callable_fact(value, name, name, "callable_value", "public", lexical_scope, owner)
     fact["declaration_id"] = identity("value", name, ordinal(node))
     fact.merge!("declaration_kind" => "constant", "value_kind" => "value_callable",
-                "scope" => lexical_scope.fetch("kind") == "file" ? "module" : "local")
+                "scope" => constant_scope(owner))
     @callable_facts << {"node" => value, "json" => fact, "owner" => owner}
     collect_body(value.body, owner, nil, declaration_scope(fact.fetch("declaration_id")), nil)
+  end
+
+  def constant_scope(owner)
+    owner.empty? ? "module" : "member"
   end
 
   def collect_import(node)

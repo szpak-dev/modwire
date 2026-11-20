@@ -3,7 +3,14 @@ import json
 from collections.abc import Mapping
 from pathlib import PurePosixPath
 
-from modwire.application import CodeMap, FactCapability, QueryableCodeMap, RelationshipFamily
+from modwire.application import (
+    CodeMap,
+    FactCapability,
+    FileInventoryCoverage,
+    MemberInventoryCoverage,
+    QueryableCodeMap,
+    RelationshipFamily,
+)
 
 
 class CodeMapFactory:
@@ -113,6 +120,8 @@ class CodeMapFactory:
             "anonymous_callables": [],
             "calls": [],
             "declaration_relations": [],
+            "unresolved_methods": [],
+            "inventory": self.inventory(FileInventoryCoverage),
             "line_count": 1,
             "code_line_count": 1,
             "public_symbol_count": 0,
@@ -134,11 +143,13 @@ class CodeMapFactory:
                 **declaration,
                 "source_id": source_id,
                 "qualified_name": declaration["name"],
+                "placement": self.placement(),
                 "declaration_id": {
                     "source_id": source_id,
                     "family": "function",
                     "qualified_name": declaration["name"],
                     "ordinal": ordinal,
+                    "content_digest": hashlib.sha256(source_id.encode("utf-8")).hexdigest(),
                 },
             }
             for ordinal, declaration in enumerate(source_file["functions"], start=1)
@@ -146,11 +157,13 @@ class CodeMapFactory:
         source_file["values"] = [
             {
                 **declaration,
+                "placement": self.placement(),
                 "declaration_id": {
                     "source_id": source_id,
                     "family": "value",
                     "qualified_name": declaration["name"],
                     "ordinal": ordinal,
+                    "content_digest": hashlib.sha256(source_id.encode("utf-8")).hexdigest(),
                 },
             }
             for ordinal, declaration in enumerate(source_file["values"], start=1)
@@ -162,6 +175,7 @@ class CodeMapFactory:
                 "family": declaration_families[str(declaration["kind"])],
                 "qualified_name": declaration["name"],
                 "ordinal": ordinal,
+                "content_digest": hashlib.sha256(source_id.encode("utf-8")).hexdigest(),
             }
             methods = [
                 {
@@ -169,11 +183,13 @@ class CodeMapFactory:
                     "source_id": source_id,
                     "qualified_name": f"{declaration['name']}.{method['name']}",
                     "owner_declaration_id": declaration_id,
+                    "placement": self.placement(declaration_id),
                     "declaration_id": {
                         "source_id": source_id,
                         "family": "method",
                         "qualified_name": f"{declaration['name']}.{method['name']}",
                         "ordinal": method_ordinal,
+                        "content_digest": declaration_id["content_digest"],
                     },
                 }
                 for method_ordinal, method in enumerate(declaration["methods"], start=1)
@@ -182,11 +198,13 @@ class CodeMapFactory:
                 {
                     **property_definition,
                     "owner_declaration_id": declaration_id,
+                    "placement": self.placement(declaration_id),
                     "declaration_id": {
                         "source_id": source_id,
                         "family": "property",
                         "qualified_name": f"{declaration['name']}.{property_definition['name']}",
                         "ordinal": property_ordinal,
+                        "content_digest": declaration_id["content_digest"],
                     },
                 }
                 for property_ordinal, property_definition in enumerate(declaration["properties"], start=1)
@@ -195,6 +213,8 @@ class CodeMapFactory:
                 {
                     **declaration,
                     "declaration_id": declaration_id,
+                    "placement": self.placement(),
+                    "inventory": self.inventory(MemberInventoryCoverage),
                     "methods": methods,
                     "properties": properties,
                 }
@@ -213,6 +233,15 @@ class CodeMapFactory:
             for call in source_file["calls"]
         ]
         return source_file
+
+    def placement(self, owner: Mapping[str, object] | None = None) -> dict[str, object]:
+        return {
+            "lexical_scope": {"kind": "file"} if owner is None else {"kind": "declaration", "declaration_id": owner},
+            "namespace": {"kind": "none"},
+        }
+
+    def inventory(self, model: type[FileInventoryCoverage | MemberInventoryCoverage]) -> dict[str, object]:
+        return {name: {"status": "complete", "limitations": []} for name in model.model_fields}
 
     def source_function(
         self,
@@ -358,6 +387,7 @@ class CodeMapFactory:
             "is_default": False,
             "is_aliased": False,
             "statement_id": 0,
+            "binding": {"kind": "unresolved", "reason": "unobserved"},
         }
 
     def source_call(

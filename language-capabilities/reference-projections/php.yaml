@@ -30,188 +30,223 @@ mappings:
   - authored:
       source_id: src/commerce/orders/application/actions/PlaceOrder.php
       family: class
-      qualified_name: PlaceOrder
+      qualified_name: ModwireFixture.Commerce.Orders.Application.Actions.PlaceOrder
       ordinal: 190
+      content_digest: e655a07cde788dd9f5af404eecaeac8910f6d580833392989eb7280e598853a1
     canonical:
       source_id: src/commerce/orders/application/actions/place_order
       family: class
       qualified_name: PlaceOrder
       ordinal: 1
+      content_digest: 2cbefec70e40f100376fb791b7e3f74a3676a83fc179ddc4633750c8d354b97d
   - authored:
       source_id: src/commerce/orders/domain/model/Order.php
       family: class
-      qualified_name: Order
+      qualified_name: ModwireFixture.Commerce.Orders.Domain.Model.Order
       ordinal: 63
+      content_digest: 97e66bb66795e0bbf27792962c540330ed1d80b7cae1cafae125ca01eb04d659
     canonical:
       source_id: src/commerce/orders/domain/model/order
       family: class
       qualified_name: Order
       ordinal: 1
+      content_digest: bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c
   - authored:
       source_id: src/commerce/orders/domain/services/OrderPolicy.php
       family: class
-      qualified_name: OrderPolicy
+      qualified_name: ModwireFixture.Commerce.Orders.Domain.Services.OrderPolicy
       ordinal: 122
+      content_digest: 1a6bfaaa87277568a7524e6cb6274a45cc5a8fb1bf176d5269e6f0fc02ba6934
     canonical:
       source_id: src/commerce/orders/domain/services/order_policy
       family: class
       qualified_name: OrderPolicy
       ordinal: 1
+      content_digest: d82d07bd9dce9fc1c62477d072e3370ad6b8feed9f4eea2c551c3c63480c3fff
   - authored:
       source_id: src/commerce/orders/infrastructure/repositories/OrderRepository.php
       family: class
-      qualified_name: OrderRepository
+      qualified_name: ModwireFixture.Commerce.Orders.Infrastructure.Repositories.OrderRepository
       ordinal: 157
+      content_digest: ea59facff6e2baa0b67d6b46ec789c61f6ce643c82f7130c372d0baf86584972
     canonical:
       source_id: src/commerce/orders/infrastructure/repositories/order_repository
       family: class
       qualified_name: OrderRepository
       ordinal: 1
+      content_digest: 8a9278a880c844bf505c547b0aaab46c65658407b2cc723b043f74d59380e5f9
   - authored:
       source_id: src/commerce/orders/interfaces/http/OrderController.php
       family: class
-      qualified_name: OrderController
+      qualified_name: ModwireFixture.Commerce.Orders.Interfaces.Http.OrderController
       ordinal: 189
+      content_digest: 6587f414d970428afad1e9adde6d06314bc71b1710beea49d9e30b5079b814e5
     canonical:
       source_id: src/commerce/orders/interfaces/http/order_controller
       family: class
       qualified_name: OrderController
       ordinal: 1
+      content_digest: 11f683815938f3033acfb9ff0b60fcf560beaecac99ca3c41f5ee109d88bf3a5
   - authored:
       source_id: src/commerce/payments/application/actions/CapturePayment.php
       family: class
-      qualified_name: CapturePayment
+      qualified_name: ModwireFixture.Commerce.Payments.Application.Actions.CapturePayment
       ordinal: 132
+      content_digest: 4f5d0637ed69f2960bf7c66904fccf98a8d17d713b48fe26f36d5137f3638430
     canonical:
       source_id: src/commerce/payments/application/actions/capture_payment
       family: class
       qualified_name: CapturePayment
       ordinal: 1
+      content_digest: 523b46d792c6200f7ddd9aa36d4c398f63cdd56473d8dc74176abfc2b6b47362
   - authored:
       source_id: src/commerce/payments/domain/model/Payment.php
       family: class
-      qualified_name: Payment
+      qualified_name: ModwireFixture.Commerce.Payments.Domain.Model.Payment
       ordinal: 65
+      content_digest: fe740c8754bbca2c7e9355a762b7539b3b4ebc4e7647e22b1f7ae33d581f874c
     canonical:
       source_id: src/commerce/payments/domain/model/例/payment
       family: class
       qualified_name: Payment
       ordinal: 1
+      content_digest: bc6cc5364afc862be73da3810fbfeaec32a272b4027c0f3bf0af04cc5cb073e3
   callables:
   - authored:
       source_id: src/commerce/orders/application/actions/PlaceOrder.php
       family: method
-      qualified_name: PlaceOrder.place
+      qualified_name: ModwireFixture.Commerce.Orders.Application.Actions.PlaceOrder.place
       ordinal: 293
+      content_digest: e655a07cde788dd9f5af404eecaeac8910f6d580833392989eb7280e598853a1
     canonical:
       source_id: src/commerce/orders/application/actions/place_order
       family: method
       qualified_name: PlaceOrder.place
       ordinal: 1
+      content_digest: 2cbefec70e40f100376fb791b7e3f74a3676a83fc179ddc4633750c8d354b97d
   - authored:
       source_id: src/commerce/orders/domain/model/Order.php
       family: method
-      qualified_name: Order.isPlaced
+      qualified_name: ModwireFixture.Commerce.Orders.Domain.Model.Order.isPlaced
       ordinal: 273
+      content_digest: 97e66bb66795e0bbf27792962c540330ed1d80b7cae1cafae125ca01eb04d659
     canonical:
       source_id: src/commerce/orders/domain/model/order
       family: method
       qualified_name: Order.is_placed
       ordinal: 1
+      content_digest: bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c
   - authored:
       source_id: src/commerce/orders/domain/model/Order.php
       family: method
-      qualified_name: Order.markPlaced
+      qualified_name: ModwireFixture.Commerce.Orders.Domain.Model.Order.markPlaced
       ordinal: 191
+      content_digest: 97e66bb66795e0bbf27792962c540330ed1d80b7cae1cafae125ca01eb04d659
     canonical:
       source_id: src/commerce/orders/domain/model/order
       family: method
       qualified_name: Order.mark_placed
       ordinal: 2
+      content_digest: bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c
   - authored:
       source_id: src/commerce/orders/domain/services/OrderPolicy.php
       family: method
-      qualified_name: OrderPolicy.allows
+      qualified_name: ModwireFixture.Commerce.Orders.Domain.Services.OrderPolicy.allows
       ordinal: 152
+      content_digest: 1a6bfaaa87277568a7524e6cb6274a45cc5a8fb1bf176d5269e6f0fc02ba6934
     canonical:
       source_id: src/commerce/orders/domain/services/order_policy
       family: method
       qualified_name: OrderPolicy.allows
       ordinal: 1
+      content_digest: d82d07bd9dce9fc1c62477d072e3370ad6b8feed9f4eea2c551c3c63480c3fff
   - authored:
       source_id: src/commerce/orders/infrastructure/repositories/OrderRepository.php
       family: method
-      qualified_name: OrderRepository.save
+      qualified_name: ModwireFixture.Commerce.Orders.Infrastructure.Repositories.OrderRepository.save
       ordinal: 258
+      content_digest: ea59facff6e2baa0b67d6b46ec789c61f6ce643c82f7130c372d0baf86584972
     canonical:
       source_id: src/commerce/orders/infrastructure/repositories/order_repository
       family: method
       qualified_name: OrderRepository.save
       ordinal: 1
+      content_digest: 8a9278a880c844bf505c547b0aaab46c65658407b2cc723b043f74d59380e5f9
   - authored:
       source_id: src/commerce/orders/interfaces/http/OrderController.php
       family: method
-      qualified_name: OrderController.handle
+      qualified_name: ModwireFixture.Commerce.Orders.Interfaces.Http.OrderController.handle
       ordinal: 296
+      content_digest: 6587f414d970428afad1e9adde6d06314bc71b1710beea49d9e30b5079b814e5
     canonical:
       source_id: src/commerce/orders/interfaces/http/order_controller
       family: method
       qualified_name: OrderController.handle
       ordinal: 1
+      content_digest: 11f683815938f3033acfb9ff0b60fcf560beaecac99ca3c41f5ee109d88bf3a5
   - authored:
       source_id: src/commerce/payments/application/actions/CapturePayment.php
       family: method
-      qualified_name: CapturePayment.capture
+      qualified_name: ModwireFixture.Commerce.Payments.Application.Actions.CapturePayment.capture
       ordinal: 165
+      content_digest: 4f5d0637ed69f2960bf7c66904fccf98a8d17d713b48fe26f36d5137f3638430
     canonical:
       source_id: src/commerce/payments/application/actions/capture_payment
       family: method
       qualified_name: CapturePayment.capture
       ordinal: 1
+      content_digest: 523b46d792c6200f7ddd9aa36d4c398f63cdd56473d8dc74176abfc2b6b47362
   - authored:
       source_id: src/commerce/payments/domain/model/Payment.php
       family: method
-      qualified_name: Payment.capture
+      qualified_name: ModwireFixture.Commerce.Payments.Domain.Model.Payment.capture
       ordinal: 199
+      content_digest: fe740c8754bbca2c7e9355a762b7539b3b4ebc4e7647e22b1f7ae33d581f874c
     canonical:
       source_id: src/commerce/payments/domain/model/例/payment
       family: method
       qualified_name: Payment.capture
       ordinal: 1
+      content_digest: bc6cc5364afc862be73da3810fbfeaec32a272b4027c0f3bf0af04cc5cb073e3
   parameters:
   - authored_callable:
       source_id: src/commerce/orders/application/actions/PlaceOrder.php
       family: method
-      qualified_name: PlaceOrder.place
+      qualified_name: ModwireFixture.Commerce.Orders.Application.Actions.PlaceOrder.place
       ordinal: 293
+      content_digest: e655a07cde788dd9f5af404eecaeac8910f6d580833392989eb7280e598853a1
     authored: order
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/domain/services/OrderPolicy.php
       family: method
-      qualified_name: OrderPolicy.allows
+      qualified_name: ModwireFixture.Commerce.Orders.Domain.Services.OrderPolicy.allows
       ordinal: 152
+      content_digest: 1a6bfaaa87277568a7524e6cb6274a45cc5a8fb1bf176d5269e6f0fc02ba6934
     authored: order
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/infrastructure/repositories/OrderRepository.php
       family: method
-      qualified_name: OrderRepository.save
+      qualified_name: ModwireFixture.Commerce.Orders.Infrastructure.Repositories.OrderRepository.save
       ordinal: 258
+      content_digest: ea59facff6e2baa0b67d6b46ec789c61f6ce643c82f7130c372d0baf86584972
     authored: order
     canonical: order
   - authored_callable:
       source_id: src/commerce/orders/interfaces/http/OrderController.php
       family: method
-      qualified_name: OrderController.handle
+      qualified_name: ModwireFixture.Commerce.Orders.Interfaces.Http.OrderController.handle
       ordinal: 296
+      content_digest: 6587f414d970428afad1e9adde6d06314bc71b1710beea49d9e30b5079b814e5
     authored: orderId
     canonical: order_id
   - authored_callable:
       source_id: src/commerce/payments/application/actions/CapturePayment.php
       family: method
-      qualified_name: CapturePayment.capture
+      qualified_name: ModwireFixture.Commerce.Payments.Application.Actions.CapturePayment.capture
       ordinal: 165
+      content_digest: 4f5d0637ed69f2960bf7c66904fccf98a8d17d713b48fe26f36d5137f3638430
     authored: payment
     canonical: payment
 scenarios:

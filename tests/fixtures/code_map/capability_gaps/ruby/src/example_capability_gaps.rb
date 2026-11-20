@@ -55,6 +55,8 @@ class ExampleBase
     example_generated_call(example_generated_parameter)
     example_generated_parameter
   end
+
+  attr_reader example_attribute_name
 end
 
 ExampleRuntimeBase = ExampleBase

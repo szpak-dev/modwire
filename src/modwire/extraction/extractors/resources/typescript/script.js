@@ -227382,11 +227382,14 @@ class TypeScriptExtractor {
             }
         }
         if (kind === 'callable_value') {
-            fact.declaration_kind = 'assignment';
+            fact.declaration_kind = ts_morph_1.ts.isVariableDeclaration(node.parent) ? this.valueDeclarationKind(node.parent) : 'assignment';
             fact.value_kind = 'value_callable';
             fact.scope = this.container(node) === this.source ? 'module' : 'local';
         }
         return fact;
+    }
+    valueDeclarationKind(node) {
+        return ts_morph_1.ts.isVariableDeclarationList(node.parent) && (node.parent.flags & ts_morph_1.ts.NodeFlags.Const) !== 0 ? 'constant' : 'assignment';
     }
     emitProperty(node, owner) {
         const name = node.name.getText(this.source);
@@ -227469,13 +227472,17 @@ class TypeScriptExtractor {
             imported_name: symbols[0].alias, is_aliased: symbols.some(symbol => symbol.is_aliased), crossing_type: module ? 'module' : 'symbol',
             file_barrier_crossed: true, statement_id: node.getStart(this.source) + 1, join_key: normalized, uses_joined_import: symbols.length > 1, imported_symbols: symbols });
     }
+    moduleSpecifier(node) {
+        if (ts_morph_1.ts.isStringLiteral(node))
+            return node.text;
+        const location = this.source.getLineAndCharacterOfPosition(node.getStart(this.source));
+        throw new SourceParseFailure(this.filePath, location.line + 1, location.character + 1, 'Module specifier must be a string literal.');
+    }
     observe(node) {
         if (ts_morph_1.ts.isModuleDeclaration(node))
             this.namespaces.push({ kind: ts_morph_1.ts.isStringLiteral(node.name) ? 'module' : 'namespace', declaration_id: this.identity(node), placement: this.placement(node) });
         if (ts_morph_1.ts.isImportDeclaration(node)) {
-            if (!ts_morph_1.ts.isStringLiteral(node.moduleSpecifier))
-                throw new SourceInvariantFailure('Import module specifier is not a string literal.');
-            const specifier = node.moduleSpecifier.text;
+            const specifier = this.moduleSpecifier(node.moduleSpecifier);
             const symbols = [];
             const clause = node.importClause;
             if (clause?.name !== undefined)
@@ -227501,8 +227508,7 @@ class TypeScriptExtractor {
                 this.limit('callable_values', node, 'Destructured bindings cannot be tied to an exact callable value.');
             }
             else if (this.identities.has(node)) {
-                const constant = ts_morph_1.ts.isVariableDeclarationList(node.parent) && (node.parent.flags & ts_morph_1.ts.NodeFlags.Const) !== 0;
-                const value = { declaration_id: this.identity(node), name: node.name.text, visibility: 'public', visibility_intent: 'public', line_count: this.lineCount(node), declaration_kind: constant ? 'constant' : 'assignment',
+                const value = { declaration_id: this.identity(node), name: node.name.text, visibility: 'public', visibility_intent: 'public', line_count: this.lineCount(node), declaration_kind: this.valueDeclarationKind(node),
                     value_kind: node.initializer === undefined ? 'value_unknown' : ts_morph_1.ts.isClassExpression(node.initializer) ? 'value_class' : ts_morph_1.ts.isObjectLiteralExpression(node.initializer) ? 'value_object' : ts_morph_1.ts.isLiteralExpression(node.initializer) ? 'value_literal' : 'value_unknown',
                     scope: this.container(node) === this.source ? 'module' : 'local', placement: this.placement(node) };
                 this.values.push(value);
@@ -227523,10 +227529,7 @@ class TypeScriptExtractor {
                 }
             }
         if (ts_morph_1.ts.isExportDeclaration(node)) {
-            const specifier = node.moduleSpecifier;
-            if (specifier !== undefined && !ts_morph_1.ts.isStringLiteral(specifier))
-                throw new SourceInvariantFailure('Export module specifier is not a string literal.');
-            const module = specifier?.text ?? '';
+            const module = node.moduleSpecifier === undefined ? '' : this.moduleSpecifier(node.moduleSpecifier);
             if (node.exportClause === undefined) {
                 this.export('*', '*', node, module);
                 this.limit('exports', node, 'Wildcard export bindings require the external module inventory.');

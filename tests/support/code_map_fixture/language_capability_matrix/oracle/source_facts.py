@@ -2,7 +2,19 @@ from typing import Self
 
 from pydantic import model_validator
 
-from modwire.application import SourceParameter, SourceSignature, SourceTypeReference
+from modwire.application import (
+    DeclarationIdentity,
+    FileInventoryCoverage,
+    MemberInventoryCoverage,
+    SourceDeclarationRelation,
+    SourceExport,
+    SourceParameter,
+    SourcePlacement,
+    SourceSignature,
+    SourceTypeAbsent,
+    SourceTypeReference,
+    SourceTypeUnsupported,
+)
 
 from ...fixture_model import FixtureModel
 from ...scenario_contract_error import ScenarioContractError
@@ -25,7 +37,12 @@ class SourceFactExpectation(FixtureModel):
     spans: tuple[ExactSpanObservation, ...]
     owners: dict[QualifiedName, QualifiedName]
     parameters: dict[QualifiedName, tuple[SourceParameter, ...]]
-    returns: dict[QualifiedName, SourceTypeReference]
+    returns: dict[QualifiedName, SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported]
+    placements: tuple[tuple[DeclarationIdentity, SourcePlacement], ...]
+    exports: tuple[SourceExport, ...]
+    relations: tuple[SourceDeclarationRelation, ...]
+    inventory: FileInventoryCoverage
+    member_inventories: tuple[tuple[DeclarationIdentity, MemberInventoryCoverage], ...]
     gaps: dict[Identifier, str]
 
     @model_validator(mode="after")

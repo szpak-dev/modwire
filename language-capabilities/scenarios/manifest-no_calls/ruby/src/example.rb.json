@@ -13,9 +13,36 @@
         "source_id": "ruby/src/example.rb",
         "family": "class",
         "qualified_name": "ExampleNoCalls",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "829056931f4593efb11db4e68e0fb783207e7fbca46753eb7eff574cfff2575f"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "example_without_calls",
@@ -27,11 +54,27 @@
             "source_id": "ruby/src/example.rb",
             "family": "method",
             "qualified_name": "ExampleNoCalls.example_without_calls",
-            "ordinal": 24
+            "ordinal": 24,
+            "content_digest": "829056931f4593efb11db4e68e0fb783207e7fbca46753eb7eff574cfff2575f"
           },
           "source_id": "ruby/src/example.rb",
           "qualified_name": "ExampleNoCalls.example_without_calls",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "class",
+                "qualified_name": "ExampleNoCalls",
+                "ordinal": 1,
+                "content_digest": "829056931f4593efb11db4e68e0fb783207e7fbca46753eb7eff574cfff2575f"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 2,
           "line_end": 4,
           "parameters": [
@@ -50,13 +93,49 @@
             "source_id": "ruby/src/example.rb",
             "family": "class",
             "qualified_name": "ExampleNoCalls",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "829056931f4593efb11db4e68e0fb783207e7fbca46753eb7eff574cfff2575f"
           }
         }
       ]
     }
   ],
   "functions": [],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 6,
   "code_line_count": 5,
   "public_symbol_count": 1

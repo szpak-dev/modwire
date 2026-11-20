@@ -100,8 +100,8 @@ class PhpExtractor(SourceExtractor):
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.NAMESPACES,
-                    status=CapabilityStatus.UNSUPPORTED,
-                    explanation="PHP namespace declarations are not extracted yet.",
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation="Authored namespace declarations retain exact identities and lexical placement.",
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.DECLARATION_KINDS,

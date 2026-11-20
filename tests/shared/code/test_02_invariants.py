@@ -81,7 +81,7 @@ class TestPublicCodeValues(ServiceTestCase):
         original = CodeMapFactory().queryable({"src/example.source": {}}, ()).code_map
         restored = type(original).model_validate_json(original.to_json())
         assert restored.to_dict() == original.to_dict()
-        assert original.schema_version == 13
+        assert original.schema_version == 14
         assert set(json.loads(original.to_json())) == {
             "language",
             "producer",
@@ -92,7 +92,7 @@ class TestPublicCodeValues(ServiceTestCase):
     def test_source_file_rejects_duplicate_call_occurrence_identities(self) -> None:
         original = self.code_map_with_call()
         source_file = original.extraction.files["example.source"]
-        repeated_identity = source_file.calls[0].model_copy(update={"line": source_file.calls[0].line + 1})
+        repeated_identity = replace(source_file.calls[0], line=source_file.calls[0].line + 1)
         tampered_file = source_file.model_copy(update={"calls": (*source_file.calls, repeated_identity)})
         tampered = original.model_copy(
             update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}
@@ -107,7 +107,7 @@ class TestPublicCodeValues(ServiceTestCase):
         original = self.code_map_with_call()
         source_file = original.extraction.files["example.source"]
         call = source_file.calls[0]
-        unknown = call.source_callable_id.model_copy(update={"qualified_name": "example_missing"})
+        unknown = replace(call.source_callable_id, qualified_name="example_missing")
         tampered_file = source_file.model_copy(update={"calls": (replace(call, source_callable_id=unknown),)})
         tampered = original.model_copy(
             update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}
@@ -137,7 +137,7 @@ class TestPublicCodeValues(ServiceTestCase):
         source_file = original.extraction.files["example.source"]
         call = source_file.calls[0]
         assert call.target_callable_id is not None
-        unknown = call.target_callable_id.model_copy(update={"qualified_name": "example_missing"})
+        unknown = replace(call.target_callable_id, qualified_name="example_missing")
         tampered_file = source_file.model_copy(update={"calls": (replace(call, target_callable_id=unknown),)})
         tampered = original.model_copy(
             update={"extraction": original.extraction.model_copy(update={"files": {"example.source": tampered_file}})}

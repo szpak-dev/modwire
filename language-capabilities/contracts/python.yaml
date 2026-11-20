@@ -100,8 +100,8 @@ scenarios:
     capability: calls
     evidence: supported
     state: present
-    observation: {kind: call, owner: ExampleImplementation.example_path, target: self.example_required, resolution:
-        resolved}
+    observation: {kind: call, owner: ExampleImplementation.example_path, target: self.example_required,
+        resolution: resolved}
   - kind: capability
     capability: assigned_values
     evidence: supported
@@ -161,8 +161,8 @@ scenarios:
     aspect: semantics
     evidence: supported
     state: present
-    observation: {kind: call, owner: ExampleImplementation.example_path, target: self.example_required, resolution:
-        resolved}
+    observation: {kind: call, owner: ExampleImplementation.example_path, target: self.example_required,
+        resolution: resolved}
 - name: empty-source
   fixture: types
   source: src/type_reference_empty.py
@@ -306,7 +306,7 @@ manifests:
   scenarios:
   - name: canonical
     source: canonical/src/example.py
-    facts_digest: a5377f5099138aa119c848c6aa779c2529c8a9596091df3e5370fe7980ec023e
+    facts_digest: dd487dd4d0be1d5bb2abaefa73b7f2049f47047d2b2f37e0de9646f81d88afab
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.py}
@@ -327,7 +327,7 @@ manifests:
       observation: {kind: dependency, source: src/example.py, target: abc, resolution: external}
   - name: calls
     source: calls/src/example.py
-    facts_digest: f2d6cb2a180fa67a89b7b77e45d3c3addb5c35d9fad75e4b6408d895d6de39b2
+    facts_digest: d9723be546df4daf6d46a2b5297cac0badb74bff34617da7fb34f97e869b2355
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.py}
@@ -335,7 +335,7 @@ manifests:
       observation: {kind: call, owner: example_source, target: example_target, resolution: resolved}
   - name: no_calls
     source: no_calls/src/example.py
-    facts_digest: da5f03f2da10c40c094612aeeefbbd1cc215e6f790474a843905e22a9978e292
+    facts_digest: baaccc9596aa92ced1961c7a78c061626746e014ca00964f6f0ef01574544ce4
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.py}
@@ -343,7 +343,7 @@ manifests:
       observation: {kind: call, owner: example_source, target: example_target, resolution: resolved}
   - name: negative_members
     source: negative_members/src/example.py
-    facts_digest: 3c952f9375932c64444d6a1bbce0be70fd8da3e76739339d54e2e3d57ee04369
+    facts_digest: d349aa936a7774b92d8771f402abfdcc86ea68d93d7f662f8fd4468275566636
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.py}
@@ -351,7 +351,7 @@ manifests:
       observation: {kind: symbol, qualified_name: src/example.ExampleContract, symbol_kind: abstract_class}
   - name: dependencies
     source: dependencies/src/example.py
-    facts_digest: ae5df97ff839b33c22e2ee9a486d24e44f923ff5b2bfa75edb976cfd4717f01e
+    facts_digest: af6fa28ce97e73180952f673094afdc41cd8aa23f8cc713c3aacdea47a4a6bc2
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.py}
@@ -359,13 +359,13 @@ manifests:
       observation: {kind: dependency, source: src/example.py, target: json, resolution: external}
   - name: source_edit_before
     source: source_edit_before/src/nested/example.py
-    facts_digest: 12b450d875e6e3389f43ba79f0f503fa0274877fda8ae426edbcf4a9067a89ed
+    facts_digest: 604776fefbacc63e85c91133c8786f3e021ad7fdd1d70ea305c67d6c0e21f71a
     claims:
     - state: present
       observation: {kind: source, relative_path: src/nested/example.py}
   - name: source_edit_after
     source: source_edit_after/src/example.py
-    facts_digest: 800cb7ac48973f50c322b16dcb7477f96bb02952b1b9b570b329369a42f107bd
+    facts_digest: b54746739abbbbfe67e2ca4bb5f99fe75acf71c3aeb70e9dfedf2872efdb2dca
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.py}

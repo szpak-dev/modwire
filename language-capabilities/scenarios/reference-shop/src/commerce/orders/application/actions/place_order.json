@@ -13,7 +13,8 @@
         "source_id": "src/commerce/orders/application/actions/place_order",
         "family": "class",
         "qualified_name": "PlaceOrder",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "2cbefec70e40f100376fb791b7e3f74a3676a83fc179ddc4633750c8d354b97d"
       },
       "kind": "class",
       "methods": [
@@ -27,7 +28,8 @@
             "source_id": "src/commerce/orders/application/actions/place_order",
             "family": "method",
             "qualified_name": "PlaceOrder.place",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "2cbefec70e40f100376fb791b7e3f74a3676a83fc179ddc4633750c8d354b97d"
           },
           "source_id": "src/commerce/orders/application/actions/place_order",
           "qualified_name": "PlaceOrder.place",
@@ -50,14 +52,91 @@
             "source_id": "src/commerce/orders/application/actions/place_order",
             "family": "class",
             "qualified_name": "PlaceOrder",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "2cbefec70e40f100376fb791b7e3f74a3676a83fc179ddc4633750c8d354b97d"
+          },
+          "placement": {
+            "lexical_scope": {
+              "kind": "declaration",
+              "declaration_id": {
+                "source_id": "src/commerce/orders/application/actions/place_order",
+                "family": "class",
+                "qualified_name": "PlaceOrder",
+                "ordinal": 1,
+                "content_digest": "2cbefec70e40f100376fb791b7e3f74a3676a83fc179ddc4633750c8d354b97d"
+              }
+            },
+            "namespace": {
+              "kind": "none"
+            }
           }
         }
-      ]
+      ],
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
     }
   ],
   "functions": [],
   "line_count": 0,
   "code_line_count": 0,
-  "public_symbol_count": 1
+  "public_symbol_count": 1,
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "unresolved_methods": []
 }

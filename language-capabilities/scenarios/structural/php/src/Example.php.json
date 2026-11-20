@@ -2,77 +2,93 @@
   "declarations": [
     {
       "kind": "declaration",
-      "qualified_name": "ExampleContract",
+      "qualified_name": "Example.ExampleContract",
       "declaration_kind": "interface"
     },
     {
       "kind": "declaration",
-      "qualified_name": "ExampleLeft",
+      "qualified_name": "Example.ExampleLeft",
       "declaration_kind": "interface"
     },
     {
       "kind": "declaration",
-      "qualified_name": "ExampleRight",
+      "qualified_name": "Example.ExampleRight",
       "declaration_kind": "interface"
     },
     {
       "kind": "declaration",
-      "qualified_name": "ExampleBase",
+      "qualified_name": "Example.ExampleBase",
       "declaration_kind": "class"
     },
     {
       "kind": "declaration",
-      "qualified_name": "ExampleTrait",
+      "qualified_name": "Example.ExampleTrait",
       "declaration_kind": "trait"
     },
     {
       "kind": "declaration",
-      "qualified_name": "ExampleOwner",
+      "qualified_name": "Example.ExampleOwner",
       "declaration_kind": "class"
     },
     {
       "kind": "declaration",
-      "qualified_name": "ExampleOther",
+      "qualified_name": "Example.ExampleOther",
+      "declaration_kind": "class"
+    },
+    {
+      "kind": "declaration",
+      "qualified_name": "Example.<anonymous>@866",
       "declaration_kind": "class"
     }
   ],
   "callables": [
     {
       "kind": "callable",
-      "qualified_name": "ExampleTrait.exampleTraitMethod",
+      "qualified_name": "Example.ExampleTrait.exampleTraitMethod",
       "callable_kind": "instance_method"
     },
     {
       "kind": "callable",
-      "qualified_name": "ExampleOwner.__construct",
+      "qualified_name": "Example.ExampleOwner.__construct",
       "callable_kind": "constructor"
     },
     {
       "kind": "callable",
-      "qualified_name": "ExampleOwner.exampleMethod",
+      "qualified_name": "Example.ExampleOwner.exampleMethod",
       "callable_kind": "instance_method"
     },
     {
       "kind": "callable",
-      "qualified_name": "ExampleOwner.exampleTypes",
+      "qualified_name": "Example.ExampleOwner.exampleTypes",
       "callable_kind": "instance_method"
     },
     {
       "kind": "callable",
-      "qualified_name": "ExampleOther.exampleMethod",
+      "qualified_name": "Example.ExampleOther.exampleMethod",
+      "callable_kind": "instance_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "Example.<anonymous>@866.exampleMethod",
       "callable_kind": "instance_method"
     }
   ],
   "attributes": [
     {
       "kind": "attribute",
-      "owner": "ExampleOwner",
+      "owner": "Example.ExampleOwner",
       "name": "exampleValue",
       "member_kind": "instance"
     },
     {
       "kind": "attribute",
-      "owner": "ExampleOther",
+      "owner": "Example.ExampleOther",
+      "name": "exampleValue",
+      "member_kind": "instance"
+    },
+    {
+      "kind": "attribute",
+      "owner": "Example.<anonymous>@866",
       "name": "exampleValue",
       "member_kind": "instance"
     }
@@ -87,14 +103,15 @@
   "signatures": {},
   "spans": [],
   "owners": {
-    "ExampleTrait.exampleTraitMethod": "ExampleTrait",
-    "ExampleOwner.__construct": "ExampleOwner",
-    "ExampleOwner.exampleMethod": "ExampleOwner",
-    "ExampleOwner.exampleTypes": "ExampleOwner",
-    "ExampleOther.exampleMethod": "ExampleOther"
+    "Example.ExampleTrait.exampleTraitMethod": "Example.ExampleTrait",
+    "Example.ExampleOwner.__construct": "Example.ExampleOwner",
+    "Example.ExampleOwner.exampleMethod": "Example.ExampleOwner",
+    "Example.ExampleOwner.exampleTypes": "Example.ExampleOwner",
+    "Example.ExampleOther.exampleMethod": "Example.ExampleOther",
+    "Example.<anonymous>@866.exampleMethod": "Example.<anonymous>@866"
   },
   "parameters": {
-    "ExampleOwner.exampleMethod": [
+    "Example.ExampleOwner.exampleMethod": [
       {
         "name": "exampleReference",
         "type": {
@@ -128,26 +145,1166 @@
     ]
   },
   "returns": {
-    "ExampleTrait.exampleTraitMethod": {
+    "Example.ExampleTrait.exampleTraitMethod": {
       "kind": "reference",
       "name": "string",
       "arguments": []
     },
-    "ExampleOwner.exampleMethod": {
+    "Example.ExampleOwner.exampleMethod": {
       "kind": "reference",
       "name": "string",
       "arguments": []
     }
   },
   "gaps": {
-    "anonymous_identity": "Preserve the anonymous class's members and exact lexical placement separately from ExampleOther's same-named members.",
     "property_origin": "Record exampleValue as a promoted readonly property with an authored null default.",
     "property_readonly": "Record exampleValue as a promoted readonly property with an authored null default.",
     "reference_parameter": "exampleReference is passed by reference; exampleRest is variadic with no authored default.",
     "type_structure": "Preserve nullable string, string|int and ExampleLeft&ExampleRight as distinct structures.",
     "relationship_target": "Preserve extends ExampleBase, implements ExampleContract, and use ExampleTrait with exact source owners and typed targets.",
-    "visibility_origin": "Preserve authored visibility/modifiers separately from default or conventional visibility, and bind exports to exact declarations.",
-    "export_identity": "Preserve authored visibility/modifiers separately from default or conventional visibility, and bind exports to exact declarations.",
-    "local_inventory": "Distinguish complete-empty, unsupported-empty and partially observed inventories on each declaration; retain trustworthy siblings."
-  }
+    "visibility_origin": "Preserve authored visibility/modifiers separately from default or conventional visibility, and bind exports to exact declarations."
+  },
+  "placements": [
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "interface",
+        "qualified_name": "Example.ExampleContract",
+        "ordinal": 27,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "namespace",
+            "qualified_name": "Example",
+            "ordinal": 7,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "interface",
+        "qualified_name": "Example.ExampleLeft",
+        "ordinal": 56,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "namespace",
+            "qualified_name": "Example",
+            "ordinal": 7,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "interface",
+        "qualified_name": "Example.ExampleRight",
+        "ordinal": 81,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "namespace",
+            "qualified_name": "Example",
+            "ordinal": 7,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleBase",
+        "ordinal": 107,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "namespace",
+            "qualified_name": "Example",
+            "ordinal": 7,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "type",
+        "qualified_name": "Example.ExampleTrait",
+        "ordinal": 128,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "namespace",
+            "qualified_name": "Example",
+            "ordinal": 7,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleOwner",
+        "ordinal": 216,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "namespace",
+            "qualified_name": "Example",
+            "ordinal": 7,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleOther",
+        "ordinal": 704,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "namespace",
+            "qualified_name": "Example",
+            "ordinal": 7,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.<anonymous>@866",
+        "ordinal": 866,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "namespace",
+            "qualified_name": "Example",
+            "ordinal": 7,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "namespace",
+        "qualified_name": "Example",
+        "ordinal": 7,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "value",
+        "qualified_name": "Example.exampleAnonymous",
+        "ordinal": 842,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "namespace",
+            "qualified_name": "Example",
+            "ordinal": 7,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "Example.ExampleTrait.exampleTraitMethod",
+        "ordinal": 153,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "type",
+            "qualified_name": "Example.ExampleTrait",
+            "ordinal": 128,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "Example.ExampleOwner.__construct",
+        "ordinal": 316,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "Example.ExampleOwner",
+            "ordinal": 216,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "Example.ExampleOwner.exampleMethod",
+        "ordinal": 397,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "Example.ExampleOwner",
+            "ordinal": 216,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "Example.ExampleOwner.exampleTypes",
+        "ordinal": 561,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "Example.ExampleOwner",
+            "ordinal": 216,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "Example.ExampleOther.exampleMethod",
+        "ordinal": 759,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "Example.ExampleOther",
+            "ordinal": 704,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "method",
+        "qualified_name": "Example.<anonymous>@866.exampleMethod",
+        "ordinal": 911,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "Example.<anonymous>@866",
+            "ordinal": 866,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "property",
+        "qualified_name": "Example.ExampleOwner.exampleValue",
+        "ordinal": 344,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "method",
+            "qualified_name": "Example.ExampleOwner.__construct",
+            "ordinal": 316,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "property",
+        "qualified_name": "Example.ExampleOther.exampleValue",
+        "ordinal": 740,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "Example.ExampleOther",
+            "ordinal": 704,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "property",
+        "qualified_name": "Example.<anonymous>@866.exampleValue",
+        "ordinal": 892,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "Example.<anonymous>@866",
+            "ordinal": 866,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "Example",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "php/src/Example.php",
+              "family": "namespace",
+              "qualified_name": "Example",
+              "ordinal": 7,
+              "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+            }
+          }
+        }
+      }
+    ]
+  ],
+  "exports": [
+    {
+      "name": "Example.ExampleContract",
+      "local_name": "Example.ExampleContract",
+      "kind": "interface",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "php/src/Example.php",
+            "family": "interface",
+            "qualified_name": "Example.ExampleContract",
+            "ordinal": 27,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Example.ExampleLeft",
+      "local_name": "Example.ExampleLeft",
+      "kind": "interface",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "php/src/Example.php",
+            "family": "interface",
+            "qualified_name": "Example.ExampleLeft",
+            "ordinal": 56,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Example.ExampleRight",
+      "local_name": "Example.ExampleRight",
+      "kind": "interface",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "php/src/Example.php",
+            "family": "interface",
+            "qualified_name": "Example.ExampleRight",
+            "ordinal": 81,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Example.ExampleBase",
+      "local_name": "Example.ExampleBase",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "Example.ExampleBase",
+            "ordinal": 107,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Example.ExampleTrait",
+      "local_name": "Example.ExampleTrait",
+      "kind": "type",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "php/src/Example.php",
+            "family": "type",
+            "qualified_name": "Example.ExampleTrait",
+            "ordinal": 128,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Example.ExampleOwner",
+      "local_name": "Example.ExampleOwner",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "Example.ExampleOwner",
+            "ordinal": 216,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Example.ExampleOther",
+      "local_name": "Example.ExampleOther",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "Example.ExampleOther",
+            "ordinal": 704,
+            "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+          }
+        ]
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source_declaration_id": {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleOwner",
+        "ordinal": 216,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      "kind": "uses_trait",
+      "target_reference": "ExampleTrait",
+      "target": {
+        "kind": "resolved",
+        "declaration_id": {
+          "source_id": "php/src/Example.php",
+          "family": "type",
+          "qualified_name": "Example.ExampleTrait",
+          "ordinal": 128,
+          "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+        }
+      }
+    },
+    {
+      "source_declaration_id": {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleOwner",
+        "ordinal": 216,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      "kind": "extends",
+      "target_reference": "ExampleBase",
+      "target": {
+        "kind": "resolved",
+        "declaration_id": {
+          "source_id": "php/src/Example.php",
+          "family": "class",
+          "qualified_name": "Example.ExampleBase",
+          "ordinal": 107,
+          "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+        }
+      }
+    },
+    {
+      "source_declaration_id": {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleOwner",
+        "ordinal": 216,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      "kind": "implements",
+      "target_reference": "ExampleContract",
+      "target": {
+        "kind": "resolved",
+        "declaration_id": {
+          "source_id": "php/src/Example.php",
+          "family": "interface",
+          "qualified_name": "Example.ExampleContract",
+          "ordinal": 27,
+          "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+        }
+      }
+    }
+  ],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
+  "member_inventories": [
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "interface",
+        "qualified_name": "Example.ExampleContract",
+        "ordinal": 27,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "interface",
+        "qualified_name": "Example.ExampleLeft",
+        "ordinal": 56,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "interface",
+        "qualified_name": "Example.ExampleRight",
+        "ordinal": 81,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleBase",
+        "ordinal": 107,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "type",
+        "qualified_name": "Example.ExampleTrait",
+        "ordinal": 128,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleOwner",
+        "ordinal": 216,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.ExampleOther",
+        "ordinal": 704,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "php/src/Example.php",
+        "family": "class",
+        "qualified_name": "Example.<anonymous>@866",
+        "ordinal": 866,
+        "content_digest": "299ead6908c4593e9a23bb2d64598dc62b58cb020df59a25dec28a3aa23043b0"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ]
+  ]
 }

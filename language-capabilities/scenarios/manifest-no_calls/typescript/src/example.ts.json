@@ -14,7 +14,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 1,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example.ts",
+            "family": "function",
+            "qualified_name": "exampleWithoutCalls",
+            "ordinal": 1,
+            "content_digest": "b552b6ee18ac6b65f41c4c36e8954f89a58c04d8de4b05f0518a8cb6dcbc83c2"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "functions": [
@@ -28,10 +40,19 @@
         "source_id": "typescript/src/example.ts",
         "family": "function",
         "qualified_name": "exampleWithoutCalls",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "b552b6ee18ac6b65f41c4c36e8954f89a58c04d8de4b05f0518a8cb6dcbc83c2"
       },
       "source_id": "typescript/src/example.ts",
       "qualified_name": "exampleWithoutCalls",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 1,
       "line_end": 3,
       "parameters": [
@@ -51,6 +72,41 @@
       "kind": "function"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 4,
   "code_line_count": 3,
   "public_symbol_count": 1

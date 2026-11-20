@@ -10,6 +10,11 @@ A source observation records one complete canonical inventory for a selected
 language and scan policy. Its identity changes when an included file is added,
 removed, renamed, or edited. Excluded descendants are deliberately unobserved.
 
+Declaration identities belong to one source snapshot and include its content digest.
+Editing a file changes its declaration identities even when names stay the same;
+changes to unrelated files preserve them. Modwire does not infer declaration
+continuity across edits, renames, or moves.
+
 Cached map generation also accounts for the extractor descriptor, capabilities,
 batch contract, installed Modwire version, observed external runtime, and executable
 entrypoint content. The cache identity for a report adds the effective architecture

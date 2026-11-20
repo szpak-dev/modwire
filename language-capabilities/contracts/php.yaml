@@ -57,7 +57,7 @@ capabilities:
   inheritance:
     status: supported
   namespaces:
-    status: unsupported
+    status: supported
   declaration_kinds:
     status: supported
   composition:
@@ -90,78 +90,84 @@ scenarios:
     capability: symbols
     evidence: supported
     state: present
-    observation: {kind: declaration, qualified_name: ExampleContract, declaration_kind: interface}
+    observation: {kind: declaration, qualified_name: ExampleShapes.ExampleContract, declaration_kind:
+        interface}
   - kind: capability
     capability: callables
     evidence: supported
     state: present
-    observation: {kind: callable, qualified_name: exampleFunction, callable_kind: function}
+    observation: {kind: callable, qualified_name: ExampleShapes.exampleFunction, callable_kind: function}
   - kind: capability
     capability: calls
     evidence: supported
     state: present
-    observation: {kind: call, owner: ExampleImplementation.exampleTimestamp, target: exampleRequired, resolution:
-        resolved}
+    observation: {kind: call, owner: ExampleShapes.ExampleImplementation.exampleTimestamp, target:
+        exampleRequired, resolution: resolved}
   - kind: capability
     capability: inheritance
     evidence: supported
     state: present
-    observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
-        ExampleAbstract}
+    observation: {kind: declaration_relation, source: ExampleShapes.ExampleImplementation, relation: extends,
+        target: ExampleAbstract}
   - kind: capability
     capability: declaration_kinds
     evidence: supported
     state: present
-    observation: {kind: declaration, qualified_name: ExampleAbstract, declaration_kind: abstract_class}
+    observation: {kind: declaration, qualified_name: ExampleShapes.ExampleAbstract, declaration_kind:
+        abstract_class}
   - kind: capability
     capability: dependencies
     evidence: supported
     state: present
-    observation: {kind: dependency, source: src/ExampleShapes.php, target: DateTimeImmutable, resolution: external}
+    observation: {kind: dependency, source: src/ExampleShapes.php, target: DateTimeImmutable, resolution:
+        external}
   - kind: relationship
     relationship: dependency
     aspect: semantics
     evidence: supported
     state: present
-    observation: {kind: dependency, source: src/ExampleShapes.php, target: DateTimeImmutable, resolution: external}
+    observation: {kind: dependency, source: src/ExampleShapes.php, target: DateTimeImmutable, resolution:
+        external}
   - kind: relationship
     relationship: dependency
     aspect: inventory
     evidence: supported
     state: present
-    observation: {kind: dependency, source: src/ExampleShapes.php, target: DateTimeImmutable, resolution: external}
+    observation: {kind: dependency, source: src/ExampleShapes.php, target: DateTimeImmutable, resolution:
+        external}
   - kind: capability
     capability: modifiers
     evidence: supported
     state: present
-    observation: {kind: modifier, owner: ExampleImplementation.exampleTimestamp, visibility: public}
+    observation: {kind: modifier, owner: ExampleShapes.ExampleImplementation.exampleTimestamp, visibility:
+        public}
   - kind: capability
     capability: composition
     evidence: supported
     state: present
-    observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
-        ExampleAbstract}
+    observation: {kind: declaration_relation, source: ExampleShapes.ExampleImplementation, relation: extends,
+        target: ExampleAbstract}
   - kind: relationship
     relationship: declaration
     aspect: semantics
     evidence: supported
     state: present
-    observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
-        ExampleAbstract}
+    observation: {kind: declaration_relation, source: ExampleShapes.ExampleImplementation, relation: extends,
+        target: ExampleAbstract}
   - kind: relationship
     relationship: declaration
     aspect: inventory
     evidence: supported
     state: present
-    observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
-        ExampleAbstract}
+    observation: {kind: declaration_relation, source: ExampleShapes.ExampleImplementation, relation: extends,
+        target: ExampleAbstract}
   - kind: relationship
     relationship: member
     aspect: semantics
     evidence: supported
     state: present
-    observation: {kind: call, owner: ExampleImplementation.exampleTimestamp, target: exampleRequired, resolution:
-        resolved}
+    observation: {kind: call, owner: ExampleShapes.ExampleImplementation.exampleTimestamp, target:
+        exampleRequired, resolution: resolved}
 - name: empty-source
   fixture: types
   source: src/TypeReferenceEmpty.php
@@ -179,12 +185,14 @@ scenarios:
     capability: annotations
     evidence: supported
     state: present
-    observation: {kind: annotation, owner: ExampleConsumer, expression: ExampleTypeMarker}
+    observation: {kind: annotation, owner: ExampleCapabilityGaps.ExampleConsumer, expression:
+        ExampleTypeMarker}
   - kind: capability
     capability: annotations
     evidence: boundary
     state: absent
-    observation: {kind: annotation, owner: ExampleTrait.exampleTraitValue, expression: ExampleMethodMarker}
+    observation: {kind: annotation, owner: ExampleCapabilityGaps.ExampleTrait.exampleTraitValue, expression:
+        ExampleMethodMarker}
 - name: modifier-normalization-boundary
   fixture: gaps
   source: src/ExampleCapabilityGaps.php
@@ -193,7 +201,7 @@ scenarios:
     capability: modifiers
     evidence: boundary
     state: present
-    observation: {kind: modifier, owner: ExampleConsumer, visibility: public}
+    observation: {kind: modifier, owner: ExampleCapabilityGaps.ExampleConsumer, visibility: public}
 - name: assigned-value
   fixture: gaps
   source: src/ExampleCapabilityGaps.php
@@ -204,18 +212,20 @@ scenarios:
     state: present
     observation:
       kind: assigned_values
-      owner: ExampleConsumer
+      owner: ExampleCapabilityGaps.ExampleConsumer
   - kind: capability
     capability: attributes
     evidence: supported
     state: present
-    observation: {kind: attribute, owner: ExampleConsumer, name: exampleValue, member_kind: instance}
+    observation: {kind: attribute, owner: ExampleCapabilityGaps.ExampleConsumer, name: exampleValue,
+        member_kind: instance}
   - kind: relationship
     relationship: member
     aspect: inventory
     evidence: supported
     state: present
-    observation: {kind: attribute, owner: ExampleConsumer, name: exampleValue, member_kind: instance}
+    observation: {kind: attribute, owner: ExampleCapabilityGaps.ExampleConsumer, name: exampleValue,
+        member_kind: instance}
   - kind: relationship
     relationship: member
     aspect: inventory
@@ -223,15 +233,15 @@ scenarios:
     state: present
     observation:
       kind: assigned_values
-      owner: ExampleConsumer
+      owner: ExampleCapabilityGaps.ExampleConsumer
 - name: namespace-declaration
   fixture: gaps
   source: src/ExampleCapabilityGaps.php
   claims:
   - kind: capability
     capability: namespaces
-    evidence: boundary
-    state: absent
+    evidence: supported
+    state: present
     observation: {kind: namespace, qualified_name: ExampleCapabilityGaps, namespace_kind: namespace}
 - name: trait-use
   fixture: gaps
@@ -240,20 +250,23 @@ scenarios:
   - kind: capability
     capability: composition
     evidence: boundary
-    state: absent
-    observation: {kind: declaration_relation, source: ExampleConsumer, relation: uses_trait, target: ExampleTrait}
+    state: present
+    observation: {kind: declaration_relation, source: ExampleCapabilityGaps.ExampleConsumer, relation:
+        uses_trait, target: ExampleTrait}
   - kind: relationship
     relationship: declaration
     aspect: semantics
     evidence: boundary
-    state: absent
-    observation: {kind: declaration_relation, source: ExampleConsumer, relation: uses_trait, target: ExampleTrait}
+    state: present
+    observation: {kind: declaration_relation, source: ExampleCapabilityGaps.ExampleConsumer, relation:
+        uses_trait, target: ExampleTrait}
   - kind: relationship
     relationship: declaration
     aspect: inventory
     evidence: boundary
-    state: absent
-    observation: {kind: declaration_relation, source: ExampleConsumer, relation: uses_trait, target: ExampleTrait}
+    state: present
+    observation: {kind: declaration_relation, source: ExampleCapabilityGaps.ExampleConsumer, relation:
+        uses_trait, target: ExampleTrait}
 - name: non-callable-span-boundary
   fixture: gaps
   source: src/ExampleCapabilityGaps.php
@@ -262,12 +275,13 @@ scenarios:
     capability: spans
     evidence: supported
     state: present
-    observation: {kind: exact_span, owner: ExampleConsumer.exampleConsumerValue, start: 26, end: 29}
+    observation: {kind: exact_span, owner: ExampleCapabilityGaps.ExampleConsumer.exampleConsumerValue, start:
+        26, end: 29}
   - kind: capability
     capability: spans
     evidence: boundary
     state: absent
-    observation: {kind: span_owner, owner: ExampleConsumer}
+    observation: {kind: span_owner, owner: ExampleCapabilityGaps.ExampleConsumer}
 - name: member-runtime-semantics-boundary
   fixture: gaps
   source: src/ExampleCapabilityGaps.php
@@ -276,19 +290,22 @@ scenarios:
     capability: attributes
     evidence: boundary
     state: absent
-    observation: {kind: attribute, owner: ExampleConsumer, name: exampleRuntimeMember, member_kind: instance}
+    observation: {kind: attribute, owner: ExampleCapabilityGaps.ExampleConsumer, name: exampleRuntimeMember,
+        member_kind: instance}
   - kind: relationship
     relationship: member
     aspect: semantics
     evidence: supported
     state: present
-    observation: {kind: attribute, owner: ExampleConsumer, name: exampleValue, member_kind: instance}
+    observation: {kind: attribute, owner: ExampleCapabilityGaps.ExampleConsumer, name: exampleValue,
+        member_kind: instance}
   - kind: relationship
     relationship: member
     aspect: semantics
     evidence: boundary
     state: absent
-    observation: {kind: attribute, owner: ExampleConsumer, name: exampleRuntimeMember, member_kind: instance}
+    observation: {kind: attribute, owner: ExampleCapabilityGaps.ExampleConsumer, name: exampleRuntimeMember,
+        member_kind: instance}
 - name: type-reference-grammar-boundary
   fixture: types
   source: src/TypeReferenceCases.php
@@ -328,29 +345,31 @@ manifests:
   scenarios:
   - name: canonical
     source: canonical/src/Example.php
-    facts_digest: 712d4c329e6b121fdfd9d1097fee9b2b67cb0dc5ff23570889b8cc3f5b360be8
+    facts_digest: 570bc5218847b032b6d116b2560efab3243153405e0f9935ce2d5fc64906c218
     claims:
     - state: present
       observation: {kind: source, relative_path: src/Example.php}
     - state: present
-      observation: {kind: symbol, qualified_name: src/Example.ExampleAbstract, symbol_kind: abstract_class}
+      observation: {kind: symbol, qualified_name: ExampleManifest.ExampleAbstract, symbol_kind: abstract_class}
     - state: present
-      observation: {kind: callable, qualified_name: ExampleImplementation.__construct, callable_kind: constructor}
+      observation: {kind: callable, qualified_name: ExampleManifest.ExampleImplementation.__construct,
+          callable_kind: constructor}
     - state: present
-      observation: {kind: parameter, owner: exampleFunction, position: 0}
+      observation: {kind: parameter, owner: ExampleManifest.exampleFunction, position: 0}
     - state: present
-      observation: {kind: attribute, owner: ExampleImplementation, name: exampleOptional, member_kind: instance}
+      observation: {kind: attribute, owner: ExampleManifest.ExampleImplementation, name: exampleOptional,
+          member_kind: instance}
     - state: present
-      observation: {kind: call, owner: ExampleImplementation.exampleTimestamp, target: exampleFormat, resolution:
-          unresolved}
+      observation: {kind: call, owner: ExampleManifest.ExampleImplementation.exampleTimestamp, target:
+          exampleFormat, resolution: unresolved}
     - state: present
-      observation: {kind: declaration_relation, source: ExampleImplementation, relation: extends, target:
-          ExampleAbstract}
+      observation: {kind: declaration_relation, source: ExampleManifest.ExampleImplementation, relation:
+          extends, target: ExampleAbstract}
     - state: present
       observation: {kind: dependency, source: src/Example.php, target: DateTimeImmutable, resolution: external}
   - name: calls
     source: calls/src/Example.php
-    facts_digest: 3fabf1f6f7ea843b0fdf1c045a0a1fcb7348b0f164ea7ddd65672c0f8b5aa343
+    facts_digest: 34ecd07e148d83612482954fed284d090931289eb3beeed1e43370b65d1e7639
     claims:
     - state: present
       observation: {kind: source, relative_path: src/Example.php}
@@ -358,7 +377,7 @@ manifests:
       observation: {kind: call, owner: exampleSource, target: exampleTarget, resolution: resolved}
   - name: no_calls
     source: no_calls/src/Example.php
-    facts_digest: bd9c5ee5a87632ee31e0ad01f41640c48cad02d066ed63741c48225ee493b99c
+    facts_digest: 108555b4144472c184b488a5152dc99d71eb09d103eaaec0206d122c7fcdab81
     claims:
     - state: present
       observation: {kind: source, relative_path: src/Example.php}
@@ -366,7 +385,7 @@ manifests:
       observation: {kind: call, owner: exampleSource, target: exampleTarget, resolution: resolved}
   - name: negative_members
     source: negative_members/src/Example.php
-    facts_digest: 70edce02b4bbbc308e1d79e41624661e18dc8cd2e13d0bfe350ce98cc8f285f4
+    facts_digest: bcfdd196f148aa4ba13a7220c764e643dded41b3357c505dfa32622869c83774
     claims:
     - state: present
       observation: {kind: source, relative_path: src/Example.php}
@@ -374,7 +393,7 @@ manifests:
       observation: {kind: symbol, qualified_name: src/Example.ExampleAbstract, symbol_kind: abstract_class}
   - name: dependencies
     source: dependencies/src/Example.php
-    facts_digest: 78211139bc5fb1bd81533a00fc26b51b1efee0e5afcf14d92887f7bfcae424cb
+    facts_digest: 439e82ffe3d0d0ddcb7510b3010d4286ecae6ba3aaec9a7a42909d7a7b79e332
     claims:
     - state: present
       observation: {kind: source, relative_path: src/Example.php}
@@ -382,13 +401,13 @@ manifests:
       observation: {kind: dependency, source: src/Example.php, target: DateTimeImmutable, resolution: external}
   - name: source_edit_before
     source: source_edit_before/src/nested/Example.php
-    facts_digest: 12eecab6770eec907e0a1ad59eb2566adc03a8bae2482f19ae7fd91aa1f81131
+    facts_digest: ecaf8654cf041073ee6578839aa793715c2ce8bddc1482f7460d673062f66842
     claims:
     - state: present
       observation: {kind: source, relative_path: src/nested/Example.php}
   - name: source_edit_after
     source: source_edit_after/src/Example.php
-    facts_digest: 00a0c9af1fabc6198981a8e7db5b99ab7836375c246119cc87155ee22c5f213d
+    facts_digest: 6934776e4954c09d432b53f79c13feaedc9cf9bb824ca71e4f68bd8dfd7a69f3
     claims:
     - state: present
       observation: {kind: source, relative_path: src/Example.php}

@@ -13,7 +13,8 @@
         "source_id": "src/commerce/orders/domain/model/order",
         "family": "class",
         "qualified_name": "Order",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c"
       },
       "kind": "class",
       "methods": [
@@ -27,7 +28,8 @@
             "source_id": "src/commerce/orders/domain/model/order",
             "family": "method",
             "qualified_name": "Order.is_placed",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c"
           },
           "source_id": "src/commerce/orders/domain/model/order",
           "qualified_name": "Order.is_placed",
@@ -41,7 +43,23 @@
             "source_id": "src/commerce/orders/domain/model/order",
             "family": "class",
             "qualified_name": "Order",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c"
+          },
+          "placement": {
+            "lexical_scope": {
+              "kind": "declaration",
+              "declaration_id": {
+                "source_id": "src/commerce/orders/domain/model/order",
+                "family": "class",
+                "qualified_name": "Order",
+                "ordinal": 1,
+                "content_digest": "bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c"
+              }
+            },
+            "namespace": {
+              "kind": "none"
+            }
           }
         },
         {
@@ -54,7 +72,8 @@
             "source_id": "src/commerce/orders/domain/model/order",
             "family": "method",
             "qualified_name": "Order.mark_placed",
-            "ordinal": 2
+            "ordinal": 2,
+            "content_digest": "bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c"
           },
           "source_id": "src/commerce/orders/domain/model/order",
           "qualified_name": "Order.mark_placed",
@@ -68,14 +87,91 @@
             "source_id": "src/commerce/orders/domain/model/order",
             "family": "class",
             "qualified_name": "Order",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c"
+          },
+          "placement": {
+            "lexical_scope": {
+              "kind": "declaration",
+              "declaration_id": {
+                "source_id": "src/commerce/orders/domain/model/order",
+                "family": "class",
+                "qualified_name": "Order",
+                "ordinal": 1,
+                "content_digest": "bb34e728db27a397dcac09491a28228158589d5d54c9a188b552593585d18e4c"
+              }
+            },
+            "namespace": {
+              "kind": "none"
+            }
           }
         }
-      ]
+      ],
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
     }
   ],
   "functions": [],
   "line_count": 0,
   "code_line_count": 0,
-  "public_symbol_count": 1
+  "public_symbol_count": 1,
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "unresolved_methods": []
 }

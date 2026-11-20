@@ -8,13 +8,19 @@ from modwire.application import (
     CapabilityStatus,
     CodeMap,
     CodeMapProducer,
+    DeclarationIdentity,
     ExtractorDescriptor,
     FactCapability,
     FileId,
+    FileInventoryCoverage,
     ImplementationManifest,
+    MemberInventoryCoverage,
     RelationshipFamily,
+    SourceDeclarationRelation,
+    SourceExport,
     SourceFile,
     SourceParameter,
+    SourcePlacement,
     SourceSignature,
     SourceTypeAbsent,
     SourceTypeKind,
@@ -695,7 +701,9 @@ class FixtureClaimEvaluator:
         returns = tuple(
             self.compare(
                 f"{source.file_id}:{Conclusion.TYPES}:{name.value}",
-                TypeAdapter(tuple[SourceTypeReference, ...]).dump_json((type_,)).decode(),
+                TypeAdapter(tuple[SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported, ...])
+                .dump_json((type_,))
+                .decode(),
                 TypeAdapter(tuple[SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported, ...])
                 .dump_json(tuple(item.return_type for item in callables if item.qualified_name == name.value))
                 .decode(),
@@ -717,6 +725,56 @@ class FixtureClaimEvaluator:
             for identifier, required_fact in expected.gaps.items()
             for gap in (model_gaps[identifier],)
         )
+        structure = (
+            self.compare(
+                f"{source.file_id}:{Conclusion.DECLARATIONS}:placements",
+                TypeAdapter(tuple[tuple[DeclarationIdentity, SourcePlacement], ...])
+                .dump_json(expected.placements)
+                .decode(),
+                TypeAdapter(tuple[tuple[DeclarationIdentity, SourcePlacement], ...])
+                .dump_json(source.declaration_placements())
+                .decode(),
+                Discrepancy.INCORRECT,
+                (Conclusion.DECLARATIONS, Conclusion.OWNERSHIP),
+                81,
+            ),
+            self.compare(
+                f"{source.file_id}:{Conclusion.QUALIFIERS}:exports",
+                TypeAdapter(tuple[SourceExport, ...]).dump_json(expected.exports).decode(),
+                TypeAdapter(tuple[SourceExport, ...]).dump_json(tuple(source.exports)).decode(),
+                Discrepancy.INCORRECT,
+                (Conclusion.QUALIFIERS,),
+                81,
+            ),
+            self.compare(
+                f"{source.file_id}:{Conclusion.RELATIONSHIPS}:targets",
+                TypeAdapter(tuple[SourceDeclarationRelation, ...]).dump_json(expected.relations).decode(),
+                TypeAdapter(tuple[SourceDeclarationRelation, ...]).dump_json(source.declaration_relations).decode(),
+                Discrepancy.INCORRECT,
+                (Conclusion.RELATIONSHIPS,),
+                81,
+            ),
+            self.compare(
+                f"{source.file_id}:{Conclusion.COMPLETENESS}:file inventories",
+                TypeAdapter(FileInventoryCoverage).dump_json(expected.inventory).decode(),
+                TypeAdapter(FileInventoryCoverage).dump_json(source.inventory).decode(),
+                Discrepancy.FALSE_COMPLETENESS,
+                (Conclusion.COMPLETENESS,),
+                104,
+            ),
+            self.compare(
+                f"{source.file_id}:{Conclusion.COMPLETENESS}:member inventories",
+                TypeAdapter(tuple[tuple[DeclarationIdentity, MemberInventoryCoverage], ...])
+                .dump_json(expected.member_inventories)
+                .decode(),
+                TypeAdapter(tuple[tuple[DeclarationIdentity, MemberInventoryCoverage], ...])
+                .dump_json(tuple((item.declaration_id, item.inventory) for item in source.declarations))
+                .decode(),
+                Discrepancy.FALSE_COMPLETENESS,
+                (Conclusion.COMPLETENESS,),
+                104,
+            ),
+        )
         completeness = tuple(
             ClaimResult(
                 subject=f"{source.file_id}:{Conclusion.COMPLETENESS}:member inventory claim",
@@ -729,7 +787,20 @@ class FixtureClaimEvaluator:
             for item in producer.relationship_capabilities
             if item.family is RelationshipFamily.MEMBER
             and item.inventory is CapabilityStatus.SUPPORTED
-            and any(not result.satisfied for result in inventories[1:])
+            and (
+                any(not result.satisfied for result in inventories[1:])
+                or bool(source.inventory.unresolved_methods.limitations)
+                or any(
+                    coverage.limitations
+                    for declaration in source.declarations
+                    for coverage in (
+                        declaration.inventory.methods,
+                        declaration.inventory.abstract_methods,
+                        declaration.inventory.properties,
+                        declaration.inventory.signatures,
+                    )
+                )
+            )
         )
         claims = {item.capability: item for item in producer.capabilities}
         support = tuple(
@@ -759,6 +830,7 @@ class FixtureClaimEvaluator:
             *signatures,
             *parameters,
             *returns,
+            *structure,
             *gaps,
             *completeness,
             *support,

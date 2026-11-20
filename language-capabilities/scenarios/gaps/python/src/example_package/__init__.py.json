@@ -10,7 +10,7 @@
       "is_aliased": false,
       "crossing_type": "symbol",
       "file_barrier_crossed": true,
-      "statement_id": 2,
+      "statement_id": 4294967297,
       "join_key": "typing",
       "uses_joined_import": true,
       "resolution": "external",
@@ -38,7 +38,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "python/src/example_package/__init__.py",
+            "family": "class",
+            "qualified_name": "ExampleBase",
+            "ordinal": 55834574849,
+            "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
       "name": "ExampleRuntime",
@@ -51,7 +63,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "python/src/example_package/__init__.py",
+            "family": "class",
+            "qualified_name": "ExampleRuntime",
+            "ordinal": 85899345921,
+            "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
       "name": "example_annotation",
@@ -64,7 +88,69 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "python/src/example_package/__init__.py",
+            "family": "function",
+            "qualified_name": "example_annotation",
+            "ordinal": 25769803777,
+            "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
+          }
+        ],
+        "kind": "resolved"
+      }
+    },
+    {
+      "name": "EXAMPLE_PACKAGE_VALUE",
+      "local_name": "EXAMPLE_PACKAGE_VALUE",
+      "kind": "value",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "python/src/example_package/__init__.py",
+            "family": "value",
+            "qualified_name": "EXAMPLE_PACKAGE_VALUE",
+            "ordinal": 12884901889,
+            "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
+          }
+        ],
+        "kind": "resolved"
+      }
+    },
+    {
+      "name": "ExampleAlias",
+      "local_name": "ExampleAlias",
+      "kind": "value",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "python/src/example_package/__init__.py",
+            "family": "value",
+            "qualified_name": "ExampleAlias",
+            "ordinal": 73014444033,
+            "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "declarations": [
@@ -81,22 +167,61 @@
         "source_id": "python/src/example_package/__init__.py",
         "family": "class",
         "qualified_name": "ExampleBase",
-        "ordinal": 55834574849
+        "ordinal": 55834574849,
+        "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "incomplete",
+          "limitations": [
+            {
+              "kind": "unresolved_ownership",
+              "location": {
+                "start_line": 7,
+                "end_line": 7,
+                "kind": "source"
+              },
+              "description": "Property receiver example_declaration.example_runtime_annotation has no exact source owner."
+            }
+          ]
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "properties": [
         {
           "declaration_id": {
             "source_id": "python/src/example_package/__init__.py",
             "family": "property",
             "qualified_name": "ExampleBase.example_value",
-            "ordinal": 60129542149
+            "ordinal": 60129542149,
+            "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
           },
           "owner_declaration_id": {
             "source_id": "python/src/example_package/__init__.py",
             "family": "class",
             "qualified_name": "ExampleBase",
-            "ordinal": 55834574849
+            "ordinal": 55834574849,
+            "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
           },
           "name": "example_value",
           "is_optional": false,
@@ -106,10 +231,63 @@
           },
           "visibility": "public",
           "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "python/src/example_package/__init__.py",
+                "family": "class",
+                "qualified_name": "ExampleBase",
+                "ordinal": 55834574849,
+                "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "assigned_values": [
             {
               "kind": "literal",
               "expression": "'example_value'",
+              "reference": ""
+            }
+          ]
+        },
+        {
+          "declaration_id": {
+            "source_id": "python/src/example_package/__init__.py",
+            "family": "property",
+            "qualified_name": "ExampleBase.example_runtime_member",
+            "ordinal": 103079215105,
+            "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
+          },
+          "owner_declaration_id": {
+            "source_id": "python/src/example_package/__init__.py",
+            "family": "class",
+            "qualified_name": "ExampleBase",
+            "ordinal": 55834574849,
+            "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
+          },
+          "name": "example_runtime_member",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "static",
+          "placement": {
+            "lexical_scope": {
+              "kind": "file"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
+          "assigned_values": [
+            {
+              "kind": "literal",
+              "expression": "'example_runtime_member'",
               "reference": ""
             }
           ]
@@ -126,9 +304,46 @@
         "source_id": "python/src/example_package/__init__.py",
         "family": "class",
         "qualified_name": "ExampleRuntime",
-        "ordinal": 85899345921
+        "ordinal": 85899345921,
+        "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
       },
-      "kind": "class"
+      "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "incomplete",
+          "limitations": [
+            {
+              "kind": "unresolved_ownership",
+              "location": {
+                "start_line": 7,
+                "end_line": 7,
+                "kind": "source"
+              },
+              "description": "Property receiver example_declaration.example_runtime_annotation has no exact source owner."
+            }
+          ]
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
     }
   ],
   "functions": [
@@ -142,10 +357,19 @@
         "source_id": "python/src/example_package/__init__.py",
         "family": "function",
         "qualified_name": "example_annotation",
-        "ordinal": 25769803777
+        "ordinal": 25769803777,
+        "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
       },
       "source_id": "python/src/example_package/__init__.py",
       "qualified_name": "example_annotation",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 6,
       "line_end": 8,
       "parameters": [
@@ -171,7 +395,8 @@
         "source_id": "python/src/example_package/__init__.py",
         "family": "value",
         "qualified_name": "EXAMPLE_PACKAGE_VALUE",
-        "ordinal": 12884901889
+        "ordinal": 12884901889,
+        "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
       },
       "name": "EXAMPLE_PACKAGE_VALUE",
       "visibility": "public",
@@ -179,14 +404,23 @@
       "line_count": 1,
       "declaration_kind": "constant",
       "value_kind": "value_literal",
-      "scope": "module"
+      "scope": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     },
     {
       "declaration_id": {
         "source_id": "python/src/example_package/__init__.py",
         "family": "value",
         "qualified_name": "ExampleAlias",
-        "ordinal": 73014444033
+        "ordinal": 73014444033,
+        "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
       },
       "name": "ExampleAlias",
       "visibility": "public",
@@ -194,7 +428,15 @@
       "line_count": 1,
       "declaration_kind": "assignment",
       "value_kind": "value_unknown",
-      "scope": "module"
+      "scope": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     }
   ],
   "declaration_relations": [
@@ -203,12 +445,58 @@
         "source_id": "python/src/example_package/__init__.py",
         "family": "class",
         "qualified_name": "ExampleRuntime",
-        "ordinal": 85899345921
+        "ordinal": 85899345921,
+        "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
       },
       "kind": "extends",
-      "target_reference": "ExampleAlias"
+      "target_reference": "ExampleAlias",
+      "target": {
+        "declaration_id": {
+          "source_id": "python/src/example_package/__init__.py",
+          "family": "value",
+          "qualified_name": "ExampleAlias",
+          "ordinal": 73014444033,
+          "content_digest": "3b15f3baf62cf1df0eef0a7d04d953af768db26ba59e4d1c32b72bb4edb6376f"
+        },
+        "kind": "resolved"
+      }
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 24,
   "code_line_count": 13,
   "public_symbol_count": 3

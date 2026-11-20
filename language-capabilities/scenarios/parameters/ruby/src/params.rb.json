@@ -13,10 +13,19 @@
         "source_id": "ruby/src/params.rb",
         "family": "function",
         "qualified_name": "example_parameters",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "4da2f7deaeeaf4af31ead325fcd06f9414c9f82131de19a9b793a1834a8dc769"
       },
       "source_id": "ruby/src/params.rb",
       "qualified_name": "example_parameters",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 1,
       "line_end": 3,
       "parameters": [
@@ -68,7 +77,8 @@
         "source_id": "ruby/src/params.rb",
         "family": "function",
         "qualified_name": "example_parameters",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "4da2f7deaeeaf4af31ead325fcd06f9414c9f82131de19a9b793a1834a8dc769"
       },
       "ordinal": 1,
       "target_callable_id": null,
@@ -79,6 +89,41 @@
       "target_name": "call"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 4,
   "code_line_count": 3,
   "public_symbol_count": 1

@@ -1,8 +1,5 @@
-import json
 from dataclasses import dataclass
-from functools import cached_property
 
-from pydantic import TypeAdapter
 from wireup import injectable
 
 from ....shared.code.models.callables.source_call import SourceCall
@@ -14,7 +11,6 @@ from ....shared.code.models.declarations.source_symbol_kind import SourceSymbolK
 from ....shared.code.models.declarations.source_visibility import SourceVisibility
 from ....shared.code.models.dependencies.source_dependency_resolution import SourceDependencyResolution
 from ....shared.code.models.maps.code_map import CodeMap
-from ....shared.values.models.value_model import ValueModel
 from ..contracts.manifest_compiler import ManifestCompiler
 from ..models.implementation_manifest import ImplementationManifest
 from ..models.implementation_manifest_validation_error import ImplementationManifestValidationError
@@ -26,6 +22,7 @@ from ..models.manifest_callable import ManifestCallable
 from ..models.manifest_declaration_relation import ManifestDeclarationRelation
 from ..models.manifest_dependency import ManifestDependency
 from ..models.manifest_dependency_target_kind import ManifestDependencyTargetKind
+from ..models.manifest_fact_ordering import ManifestFactOrdering
 from ..models.manifest_namespace import ManifestNamespace
 from ..models.manifest_parameter import ManifestParameter
 from ..models.manifest_span import ManifestSpan
@@ -35,13 +32,7 @@ from ..models.manifest_symbol import ManifestSymbol
 @injectable(as_type=ManifestCompiler)
 @dataclass(frozen=True)
 class CodeMapManifestCompiler(ManifestCompiler):
-    @cached_property
-    def json_values(self) -> TypeAdapter[object]:
-        return TypeAdapter(object)
-
-    def canonical_key(self, value: ValueModel | SourceCall) -> str:
-        document: object = self.json_values.dump_python(value, mode="json")
-        return json.dumps(document, ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+    ordering: ManifestFactOrdering
 
     def symbol(
         self,
@@ -198,16 +189,16 @@ class CodeMapManifestCompiler(ManifestCompiler):
         return ImplementationManifest(
             producer=code_map.producer,
             source_manifest=code_map.extraction.manifest,
-            namespaces=tuple(sorted(namespaces, key=self.canonical_key)),
-            symbols=tuple(sorted(symbols, key=self.canonical_key)),
-            callables=tuple(sorted(callables, key=self.canonical_key)),
-            parameters=tuple(sorted(parameters, key=self.canonical_key)),
-            attributes=tuple(sorted(attributes, key=self.canonical_key)),
-            annotations=tuple(sorted(annotations, key=self.canonical_key)),
-            calls=tuple(sorted(source_calls, key=self.canonical_key)),
-            declaration_relations=tuple(sorted(declaration_relations, key=self.canonical_key)),
-            dependencies=tuple(sorted(dependencies, key=self.canonical_key)),
-            spans=tuple(sorted(spans, key=self.canonical_key)),
+            namespaces=tuple(sorted(namespaces, key=self.ordering.key)),
+            symbols=tuple(sorted(symbols, key=self.ordering.key)),
+            callables=tuple(sorted(callables, key=self.ordering.key)),
+            parameters=tuple(sorted(parameters, key=self.ordering.key)),
+            attributes=tuple(sorted(attributes, key=self.ordering.key)),
+            annotations=tuple(sorted(annotations, key=self.ordering.key)),
+            calls=tuple(sorted(source_calls, key=self.ordering.key)),
+            declaration_relations=tuple(sorted(declaration_relations, key=self.ordering.key)),
+            dependencies=tuple(sorted(dependencies, key=self.ordering.key)),
+            spans=tuple(sorted(spans, key=self.ordering.key)),
         )
 
     def attributes(self, declaration: SourceDeclaration) -> tuple[ManifestAttribute, ...]:

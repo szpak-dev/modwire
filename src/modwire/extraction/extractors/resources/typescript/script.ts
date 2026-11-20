@@ -278,8 +278,14 @@ class TypeScriptExtractor {
             if (directMember && owner !== undefined && ['class', 'abstract_class', 'interface', 'type'].includes(owner.family)) fact.owner_declaration_id = owner;
             else { fact.owner = { kind: 'unresolved', reason: 'dynamic' }; fact.receiver_reference = node.parent.getText(this.source); }
         }
-        if (kind === 'callable_value') { fact.declaration_kind = 'assignment'; fact.value_kind = 'value_callable'; fact.scope = this.container(node) === this.source ? 'module' : 'local'; }
+        if (kind === 'callable_value') {
+            fact.declaration_kind = ts.isVariableDeclaration(node.parent) ? this.valueDeclarationKind(node.parent) : 'assignment';
+            fact.value_kind = 'value_callable'; fact.scope = this.container(node) === this.source ? 'module' : 'local';
+        }
         return fact;
+    }
+    valueDeclarationKind(node: ts.VariableDeclaration): 'constant' | 'assignment' {
+        return ts.isVariableDeclarationList(node.parent) && (node.parent.flags & ts.NodeFlags.Const) !== 0 ? 'constant' : 'assignment';
     }
     emitProperty(node: ts.PropertyDeclaration | ts.PropertySignature | ts.GetAccessorDeclaration | ts.SetAccessorDeclaration | ts.ParameterDeclaration | ts.EnumMember, owner: Declaration): Property {
         const name = node.name.getText(this.source);
@@ -350,11 +356,15 @@ class TypeScriptExtractor {
             imported_name: symbols[0].alias, is_aliased: symbols.some(symbol => symbol.is_aliased), crossing_type: module ? 'module' : 'symbol',
             file_barrier_crossed: true, statement_id: node.getStart(this.source) + 1, join_key: normalized, uses_joined_import: symbols.length > 1, imported_symbols: symbols });
     }
+    moduleSpecifier(node: ts.Expression): string {
+        if (ts.isStringLiteral(node)) return node.text;
+        const location = this.source.getLineAndCharacterOfPosition(node.getStart(this.source));
+        throw new SourceParseFailure(this.filePath, location.line + 1, location.character + 1, 'Module specifier must be a string literal.');
+    }
     observe(node: ts.Node): void {
         if (ts.isModuleDeclaration(node)) this.namespaces.push({ kind: ts.isStringLiteral(node.name) ? 'module' : 'namespace', declaration_id: this.identity(node), placement: this.placement(node) });
         if (ts.isImportDeclaration(node)) {
-            if (!ts.isStringLiteral(node.moduleSpecifier)) throw new SourceInvariantFailure('Import module specifier is not a string literal.');
-            const specifier = node.moduleSpecifier.text;
+            const specifier = this.moduleSpecifier(node.moduleSpecifier);
             const symbols: Import['imported_symbols'] = [];
             const clause = node.importClause;
             if (clause?.name !== undefined) symbols.push(this.importedSymbol('default', clause.name.text, true, false, false));
@@ -375,8 +385,7 @@ class TypeScriptExtractor {
                 this.limit('callable_values', node, 'Destructured bindings cannot be tied to an exact callable value.');
             }
             else if (this.identities.has(node)) {
-                const constant = ts.isVariableDeclarationList(node.parent) && (node.parent.flags & ts.NodeFlags.Const) !== 0;
-                const value: Value = { declaration_id: this.identity(node), name: node.name.text, visibility: 'public', visibility_intent: 'public', line_count: this.lineCount(node), declaration_kind: constant ? 'constant' : 'assignment',
+                const value: Value = { declaration_id: this.identity(node), name: node.name.text, visibility: 'public', visibility_intent: 'public', line_count: this.lineCount(node), declaration_kind: this.valueDeclarationKind(node),
                     value_kind: node.initializer === undefined ? 'value_unknown' : ts.isClassExpression(node.initializer) ? 'value_class' : ts.isObjectLiteralExpression(node.initializer) ? 'value_object' : ts.isLiteralExpression(node.initializer) ? 'value_literal' : 'value_unknown',
                     scope: this.container(node) === this.source ? 'module' : 'local', placement: this.placement(node) };
                 this.values.push(value);
@@ -394,9 +403,7 @@ class TypeScriptExtractor {
             }
         }
         if (ts.isExportDeclaration(node)) {
-            const specifier = node.moduleSpecifier;
-            if (specifier !== undefined && !ts.isStringLiteral(specifier)) throw new SourceInvariantFailure('Export module specifier is not a string literal.');
-            const module = specifier?.text ?? '';
+            const module = node.moduleSpecifier === undefined ? '' : this.moduleSpecifier(node.moduleSpecifier);
             if (node.exportClause === undefined) { this.export('*', '*', node, module); this.limit('exports', node, 'Wildcard export bindings require the external module inventory.'); }
             else if (ts.isNamespaceExport(node.exportClause)) this.export(node.exportClause.name.text, '*', node, module);
             else for (const element of node.exportClause.elements) this.export(element.name.text, element.propertyName?.text ?? element.name.text, node, module);

@@ -27,9 +27,36 @@
         "source_id": "ruby/src/example.rb",
         "family": "class",
         "qualified_name": "ExampleDependency",
-        "ordinal": 17
+        "ordinal": 17,
+        "content_digest": "169a4ba538dd5a68094caa0f6d5870be9ed0385d59592f09471d327c9c00dcc1"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "example_json",
@@ -41,11 +68,27 @@
             "source_id": "ruby/src/example.rb",
             "family": "method",
             "qualified_name": "ExampleDependency.example_json",
-            "ordinal": 43
+            "ordinal": 43,
+            "content_digest": "169a4ba538dd5a68094caa0f6d5870be9ed0385d59592f09471d327c9c00dcc1"
           },
           "source_id": "ruby/src/example.rb",
           "qualified_name": "ExampleDependency.example_json",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "class",
+                "qualified_name": "ExampleDependency",
+                "ordinal": 17,
+                "content_digest": "169a4ba538dd5a68094caa0f6d5870be9ed0385d59592f09471d327c9c00dcc1"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 4,
           "line_end": 6,
           "parameters": [
@@ -64,7 +107,8 @@
             "source_id": "ruby/src/example.rb",
             "family": "class",
             "qualified_name": "ExampleDependency",
-            "ordinal": 17
+            "ordinal": 17,
+            "content_digest": "169a4ba538dd5a68094caa0f6d5870be9ed0385d59592f09471d327c9c00dcc1"
           }
         }
       ]
@@ -77,17 +121,53 @@
         "source_id": "ruby/src/example.rb",
         "family": "method",
         "qualified_name": "ExampleDependency.example_json",
-        "ordinal": 43
+        "ordinal": 43,
+        "content_digest": "169a4ba538dd5a68094caa0f6d5870be9ed0385d59592f09471d327c9c00dcc1"
       },
       "ordinal": 1,
       "target_callable_id": null,
       "source_id": "ruby/src/example.rb",
       "line": 5,
       "expression": "JSON.generate(example: example_value)",
-      "resolution": "unresolved",
+      "resolution": "dynamic",
       "target_name": "generate"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 8,
   "code_line_count": 6,
   "public_symbol_count": 1

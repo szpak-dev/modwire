@@ -69,8 +69,8 @@ class TypeScriptExtractor(SourceExtractor):
                     capability=FactCapability.ANNOTATIONS,
                     status=CapabilityStatus.PARTIAL,
                     explanation=(
-                        "Class decorator expressions and declared type annotations are extracted; "
-                        "decorators on other declarations are not yet emitted."
+                        "Authored class and callable decorator expressions are preserved without evaluation; "
+                        "property decorator payloads are not represented."
                     ),
                 ),
                 CapabilityCoverage(
@@ -98,8 +98,8 @@ class TypeScriptExtractor(SourceExtractor):
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.NAMESPACES,
-                    status=CapabilityStatus.UNSUPPORTED,
-                    explanation="TypeScript namespace declarations are not extracted yet.",
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation="Authored namespace declarations retain exact identities and lexical placement.",
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.DECLARATION_KINDS,

@@ -14,7 +14,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "python/src/example.py",
+            "family": "function",
+            "qualified_name": "example_without_calls",
+            "ordinal": 4294967297,
+            "content_digest": "ffed4153ffc9fc709c9d8dbde473fcf095d1f5a8c3cd0ca9f30bd5410d519e58"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "functions": [
@@ -28,10 +40,19 @@
         "source_id": "python/src/example.py",
         "family": "function",
         "qualified_name": "example_without_calls",
-        "ordinal": 4294967297
+        "ordinal": 4294967297,
+        "content_digest": "ffed4153ffc9fc709c9d8dbde473fcf095d1f5a8c3cd0ca9f30bd5410d519e58"
       },
       "source_id": "python/src/example.py",
       "qualified_name": "example_without_calls",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 1,
       "line_end": 2,
       "parameters": [
@@ -51,6 +72,41 @@
       "kind": "function"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 2,
   "code_line_count": 2,
   "public_symbol_count": 1

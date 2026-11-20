@@ -175,7 +175,6 @@ from .shared.failures.models.modwire_error_code import ModwireErrorCode
 __all__ = [
     "ShapeRuleKind",
     "ShapeSymbolKind",
-
     "BatchPlannerKind",
     "ModwireErrorCode",
     "FileInventoryCoverage",

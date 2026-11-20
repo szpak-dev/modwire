@@ -13,9 +13,36 @@
         "source_id": "java/src/nested/Example.java",
         "family": "class",
         "qualified_name": "Example",
-        "ordinal": 10001
+        "ordinal": 4294967297,
+        "content_digest": "53908a819ffad1f40c8a35176bfd5d1406925cb476c44e068b0f432b1acddf42"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "exampleValue",
@@ -27,11 +54,27 @@
             "source_id": "java/src/nested/Example.java",
             "family": "method",
             "qualified_name": "Example.exampleValue",
-            "ordinal": 20005
+            "ordinal": 8589934597,
+            "content_digest": "53908a819ffad1f40c8a35176bfd5d1406925cb476c44e068b0f432b1acddf42"
           },
           "source_id": "java/src/nested/Example.java",
           "qualified_name": "Example.exampleValue",
           "kind": "static_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "java/src/nested/Example.java",
+                "family": "class",
+                "qualified_name": "Example",
+                "ordinal": 4294967297,
+                "content_digest": "53908a819ffad1f40c8a35176bfd5d1406925cb476c44e068b0f432b1acddf42"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 2,
           "line_end": 4,
           "return_type": {
@@ -42,13 +85,49 @@
             "source_id": "java/src/nested/Example.java",
             "family": "class",
             "qualified_name": "Example",
-            "ordinal": 10001
+            "ordinal": 4294967297,
+            "content_digest": "53908a819ffad1f40c8a35176bfd5d1406925cb476c44e068b0f432b1acddf42"
           }
         }
       ]
     }
   ],
   "functions": [],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 6,
   "code_line_count": 5,
   "public_symbol_count": 0

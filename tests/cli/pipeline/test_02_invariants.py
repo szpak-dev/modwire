@@ -1,6 +1,11 @@
 import os
+import shutil
 from pathlib import Path
 from unittest.mock import patch
+
+import pytest
+
+from modwire.application import SourceCallResolution, SourceParseError, SourceScopeKind
 
 from .base_test import NativeExtractionTestCase
 
@@ -83,26 +88,35 @@ class TestNativeExtractionInvariants(NativeExtractionTestCase):
         result = self.application.generate_map("python", self.workspace, self.configured_scan_policy((), True))
         assert tuple(result.extraction.files) == ("example_link/example.py",)
 
-    def test_typescript_tolerates_nonliteral_imports(self) -> None:
-        self.write_files(
-            {"example.ts": "import { example_value } from exampleModule;\nexport const example_result = 1;\n"}
+    @pytest.mark.parametrize("fixture", ("nonliteral_import", "nonliteral_export"))
+    def test_typescript_rejects_nonliteral_module_specifiers(self, fixture: str) -> None:
+        shutil.copyfile(
+            self.repository / "tests/fixtures/command_transport" / fixture / "example.ts",
+            self.workspace / "example.ts",
         )
-        result = self.extract_project("typescript")
-        assert result.extraction.files["example.ts"].imports == []
-        assert result.extraction.files["example.ts"].public_symbol_count == 1
+        with pytest.raises(SourceParseError) as raised:
+            self.extract_project("typescript")
 
-    def test_php_tolerates_anonymous_class_construction(self) -> None:
-        self.write_files(
-            {
-                "example.php": (
-                    "<?php\nclass ExampleFactory {\n"
-                    "    public function example_build(): object { return new class {}; }\n}\n"
-                )
-            }
+        assert raised.value.language == "typescript"
+        assert raised.value.line == 1
+        assert raised.value.column > 1
+        assert "string literal" in raised.value.diagnostic
+
+    def test_php_preserves_anonymous_class_construction(self) -> None:
+        shutil.copyfile(
+            self.repository / "tests/fixtures/command_transport/anonymous_class/example.php",
+            self.workspace / "example.php",
         )
         result = self.extract_project("php")
-        assert result.extraction.files["example.php"].declarations[0].name == "ExampleFactory"
-        assert result.extraction.files["example.php"].calls == ()
+        source = result.extraction.files["example.php"]
+        factory, anonymous = source.declarations
+        method = factory.methods[0]
+        assert factory.name == "ExampleFactory"
+        assert anonymous.placement.lexical_scope.kind is SourceScopeKind.DECLARATION
+        assert anonymous.placement.lexical_scope.declaration_id == method.declaration_id
+        assert len(source.calls) == 1
+        assert source.calls[0].source_callable_id == method.declaration_id
+        assert source.calls[0].resolution is SourceCallResolution.DYNAMIC
 
     def test_large_source_input_keeps_every_file_and_identity(self) -> None:
         names = tuple(f"example_{index:04d}.py" for index in range(1001))

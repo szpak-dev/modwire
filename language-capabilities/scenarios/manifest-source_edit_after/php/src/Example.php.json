@@ -14,7 +14,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/Example.php",
+            "family": "function",
+            "qualified_name": "exampleValue",
+            "ordinal": 7,
+            "content_digest": "12e52f8b01eff17d361c5c23a6438e92eca8780c65cb04b834b573bb3441b71b"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "functions": [
@@ -28,10 +40,19 @@
         "source_id": "php/src/Example.php",
         "family": "function",
         "qualified_name": "exampleValue",
-        "ordinal": 7
+        "ordinal": 7,
+        "content_digest": "12e52f8b01eff17d361c5c23a6438e92eca8780c65cb04b834b573bb3441b71b"
       },
       "source_id": "php/src/Example.php",
       "qualified_name": "exampleValue",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 2,
       "line_end": 5,
       "return_type": {
@@ -41,6 +62,41 @@
       "kind": "function"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 6,
   "code_line_count": 5,
   "public_symbol_count": 1

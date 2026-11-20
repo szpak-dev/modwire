@@ -1,6 +1,6 @@
 import re
 
-from modwire.application import CapabilityStatus, FactCapability
+from modwire.application import SourceScopeKind, SourceSignatureKind
 
 from ...support.code_map_fixture.fixture_contract import PolyglotFixtureContract
 from ..base_test import ExtractionTestCase
@@ -70,7 +70,11 @@ class TestNativeSymbols(ExtractionTestCase):
                     self.normalized_name("example_concrete"),
                 ), language
             else:
-                concrete_abstract = result.classes().where_equal(lambda item: item.item.name, "ExampleAbstract").first()
+                concrete_abstract = (
+                    result.classes()
+                    .where_equal(lambda item: item.item.name.rsplit(".", 1)[-1], "ExampleAbstract")
+                    .first()
+                )
                 assert concrete_abstract is not None
                 declaration = concrete_abstract.item
                 assert declaration.kind is declaration.kind.CLASS, language
@@ -78,7 +82,11 @@ class TestNativeSymbols(ExtractionTestCase):
                     self.normalized_name("example_required"),
                     self.normalized_name("example_concrete"),
                 }, language
-            concrete_result = result.classes().where_equal(lambda item: item.item.name, "ExampleImplementation").first()
+            concrete_result = (
+                result.classes()
+                .where_equal(lambda item: item.item.name.rsplit(".", 1)[-1], "ExampleImplementation")
+                .first()
+            )
             assert concrete_result is not None
             concrete = concrete_result.item
             assert self.normalized_name("example_required") in tuple(
@@ -90,7 +98,11 @@ class TestNativeSymbols(ExtractionTestCase):
         for language in self.application.extraction.supported_languages():
             root = LANGUAGE_EXTENSIONS / language
             result = self.application.generate_queryable_map(language, str(root), self.scan_policy())
-            concrete_result = result.classes().where_equal(lambda item: item.item.name, "ExampleImplementation").first()
+            concrete_result = (
+                result.classes()
+                .where_equal(lambda item: item.item.name.rsplit(".", 1)[-1], "ExampleImplementation")
+                .first()
+            )
             assert concrete_result is not None
             concrete = concrete_result.item
             members = tuple(
@@ -99,10 +111,7 @@ class TestNativeSymbols(ExtractionTestCase):
                 if self.normalized_name(item.name) == self.normalized_name("example_optional")
             )
             if not members:
-                assert (
-                    self.contract.capability_expectation(language, FactCapability.ATTRIBUTES).status
-                    is CapabilityStatus.UNSUPPORTED
-                ), language
+                assert language == "ruby"
                 continue
             assert len(members) == 1, language
             if members[0].is_optional:
@@ -119,12 +128,12 @@ class TestNativeSymbols(ExtractionTestCase):
             if not interfaces:
                 continue
             interface_languages.append(language)
-            contracts = tuple(item for item in interfaces if item.name == "ExampleContract")
+            contracts = tuple(item for item in interfaces if item.name.rsplit(".", 1)[-1] == "ExampleContract")
             assert len(contracts) == 1, language
-            assert self.normalized_name(contracts[0].methods[0].name) == self.normalized_name("example_required"), (
-                language
-            )
-            assert len(contracts[0].methods[0].parameters) == 1, language
+            assert self.normalized_name(contracts[0].abstract_methods[0].name) == self.normalized_name(
+                "example_required"
+            ), language
+            assert len(contracts[0].abstract_methods[0].parameters) == 1, language
 
         assert interface_languages
 
@@ -133,12 +142,12 @@ class TestNativeSymbols(ExtractionTestCase):
         result = self.application.generate_queryable_map("java", str(root), self.scan_policy())
         declarations = {item.item.name: item.item.kind for item in result.declarations().all()}
         assert declarations == {
-            "ExampleAbstract": "abstract_class",
-            "ExampleAnnotation": "annotation",
-            "ExampleContract": "interface",
-            "ExampleImplementation": "class",
-            "ExampleRecord": "record",
-            "ExampleStatus": "enum",
+            "example.shapes.ExampleAbstract": "abstract_class",
+            "example.shapes.ExampleAnnotation": "annotation",
+            "example.shapes.ExampleContract": "interface",
+            "example.shapes.ExampleImplementation": "class",
+            "example.shapes.ExampleRecord": "record",
+            "example.shapes.ExampleStatus": "enum",
         }
 
     def test_typescript_callable_object_keeps_optional_signature_arguments(self) -> None:
@@ -160,16 +169,24 @@ class TestNativeSymbols(ExtractionTestCase):
         assert sum(parameter.has_default for parameter in asynchronous.parameters) == 1
         names = {item.item.qualified_name for item in result.callables().all()}
         assert {"example_async", "example_outer"} <= names
-        assert all(item.item.name != "example_inner" for item in result.callables().all())
+        nested = (
+            result.callables().where_equal(lambda item: item.item.qualified_name, "example_outer.example_inner").first()
+        )
+        assert nested is not None
+        assert nested.item.placement.lexical_scope.kind is SourceScopeKind.DECLARATION
+        assert nested.item.placement.lexical_scope.declaration_id.qualified_name == "example_outer"
 
-    def test_typescript_function_alias_retains_the_baseline_type_without_signature_details(self) -> None:
+    def test_typescript_function_alias_preserves_its_call_signature(self) -> None:
         root = LANGUAGE_EXTENSIONS / "typescript"
         result = self.application.generate_queryable_map("typescript", str(root), self.scan_policy())
         callback_result = result.types().where_equal(lambda item: item.item.name, "ExampleCallback").first()
         assert callback_result is not None
         callback = callback_result.item
         assert callback.visibility == "public"
-        assert callback.signatures == ()
+        assert len(callback.signatures) == 1
+        assert callback.signatures[0].kind is SourceSignatureKind.CALL
+        assert callback.signatures[0].declared_args == 2
+        assert callback.signatures[0].optional_args == 1
 
     def test_module_variable_shape_is_language_neutral(self) -> None:
         module_variable_languages: list[str] = []
