@@ -24,8 +24,8 @@ from ....extraction.extractors.models.native_output_format import NativeOutputFo
 from ....extraction.extractors.models.source_parse_error import SourceParseError
 from ....shared.code.contracts.identity_resolver import IdentityResolver
 from ....shared.code.contracts.path_matcher import PathMatcher
-from ....shared.code.models.declarations.declaration_identity import DeclarationIdentity
 from ....shared.code.models.failures.code_validation_error import CodeValidationError
+from ....shared.code.models.immutable_code_record import ImmutableCodeRecord
 from ....shared.code.models.immutable_code_value import ImmutableCodeValue
 from ....shared.code.models.sources.identity import FileId, ImportIdentity
 from ....shared.code.models.sources.identity_kind import IdentityKind
@@ -105,17 +105,7 @@ class BatchSourceReader(SourceReader):
                 request, resolved_root, policy, limit=None
             )
             with ThreadPoolExecutor(max_workers=request.batch_config.max_workers) as executor:
-                entries = tuple(
-                    SourceEntry(
-                        source_id=self.identities.file_id(str(resolved_root), str(source_path)),
-                        relative_path=source_path.relative_to(resolved_root).as_posix(),
-                        content_digest=content_digest,
-                        path=str(source_path),
-                    )
-                    for source_path, content_digest in zip(
-                        source_paths, executor.map(self._content_digest, source_paths), strict=True
-                    )
-                )
+                entries = tuple(executor.map(self.observe_entry, repeat(resolved_root), source_paths))
         except OSError as error:
             raise SourceAccessError(str(root), "observe") from error
         runtime = self.manifests.observe(request)
@@ -151,20 +141,16 @@ class BatchSourceReader(SourceReader):
                 "source observation does not contain requested identities",
             )
         root = Path(request.root)
-        source_ids_by_path = {Path(entry.path): entry.source_id for entry in entries}
-        source_paths = tuple(source_ids_by_path)
         files: dict[FileId, SourceFile] = {}
+        plan = self.planners[request.batch_config.planner].plan(entries, request.batch_config)
         try:
-            plan = self.planners[request.batch_config.planner].plan(source_paths, request.batch_config)
             if plan.parallel:
                 with ThreadPoolExecutor(max_workers=request.batch_config.max_workers) as executor:
-                    for extracted in executor.map(
-                        self._extract_batch, repeat(request), repeat(root), plan.batches, repeat(source_ids_by_path)
-                    ):
+                    for extracted in executor.map(self._extract_batch, repeat(request), repeat(root), plan.batches):
                         self._merge_files(files, extracted)
             else:
-                for batch_paths in plan.batches:
-                    self._merge_files(files, self._extract_batch(request, root, batch_paths, source_ids_by_path))
+                for batch_entries in plan.batches:
+                    self._merge_files(files, self._extract_batch(request, root, batch_entries))
         except (ExtractorError, SourceAccessError):
             self.validate_observation(observation)
             raise
@@ -184,7 +170,7 @@ class BatchSourceReader(SourceReader):
                 current = {
                     path.relative_to(root).as_posix(): content_digest
                     for path, content_digest in zip(
-                        current_paths, executor.map(self._content_digest, current_paths), strict=True
+                        current_paths, executor.map(self.read_digest, current_paths), strict=True
                     )
                 }
         except OSError as error:
@@ -263,10 +249,9 @@ class BatchSourceReader(SourceReader):
         self,
         request: ExtractionRequest,
         root: Path,
-        source_paths: tuple[Path, ...],
-        source_ids_by_path: Mapping[Path, FileId],
+        entries: tuple[SourceEntry, ...],
     ) -> dict[FileId, SourceFile]:
-        if not source_paths:
+        if not entries:
             return {}
         runtime = request.runtime
         entrypoint = runtime.entrypoint
@@ -276,7 +261,7 @@ class BatchSourceReader(SourceReader):
             raise ExtractorResourceError(runtime.descriptor.language, entrypoint.path) from error
         if not script_path.is_file():
             raise ExtractorResourceError(runtime.descriptor.language, str(script_path))
-        paths_by_source_id = {source_ids_by_path[path]: str(path) for path in source_paths}
+        paths_by_source_id = {entry.source_id: entry.path for entry in entries}
         command = [*runtime.command, *entrypoint.command_arguments(script_path), "--batch", str(root)]
         return self.run_batch(runtime, command, paths_by_source_id, str(root))
 
@@ -289,7 +274,7 @@ class BatchSourceReader(SourceReader):
                 with subprocess.Popen(
                     command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=diagnostics
                 ) as process:
-                    reuse = ValueReuse[ImmutableCodeValue | DeclarationIdentity](
+                    reuse = ValueReuse[ImmutableCodeValue | ImmutableCodeRecord](
                         indexed=runtime.output_format is NativeOutputFormat.INDEXED_JSONL
                     )
                     extracted: dict[FileId, SourceFile] = {}
@@ -417,5 +402,21 @@ class BatchSourceReader(SourceReader):
                 raise DuplicateIdentityError(IdentityKind.FILE, file_id, file_id, file_id)
             files[file_id] = source_file
 
-    def _content_digest(self, path: Path) -> str:
-        return hashlib.sha256(path.read_bytes()).hexdigest()
+    def observe_entry(self, root: Path, path: Path) -> SourceEntry:
+        content = path.read_bytes()
+        line_count = content.count(b"\n") + content.count(b"\r") - content.count(b"\r\n")
+        if content and not content.endswith((b"\n", b"\r")):
+            line_count += 1
+        return SourceEntry(
+            source_id=self.identities.file_id(str(root), str(path)),
+            relative_path=path.relative_to(root).as_posix(),
+            content_digest=self.digest(content),
+            path=str(path),
+            line_count=line_count,
+        )
+
+    def read_digest(self, path: Path) -> str:
+        return self.digest(path.read_bytes())
+
+    def digest(self, content: bytes) -> str:
+        return hashlib.sha256(content).hexdigest()

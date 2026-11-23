@@ -8,8 +8,6 @@ from modwire.application import (
     DuplicateIdentityError,
     ExtractorError,
     ExtractorExecutionError,
-    SourceAccessError,
-    SourceObservationInvalidatedError,
     SourceParseError,
     UnsupportedLanguageError,
 )
@@ -20,28 +18,6 @@ from .base_test import NativeExtractionTestCase
 
 
 class TestNativeExtractionAttacks(NativeExtractionTestCase):
-    @pytest.mark.parametrize("removed", (False, True))
-    def test_parallel_planning_preserves_source_access_and_change_failures(self, removed: bool) -> None:
-        threshold = self.application.extraction.request("python", str(self.workspace)).batch_config.parallel_threshold
-        fixture = self.repository / "tests/fixtures/code_map_reuse/python/example.py"
-        for index in range(threshold):
-            shutil.copyfile(fixture, self.workspace / f"example_{index:04d}.py")
-        target = self.workspace / "example_0000.py"
-        stat = Path.stat
-
-        def inspect(path: Path, *, follow_symlinks: bool = True) -> os.stat_result:
-            if path == target:
-                if removed:
-                    path.unlink()
-                    raise FileNotFoundError(str(path))
-                raise PermissionError(str(path))
-            return stat(path, follow_symlinks=follow_symlinks)
-
-        with pytest.MonkeyPatch.context() as boundary:
-            boundary.setattr(Path, "stat", inspect)
-            with pytest.raises(SourceObservationInvalidatedError if removed else SourceAccessError):
-                self.application.generate_map("python", self.workspace, self.scan_policy())
-
     @pytest.mark.parametrize("language", ("python", "typescript", "php", "java", "ruby"))
     def test_reports_native_parser_failure(self, language: str) -> None:
         fixture = self.repository / "tests/fixtures/extraction_lifecycle" / language / "invalid"

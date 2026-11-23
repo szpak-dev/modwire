@@ -56,14 +56,14 @@ class FixtureSourceIdentities:
         if value.kind is SourceScopeKind.FILE:
             return value
         if value.kind is SourceScopeKind.DECLARATION:
-            return value.model_copy(update={"declaration_id": self.declaration(value.declaration_id)})
+            return replace(value, declaration_id=self.declaration(value.declaration_id))
         return value.model_copy(update={"container": self.scope(value.container)})
 
     def placement(self, value: SourcePlacement) -> SourcePlacement:
         namespace = value.namespace
         if namespace.kind is SourceNamespaceMembershipKind.MEMBER:
             namespace = namespace.model_copy(update={"target": self.target(namespace.target)})
-        return value.model_copy(update={"lexical_scope": self.scope(value.lexical_scope), "namespace": namespace})
+        return replace(value, lexical_scope=self.scope(value.lexical_scope), namespace=namespace)
 
     def callable[Callable: SourceCallable](self, value: Callable) -> Callable:
         return value.model_copy(

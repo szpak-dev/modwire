@@ -18,6 +18,7 @@ from modwire.application import (
     SourceParameter,
     SourceParameterKind,
     SourceParseError,
+    SourcePlacement,
     SourceScopeKind,
     SourceTypeAbsent,
 )
@@ -26,6 +27,60 @@ from .base_test import ApplicationTestCase
 
 
 class TestCodeMapReuse(ApplicationTestCase):
+    @pytest.mark.parametrize(
+        "order",
+        (
+            ((0, 1), (0, 3), (0, 8)),
+            ((0, 3), (0, 1), (0, 2)),
+            ((0, 2), (1, 3), (0, 1), (1, 1)),
+        ),
+    )
+    def test_call_ordinals_allow_gaps_reordering_and_interleaved_owners(
+        self, order: tuple[tuple[int, int], ...]
+    ) -> None:
+        root = self.repository / "tests/fixtures/call_occurrences/python"
+        source = self.application.generate_map("python", str(root), self.scan_policy()).extraction.files[
+            FileId("example_calls.py")
+        ]
+        calls = tuple(
+            replace(source.calls[0], source_callable_id=source.functions[owner].declaration_id, ordinal=ordinal)
+            for owner, ordinal in order
+        )
+        changed = source.model_copy(update={"calls": calls})
+
+        assert changed.validate_facts().calls == calls
+        assert SourceFile.model_validate_json(changed.to_json()).calls == calls
+
+    @pytest.mark.parametrize(
+        "order",
+        (
+            ((0, 1), (0, 1)),
+            ((0, 1), (1, 1), (0, 1)),
+            ((0, 3), (0, 2), (0, 3)),
+            ((0, 2), (1, 1), (0, 1), (1, 1)),
+        ),
+    )
+    def test_call_ordinal_duplicates_are_rejected_for_reordered_and_interleaved_owners(
+        self, order: tuple[tuple[int, int], ...]
+    ) -> None:
+        root = self.repository / "tests/fixtures/call_occurrences/python"
+        source = self.application.generate_map("python", str(root), self.scan_policy()).extraction.files[
+            FileId("example_calls.py")
+        ]
+        calls = tuple(
+            replace(source.calls[0], source_callable_id=source.functions[owner].declaration_id, ordinal=ordinal)
+            for owner, ordinal in order
+        )
+        changed = source.model_copy(update={"calls": calls})
+
+        with pytest.raises(CodeValidationError) as assembled:
+            changed.validate_facts()
+        with pytest.raises(CodeValidationError) as external:
+            SourceFile.model_validate_json(changed.to_json())
+
+        assert assembled.value.violation is CodeViolation.DUPLICATE_CALL
+        assert external.value.violation is CodeViolation.DUPLICATE_CALL
+
     @pytest.mark.parametrize("language", ("php", "java"))
     def test_native_batch_parse_failure_preserves_diagnostics_and_recovers(self, language: str) -> None:
         root = self.workspace / language
@@ -221,6 +276,49 @@ class TestCodeMapReuse(ApplicationTestCase):
         assert identities[changed] == "changed"
         assert changed.canonical() != identity.canonical()
 
+    def test_scope_record_serializes_its_default_discriminator(self) -> None:
+        root = self.repository / "tests/fixtures/code_map_reuse/python"
+        source = self.application.generate_map("python", str(root), self.scan_policy()).extraction.files[
+            FileId("example.py")
+        ]
+        scope = SourceDeclarationScope(declaration_id=source.functions[0].declaration_id)
+        adapter = TypeAdapter(SourceDeclarationScope)
+
+        document = adapter.dump_json(scope, exclude_unset=True)
+
+        assert adapter.dump_python(scope, exclude_unset=True)["kind"] == "declaration"
+        assert adapter.validate_json(document) == scope
+
+    def test_replaced_placement_preserves_value_hashing_and_original_scope(self) -> None:
+        root = self.repository / "tests/fixtures/code_map_reuse/python"
+        source = self.application.generate_map("python", str(root), self.scan_policy()).extraction.files[
+            FileId("example.py")
+        ]
+        first, second = source.functions
+        placement = replace(first.placement, lexical_scope=SourceDeclarationScope(declaration_id=second.declaration_id))
+        adapter = TypeAdapter(SourcePlacement)
+        restored = adapter.validate_json(adapter.dump_json(placement))
+
+        assert first.placement.lexical_scope.kind is SourceScopeKind.FILE
+        assert placement.lexical_scope.kind is SourceScopeKind.DECLARATION
+        assert hash(placement) == hash(restored)
+        assert placement == restored
+        assert first.placement != restored
+
+    @pytest.mark.parametrize("kind", ("file", "unknown", None, 1))
+    def test_scope_record_rejects_an_invalid_discriminator(self, kind: object) -> None:
+        root = self.repository / "tests/fixtures/code_map_reuse/python"
+        source = self.application.generate_map("python", str(root), self.scan_policy()).extraction.files[
+            FileId("example.py")
+        ]
+
+        with pytest.raises(ValidationError) as raised:
+            TypeAdapter(SourceDeclarationScope).validate_python(
+                {"kind": kind, "declaration_id": source.functions[0].declaration_id}
+            )
+
+        assert raised.value.errors()[0]["type"] == "literal_error"
+
     @pytest.mark.parametrize("deep", (False, True))
     @pytest.mark.parametrize(
         ("field", "value"),
@@ -264,12 +362,8 @@ class TestCodeMapReuse(ApplicationTestCase):
         changed = source.model_copy(
             update={
                 "functions": (
-                    first.model_copy(
-                        update={"placement": first.placement.model_copy(update={"lexical_scope": first_scope})}
-                    ),
-                    second.model_copy(
-                        update={"placement": second.placement.model_copy(update={"lexical_scope": second_scope})}
-                    ),
+                    first.model_copy(update={"placement": replace(first.placement, lexical_scope=first_scope)}),
+                    second.model_copy(update={"placement": replace(second.placement, lexical_scope=second_scope)}),
                 )
             }
         )

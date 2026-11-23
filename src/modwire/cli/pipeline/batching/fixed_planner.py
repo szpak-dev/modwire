@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from pathlib import Path
 
 from wireup import injectable
 
 from ....extraction.extractors.models.batch_config import BatchConfig
+from ..models.source_entry import SourceEntry
 from .plan import SourceBatchPlan
 from .planner import SourceBatchPlanner
 
@@ -11,7 +11,7 @@ from .planner import SourceBatchPlanner
 @injectable(as_type=SourceBatchPlanner, qualifier="fixed")
 @dataclass(frozen=True)
 class FixedSourceBatchPlanner(SourceBatchPlanner):
-    def plan(self, sources: tuple[Path, ...], config: BatchConfig) -> SourceBatchPlan:
+    def plan(self, sources: tuple[SourceEntry, ...], config: BatchConfig) -> SourceBatchPlan:
         parallel = (
             config.parallel_threshold > 0 and len(sources) >= config.parallel_threshold and config.max_workers > 1
         )

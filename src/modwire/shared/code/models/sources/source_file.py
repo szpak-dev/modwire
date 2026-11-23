@@ -74,29 +74,44 @@ class SourceFile(ValueModel):
                 raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_FAMILY, str(self.file_id))
         if any(self.declaration_family(item.kind) is not item.declaration_id.family for item in self.declarations):
             raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_KIND, str(self.file_id))
-        callables = self.canonical_callables()
-        callable_identities = {item.declaration_id for item in callables}
-        call_ordinals: dict[DeclarationIdentity, list[int]] = {}
+        call_ordinals: dict[DeclarationIdentity, int] = {}
+        unordered: set[DeclarationIdentity] = set()
         foreign_source = False
         if self.calls:
             source = self.calls[0].source_callable_id
-            ordinals = call_ordinals[source] = list[int]()
+            last_ordinal = 0
             for item in self.calls:
                 if item.source_id != self.file_id:
                     foreign_source = True
                 if item.source_callable_id is not source:
+                    call_ordinals[source] = last_ordinal
                     source = item.source_callable_id
-                    ordinals = call_ordinals.setdefault(source, list[int]())
-                ordinals.append(item.ordinal)
-        if any(len(set(ordinals)) != len(ordinals) for ordinals in call_ordinals.values()):
-            raise CodeValidationError(CodeViolation.DUPLICATE_CALL, str(self.file_id))
+                    last_ordinal = call_ordinals.get(source, 0)
+                if item.ordinal <= last_ordinal:
+                    unordered.add(source)
+                else:
+                    last_ordinal = item.ordinal
+            call_ordinals[source] = last_ordinal
+        if unordered:
+            seen = {identity: set[int]() for identity in unordered}
+            for item in self.calls:
+                ordinals = seen.get(item.source_callable_id)
+                if ordinals is not None:
+                    if item.ordinal in ordinals:
+                        raise CodeValidationError(CodeViolation.DUPLICATE_CALL, str(self.file_id))
+                    ordinals.add(item.ordinal)
         if foreign_source or any(identity.source_id != self.file_id for identity in call_ordinals):
             raise CodeValidationError(CodeViolation.FOREIGN_CALL_SOURCE, str(self.file_id))
-        if any(identity not in callable_identities for identity in call_ordinals):
-            raise CodeValidationError(CodeViolation.UNKNOWN_CALL_SOURCE_CALLABLE, str(self.file_id))
-        declaration_identities = {item.declaration_id for item in self.declarations}
-        if any(relation.source_declaration_id not in declaration_identities for relation in self.declaration_relations):
-            raise CodeValidationError(CodeViolation.UNKNOWN_DECLARATION_RELATION_SOURCE, str(self.file_id))
+        if call_ordinals:
+            callable_identities = {item.declaration_id for item in self.canonical_callables()}
+            if any(identity not in callable_identities for identity in call_ordinals):
+                raise CodeValidationError(CodeViolation.UNKNOWN_CALL_SOURCE_CALLABLE, str(self.file_id))
+        if self.declaration_relations:
+            declaration_identities = {item.declaration_id for item in self.declarations}
+            if any(
+                relation.source_declaration_id not in declaration_identities for relation in self.declaration_relations
+            ):
+                raise CodeValidationError(CodeViolation.UNKNOWN_DECLARATION_RELATION_SOURCE, str(self.file_id))
         return self
 
     def canonical_callables(self) -> tuple[SourceCallable, ...]:

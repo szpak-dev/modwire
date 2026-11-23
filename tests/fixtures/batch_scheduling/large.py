@@ -1,0 +1,9 @@
+example_first = 1
+example_second = 2
+example_third = 3
+example_fourth = 4
+example_fifth = 5
+example_sixth = 6
+example_seventh = 7
+example_eighth = 8
+example_ninth = 9

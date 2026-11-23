@@ -1,3 +1,5 @@
+from pydantic import Field
+
 from ....shared.code.models.sources.identity import FileId
 from ....shared.code.models.sources.source_artifact import SourceArtifact
 from ....shared.values.models.value_model import ValueModel
@@ -8,6 +10,7 @@ class SourceEntry(ValueModel):
     relative_path: str
     content_digest: str
     path: str
+    line_count: int = Field(ge=0)
 
     def artifact(self) -> SourceArtifact:
         return SourceArtifact(

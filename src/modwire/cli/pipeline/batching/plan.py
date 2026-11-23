@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from pathlib import Path
+
+from ..models.source_entry import SourceEntry
 
 
 @dataclass(frozen=True)
 class SourceBatchPlan:
     parallel: bool
-    batches: tuple[tuple[Path, ...], ...]
+    batches: tuple[tuple[SourceEntry, ...], ...]

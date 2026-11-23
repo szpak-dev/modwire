@@ -1,17 +1,17 @@
-from typing import Annotated, Self
+from typing import Annotated
 
-from pydantic import Field, ValidationInfo, model_validator
+from pydantic import Field
 from pydantic.dataclasses import dataclass
 
 from ....values.models.string_reference import StringReference
 from ....values.models.value_model import ValueModel
-from ....values.models.value_reuse import ValueReuse
+from ..immutable_code_record import ImmutableCodeRecord
 from ..sources.identity import FileId
 from .declaration_family import DeclarationFamily
 
 
 @dataclass(slots=True, kw_only=True, config=ValueModel.model_config)
-class DeclarationIdentity:
+class DeclarationIdentity(ImmutableCodeRecord):
     source_id: Annotated[FileId, StringReference()]
     family: DeclarationFamily
     qualified_name: str = Field(min_length=1)
@@ -25,9 +25,3 @@ class DeclarationIdentity:
         """Return the identity of a declaration in one exact source capture."""
 
         return f"{self.source_id}@{self.content_digest}::{self.family}:{self.ordinal}:{self.qualified_name}"
-
-    @model_validator(mode="after")
-    def reuse(self, info: ValidationInfo[ValueReuse[Self] | None]) -> Self:
-        if info.context is None:
-            return self
-        return info.context.retain(self)
