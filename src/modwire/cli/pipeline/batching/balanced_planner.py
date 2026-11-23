@@ -6,6 +6,7 @@ from wireup import injectable
 from ....extraction.extractors.models.batch_config import BatchConfig
 from ..models.pipeline_validation_error import PipelineValidationError
 from ..models.pipeline_violation import PipelineViolation
+from ..models.source_access_error import SourceAccessError
 from .plan import SourceBatchPlan
 from .planner import SourceBatchPlanner
 
@@ -30,6 +31,13 @@ class BalancedSourceBatchPlanner(SourceBatchPlanner):
         complete_wave_count = ((batch_count + worker_count - 1) // worker_count) * worker_count
         if complete_wave_count <= len(sources):
             batch_count = complete_wave_count
+        source_sizes: list[tuple[int, Path]] = []
+        for source in sources:
+            try:
+                source_sizes.append((source.stat().st_size, source))
+            except OSError as error:
+                raise SourceAccessError(str(source), "inspect") from error
+        sources = tuple(source for _, source in sorted(source_sizes, key=lambda item: item[0], reverse=True))
         return SourceBatchPlan(
             parallel=True,
             batches=tuple(sources[index::batch_count] for index in range(batch_count)),

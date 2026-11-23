@@ -1,26 +1,29 @@
+import shutil
+
+import pytest
+
 from ..base_test import CliTestCase
 
 
 class TestParallelExtractionHappyPath(CliTestCase):
-    def test_parallel_threshold_preserves_source_facts_and_canonical_output(self) -> None:
-        serial_names = tuple(f"example_{index:04d}.py" for index in range(999))
-        self.write_files(
-            {
-                **{name: "" for name in serial_names},
-                "example_0000.py": (
-                    "from collections.abc import Iterable\n\n"
-                    "class ExampleValue:\n"
-                    "    def values(self) -> Iterable[int]:\n"
-                    "        return (1, 2, 3)\n"
-                ),
-            }
-        )
-        serial = self.application.generate_map("python", self.workspace, self.scan_policy())
+    @pytest.mark.parametrize(("language", "extension"), (("python", "py"), ("ruby", "rb")))
+    def test_parallel_threshold_preserves_source_facts_and_canonical_output(
+        self, language: str, extension: str
+    ) -> None:
+        threshold = self.application.extraction.request(language, str(self.workspace)).batch_config.parallel_threshold
+        fixtures = self.repository / "tests/fixtures/implementation_manifest" / language
+        small = fixtures / "no_calls/src" / f"example.{extension}"
+        large = fixtures / "canonical/src" / f"example.{extension}"
+        serial_names = tuple(f"example_{index:04d}.{extension}" for index in range(threshold - 1))
+        for index, name in enumerate(serial_names):
+            shutil.copyfile(large if index % 3 == 0 else small, self.workspace / name)
+        serial = self.application.generate_map(language, self.workspace, self.scan_policy())
 
-        parallel_names = (*serial_names, "example_0999.py")
-        self.write_files({"example_0999.py": "class ExampleAdded:\n    pass\n"})
-        parallel = self.application.generate_map("python", self.workspace, self.scan_policy())
-        repeated = self.application.generate_map("python", self.workspace, self.scan_policy())
+        added = f"example_{threshold - 1:04d}.{extension}"
+        parallel_names = (*serial_names, added)
+        shutil.copyfile(small, self.workspace / added)
+        parallel = self.application.generate_map(language, self.workspace, self.scan_policy())
+        repeated = self.application.generate_map(language, self.workspace, self.scan_policy())
 
         assert {name: parallel.extraction.files[name] for name in serial_names} == serial.extraction.files
         assert parallel.dependency_graph.edges == serial.dependency_graph.edges

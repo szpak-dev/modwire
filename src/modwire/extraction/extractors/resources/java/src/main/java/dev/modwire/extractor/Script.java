@@ -1,6 +1,7 @@
 package dev.modwire.extractor;
 
 import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.utils.LineSeparator;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.Problem;
 import com.github.javaparser.Range;
@@ -225,7 +226,7 @@ final class NativeSourceRecord {
 
 final class JavaSourceExtractor {
     private final JavaParserAdapter parser = JavaParserAdapter.of(new JavaParser(
-        new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_25)
+        new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_25).setDetectOriginalLineSeparator(false)
     ));
     private final List<CallableFact> callableFacts = new ArrayList<>();
     private NativeSourceRecord record = new NativeSourceRecord();
@@ -259,7 +260,7 @@ final class JavaSourceExtractor {
 
         String content = Files.readString(path, StandardCharsets.UTF_8);
         sourceContent = content;
-        indexSourcePositions();
+        LineSeparator lineSeparator = indexSourcePositions();
         try {
             contentDigest = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(content.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException error) {
@@ -269,6 +270,7 @@ final class JavaSourceExtractor {
         CompilationUnit unit;
         try {
             unit = parser.parse(content);
+            unit.setData(Node.LINE_SEPARATOR_KEY, lineSeparator);
         } catch (ParseProblemException error) {
             Problem problem = error.getProblems().get(0);
             Range location = problem.getLocation()
@@ -1057,10 +1059,18 @@ final class JavaSourceExtractor {
         return Optional.empty();
     }
 
-    private void indexSourcePositions() {
+    private LineSeparator indexSourcePositions() {
         int lines = 1;
+        int carriageReturns = 0;
+        int lineFeeds = 0;
+        int pairedBreaks = 0;
         for (int index = 0; index < sourceContent.length(); index++) {
             if (endsLine(index)) lines++;
+            char character = sourceContent.charAt(index);
+            if (character == '\r') {
+                carriageReturns++;
+                if (index + 1 < sourceContent.length() && sourceContent.charAt(index + 1) == '\n') pairedBreaks++;
+            } else if (character == '\n') lineFeeds++;
         }
         lineOffsets = new int[lines];
         utf8Offsets = new int[sourceContent.length() + 1];
@@ -1075,6 +1085,7 @@ final class JavaSourceExtractor {
             }
             utf8Offsets[index + 1] = utf8Offsets[index] + width;
         }
+        return LineSeparator.getLineEnding(carriageReturns, lineFeeds, pairedBreaks);
     }
 
     private boolean endsLine(int index) {

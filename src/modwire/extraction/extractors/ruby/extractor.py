@@ -196,7 +196,7 @@ class RubyExtractor(SourceExtractor):
             size=500,
             parallel_threshold=500,
             parallel_size=500,
-            max_workers=8,
+            max_workers=6,
             planner=BatchPlannerKind.BALANCED,
         )
 

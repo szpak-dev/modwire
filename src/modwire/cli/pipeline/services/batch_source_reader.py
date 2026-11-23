@@ -154,8 +154,8 @@ class BatchSourceReader(SourceReader):
         source_ids_by_path = {Path(entry.path): entry.source_id for entry in entries}
         source_paths = tuple(source_ids_by_path)
         files: dict[FileId, SourceFile] = {}
-        plan = self.planners[request.batch_config.planner].plan(source_paths, request.batch_config)
         try:
+            plan = self.planners[request.batch_config.planner].plan(source_paths, request.batch_config)
             if plan.parallel:
                 with ThreadPoolExecutor(max_workers=request.batch_config.max_workers) as executor:
                     for extracted in executor.map(
