@@ -13,10 +13,19 @@
         "source_id": "ruby/src/type_reference_cases.rb",
         "family": "function",
         "qualified_name": "example_types",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "05b053b4bad71f23018076233812d44c594cb40e25904fc09cf857365e07dd85"
       },
       "source_id": "ruby/src/type_reference_cases.rb",
       "qualified_name": "example_types",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 1,
       "line_end": 3,
       "parameters": [
@@ -42,6 +51,41 @@
       "kind": "function"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 4,
   "code_line_count": 3,
   "public_symbol_count": 1

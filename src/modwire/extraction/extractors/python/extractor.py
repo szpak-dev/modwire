@@ -1,5 +1,4 @@
 import sys
-from dataclasses import dataclass
 
 from wireup import injectable
 
@@ -13,24 +12,25 @@ from ....shared.code.models.sources.identity import FileId, ImportIdentity
 from ....shared.code.models.sources.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
-from ..models.batch_output_format import BatchOutputFormat
+from ..models.batch_planner_kind import BatchPlannerKind
 from ..models.entrypoints.module_entrypoint import ModuleExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
 from .semantics.policies.import_identity_policy import PythonImportIdentityPolicy
 
 
 @injectable(as_type=SourceExtractor, qualifier="python")
-@dataclass(frozen=True)
 class PythonExtractor(SourceExtractor):
+    runtime: ExtractorRuntime
+    batch_config: BatchConfig
     identities: PythonImportIdentityPolicy
 
-    @property
-    def runtime(self) -> ExtractorRuntime:
-        return ExtractorRuntime(
+    def __init__(self, identities: PythonImportIdentityPolicy) -> None:
+        self.identities = identities
+        self.runtime = ExtractorRuntime(
             order=0,
             descriptor=ExtractorDescriptor(
                 id="modwire.python.ast",
-                version="3",
+                version="5",
                 language="python",
                 runtime="python",
             ),
@@ -156,10 +156,10 @@ class PythonExtractor(SourceExtractor):
                         "Declared member and callable types, static calls, and assigned values are preserved "
                         "without resolving dynamic types or runtime mutation."
                     ),
-                    inventory=CapabilityStatus.SUPPORTED,
+                    inventory=CapabilityStatus.PARTIAL,
                     inventory_explanation=(
-                        "Every supported static member, callable type, call, and assigned-value fact in included "
-                        "Python sources is emitted deterministically."
+                        "Members with exact source owners are emitted deterministically; "
+                        "unresolved property receivers retain local inventory limitations."
                     ),
                 ),
                 RelationshipCoverage(
@@ -186,15 +186,12 @@ class PythonExtractor(SourceExtractor):
             ),
         )
 
-    @property
-    def batch_config(self) -> BatchConfig:
-        return BatchConfig(
+        self.batch_config = BatchConfig(
             size=500,
             parallel_threshold=1000,
             parallel_size=1000,
             max_workers=4,
-            output_format=BatchOutputFormat.JSON,
-            planner="balanced",
+            planner=BatchPlannerKind.BALANCED,
         )
 
     def import_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:

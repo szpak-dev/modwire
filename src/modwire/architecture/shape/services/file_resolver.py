@@ -8,6 +8,8 @@ from ....shared.code.models.values.source_value_scope import SourceValueScope
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, ShapeResolverInterface
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
+from ..models.shape_rule_kind import ShapeRuleKind
+from ..models.shape_symbol_kind import ShapeSymbolKind
 from ..models.shape_violation import ShapeViolation
 
 
@@ -32,66 +34,66 @@ class FileResolver(ShapeResolverInterface, BaseShapeResolver):
                 [
                     self.limit_violation(
                         source_id=source_id,
-                        rule_name="max_classes_per_file",
+                        rule_name=ShapeRuleKind.MAX_CLASSES_PER_FILE,
                         actual=sum(
                             source_file.declaration_family(item.kind) is DeclarationFamily.CLASS
                             for item in source_file.declarations
                         ),
                         limit=config.max_classes_per_file,
-                        symbol_kind="file",
+                        symbol_kind=ShapeSymbolKind.FILE,
                         symbol_name="",
                     ),
                     self.limit_violation(
                         source_id=source_id,
-                        rule_name="max_interfaces_per_file",
+                        rule_name=ShapeRuleKind.MAX_INTERFACES_PER_FILE,
                         actual=sum(
                             source_file.declaration_family(item.kind) is DeclarationFamily.INTERFACE
                             for item in source_file.declarations
                         ),
                         limit=config.max_interfaces_per_file,
-                        symbol_kind="file",
+                        symbol_kind=ShapeSymbolKind.FILE,
                         symbol_name="",
                     ),
                     self.limit_violation(
                         source_id=source_id,
-                        rule_name="max_types_per_file",
+                        rule_name=ShapeRuleKind.MAX_TYPES_PER_FILE,
                         actual=sum(
                             source_file.declaration_family(item.kind) is DeclarationFamily.TYPE
                             for item in source_file.declarations
                         ),
                         limit=config.max_types_per_file,
-                        symbol_kind="file",
+                        symbol_kind=ShapeSymbolKind.FILE,
                         symbol_name="",
                     ),
                     self.limit_violation(
                         source_id=source_id,
-                        rule_name="max_abstract_classes_per_file",
+                        rule_name=ShapeRuleKind.MAX_ABSTRACT_CLASSES_PER_FILE,
                         actual=sum(
                             source_file.declaration_family(item.kind) is DeclarationFamily.ABSTRACT_CLASS
                             for item in source_file.declarations
                         ),
                         limit=config.max_abstract_classes_per_file,
-                        symbol_kind="file",
+                        symbol_kind=ShapeSymbolKind.FILE,
                         symbol_name="",
                     ),
                     self.limit_violation(
                         source_id=source_id,
-                        rule_name="max_functions_per_file",
+                        rule_name=ShapeRuleKind.MAX_FUNCTIONS_PER_FILE,
                         actual=len(source_file.functions),
                         limit=config.max_functions_per_file,
-                        symbol_kind="file",
+                        symbol_kind=ShapeSymbolKind.FILE,
                         symbol_name="",
                     ),
                     self.limit_violation(
                         source_id=source_id,
-                        rule_name="max_variables_per_file",
+                        rule_name=ShapeRuleKind.MAX_VARIABLES_PER_FILE,
                         actual=sum(
                             value.scope is SourceValueScope.MODULE
                             and value.declaration_kind is SourceValueDeclarationKind.ASSIGNMENT
                             for value in source_file.values
                         ),
                         limit=config.max_variables_per_file,
-                        symbol_kind="file",
+                        symbol_kind=ShapeSymbolKind.FILE,
                         symbol_name="",
                     ),
                 ]

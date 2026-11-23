@@ -1,4 +1,3 @@
-import json
 from dataclasses import dataclass
 
 from wireup import injectable
@@ -6,11 +5,12 @@ from wireup import injectable
 from ....shared.code.models.callables.source_call import SourceCall
 from ....shared.code.models.declarations.declaration_identity import DeclarationIdentity
 from ....shared.code.models.declarations.source_declaration import SourceDeclaration
+from ....shared.code.models.declarations.source_namespace_membership_kind import SourceNamespaceMembershipKind
+from ....shared.code.models.declarations.source_placement import SourcePlacement
 from ....shared.code.models.declarations.source_symbol_kind import SourceSymbolKind
 from ....shared.code.models.declarations.source_visibility import SourceVisibility
 from ....shared.code.models.dependencies.source_dependency_resolution import SourceDependencyResolution
 from ....shared.code.models.maps.code_map import CodeMap
-from ....shared.values.models.value_model import ValueModel
 from ..contracts.manifest_compiler import ManifestCompiler
 from ..models.implementation_manifest import ImplementationManifest
 from ..models.implementation_manifest_validation_error import ImplementationManifestValidationError
@@ -22,6 +22,7 @@ from ..models.manifest_callable import ManifestCallable
 from ..models.manifest_declaration_relation import ManifestDeclarationRelation
 from ..models.manifest_dependency import ManifestDependency
 from ..models.manifest_dependency_target_kind import ManifestDependencyTargetKind
+from ..models.manifest_fact_ordering import ManifestFactOrdering
 from ..models.manifest_namespace import ManifestNamespace
 from ..models.manifest_parameter import ManifestParameter
 from ..models.manifest_span import ManifestSpan
@@ -31,19 +32,21 @@ from ..models.manifest_symbol import ManifestSymbol
 @injectable(as_type=ManifestCompiler)
 @dataclass(frozen=True)
 class CodeMapManifestCompiler(ManifestCompiler):
-    def canonical_key(self, value: ValueModel) -> str:
-        return json.dumps(value.model_dump(mode="json"), ensure_ascii=False, separators=(",", ":"), sort_keys=True)
+    ordering: ManifestFactOrdering
 
     def symbol(
         self,
         declaration_id: DeclarationIdentity,
-        namespace: str,
+        placement: SourcePlacement,
+        import_identity: str,
         kind: SourceSymbolKind,
         visibility: SourceVisibility,
     ) -> ManifestSymbol:
         return ManifestSymbol(
             id=declaration_id,
-            qualified_name=f"{namespace}.{declaration_id.qualified_name}",
+            qualified_name=declaration_id.qualified_name
+            if placement.namespace.kind is SourceNamespaceMembershipKind.MEMBER
+            else f"{import_identity}.{declaration_id.qualified_name}",
             kind=kind,
             visibility=visibility,
         )
@@ -70,18 +73,12 @@ class CodeMapManifestCompiler(ManifestCompiler):
             namespaces.update(
                 ManifestNamespace(kind=item.kind, qualified_name=item.qualified_name) for item in source_file.namespaces
             )
-            namespace = (
-                max(
-                    source_file.namespaces, key=lambda item: (len(item.qualified_name), item.qualified_name)
-                ).qualified_name
-                if source_file.namespaces
-                else import_identity
-            )
             for declaration in source_file.declarations:
                 symbols.append(
                     self.symbol(
                         declaration.declaration_id,
-                        namespace,
+                        declaration.placement,
+                        import_identity,
                         declaration.kind,
                         declaration.visibility,
                     )
@@ -93,14 +90,23 @@ class CodeMapManifestCompiler(ManifestCompiler):
                 symbols.append(
                     self.symbol(
                         function.declaration_id,
-                        namespace,
+                        function.placement,
+                        import_identity,
                         SourceSymbolKind.FUNCTION,
                         function.visibility,
                     )
                 )
                 symbol_ids.add(function.declaration_id.canonical())
             for value in source_file.values:
-                symbols.append(self.symbol(value.declaration_id, namespace, value.value_kind, value.visibility))
+                symbols.append(
+                    self.symbol(
+                        value.declaration_id,
+                        value.placement,
+                        import_identity,
+                        value.value_kind,
+                        value.visibility,
+                    )
+                )
                 symbol_ids.add(value.declaration_id.canonical())
             for callable_value in source_file.canonical_callables():
                 callable_id = callable_value.declaration_id
@@ -109,7 +115,8 @@ class CodeMapManifestCompiler(ManifestCompiler):
                     symbols.append(
                         self.symbol(
                             callable_id,
-                            namespace,
+                            callable_value.placement,
+                            import_identity,
                             SourceSymbolKind.CALLABLE,
                             callable_value.visibility,
                         )
@@ -182,16 +189,16 @@ class CodeMapManifestCompiler(ManifestCompiler):
         return ImplementationManifest(
             producer=code_map.producer,
             source_manifest=code_map.extraction.manifest,
-            namespaces=tuple(sorted(namespaces, key=self.canonical_key)),
-            symbols=tuple(sorted(symbols, key=self.canonical_key)),
-            callables=tuple(sorted(callables, key=self.canonical_key)),
-            parameters=tuple(sorted(parameters, key=self.canonical_key)),
-            attributes=tuple(sorted(attributes, key=self.canonical_key)),
-            annotations=tuple(sorted(annotations, key=self.canonical_key)),
-            calls=tuple(sorted(source_calls, key=self.canonical_key)),
-            declaration_relations=tuple(sorted(declaration_relations, key=self.canonical_key)),
-            dependencies=tuple(sorted(dependencies, key=self.canonical_key)),
-            spans=tuple(sorted(spans, key=self.canonical_key)),
+            namespaces=tuple(sorted(namespaces, key=self.ordering.key)),
+            symbols=tuple(sorted(symbols, key=self.ordering.key)),
+            callables=tuple(sorted(callables, key=self.ordering.key)),
+            parameters=tuple(sorted(parameters, key=self.ordering.key)),
+            attributes=tuple(sorted(attributes, key=self.ordering.key)),
+            annotations=tuple(sorted(annotations, key=self.ordering.key)),
+            calls=tuple(sorted(source_calls, key=self.ordering.key)),
+            declaration_relations=tuple(sorted(declaration_relations, key=self.ordering.key)),
+            dependencies=tuple(sorted(dependencies, key=self.ordering.key)),
+            spans=tuple(sorted(spans, key=self.ordering.key)),
         )
 
     def attributes(self, declaration: SourceDeclaration) -> tuple[ManifestAttribute, ...]:

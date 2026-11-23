@@ -1,8 +1,8 @@
 from typing import Literal
 
-from ....values.models.value_model import ValueModel
+from ..immutable_code_value import ImmutableCodeValue
 from .kind import SourceTypeKind
 
 
-class SourceTypeAbsent(ValueModel):
+class SourceTypeAbsent(ImmutableCodeValue):
     kind: Literal[SourceTypeKind.ABSENT] = SourceTypeKind.ABSENT

@@ -1,5 +1,4 @@
-import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from ....shared.code.models.callables.source_call import SourceCall
 from ....shared.code.models.callables.source_call_resolution import SourceCallResolution
@@ -13,6 +12,7 @@ from .manifest_callable import ManifestCallable
 from .manifest_declaration_relation import ManifestDeclarationRelation
 from .manifest_dependency import ManifestDependency
 from .manifest_dependency_target_kind import ManifestDependencyTargetKind
+from .manifest_fact_ordering import ManifestFactOrdering
 from .manifest_namespace import ManifestNamespace
 from .manifest_parameter import ManifestParameter
 from .manifest_span import ManifestSpan
@@ -32,6 +32,7 @@ class ImplementationManifestValidator:
     declaration_relations: tuple[ManifestDeclarationRelation, ...]
     dependencies: tuple[ManifestDependency, ...]
     spans: tuple[ManifestSpan, ...]
+    ordering: ManifestFactOrdering = field(default_factory=ManifestFactOrdering)
 
     def validate(self) -> None:
         self.validate_collections()
@@ -58,12 +59,9 @@ class ImplementationManifestValidator:
             ("spans", self.spans),
         )
         for subject, collection in collections:
-            keys = tuple(
-                json.dumps(item.model_dump(mode="json"), ensure_ascii=False, separators=(",", ":"), sort_keys=True)
-                for item in collection
-            )
+            keys = [self.ordering.key(item) for item in collection]
             self.require(
-                keys == tuple(sorted(keys)),
+                keys == sorted(keys),
                 ImplementationManifestViolation.NON_CANONICAL_ORDER,
                 subject,
             )

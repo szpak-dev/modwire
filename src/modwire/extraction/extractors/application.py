@@ -35,14 +35,11 @@ class ExtractorsApplication:
         if language not in self.extractors:
             raise UnsupportedLanguageError(language, self.supported_languages())
         extractor = self.extractors[language]
-        return ExtractionRequest(root=root, runtime=extractor.runtime, batch_config=extractor.batch_config)
+        return ExtractionRequest(root=root, strategy=extractor)
 
     def generate_map(self, request: ExtractionRequest, extraction: SourceExtraction) -> CodeMap:
         language = request.runtime.descriptor.language
-        if language not in self.extractors:
-            raise UnsupportedLanguageError(language, self.supported_languages())
-        extractor = self.extractors[language]
-        identities = extractor.import_identities(extraction.files)
+        identities = request.strategy.import_identities(extraction.files)
         files = self.dependency.resolve(extraction.files, identities)
         resolved = extraction.model_copy(update={"files": files})
         producer = CodeMapProducer(
@@ -51,12 +48,12 @@ class ExtractorsApplication:
             capabilities=request.runtime.capabilities,
             relationship_capabilities=request.runtime.relationship_capabilities,
         )
-        return CodeMap(
+        return CodeMap.model_construct(
             language=language,
             producer=producer,
             extraction=resolved,
             dependency_graph=self.dependency.build(files),
-        )
+        ).validate_facts()
 
     def generate_queryable_map(self, request: ExtractionRequest, extraction: SourceExtraction) -> QueryableCodeMap:
         return QueryableCodeMap(code_map=self.generate_map(request, extraction))

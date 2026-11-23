@@ -2,16 +2,18 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+from pydantic import TypeAdapter
 from wireup import injectable
 
 from ..architecture.config.models.architecture_config import ArchitectureConfig
 from ..architecture.facade import ArchitectureFacade
 from ..architecture.report.models.report_node import ReportNode
 from ..extraction.extractors.models.extraction_request import ExtractionRequest
-from ..extraction.extractors.models.parsed_source_batch import ParsedSourceBatch
+from ..extraction.extractors.models.parsed_source_file import ParsedSourceFile
 from ..extraction.facade import ExtractionFacade
 from ..shared.code.models.maps.code_map import CodeMap
 from ..shared.code.models.maps.queryable_code_map import QueryableCodeMap
+from ..shared.code.models.sources.identity import FileId
 from ..shared.code.models.sources.scan_policy import ScanPolicy
 from ..shared.code.models.sources.source_extraction import SourceExtraction
 from ..shared.code.models.sources.source_manifest_identity import SourceManifestIdentity
@@ -112,16 +114,13 @@ class CliFacade:
         if request is None:
             return 1
         if request.batch:
-            return self.write_sources(
-                ParsedSourceBatch(
-                    sources={
-                        source.source_id: self.extraction.parse_source(
-                            language, source.content, str(source.path), str(source.root), source.source_id
-                        )
-                        for source in request.sources
-                    }
-                ).document()
-            )
+            adapter = TypeAdapter(tuple[FileId, ParsedSourceFile])
+            for source in request.sources:
+                parsed = self.extraction.parse_source(
+                    language, source.content, str(source.path), str(source.root), source.source_id
+                )
+                self.write_sources(adapter.dump_json((source.source_id, parsed)).decode("utf-8"))
+            return 0
         source = request.sources[0]
         return self.write_sources(
             self.extraction.parse_source(

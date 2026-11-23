@@ -1,0 +1,129 @@
+{
+  "declarations": [
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOwner",
+      "declaration_kind": "class"
+    }
+  ],
+  "callables": [],
+  "attributes": [],
+  "namespaces": [],
+  "signatures": {},
+  "spans": [],
+  "owners": [],
+  "unresolved_methods": [],
+  "parameters": {},
+  "returns": {},
+  "gaps": {},
+  "placements": [
+    [
+      {
+        "source_id": "typescript_exports/src/wrapped_identifier.ts",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 1,
+        "content_digest": "df777b431512516c616ad17a9018707b6cf1c11d759a878b4dc292c67f614ce9"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ]
+  ],
+  "exports": [
+    {
+      "name": "default",
+      "local_name": "((ExampleOwner as typeof ExampleOwner)!)",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": true,
+      "is_aliased": true,
+      "statement_id": 23,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "typescript_exports/src/wrapped_identifier.ts",
+            "family": "class",
+            "qualified_name": "ExampleOwner",
+            "ordinal": 1,
+            "content_digest": "df777b431512516c616ad17a9018707b6cf1c11d759a878b4dc292c67f614ce9"
+          }
+        ]
+      }
+    }
+  ],
+  "relations": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "member_inventories": [
+    [
+      {
+        "source_id": "typescript_exports/src/wrapped_identifier.ts",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 1,
+        "content_digest": "df777b431512516c616ad17a9018707b6cf1c11d759a878b4dc292c67f614ce9"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
+    ]
+  ]
+}

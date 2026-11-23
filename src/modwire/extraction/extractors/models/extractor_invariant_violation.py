@@ -2,6 +2,7 @@ from enum import StrEnum
 
 
 class ExtractorInvariantViolation(StrEnum):
+    MISSING_SOURCE_END_LINE = "missing_source_end_line"
     ANNOTATED_CLASS_PROPERTY_REQUIRES_ANNOTATED_ASSIGNMENT = "annotated_class_property_requires_annotated_assignment"
     UNSUPPORTED_VALUE_STATEMENT = "unsupported_value_statement"
     UNCLASSIFIED_CALL_TARGET = "unclassified_call_target"

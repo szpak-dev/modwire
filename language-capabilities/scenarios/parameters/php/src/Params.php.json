@@ -14,7 +14,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/Params.php",
+            "family": "function",
+            "qualified_name": "exampleParameters",
+            "ordinal": 8,
+            "content_digest": "117332ec6487e078c753974c6537393e61aebf4ebc79bf588fece23a74ee2edd"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "functions": [
@@ -28,10 +40,19 @@
         "source_id": "php/src/Params.php",
         "family": "function",
         "qualified_name": "exampleParameters",
-        "ordinal": 8
+        "ordinal": 8,
+        "content_digest": "117332ec6487e078c753974c6537393e61aebf4ebc79bf588fece23a74ee2edd"
       },
       "source_id": "php/src/Params.php",
       "qualified_name": "exampleParameters",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 3,
       "line_end": 6,
       "parameters": [
@@ -66,7 +87,8 @@
         "source_id": "php/src/Params.php",
         "family": "function",
         "qualified_name": "exampleParameters",
-        "ordinal": 8
+        "ordinal": 8,
+        "content_digest": "117332ec6487e078c753974c6537393e61aebf4ebc79bf588fece23a74ee2edd"
       },
       "ordinal": 1,
       "target_callable_id": null,
@@ -77,6 +99,41 @@
       "target_name": "implode"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 7,
   "code_line_count": 5,
   "public_symbol_count": 1

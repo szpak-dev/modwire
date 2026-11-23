@@ -1,10 +1,11 @@
 from ....extraction.extractors.models.extractor_error import ExtractorError
+from ....shared.failures.models.modwire_error_code import ModwireErrorCode
 
 
 class ExtractorUnavailableError(ExtractorError):
     """Report a required extractor executable that is unavailable on PATH."""
 
-    code = "extractor_unavailable"
+    code = ModwireErrorCode.EXTRACTOR_UNAVAILABLE
 
     def __init__(self, language: str, executable: str) -> None:
         self.language = language

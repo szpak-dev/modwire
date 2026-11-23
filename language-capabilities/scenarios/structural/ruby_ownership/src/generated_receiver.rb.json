@@ -1,0 +1,167 @@
+{
+  "declarations": [
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOuter",
+      "declaration_kind": "class"
+    }
+  ],
+  "callables": [
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOuter.<lambda@50>",
+      "callable_kind": "anonymous"
+    }
+  ],
+  "attributes": [],
+  "namespaces": [],
+  "signatures": {},
+  "spans": [],
+  "owners": [],
+  "unresolved_methods": [],
+  "parameters": {},
+  "returns": {},
+  "gaps": {},
+  "placements": [
+    [
+      {
+        "source_id": "ruby_ownership/src/generated_receiver.rb",
+        "family": "class",
+        "qualified_name": "ExampleOuter",
+        "ordinal": 1,
+        "content_digest": "60e1935f5ac8fb4af77ac151607af79ef943ac4e64488bd1858c8dd044f5306f"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/generated_receiver.rb",
+        "family": "value",
+        "qualified_name": "ExampleOuter.ExampleGenerated",
+        "ordinal": 22,
+        "content_digest": "60e1935f5ac8fb4af77ac151607af79ef943ac4e64488bd1858c8dd044f5306f"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/generated_receiver.rb",
+            "family": "class",
+            "qualified_name": "ExampleOuter",
+            "ordinal": 1,
+            "content_digest": "60e1935f5ac8fb4af77ac151607af79ef943ac4e64488bd1858c8dd044f5306f"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/generated_receiver.rb",
+        "family": "callable",
+        "qualified_name": "ExampleOuter.<lambda@50>",
+        "ordinal": 51,
+        "content_digest": "60e1935f5ac8fb4af77ac151607af79ef943ac4e64488bd1858c8dd044f5306f"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/generated_receiver.rb",
+            "family": "class",
+            "qualified_name": "ExampleOuter",
+            "ordinal": 1,
+            "content_digest": "60e1935f5ac8fb4af77ac151607af79ef943ac4e64488bd1858c8dd044f5306f"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ]
+  ],
+  "exports": [],
+  "relations": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "incomplete",
+      "limitations": [
+        {
+          "kind": "unresolved_ownership",
+          "location": {
+            "kind": "source",
+            "start_line": 3,
+            "end_line": 3
+          },
+          "description": "Instance variable receiver has no exact source declaration."
+        }
+      ]
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "member_inventories": [
+    [
+      {
+        "source_id": "ruby_ownership/src/generated_receiver.rb",
+        "family": "class",
+        "qualified_name": "ExampleOuter",
+        "ordinal": 1,
+        "content_digest": "60e1935f5ac8fb4af77ac151607af79ef943ac4e64488bd1858c8dd044f5306f"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ]
+  ]
+}

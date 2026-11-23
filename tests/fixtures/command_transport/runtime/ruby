@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+import json
+import os
+import subprocess
+import sys
+
+completed = subprocess.run(
+    [os.environ["EXAMPLE_RUBY"], *sys.argv[1:]],
+    input=sys.stdin.buffer.read() if "--batch" in sys.argv else None,
+    capture_output=True,
+)
+sys.stderr.buffer.write(completed.stderr)
+if completed.returncode or "--batch" not in sys.argv:
+    sys.stdout.buffer.write(completed.stdout)
+    sys.exit(completed.returncode)
+
+records = [json.loads(line) for line in completed.stdout.splitlines()]
+record = records[-1]
+mode = os.environ["EXAMPLE_OUTPUT"]
+if mode == "negative":
+    record["facts"]["declarations"][0]["declaration_id"] = -1
+elif mode == "boolean":
+    record["facts"]["declarations"][0]["declaration_id"] = True
+elif mode == "fractional":
+    record["facts"]["declarations"][0]["declaration_id"] = 0.0
+elif mode == "out_of_range":
+    record["facts"]["declarations"][0]["declaration_id"] = 999999
+elif mode == "wrong_type":
+    record["facts"]["declarations"][0]["declaration_id"] = 0
+elif mode == "invalid_value":
+    record["identities"][0]["content_digest"] = "invalid"
+elif mode == "invalid_text":
+    record["texts"][1] = "invalid"
+elif mode == "missing_table":
+    del record["identities"]
+for record in records:
+    print(json.dumps(record))

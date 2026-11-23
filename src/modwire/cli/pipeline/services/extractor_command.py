@@ -38,12 +38,12 @@ class ExtractorCommand:
                     source_id=source_id,
                     path=Path(path).resolve(),
                     root=root,
-                    content=Path(path).read_text(encoding="utf-8"),
+                    content=Path(path).read_bytes().decode("utf-8"),
                 )
                 for source_id, path in paths.items()
             ),
         )
 
     def write(self, document: str) -> int:
-        print(document)
+        print(document, flush=True)
         return 0

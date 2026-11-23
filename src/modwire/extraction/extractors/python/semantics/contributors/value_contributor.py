@@ -1,25 +1,25 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
 from ......shared.code.models.declarations.declaration_family import DeclarationFamily
+from ......shared.code.models.declarations.source_declaration import SourceDeclaration
 from ......shared.code.models.declarations.source_symbol_kind import SourceSymbolKind
 from ......shared.code.models.declarations.source_visibility import SourceVisibility
+from ......shared.code.models.inventories.inventory_coverage import InventoryCoverage
+from ......shared.code.models.inventories.inventory_status import InventoryStatus
+from ......shared.code.models.inventories.member_inventory_coverage import MemberInventoryCoverage
 from ......shared.code.models.values.source_value import SourceValue
 from ......shared.code.models.values.source_value_declaration_kind import SourceValueDeclarationKind
 from ......shared.code.models.values.source_value_scope import SourceValueScope
-from ....models.extractor_invariant_error import ExtractorInvariantError
-from ....models.extractor_invariant_violation import ExtractorInvariantViolation
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
 from ...observations.value_candidate import PythonValueCandidate
 from ..catalog import PythonSemanticCatalog
 from ..contribution import PythonSemanticContribution
-from ..policies.assigned_value_reader import PythonAssignedValueReader
-from ..policies.declaration_identity_factory import PythonDeclarationIdentityFactory
-from ..policies.type_alias_classifier import PythonTypeAliasClassifier
 from ..policies.visibility_policy import PythonVisibilityPolicy
 from ..reader import PythonSemanticContributor
 
@@ -27,10 +27,23 @@ from ..reader import PythonSemanticContributor
 @injectable(as_type=PythonSemanticContributor, qualifier="50-value")
 @dataclass(frozen=True)
 class ValueSemanticContributor(PythonSemanticContributor):
-    aliases: PythonTypeAliasClassifier
-    assigned_values: PythonAssignedValueReader
     visibility: PythonVisibilityPolicy
-    identities: PythonDeclarationIdentityFactory
+
+    @cached_property
+    def has_final_annotation_dispatch(self) -> Callable[[ast.stmt], bool]:
+        return self.has_final_annotation
+
+    @cached_property
+    def value_kind_dispatch(self) -> Callable[[ast.stmt], SourceSymbolKind]:
+        return self.value_kind
+
+    @cached_property
+    def expression_kind_dispatch(self) -> Callable[[ast.expr], SourceSymbolKind]:
+        return self.expression_kind
+
+    @cached_property
+    def value_scope_dispatch(self) -> Callable[[ast.AST], SourceValueScope]:
+        return self.value_scope
 
     @property
     def order(self) -> int:
@@ -42,46 +55,58 @@ class ValueSemanticContributor(PythonSemanticContributor):
         catalog: PythonSemanticCatalog,
         context: PythonSourceContext,
     ) -> PythonSemanticContribution:
-        values = tuple(
-            self.source_value(candidate, context)
-            for candidate in observation.values
-            if candidate.target.id != "__all__"
-            and not self.aliases.is_alias(candidate)
-            and self.value_kind(candidate.statement) is not SourceSymbolKind.VALUE_CALLABLE
+        values: list[SourceValue] = []
+        aliases: list[SourceDeclaration] = []
+        for candidate in observation.values:
+            if candidate.target not in catalog.scope_identities:
+                continue
+            if catalog.scope_identities[candidate.target].family is DeclarationFamily.TYPE:
+                aliases.append(self.source_alias(candidate, catalog))
+            else:
+                values.append(self.source_value(candidate, catalog))
+        return PythonSemanticContribution(values=tuple(values), declarations=tuple(aliases))
+
+    def source_alias(self, candidate: PythonValueCandidate, catalog: PythonSemanticCatalog) -> SourceDeclaration:
+        start, end = candidate.source_span
+        absent = InventoryCoverage(status=InventoryStatus.NOT_APPLICABLE, limitations=())
+        return SourceDeclaration(
+            declaration_id=catalog.scope_identities[candidate.target],
+            kind=SourceSymbolKind.TYPE_ALIAS,
+            name=candidate.target.id,
+            visibility=SourceVisibility.PUBLIC,
+            visibility_intent=self.visibility.classify(candidate.target.id),
+            declaration_annotations=(),
+            line_count=end - start + 1,
+            placement=catalog.placement(candidate.binding_scope),
+            inventory=MemberInventoryCoverage(
+                methods=absent, abstract_methods=absent, properties=absent, signatures=absent
+            ),
         )
-        return PythonSemanticContribution(values=values)
 
     def source_value(
         self,
         candidate: PythonValueCandidate,
-        context: PythonSourceContext,
+        catalog: PythonSemanticCatalog,
     ) -> SourceValue:
-        line_end = candidate.statement.end_lineno
-        if line_end is None:
-            raise ExtractorInvariantError(ExtractorInvariantViolation.MISSING_VALUE_END_LINE, candidate.target.id)
+        start, end = candidate.source_span
         return SourceValue(
-            declaration_id=self.identities.create(
-                context.source_id,
-                DeclarationFamily.VALUE,
-                candidate.target.id,
-                candidate.target.lineno,
-                candidate.target.col_offset,
-            ),
+            declaration_id=catalog.scope_identities[candidate.target],
             name=candidate.target.id,
             visibility=SourceVisibility.PUBLIC,
             visibility_intent=self.visibility.classify(candidate.target.id),
-            line_count=line_end - candidate.statement.lineno + 1,
+            line_count=end - start + 1,
             declaration_kind=(
                 SourceValueDeclarationKind.CONSTANT
                 if self.is_constant(candidate)
                 else SourceValueDeclarationKind.ASSIGNMENT
             ),
-            value_kind=self.value_kind(candidate.statement),
-            scope=SourceValueScope.MODULE,
+            value_kind=self.value_kind_dispatch(candidate.statement),
+            scope=self.value_scope_dispatch(candidate.binding_scope),
+            placement=catalog.placement(candidate.binding_scope),
         )
 
     def is_constant(self, candidate: PythonValueCandidate) -> bool:
-        return candidate.target.id.isupper() or self.has_final_annotation(candidate.statement)
+        return candidate.target.id.isupper() or self.has_final_annotation_dispatch(candidate.statement)
 
     @singledispatchmethod
     def has_final_annotation(self, statement: ast.stmt) -> bool:
@@ -97,13 +122,13 @@ class ValueSemanticContributor(PythonSemanticContributor):
 
     @value_kind.register
     def assigned_value_kind(self, statement: ast.Assign) -> SourceSymbolKind:
-        return self.expression_kind(statement.value)
+        return self.expression_kind_dispatch(statement.value)
 
     @value_kind.register
     def annotated_value_kind(self, statement: ast.AnnAssign) -> SourceSymbolKind:
         if statement.value is None:
             return SourceSymbolKind.VALUE_UNKNOWN
-        return self.expression_kind(statement.value)
+        return self.expression_kind_dispatch(statement.value)
 
     @singledispatchmethod
     def expression_kind(self, expression: ast.expr) -> SourceSymbolKind:
@@ -136,3 +161,11 @@ class ValueSemanticContributor(PythonSemanticContributor):
     @expression_kind.register
     def call_expression_kind(self, expression: ast.Call) -> SourceSymbolKind:
         return SourceSymbolKind.VALUE_OBJECT
+
+    @singledispatchmethod
+    def value_scope(self, scope: ast.AST) -> SourceValueScope:
+        return SourceValueScope.LOCAL
+
+    @value_scope.register
+    def module_value_scope(self, scope: ast.Module) -> SourceValueScope:
+        return SourceValueScope.MODULE

@@ -13,9 +13,36 @@
         "source_id": "java/src/Example.java",
         "family": "interface",
         "qualified_name": "ExampleGenerated",
-        "ordinal": 10001
+        "ordinal": 4294967297,
+        "content_digest": "de14559d5bdc1b78cb12e4e6cab23911635469f8fc57aed798f780063fed9dcd"
       },
       "kind": "annotation",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "abstract_methods": [
         {
           "name": "value",
@@ -27,11 +54,27 @@
             "source_id": "java/src/Example.java",
             "family": "method",
             "qualified_name": "ExampleGenerated.value",
-            "ordinal": 20005
+            "ordinal": 8589934597,
+            "content_digest": "de14559d5bdc1b78cb12e4e6cab23911635469f8fc57aed798f780063fed9dcd"
           },
           "source_id": "java/src/Example.java",
           "qualified_name": "ExampleGenerated.value",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "java/src/Example.java",
+                "family": "interface",
+                "qualified_name": "ExampleGenerated",
+                "ordinal": 4294967297,
+                "content_digest": "de14559d5bdc1b78cb12e4e6cab23911635469f8fc57aed798f780063fed9dcd"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 2,
           "line_end": 2,
           "return_type": {
@@ -42,7 +85,8 @@
             "source_id": "java/src/Example.java",
             "family": "interface",
             "qualified_name": "ExampleGenerated",
-            "ordinal": 10001
+            "ordinal": 4294967297,
+            "content_digest": "de14559d5bdc1b78cb12e4e6cab23911635469f8fc57aed798f780063fed9dcd"
           }
         }
       ],
@@ -52,13 +96,15 @@
             "source_id": "java/src/Example.java",
             "family": "property",
             "qualified_name": "ExampleGenerated.value",
-            "ordinal": 20005
+            "ordinal": 8589934597,
+            "content_digest": "de14559d5bdc1b78cb12e4e6cab23911635469f8fc57aed798f780063fed9dcd"
           },
           "owner_declaration_id": {
             "source_id": "java/src/Example.java",
             "family": "interface",
             "qualified_name": "ExampleGenerated",
-            "ordinal": 10001
+            "ordinal": 4294967297,
+            "content_digest": "de14559d5bdc1b78cb12e4e6cab23911635469f8fc57aed798f780063fed9dcd"
           },
           "name": "value",
           "is_optional": false,
@@ -68,6 +114,21 @@
           },
           "visibility": "public",
           "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "java/src/Example.java",
+                "family": "interface",
+                "qualified_name": "ExampleGenerated",
+                "ordinal": 4294967297,
+                "content_digest": "de14559d5bdc1b78cb12e4e6cab23911635469f8fc57aed798f780063fed9dcd"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "assigned_values": [
             {
               "kind": "unsupported",
@@ -90,22 +151,51 @@
         "source_id": "java/src/Example.java",
         "family": "class",
         "qualified_name": "Example",
-        "ordinal": 50001
+        "ordinal": 21474836481,
+        "content_digest": "de14559d5bdc1b78cb12e4e6cab23911635469f8fc57aed798f780063fed9dcd"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "properties": [
         {
           "declaration_id": {
             "source_id": "java/src/Example.java",
             "family": "property",
             "qualified_name": "Example.exampleDeclared",
-            "ordinal": 70012
+            "ordinal": 30064771084,
+            "content_digest": "de14559d5bdc1b78cb12e4e6cab23911635469f8fc57aed798f780063fed9dcd"
           },
           "owner_declaration_id": {
             "source_id": "java/src/Example.java",
             "family": "class",
             "qualified_name": "Example",
-            "ordinal": 50001
+            "ordinal": 21474836481,
+            "content_digest": "de14559d5bdc1b78cb12e4e6cab23911635469f8fc57aed798f780063fed9dcd"
           },
           "name": "exampleDeclared",
           "is_optional": false,
@@ -115,6 +205,21 @@
           },
           "visibility": "internal",
           "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "java/src/Example.java",
+                "family": "class",
+                "qualified_name": "Example",
+                "ordinal": 21474836481,
+                "content_digest": "de14559d5bdc1b78cb12e4e6cab23911635469f8fc57aed798f780063fed9dcd"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "assigned_values": [
             {
               "kind": "unsupported",
@@ -127,6 +232,41 @@
     }
   ],
   "functions": [],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 9,
   "code_line_count": 7,
   "public_symbol_count": 0

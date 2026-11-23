@@ -14,7 +14,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/Example.php",
+            "family": "class",
+            "qualified_name": "ExampleValue",
+            "ordinal": 7,
+            "content_digest": "6facb28cd5a443c673e1f235992ef543dfcf89026d3f067a2b79bd4ffffdf163"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "declarations": [
@@ -28,22 +40,51 @@
         "source_id": "php/src/Example.php",
         "family": "class",
         "qualified_name": "ExampleValue",
-        "ordinal": 7
+        "ordinal": 7,
+        "content_digest": "6facb28cd5a443c673e1f235992ef543dfcf89026d3f067a2b79bd4ffffdf163"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "properties": [
         {
           "declaration_id": {
             "source_id": "php/src/Example.php",
             "family": "property",
             "qualified_name": "ExampleValue.exampleDeclared",
-            "ordinal": 46
+            "ordinal": 46,
+            "content_digest": "6facb28cd5a443c673e1f235992ef543dfcf89026d3f067a2b79bd4ffffdf163"
           },
           "owner_declaration_id": {
             "source_id": "php/src/Example.php",
             "family": "class",
             "qualified_name": "ExampleValue",
-            "ordinal": 7
+            "ordinal": 7,
+            "content_digest": "6facb28cd5a443c673e1f235992ef543dfcf89026d3f067a2b79bd4ffffdf163"
           },
           "name": "exampleDeclared",
           "is_optional": false,
@@ -53,6 +94,21 @@
           },
           "visibility": "public",
           "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "php/src/Example.php",
+                "family": "class",
+                "qualified_name": "ExampleValue",
+                "ordinal": 7,
+                "content_digest": "6facb28cd5a443c673e1f235992ef543dfcf89026d3f067a2b79bd4ffffdf163"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "assigned_values": [
             {
               "kind": "unsupported",
@@ -71,7 +127,8 @@
         "source_id": "php/src/Example.php",
         "family": "value",
         "qualified_name": "exampleValue",
-        "ordinal": 80
+        "ordinal": 80,
+        "content_digest": "6facb28cd5a443c673e1f235992ef543dfcf89026d3f067a2b79bd4ffffdf163"
       },
       "name": "exampleValue",
       "visibility": "private",
@@ -79,9 +136,72 @@
       "line_count": 1,
       "declaration_kind": "assignment",
       "value_kind": "value_object",
-      "scope": "module"
+      "scope": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "incomplete",
+      "limitations": [
+        {
+          "kind": "unsupported_syntax",
+          "location": {
+            "start_line": 8,
+            "end_line": 8,
+            "kind": "source"
+          },
+          "description": "Binding target is not represented as a named source value."
+        }
+      ]
+    },
+    "callable_values": {
+      "status": "incomplete",
+      "limitations": [
+        {
+          "kind": "unsupported_syntax",
+          "location": {
+            "start_line": 8,
+            "end_line": 8,
+            "kind": "source"
+          },
+          "description": "Callable ownership of this binding is not represented."
+        }
+      ]
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 9,
   "code_line_count": 7,
   "public_symbol_count": 1

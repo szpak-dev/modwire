@@ -1,0 +1,3 @@
+
+class ExampleOwner {}
+export = ExampleOwner;

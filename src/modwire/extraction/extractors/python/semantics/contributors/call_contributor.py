@@ -4,6 +4,10 @@ from wireup import injectable
 
 from ......shared.code.models.callables.source_callable_kind import SourceCallableKind
 from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ......shared.code.models.declarations.source_binding_kind import SourceBindingKind
+from ......shared.code.models.declarations.source_resolved_target import SourceResolvedTarget
+from ......shared.code.models.declarations.source_unresolved_reason import SourceUnresolvedReason
+from ......shared.code.models.declarations.source_unresolved_target import SourceUnresolvedTarget
 from ...observations.call_candidate import PythonCallCandidate
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
@@ -25,43 +29,42 @@ class CallSemanticContributor(PythonSemanticContributor):
         return 90
 
     def contribute(
-        self,
-        observation: PythonSourceObservation,
-        catalog: PythonSemanticCatalog,
-        context: PythonSourceContext,
+        self, observation: PythonSourceObservation, catalog: PythonSemanticCatalog, context: PythonSourceContext
     ) -> PythonSemanticContribution:
-        by_qualified_name: dict[str, list[DeclarationIdentity]] = {}
-        by_name: dict[str, list[DeclarationIdentity]] = {}
-        constructors_by_name: dict[str, list[DeclarationIdentity]] = {}
-        by_ordinal: dict[int, DeclarationIdentity] = {}
-        for item in catalog.canonical_callables():
-            if item.qualified_name not in by_qualified_name:
-                by_qualified_name[item.qualified_name] = []
-            by_qualified_name[item.qualified_name].append(item.declaration_id)
-            if item.kind in {SourceCallableKind.FUNCTION, SourceCallableKind.CALLABLE_VALUE}:
-                if item.name not in by_name:
-                    by_name[item.name] = []
-                by_name[item.name].append(item.declaration_id)
-            by_ordinal[item.declaration_id.ordinal] = item.declaration_id
-        for item in catalog.methods:
-            if item.kind is SourceCallableKind.CONSTRUCTOR:
-                owner_name = item.owner_declaration_id.qualified_name.rsplit(".", 1)[-1]
-                if owner_name not in constructors_by_name:
-                    constructors_by_name[owner_name] = []
-                constructors_by_name[owner_name].append(item.declaration_id)
-        candidates = tuple(
-            PythonCallCandidate(
-                node=call.node,
-                reference=self.references.read(call),
-                ordinal=call.ordinal,
-                source_qualified_name=call.source_qualified_name,
-                owner_name=call.owner_name,
-                source_id=context.source_id,
-                source_callable_id=by_ordinal[call.source_ordinal],
-                by_name=by_name,
-                by_qualified_name=by_qualified_name,
-                constructors_by_name=constructors_by_name,
+        callables = {item.declaration_id for item in catalog.canonical_callables()}
+        candidates: list[PythonCallCandidate] = []
+        for call in observation.calls:
+            reference = self.references.read(call)
+            target, _ = catalog.resolve(reference.expression, call.binding_scope)
+            resolved: list[DeclarationIdentity] = []
+            if target.kind is SourceBindingKind.RESOLVED:
+                if target.declaration_id in callables:
+                    resolved.append(target.declaration_id)
+                else:
+                    resolved.extend(
+                        item.declaration_id
+                        for item in catalog.methods
+                        if item.owner_declaration_id == target.declaration_id
+                        and item.kind is SourceCallableKind.CONSTRUCTOR
+                    )
+            binding: SourceResolvedTarget | SourceUnresolvedTarget
+            if len(resolved) == 1:
+                binding = SourceResolvedTarget(declaration_id=resolved[0])
+            elif not reference.is_reference:
+                binding = SourceUnresolvedTarget(reason=SourceUnresolvedReason.DYNAMIC)
+            elif resolved:
+                binding = SourceUnresolvedTarget(reason=SourceUnresolvedReason.AMBIGUOUS)
+            elif target.kind is SourceBindingKind.UNRESOLVED:
+                binding = target
+            else:
+                binding = SourceUnresolvedTarget(reason=SourceUnresolvedReason.UNOBSERVED)
+            candidates.append(
+                PythonCallCandidate(
+                    node=call.node,
+                    reference=reference,
+                    ordinal=call.ordinal,
+                    source_callable_id=catalog.scope_identities[call.source_callable],
+                    target=binding,
+                )
             )
-            for call in observation.calls
-        )
         return PythonSemanticContribution(calls=tuple(self.targets.classify(candidates)))

@@ -37,9 +37,36 @@
         "source_id": "java/src/Example.java",
         "family": "class",
         "qualified_name": "Example",
-        "ordinal": 30001
+        "ordinal": 12884901889,
+        "content_digest": "5fe228074158f568aa7e361ba130414452d1b778d4a39209c1772b8ee4981613"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "exampleValues",
@@ -51,11 +78,27 @@
             "source_id": "java/src/Example.java",
             "family": "method",
             "qualified_name": "Example.exampleValues",
-            "ordinal": 40005
+            "ordinal": 17179869189,
+            "content_digest": "5fe228074158f568aa7e361ba130414452d1b778d4a39209c1772b8ee4981613"
           },
           "source_id": "java/src/Example.java",
           "qualified_name": "Example.exampleValues",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "java/src/Example.java",
+                "family": "class",
+                "qualified_name": "Example",
+                "ordinal": 12884901889,
+                "content_digest": "5fe228074158f568aa7e361ba130414452d1b778d4a39209c1772b8ee4981613"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 4,
           "line_end": 6,
           "return_type": {
@@ -72,7 +115,8 @@
             "source_id": "java/src/Example.java",
             "family": "class",
             "qualified_name": "Example",
-            "ordinal": 30001
+            "ordinal": 12884901889,
+            "content_digest": "5fe228074158f568aa7e361ba130414452d1b778d4a39209c1772b8ee4981613"
           }
         }
       ]
@@ -85,7 +129,8 @@
         "source_id": "java/src/Example.java",
         "family": "method",
         "qualified_name": "Example.exampleValues",
-        "ordinal": 40005
+        "ordinal": 17179869189,
+        "content_digest": "5fe228074158f568aa7e361ba130414452d1b778d4a39209c1772b8ee4981613"
       },
       "ordinal": 1,
       "target_callable_id": null,
@@ -96,6 +141,41 @@
       "target_name": "of"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 8,
   "code_line_count": 6,
   "public_symbol_count": 0

@@ -6,6 +6,5 @@ from dataclasses import dataclass
 class PythonCallObservation:
     node: ast.Call
     ordinal: int
-    source_qualified_name: str
-    source_ordinal: int
-    owner_name: str
+    source_callable: ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda
+    binding_scope: ast.Module | ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda

@@ -1,0 +1,101 @@
+{
+  "declarations": [],
+  "callables": [
+    {
+      "kind": "callable",
+      "qualified_name": "<anonymous>@15",
+      "callable_kind": "anonymous"
+    }
+  ],
+  "attributes": [],
+  "namespaces": [],
+  "signatures": {},
+  "spans": [],
+  "owners": [],
+  "unresolved_methods": [],
+  "parameters": {},
+  "returns": {},
+  "gaps": {},
+  "placements": [
+    [
+      {
+        "source_id": "typescript_exports/src/default_callable.ts",
+        "family": "callable",
+        "qualified_name": "<anonymous>@15",
+        "ordinal": 16,
+        "content_digest": "09947bcea45f354c0237ea5ddf23e5d0de1614c366121c816f65905ba899e3a1"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ]
+  ],
+  "exports": [
+    {
+      "name": "default",
+      "local_name": "() => \"example\"",
+      "kind": "unknown",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": true,
+      "is_aliased": true,
+      "statement_id": 1,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "typescript_exports/src/default_callable.ts",
+            "family": "callable",
+            "qualified_name": "<anonymous>@15",
+            "ordinal": 16,
+            "content_digest": "09947bcea45f354c0237ea5ddf23e5d0de1614c366121c816f65905ba899e3a1"
+          }
+        ]
+      }
+    }
+  ],
+  "relations": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "member_inventories": []
+}

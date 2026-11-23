@@ -14,7 +14,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "python/src/params.py",
+            "family": "function",
+            "qualified_name": "example_parameters",
+            "ordinal": 4294967297,
+            "content_digest": "923c8c1c8e543b29db32648ffbe62403d3e0e803327b3f5e33db2c9efaa3725d"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "functions": [
@@ -28,10 +40,19 @@
         "source_id": "python/src/params.py",
         "family": "function",
         "qualified_name": "example_parameters",
-        "ordinal": 4294967297
+        "ordinal": 4294967297,
+        "content_digest": "923c8c1c8e543b29db32648ffbe62403d3e0e803327b3f5e33db2c9efaa3725d"
       },
       "source_id": "python/src/params.py",
       "qualified_name": "example_parameters",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 1,
       "line_end": 9,
       "parameters": [
@@ -80,6 +101,41 @@
       "kind": "function"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 9,
   "code_line_count": 9,
   "public_symbol_count": 1

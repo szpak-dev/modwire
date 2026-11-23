@@ -28,9 +28,9 @@
   ],
   "exports": [
     {
-      "name": "ExampleAbstract",
-      "local_name": "ExampleAbstract",
-      "kind": "abstract_class",
+      "name": "EXAMPLE_CONSTANT",
+      "local_name": "EXAMPLE_CONSTANT",
+      "kind": "value",
       "crossing_type": "symbol",
       "path": "",
       "is_relative": false,
@@ -38,20 +38,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
-    },
-    {
-      "name": "ExampleImplementation",
-      "local_name": "ExampleImplementation",
-      "kind": "class",
-      "crossing_type": "symbol",
-      "path": "",
-      "is_relative": false,
-      "normalized_path": "",
-      "is_reexport": false,
-      "is_default": false,
-      "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 45,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example.ts",
+            "family": "value",
+            "qualified_name": "EXAMPLE_CONSTANT",
+            "ordinal": 45,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
       "name": "ExampleContract",
@@ -64,7 +63,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 76,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example.ts",
+            "family": "interface",
+            "qualified_name": "ExampleContract",
+            "ordinal": 76,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
       "name": "ExampleCallback",
@@ -77,12 +88,24 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 195,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example.ts",
+            "family": "type",
+            "qualified_name": "ExampleCallback",
+            "ordinal": 195,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
-      "name": "EXAMPLE_CONSTANT",
-      "local_name": "EXAMPLE_CONSTANT",
-      "kind": "value",
+      "name": "ExampleAbstract",
+      "local_name": "ExampleAbstract",
+      "kind": "abstract_class",
       "crossing_type": "symbol",
       "path": "",
       "is_relative": false,
@@ -90,7 +113,44 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 284,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example.ts",
+            "family": "abstract_class",
+            "qualified_name": "ExampleAbstract",
+            "ordinal": 284,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+          }
+        ],
+        "kind": "resolved"
+      }
+    },
+    {
+      "name": "ExampleImplementation",
+      "local_name": "ExampleImplementation",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 387,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example.ts",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 387,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
       "name": "exampleArrow",
@@ -103,161 +163,22 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 787,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example.ts",
+            "family": "value",
+            "qualified_name": "exampleArrow",
+            "ordinal": 787,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "declarations": [
-    {
-      "name": "ExampleImplementation",
-      "visibility": "public",
-      "visibility_intent": "public",
-      "line_count": 12,
-      "declaration_annotations": [],
-      "declaration_id": {
-        "source_id": "typescript/src/example.ts",
-        "family": "class",
-        "qualified_name": "ExampleImplementation",
-        "ordinal": 387
-      },
-      "kind": "class",
-      "methods": [
-        {
-          "name": "exampleRequired",
-          "visibility": "public",
-          "visibility_intent": "public",
-          "line_count": 3,
-          "declaration_annotations": [],
-          "declaration_id": {
-            "source_id": "typescript/src/example.ts",
-            "family": "method",
-            "qualified_name": "ExampleImplementation.exampleRequired",
-            "ordinal": 547
-          },
-          "source_id": "typescript/src/example.ts",
-          "qualified_name": "ExampleImplementation.exampleRequired",
-          "kind": "instance_method",
-          "line_start": 20,
-          "line_end": 22,
-          "parameters": [
-            {
-              "name": "exampleValue",
-              "type": {
-                "name": "string",
-                "kind": "reference"
-              },
-              "kind": "positional"
-            }
-          ],
-          "return_type": {
-            "name": "string",
-            "kind": "reference"
-          },
-          "owner_declaration_id": {
-            "source_id": "typescript/src/example.ts",
-            "family": "class",
-            "qualified_name": "ExampleImplementation",
-            "ordinal": 387
-          }
-        },
-        {
-          "name": "examplePath",
-          "visibility": "public",
-          "visibility_intent": "public",
-          "line_count": 3,
-          "declaration_annotations": [],
-          "declaration_id": {
-            "source_id": "typescript/src/example.ts",
-            "family": "method",
-            "qualified_name": "ExampleImplementation.examplePath",
-            "ordinal": 635
-          },
-          "source_id": "typescript/src/example.ts",
-          "qualified_name": "ExampleImplementation.examplePath",
-          "kind": "instance_method",
-          "line_start": 24,
-          "line_end": 26,
-          "parameters": [
-            {
-              "name": "exampleRoot",
-              "type": {
-                "name": "string",
-                "kind": "reference"
-              },
-              "kind": "positional"
-            }
-          ],
-          "return_type": {
-            "name": "string",
-            "kind": "reference"
-          },
-          "owner_declaration_id": {
-            "source_id": "typescript/src/example.ts",
-            "family": "class",
-            "qualified_name": "ExampleImplementation",
-            "ordinal": 387
-          }
-        }
-      ],
-      "properties": [
-        {
-          "declaration_id": {
-            "source_id": "typescript/src/example.ts",
-            "family": "property",
-            "qualified_name": "ExampleImplementation.exampleStatic",
-            "ordinal": 479
-          },
-          "owner_declaration_id": {
-            "source_id": "typescript/src/example.ts",
-            "family": "class",
-            "qualified_name": "ExampleImplementation",
-            "ordinal": 387
-          },
-          "name": "exampleStatic",
-          "is_optional": false,
-          "type": {
-            "kind": "absent"
-          },
-          "visibility": "public",
-          "member_kind": "static",
-          "assigned_values": [
-            {
-              "kind": "unsupported",
-              "expression": "",
-              "reference": ""
-            }
-          ]
-        },
-        {
-          "declaration_id": {
-            "source_id": "typescript/src/example.ts",
-            "family": "property",
-            "qualified_name": "ExampleImplementation.exampleOptional",
-            "ordinal": 516
-          },
-          "owner_declaration_id": {
-            "source_id": "typescript/src/example.ts",
-            "family": "class",
-            "qualified_name": "ExampleImplementation",
-            "ordinal": 387
-          },
-          "name": "exampleOptional",
-          "is_optional": true,
-          "type": {
-            "name": "string",
-            "kind": "reference"
-          },
-          "visibility": "public",
-          "member_kind": "instance",
-          "assigned_values": [
-            {
-              "kind": "unsupported",
-              "expression": "",
-              "reference": ""
-            }
-          ]
-        }
-      ]
-    },
     {
       "name": "ExampleContract",
       "visibility": "public",
@@ -268,10 +189,37 @@
         "source_id": "typescript/src/example.ts",
         "family": "interface",
         "qualified_name": "ExampleContract",
-        "ordinal": 76
+        "ordinal": 76,
+        "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
       },
       "kind": "interface",
-      "methods": [
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      },
+      "abstract_methods": [
         {
           "name": "exampleRequired",
           "visibility": "public",
@@ -282,11 +230,27 @@
             "source_id": "typescript/src/example.ts",
             "family": "method",
             "qualified_name": "ExampleContract.exampleRequired",
-            "ordinal": 145
+            "ordinal": 145,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
           },
           "source_id": "typescript/src/example.ts",
           "qualified_name": "ExampleContract.exampleRequired",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "typescript/src/example.ts",
+                "family": "interface",
+                "qualified_name": "ExampleContract",
+                "ordinal": 76,
+                "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 7,
           "line_end": 7,
           "parameters": [
@@ -307,7 +271,8 @@
             "source_id": "typescript/src/example.ts",
             "family": "interface",
             "qualified_name": "ExampleContract",
-            "ordinal": 76
+            "ordinal": 76,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
           }
         }
       ],
@@ -317,13 +282,15 @@
             "source_id": "typescript/src/example.ts",
             "family": "property",
             "qualified_name": "ExampleContract.exampleOptional",
-            "ordinal": 115
+            "ordinal": 115,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
           },
           "owner_declaration_id": {
             "source_id": "typescript/src/example.ts",
             "family": "interface",
             "qualified_name": "ExampleContract",
-            "ordinal": 76
+            "ordinal": 76,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
           },
           "name": "exampleOptional",
           "is_optional": true,
@@ -333,6 +300,21 @@
           },
           "visibility": "public",
           "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "typescript/src/example.ts",
+                "family": "interface",
+                "qualified_name": "ExampleContract",
+                "ordinal": 76,
+                "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "assigned_values": [
             {
               "kind": "unsupported",
@@ -353,9 +335,44 @@
         "source_id": "typescript/src/example.ts",
         "family": "type",
         "qualified_name": "ExampleCallback",
-        "ordinal": 195
+        "ordinal": 195,
+        "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
       },
-      "kind": "type_alias"
+      "kind": "type_alias",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      },
+      "signatures": [
+        {
+          "kind": "call",
+          "line_count": 1,
+          "declared_args": 2,
+          "optional_args": 1
+        }
+      ]
     },
     {
       "name": "ExampleAbstract",
@@ -367,9 +384,36 @@
         "source_id": "typescript/src/example.ts",
         "family": "abstract_class",
         "qualified_name": "ExampleAbstract",
-        "ordinal": 284
+        "ordinal": 284,
+        "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
       },
       "kind": "abstract_class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      },
       "abstract_methods": [
         {
           "name": "exampleRequired",
@@ -381,11 +425,27 @@
             "source_id": "typescript/src/example.ts",
             "family": "method",
             "qualified_name": "ExampleAbstract.exampleRequired",
-            "ordinal": 328
+            "ordinal": 328,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
           },
           "source_id": "typescript/src/example.ts",
           "qualified_name": "ExampleAbstract.exampleRequired",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "typescript/src/example.ts",
+                "family": "abstract_class",
+                "qualified_name": "ExampleAbstract",
+                "ordinal": 284,
+                "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 13,
           "line_end": 13,
           "parameters": [
@@ -406,8 +466,255 @@
             "source_id": "typescript/src/example.ts",
             "family": "abstract_class",
             "qualified_name": "ExampleAbstract",
-            "ordinal": 284
+            "ordinal": 284,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
           }
+        }
+      ]
+    },
+    {
+      "name": "ExampleImplementation",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 12,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleImplementation",
+        "ordinal": 387,
+        "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+      },
+      "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      },
+      "methods": [
+        {
+          "name": "exampleRequired",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "typescript/src/example.ts",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.exampleRequired",
+            "ordinal": 547,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+          },
+          "source_id": "typescript/src/example.ts",
+          "qualified_name": "ExampleImplementation.exampleRequired",
+          "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "typescript/src/example.ts",
+                "family": "class",
+                "qualified_name": "ExampleImplementation",
+                "ordinal": 387,
+                "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
+          "line_start": 20,
+          "line_end": 22,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "string",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example.ts",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 387,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+          }
+        },
+        {
+          "name": "examplePath",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 3,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "typescript/src/example.ts",
+            "family": "method",
+            "qualified_name": "ExampleImplementation.examplePath",
+            "ordinal": 635,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+          },
+          "source_id": "typescript/src/example.ts",
+          "qualified_name": "ExampleImplementation.examplePath",
+          "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "typescript/src/example.ts",
+                "family": "class",
+                "qualified_name": "ExampleImplementation",
+                "ordinal": 387,
+                "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
+          "line_start": 24,
+          "line_end": 26,
+          "parameters": [
+            {
+              "name": "exampleRoot",
+              "type": {
+                "name": "string",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example.ts",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 387,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "typescript/src/example.ts",
+            "family": "property",
+            "qualified_name": "ExampleImplementation.exampleStatic",
+            "ordinal": 479,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example.ts",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 387,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+          },
+          "name": "exampleStatic",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "static",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "typescript/src/example.ts",
+                "family": "class",
+                "qualified_name": "ExampleImplementation",
+                "ordinal": 387,
+                "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        },
+        {
+          "declaration_id": {
+            "source_id": "typescript/src/example.ts",
+            "family": "property",
+            "qualified_name": "ExampleImplementation.exampleOptional",
+            "ordinal": 516,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+          },
+          "owner_declaration_id": {
+            "source_id": "typescript/src/example.ts",
+            "family": "class",
+            "qualified_name": "ExampleImplementation",
+            "ordinal": 387,
+            "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+          },
+          "name": "exampleOptional",
+          "is_optional": true,
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "typescript/src/example.ts",
+                "family": "class",
+                "qualified_name": "ExampleImplementation",
+                "ordinal": 387,
+                "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
         }
       ]
     }
@@ -419,7 +726,8 @@
         "source_id": "typescript/src/example.ts",
         "family": "value",
         "qualified_name": "EXAMPLE_CONSTANT",
-        "ordinal": 45
+        "ordinal": 45,
+        "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
       },
       "name": "EXAMPLE_CONSTANT",
       "visibility": "public",
@@ -427,7 +735,15 @@
       "line_count": 1,
       "declaration_kind": "constant",
       "value_kind": "value_literal",
-      "scope": "module"
+      "scope": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     }
   ],
   "callable_values": [
@@ -441,10 +757,19 @@
         "source_id": "typescript/src/example.ts",
         "family": "value",
         "qualified_name": "exampleArrow",
-        "ordinal": 772
+        "ordinal": 787,
+        "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
       },
       "source_id": "typescript/src/example.ts",
       "qualified_name": "exampleArrow",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 29,
       "line_end": 29,
       "parameters": [
@@ -472,7 +797,8 @@
         "source_id": "typescript/src/example.ts",
         "family": "method",
         "qualified_name": "ExampleImplementation.examplePath",
-        "ordinal": 635
+        "ordinal": 635,
+        "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
       },
       "ordinal": 1,
       "target_callable_id": null,
@@ -487,14 +813,16 @@
         "source_id": "typescript/src/example.ts",
         "family": "method",
         "qualified_name": "ExampleImplementation.examplePath",
-        "ordinal": 635
+        "ordinal": 635,
+        "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
       },
       "ordinal": 2,
       "target_callable_id": {
         "source_id": "typescript/src/example.ts",
         "family": "method",
         "qualified_name": "ExampleImplementation.exampleRequired",
-        "ordinal": 547
+        "ordinal": 547,
+        "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
       },
       "source_id": "typescript/src/example.ts",
       "line": 25,
@@ -509,22 +837,79 @@
         "source_id": "typescript/src/example.ts",
         "family": "class",
         "qualified_name": "ExampleImplementation",
-        "ordinal": 387
+        "ordinal": 387,
+        "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
       },
       "kind": "extends",
-      "target_reference": "ExampleAbstract"
+      "target_reference": "ExampleAbstract",
+      "target": {
+        "declaration_id": {
+          "source_id": "typescript/src/example.ts",
+          "family": "abstract_class",
+          "qualified_name": "ExampleAbstract",
+          "ordinal": 284,
+          "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+        },
+        "kind": "resolved"
+      }
     },
     {
       "source_declaration_id": {
         "source_id": "typescript/src/example.ts",
         "family": "class",
         "qualified_name": "ExampleImplementation",
-        "ordinal": 387
+        "ordinal": 387,
+        "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
       },
       "kind": "implements",
-      "target_reference": "ExampleContract"
+      "target_reference": "ExampleContract",
+      "target": {
+        "declaration_id": {
+          "source_id": "typescript/src/example.ts",
+          "family": "interface",
+          "qualified_name": "ExampleContract",
+          "ordinal": 76,
+          "content_digest": "e7d7c549d9f4337c731fd0ef8a40067c32b1134c39c6d55f902087047c0485d0"
+        },
+        "kind": "resolved"
+      }
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 30,
   "code_line_count": 21,
   "public_symbol_count": 6

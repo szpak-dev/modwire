@@ -1,8 +1,8 @@
 from typing import Literal
 
-from ....values.models.value_model import ValueModel
+from ..immutable_code_value import ImmutableCodeValue
 from .kind import SourceTypeKind
 
 
-class SourceTypeUnsupported(ValueModel):
+class SourceTypeUnsupported(ImmutableCodeValue):
     kind: Literal[SourceTypeKind.UNSUPPORTED] = SourceTypeKind.UNSUPPORTED

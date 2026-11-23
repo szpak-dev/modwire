@@ -5,6 +5,8 @@ from collections.abc import Iterable, Iterator
 from ...shared.code.models.queries.source_file_result import SourceFileResult
 from ..config.models.shape_rules import ShapeRules
 from .models.shape_realm_architecture_map import ShapeRealmArchitectureMap
+from .models.shape_rule_kind import ShapeRuleKind
+from .models.shape_symbol_kind import ShapeSymbolKind
 from .models.shape_violation import ShapeViolation
 
 
@@ -38,7 +40,14 @@ class BaseShapeResolver(ABC):
         return source_id in architecture_map.shape_realm_source_ids
 
     def limit_violation(
-        self, *, source_id: str, rule_name: str, actual: int, limit: int, symbol_kind: str, symbol_name: str
+        self,
+        *,
+        source_id: str,
+        rule_name: ShapeRuleKind,
+        actual: int,
+        limit: int,
+        symbol_kind: ShapeSymbolKind,
+        symbol_name: str,
     ) -> ShapeViolation | None:
         if limit < 0 or actual <= limit:
             return None

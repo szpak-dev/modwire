@@ -1,47 +1,14 @@
 from abc import ABC, abstractmethod
-from collections.abc import Collection, Hashable, Mapping
+from collections.abc import Collection
 from dataclasses import dataclass
 
 from wireup import injectable
 
 from ......shared.code.models.callables.source_call import SourceCall
 from ......shared.code.models.callables.source_call_resolution import SourceCallResolution
-from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
-from ....models.extractor_invariant_error import ExtractorInvariantError
-from ....models.extractor_invariant_violation import ExtractorInvariantViolation
+from ......shared.code.models.declarations.source_binding_kind import SourceBindingKind
+from ......shared.code.models.declarations.source_unresolved_reason import SourceUnresolvedReason
 from ...observations.call_candidate import PythonCallCandidate
-
-
-class PythonCallTargetRule(ABC):
-    @property
-    @abstractmethod
-    def order(self) -> int:
-        raise NotImplementedError
-
-    @abstractmethod
-    def applies(self, candidate: PythonCallCandidate) -> bool:
-        raise NotImplementedError
-
-    @abstractmethod
-    def classify(self, candidate: PythonCallCandidate) -> SourceCall:
-        raise NotImplementedError
-
-    def source_call(
-        self,
-        candidate: PythonCallCandidate,
-        target_callable_id: DeclarationIdentity | None,
-        resolution: SourceCallResolution,
-    ) -> SourceCall:
-        return SourceCall(
-            source_callable_id=candidate.source_callable_id,
-            ordinal=candidate.ordinal,
-            target_callable_id=target_callable_id,
-            source_id=candidate.source_id,
-            line=candidate.node.lineno,
-            expression=candidate.reference.expression,
-            resolution=resolution,
-            target_name=candidate.reference.target_name or candidate.reference.expression,
-        )
 
 
 class PythonCallTargetClassifier(ABC):
@@ -52,19 +19,31 @@ class PythonCallTargetClassifier(ABC):
 
 @injectable(as_type=PythonCallTargetClassifier)
 @dataclass(frozen=True)
-class OrderedPythonCallTargetClassifier(PythonCallTargetClassifier):
-    rules: Mapping[Hashable, PythonCallTargetRule]
-
+class ResolvedPythonCallTargetClassifier(PythonCallTargetClassifier):
     def classify(self, candidates: Collection[PythonCallCandidate]) -> Collection[SourceCall]:
-        ordered_rules = tuple(sorted(self.rules.values(), key=lambda item: item.order))
         calls: list[SourceCall] = []
         for candidate in candidates:
-            for rule in ordered_rules:
-                if rule.applies(candidate):
-                    calls.append(rule.classify(candidate))
-                    break
+            target = candidate.target
+            resolution = SourceCallResolution.RESOLVED
+            target_id = None
+            if target.kind is SourceBindingKind.RESOLVED:
+                target_id = target.declaration_id
             else:
-                raise ExtractorInvariantError(
-                    ExtractorInvariantViolation.UNCLASSIFIED_CALL_TARGET, candidate.reference.expression
+                resolution = (
+                    SourceCallResolution.DYNAMIC
+                    if target.reason is SourceUnresolvedReason.DYNAMIC
+                    else SourceCallResolution.UNRESOLVED
                 )
+            calls.append(
+                SourceCall(
+                    source_callable_id=candidate.source_callable_id,
+                    ordinal=candidate.ordinal,
+                    target_callable_id=target_id,
+                    source_id=candidate.source_callable_id.source_id,
+                    line=candidate.node.lineno,
+                    expression=candidate.reference.expression,
+                    resolution=resolution,
+                    target_name=candidate.reference.target_name,
+                )
+            )
         return tuple(calls)

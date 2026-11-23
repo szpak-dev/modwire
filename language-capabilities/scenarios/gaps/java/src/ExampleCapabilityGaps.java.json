@@ -29,12 +29,26 @@
   "namespaces": [
     {
       "kind": "package",
-      "qualified_name": "example.capability.gaps"
+      "declaration_id": {
+        "source_id": "java/src/ExampleCapabilityGaps.java",
+        "family": "namespace",
+        "qualified_name": "example.capability.gaps",
+        "ordinal": 4294967297,
+        "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
+      },
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     }
   ],
   "declarations": [
     {
-      "name": "ExampleMarker",
+      "name": "example.capability.gaps.ExampleMarker",
       "visibility": "internal",
       "visibility_intent": "internal",
       "line_count": 3,
@@ -42,10 +56,48 @@
       "declaration_id": {
         "source_id": "java/src/ExampleCapabilityGaps.java",
         "family": "interface",
-        "qualified_name": "ExampleMarker",
-        "ordinal": 50001
+        "qualified_name": "example.capability.gaps.ExampleMarker",
+        "ordinal": 21474836481,
+        "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
       },
       "kind": "annotation",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "namespace_reference": "example.capability.gaps",
+          "target": {
+            "declaration_id": {
+              "source_id": "java/src/ExampleCapabilityGaps.java",
+              "family": "namespace",
+              "qualified_name": "example.capability.gaps",
+              "ordinal": 4294967297,
+              "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
+            },
+            "kind": "resolved"
+          },
+          "kind": "member"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "abstract_methods": [
         {
           "name": "exampleValue",
@@ -56,12 +108,39 @@
           "declaration_id": {
             "source_id": "java/src/ExampleCapabilityGaps.java",
             "family": "method",
-            "qualified_name": "ExampleMarker.exampleValue",
-            "ordinal": 60005
+            "qualified_name": "example.capability.gaps.ExampleMarker.exampleValue",
+            "ordinal": 25769803781,
+            "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
           },
           "source_id": "java/src/ExampleCapabilityGaps.java",
-          "qualified_name": "ExampleMarker.exampleValue",
+          "qualified_name": "example.capability.gaps.ExampleMarker.exampleValue",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "java/src/ExampleCapabilityGaps.java",
+                "family": "interface",
+                "qualified_name": "example.capability.gaps.ExampleMarker",
+                "ordinal": 21474836481,
+                "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "example.capability.gaps",
+              "target": {
+                "declaration_id": {
+                  "source_id": "java/src/ExampleCapabilityGaps.java",
+                  "family": "namespace",
+                  "qualified_name": "example.capability.gaps",
+                  "ordinal": 4294967297,
+                  "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
           "line_start": 6,
           "line_end": 6,
           "return_type": {
@@ -71,8 +150,9 @@
           "owner_declaration_id": {
             "source_id": "java/src/ExampleCapabilityGaps.java",
             "family": "interface",
-            "qualified_name": "ExampleMarker",
-            "ordinal": 50001
+            "qualified_name": "example.capability.gaps.ExampleMarker",
+            "ordinal": 21474836481,
+            "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
           }
         }
       ],
@@ -81,14 +161,16 @@
           "declaration_id": {
             "source_id": "java/src/ExampleCapabilityGaps.java",
             "family": "property",
-            "qualified_name": "ExampleMarker.exampleValue",
-            "ordinal": 60005
+            "qualified_name": "example.capability.gaps.ExampleMarker.exampleValue",
+            "ordinal": 25769803781,
+            "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
           },
           "owner_declaration_id": {
             "source_id": "java/src/ExampleCapabilityGaps.java",
             "family": "interface",
-            "qualified_name": "ExampleMarker",
-            "ordinal": 50001
+            "qualified_name": "example.capability.gaps.ExampleMarker",
+            "ordinal": 21474836481,
+            "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
           },
           "name": "exampleValue",
           "is_optional": false,
@@ -98,6 +180,32 @@
           },
           "visibility": "public",
           "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "java/src/ExampleCapabilityGaps.java",
+                "family": "interface",
+                "qualified_name": "example.capability.gaps.ExampleMarker",
+                "ordinal": 21474836481,
+                "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "example.capability.gaps",
+              "target": {
+                "declaration_id": {
+                  "source_id": "java/src/ExampleCapabilityGaps.java",
+                  "family": "namespace",
+                  "qualified_name": "example.capability.gaps",
+                  "ordinal": 4294967297,
+                  "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
           "assigned_values": [
             {
               "kind": "unsupported",
@@ -109,7 +217,7 @@
       ]
     },
     {
-      "name": "ExampleBase",
+      "name": "example.capability.gaps.ExampleBase",
       "visibility": "internal",
       "visibility_intent": "internal",
       "line_count": 6,
@@ -119,10 +227,48 @@
       "declaration_id": {
         "source_id": "java/src/ExampleCapabilityGaps.java",
         "family": "class",
-        "qualified_name": "ExampleBase",
-        "ordinal": 90001
+        "qualified_name": "example.capability.gaps.ExampleBase",
+        "ordinal": 38654705665,
+        "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "namespace_reference": "example.capability.gaps",
+          "target": {
+            "declaration_id": {
+              "source_id": "java/src/ExampleCapabilityGaps.java",
+              "family": "namespace",
+              "qualified_name": "example.capability.gaps",
+              "ordinal": 4294967297,
+              "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
+            },
+            "kind": "resolved"
+          },
+          "kind": "member"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "exampleMethod",
@@ -133,12 +279,39 @@
           "declaration_id": {
             "source_id": "java/src/ExampleCapabilityGaps.java",
             "family": "method",
-            "qualified_name": "ExampleBase.exampleMethod",
-            "ordinal": 130005
+            "qualified_name": "example.capability.gaps.ExampleBase.exampleMethod",
+            "ordinal": 55834574853,
+            "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
           },
           "source_id": "java/src/ExampleCapabilityGaps.java",
-          "qualified_name": "ExampleBase.exampleMethod",
+          "qualified_name": "example.capability.gaps.ExampleBase.exampleMethod",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "java/src/ExampleCapabilityGaps.java",
+                "family": "class",
+                "qualified_name": "example.capability.gaps.ExampleBase",
+                "ordinal": 38654705665,
+                "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "example.capability.gaps",
+              "target": {
+                "declaration_id": {
+                  "source_id": "java/src/ExampleCapabilityGaps.java",
+                  "family": "namespace",
+                  "qualified_name": "example.capability.gaps",
+                  "ordinal": 4294967297,
+                  "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
           "line_start": 13,
           "line_end": 13,
           "return_type": {
@@ -148,8 +321,9 @@
           "owner_declaration_id": {
             "source_id": "java/src/ExampleCapabilityGaps.java",
             "family": "class",
-            "qualified_name": "ExampleBase",
-            "ordinal": 90001
+            "qualified_name": "example.capability.gaps.ExampleBase",
+            "ordinal": 38654705665,
+            "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
           }
         }
       ],
@@ -158,14 +332,16 @@
           "declaration_id": {
             "source_id": "java/src/ExampleCapabilityGaps.java",
             "family": "property",
-            "qualified_name": "ExampleBase.exampleValue",
-            "ordinal": 110025
+            "qualified_name": "example.capability.gaps.ExampleBase.exampleValue",
+            "ordinal": 47244640281,
+            "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
           },
           "owner_declaration_id": {
             "source_id": "java/src/ExampleCapabilityGaps.java",
             "family": "class",
-            "qualified_name": "ExampleBase",
-            "ordinal": 90001
+            "qualified_name": "example.capability.gaps.ExampleBase",
+            "ordinal": 38654705665,
+            "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
           },
           "name": "exampleValue",
           "is_optional": false,
@@ -175,6 +351,32 @@
           },
           "visibility": "internal",
           "member_kind": "static",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "java/src/ExampleCapabilityGaps.java",
+                "family": "class",
+                "qualified_name": "example.capability.gaps.ExampleBase",
+                "ordinal": 38654705665,
+                "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "example.capability.gaps",
+              "target": {
+                "declaration_id": {
+                  "source_id": "java/src/ExampleCapabilityGaps.java",
+                  "family": "namespace",
+                  "qualified_name": "example.capability.gaps",
+                  "ordinal": 4294967297,
+                  "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
           "assigned_values": [
             {
               "kind": "unsupported",
@@ -186,7 +388,7 @@
       ]
     },
     {
-      "name": "ExampleChild",
+      "name": "example.capability.gaps.ExampleChild",
       "visibility": "internal",
       "visibility_intent": "internal",
       "line_count": 1,
@@ -194,10 +396,48 @@
       "declaration_id": {
         "source_id": "java/src/ExampleCapabilityGaps.java",
         "family": "class",
-        "qualified_name": "ExampleChild",
-        "ordinal": 160001
+        "qualified_name": "example.capability.gaps.ExampleChild",
+        "ordinal": 68719476737,
+        "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
       },
-      "kind": "class"
+      "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "namespace_reference": "example.capability.gaps",
+          "target": {
+            "declaration_id": {
+              "source_id": "java/src/ExampleCapabilityGaps.java",
+              "family": "namespace",
+              "qualified_name": "example.capability.gaps",
+              "ordinal": 4294967297,
+              "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
+            },
+            "kind": "resolved"
+          },
+          "kind": "member"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
     }
   ],
   "functions": [],
@@ -206,13 +446,59 @@
       "source_declaration_id": {
         "source_id": "java/src/ExampleCapabilityGaps.java",
         "family": "class",
-        "qualified_name": "ExampleChild",
-        "ordinal": 160001
+        "qualified_name": "example.capability.gaps.ExampleChild",
+        "ordinal": 68719476737,
+        "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
       },
       "kind": "extends",
-      "target_reference": "ExampleBase"
+      "target_reference": "ExampleBase",
+      "target": {
+        "declaration_id": {
+          "source_id": "java/src/ExampleCapabilityGaps.java",
+          "family": "class",
+          "qualified_name": "example.capability.gaps.ExampleBase",
+          "ordinal": 38654705665,
+          "content_digest": "b12a1280cde724caf3ae2945de0aaad72cba9dba687d65a905c1c7cff4b7ee10"
+        },
+        "kind": "resolved"
+      }
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 17,
   "code_line_count": 11,
   "public_symbol_count": 0

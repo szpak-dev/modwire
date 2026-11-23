@@ -9,25 +9,30 @@ from dataclasses import dataclass
 from importlib import resources
 from itertools import repeat
 from pathlib import Path
-from typing import Never
+from tempfile import TemporaryFile
+from typing import BinaryIO, Never
 
 from pydantic import ValidationError
 from wireup import injectable
 
-from ....extraction.extractors.models.batch_output_format import BatchOutputFormat
 from ....extraction.extractors.models.duplicate_identity_error import DuplicateIdentityError
 from ....extraction.extractors.models.extraction_request import ExtractionRequest
 from ....extraction.extractors.models.extractor_error import ExtractorError
 from ....extraction.extractors.models.extractor_failure_document import ExtractorFailureDocument
 from ....extraction.extractors.models.extractor_runtime import ExtractorRuntime
+from ....extraction.extractors.models.native_output_format import NativeOutputFormat
 from ....extraction.extractors.models.source_parse_error import SourceParseError
 from ....shared.code.contracts.identity_resolver import IdentityResolver
 from ....shared.code.contracts.path_matcher import PathMatcher
+from ....shared.code.models.failures.code_validation_error import CodeValidationError
+from ....shared.code.models.immutable_code_record import ImmutableCodeRecord
+from ....shared.code.models.immutable_code_value import ImmutableCodeValue
 from ....shared.code.models.sources.identity import FileId, ImportIdentity
 from ....shared.code.models.sources.identity_kind import IdentityKind
 from ....shared.code.models.sources.scan_policy import ScanPolicy
 from ....shared.code.models.sources.source_extraction import SourceExtraction
 from ....shared.code.models.sources.source_file import SourceFile
+from ....shared.values.models.value_reuse import ValueReuse
 from ..batching.planner import SourceBatchPlanner
 from ..domain import SourceReader
 from ..models.extractor_contract_error import ExtractorContractError
@@ -52,7 +57,7 @@ class BatchSourceReader(SourceReader):
     files: SourceFileFactory
     paths: PathMatcher
     manifests: SourceManifestBuilder
-    outputs: Mapping[Hashable, ExtractorBatchOutputReader]
+    output: ExtractorBatchOutputReader
     planners: Mapping[Hashable, SourceBatchPlanner]
 
     def ensure_available(self, runtime: ExtractorRuntime) -> None:
@@ -73,21 +78,21 @@ class BatchSourceReader(SourceReader):
 
     def extract_source(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceExtraction:
         observation = self.observe(request, policy)
-        files = self.extract_entries(observation, tuple(entry.source_id for entry in observation.entries))
+        files = self.extract_observed_entries(observation, tuple(entry.source_id for entry in observation.entries))
         import_identities: dict[ImportIdentity, FileId] = {}
         for file_id, source_file in files.items():
             existing = import_identities.get(source_file.import_identity)
             if existing is not None:
                 raise DuplicateIdentityError(IdentityKind.IMPORT, source_file.import_identity, existing, file_id)
             import_identities[source_file.import_identity] = file_id
-        return SourceExtraction(
+        return SourceExtraction.model_construct(
             files=files,
             import_identities=import_identities,
             manifest=observation.manifest,
             files_found=observation.files_found,
             files_excluded=observation.files_excluded,
             directories_pruned=observation.directories_pruned,
-        )
+        ).validate_manifest_sources()
 
     def observe(self, request: ExtractionRequest, policy: ScanPolicy) -> SourceObservation:
         root = Path(request.root)
@@ -99,19 +104,12 @@ class BatchSourceReader(SourceReader):
             source_paths, files_excluded, directories_pruned = self._discover_source_files(
                 request, resolved_root, policy, limit=None
             )
-            entries = tuple(
-                SourceEntry(
-                    source_id=self._source_id_for_path(request, resolved_root, source_path),
-                    relative_path=source_path.relative_to(resolved_root).as_posix(),
-                    content_digest=self._content_digest(source_path),
-                    path=str(source_path),
-                )
-                for source_path in source_paths
-            )
+            with ThreadPoolExecutor(max_workers=request.batch_config.max_workers) as executor:
+                entries = tuple(executor.map(self.observe_entry, repeat(resolved_root), source_paths))
         except OSError as error:
             raise SourceAccessError(str(root), "observe") from error
         runtime = self.manifests.observe(request)
-        return SourceObservation(
+        return SourceObservation.model_construct(
             request=request,
             entries=entries,
             files_found=len(source_paths),
@@ -121,6 +119,12 @@ class BatchSourceReader(SourceReader):
         )
 
     def extract_entries(
+        self, observation: SourceObservation, source_ids: tuple[FileId, ...]
+    ) -> dict[FileId, SourceFile]:
+        self.validate_observation(observation)
+        return self.extract_observed_entries(observation, source_ids)
+
+    def extract_observed_entries(
         self, observation: SourceObservation, source_ids: tuple[FileId, ...]
     ) -> dict[FileId, SourceFile]:
         request = observation.request
@@ -136,22 +140,17 @@ class BatchSourceReader(SourceReader):
                 (),
                 "source observation does not contain requested identities",
             )
-        try:
-            root = Path(request.root).resolve()
-        except OSError as error:
-            raise SourceAccessError(request.root, "resolve") from error
-        source_paths = tuple(Path(entry.path) for entry in entries)
+        root = Path(request.root)
         files: dict[FileId, SourceFile] = {}
-        plan = self.planners[request.batch_config.planner].plan(source_paths, request.batch_config)
-        self.validate_observation(observation)
+        plan = self.planners[request.batch_config.planner].plan(entries, request.batch_config)
         try:
             if plan.parallel:
                 with ThreadPoolExecutor(max_workers=request.batch_config.max_workers) as executor:
                     for extracted in executor.map(self._extract_batch, repeat(request), repeat(root), plan.batches):
                         self._merge_files(files, extracted)
             else:
-                for batch_paths in plan.batches:
-                    self._merge_files(files, self._extract_batch(request, root, batch_paths))
+                for batch_entries in plan.batches:
+                    self._merge_files(files, self._extract_batch(request, root, batch_entries))
         except (ExtractorError, SourceAccessError):
             self.validate_observation(observation)
             raise
@@ -167,25 +166,26 @@ class BatchSourceReader(SourceReader):
                 observation.manifest.policy,
                 limit=None,
             )
-            current = {
-                path.relative_to(root).as_posix(): (
-                    self._source_id_for_path(observation.request, root, path),
-                    self._content_digest(path),
-                )
-                for path in current_paths
-            }
+            with ThreadPoolExecutor(max_workers=observation.request.batch_config.max_workers) as executor:
+                current = {
+                    path.relative_to(root).as_posix(): content_digest
+                    for path, content_digest in zip(
+                        current_paths, executor.map(self.read_digest, current_paths), strict=True
+                    )
+                }
         except OSError as error:
             raise SourceAccessError(str(root), "validate observation for") from error
         observed = {entry.relative_path: (entry.source_id, entry.content_digest) for entry in observation.entries}
-        added = tuple(sorted((current[path][0] for path in current.keys() - observed.keys()), key=str))
+        added = tuple(
+            sorted(
+                (self.identities.file_id(str(root), str(root / path)) for path in current.keys() - observed.keys()),
+                key=str,
+            )
+        )
         removed = tuple(sorted((observed[path][0] for path in observed.keys() - current.keys()), key=str))
         changed = tuple(
             sorted(
-                (
-                    observed[path][0]
-                    for path in current.keys() & observed.keys()
-                    if current[path][1] != observed[path][1]
-                ),
+                (observed[path][0] for path in current.keys() & observed.keys() if current[path] != observed[path][1]),
                 key=str,
             )
         )
@@ -238,15 +238,20 @@ class BatchSourceReader(SourceReader):
         raise SourceAccessError(path, "walk") from error
 
     def _is_excluded_path(self, policy: ScanPolicy, root: Path, path: Path) -> bool:
+        if not policy.excluded_patterns:
+            return False
         relative_path = path.relative_to(root).as_posix()
         return any(
             self.paths.match(relative_path, pattern, scope=True) is not None for pattern in policy.excluded_patterns
         )
 
     def _extract_batch(
-        self, request: ExtractionRequest, root: Path, source_paths: tuple[Path, ...]
+        self,
+        request: ExtractionRequest,
+        root: Path,
+        entries: tuple[SourceEntry, ...],
     ) -> dict[FileId, SourceFile]:
-        if not source_paths:
+        if not entries:
             return {}
         runtime = request.runtime
         entrypoint = runtime.entrypoint
@@ -256,99 +261,111 @@ class BatchSourceReader(SourceReader):
             raise ExtractorResourceError(runtime.descriptor.language, entrypoint.path) from error
         if not script_path.is_file():
             raise ExtractorResourceError(runtime.descriptor.language, str(script_path))
-        paths_by_source_id = {
-            self.identities.file_id(str(root), str(source_path)): str(source_path) for source_path in source_paths
-        }
+        paths_by_source_id = {entry.source_id: entry.path for entry in entries}
         command = [*runtime.command, *entrypoint.command_arguments(script_path), "--batch", str(root)]
-        if request.batch_config.output_format is BatchOutputFormat.JSON_LINES:
-            command.append("--jsonl")
+        return self.run_batch(runtime, command, paths_by_source_id, str(root))
+
+    def run_batch(
+        self, runtime: ExtractorRuntime, command: list[str], sources: Mapping[FileId, str], root: str
+    ) -> dict[FileId, SourceFile]:
+        language = runtime.descriptor.language
         try:
-            completed = subprocess.run(
-                command, input=json.dumps(paths_by_source_id), text=True, capture_output=True, check=False
-            )
+            with TemporaryFile() as diagnostics:
+                with subprocess.Popen(
+                    command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=diagnostics
+                ) as process:
+                    reuse = ValueReuse[ImmutableCodeValue | ImmutableCodeRecord](
+                        indexed=runtime.output_format is NativeOutputFormat.INDEXED_JSONL
+                    )
+                    extracted: dict[FileId, SourceFile] = {}
+                    seen_source_ids: set[FileId] = set()
+                    duplicate_source_ids: set[FileId] = set()
+                    try:
+                        if process.stdin is None or process.stdout is None:
+                            raise ExtractorExecutionError(language, -1, "extractor process pipes are unavailable")
+                        try:
+                            process.stdin.write(json.dumps(sources).encode("utf-8"))
+                            process.stdin.close()
+                            for line in process.stdout:
+                                source_id, parsed = self.output.read(line, reuse)
+                                if source_id in seen_source_ids:
+                                    duplicate_source_ids.add(source_id)
+                                else:
+                                    seen_source_ids.add(source_id)
+                                    if source_id in sources:
+                                        extracted[source_id] = self.files.create(
+                                            source_id,
+                                            self.identities.import_identity(root, sources[source_id]),
+                                            parsed,
+                                        )
+                                del parsed
+                        except (ValidationError, CodeValidationError, BrokenPipeError):
+                            for _ in process.stdout:
+                                pass
+                            self.validate_process(language, process, diagnostics)
+                            raise
+                        self.validate_process(language, process, diagnostics)
+                        if duplicate_source_ids:
+                            raise ExtractorContractError(
+                                language,
+                                ExtractorContractViolation.DUPLICATE_SOURCE_IDENTITY,
+                                (),
+                                (),
+                                tuple(sorted(duplicate_source_ids, key=str)),
+                                "extractor output contains duplicate source identities",
+                            )
+                        expected = set(sources)
+                        if seen_source_ids != expected:
+                            raise ExtractorContractError(
+                                language,
+                                ExtractorContractViolation.SOURCE_SET_MISMATCH,
+                                tuple(sorted(expected - seen_source_ids, key=str)),
+                                tuple(sorted(seen_source_ids - expected, key=str)),
+                                (),
+                                "extractor output identities do not match the requested batch",
+                            )
+                        return extracted
+                    finally:
+                        reuse.clear()
+                        if process.poll() is None:
+                            process.kill()
+                        process.wait()
         except OSError as error:
-            raise ExtractorExecutionError(runtime.descriptor.language, -1, str(error)) from error
-        if completed.returncode != 0:
-            message = completed.stderr.strip() or completed.stdout.strip()
-            execution_error = ExtractorExecutionError(runtime.descriptor.language, completed.returncode, message)
-            marker = "modwire-error:"
-            failure_documents = tuple(
-                line.removeprefix(marker) for line in message.splitlines() if line.startswith(marker)
-            )
-            if failure_documents:
-                if len(failure_documents) != 1:
-                    raise ExtractorContractError(
-                        runtime.descriptor.language,
-                        ExtractorContractViolation.INVALID_OUTPUT,
-                        (),
-                        (),
-                        (),
-                        "extractor emitted multiple failure documents",
-                    ) from execution_error
-                self.raise_extractor_failure(failure_documents[0], execution_error)
-            raise execution_error
-        try:
-            extracted = self.outputs[request.batch_config.output_format].read(completed.stdout)
+            raise ExtractorExecutionError(language, -1, str(error)) from error
         except ValidationError as error:
             raise ExtractorContractError(
-                runtime.descriptor.language,
+                language,
                 ExtractorContractViolation.INVALID_OUTPUT,
                 (),
                 (),
                 (),
                 str(error),
             ) from error
-        source_ids = tuple(source_id for source_id, _ in extracted)
-        seen_source_ids: set[FileId] = set()
-        duplicate_source_ids: set[FileId] = set()
-        for source_id in source_ids:
-            if source_id in seen_source_ids:
-                duplicate_source_ids.add(source_id)
-            else:
-                seen_source_ids.add(source_id)
-        if duplicate_source_ids:
-            raise ExtractorContractError(
-                runtime.descriptor.language,
-                ExtractorContractViolation.DUPLICATE_SOURCE_IDENTITY,
-                (),
-                (),
-                tuple(sorted(duplicate_source_ids, key=str)),
-                "extractor output contains duplicate source identities",
-            )
-        extracted_by_source_id = dict(extracted)
-        source_paths_by_id = {
-            self.identities.file_id(str(root), str(source_path)): source_path for source_path in source_paths
-        }
-        expected = set(source_paths_by_id)
-        actual = set(extracted_by_source_id)
-        if actual != expected:
-            raise ExtractorContractError(
-                runtime.descriptor.language,
-                ExtractorContractViolation.SOURCE_SET_MISMATCH,
-                tuple(sorted(expected - actual, key=str)),
-                tuple(sorted(actual - expected, key=str)),
-                (),
-                "extractor output identities do not match the requested batch",
-            )
-        extracted_files: dict[FileId, SourceFile] = {}
+
+    def validate_process(self, language: str, process: subprocess.Popen[bytes], diagnostics: BinaryIO) -> None:
+        exit_code = process.wait()
+        if exit_code == 0:
+            return
+        diagnostics.seek(0)
         try:
-            for file_id, parsed_source_file in extracted_by_source_id.items():
-                source_path = source_paths_by_id[file_id]
-                extracted_files[file_id] = self.files.create(
-                    file_id,
-                    self.identities.import_identity(str(root), str(source_path)),
-                    parsed_source_file,
-                )
-        except ValidationError as error:
-            raise ExtractorContractError(
-                runtime.descriptor.language,
-                ExtractorContractViolation.INVALID_OUTPUT,
-                (),
-                (),
-                (),
-                str(error),
-            ) from error
-        return extracted_files
+            message = diagnostics.read().decode("utf-8").strip()
+        except UnicodeDecodeError as error:
+            raise ExtractorExecutionError(language, exit_code, f"invalid UTF-8 stderr: {error}") from error
+        execution_error = ExtractorExecutionError(language, exit_code, message)
+        marker = "modwire-error:"
+        failure_documents = tuple(line.removeprefix(marker) for line in message.splitlines() if line.startswith(marker))
+        if failure_documents:
+            if len(failure_documents) != 1:
+                raise ExtractorContractError(
+                    language,
+                    ExtractorContractViolation.INVALID_OUTPUT,
+                    (),
+                    (),
+                    (),
+                    "extractor emitted multiple failure documents",
+                ) from execution_error
+            self.raise_extractor_failure(failure_documents[0], execution_error)
+        raise execution_error
 
     def raise_extractor_failure(self, document: str, execution_error: ExtractorExecutionError) -> Never:
         try:
@@ -385,8 +402,21 @@ class BatchSourceReader(SourceReader):
                 raise DuplicateIdentityError(IdentityKind.FILE, file_id, file_id, file_id)
             files[file_id] = source_file
 
-    def _source_id_for_path(self, request: ExtractionRequest, root: Path, path: Path) -> FileId:
-        return self.identities.file_id(str(root), str(path))
+    def observe_entry(self, root: Path, path: Path) -> SourceEntry:
+        content = path.read_bytes()
+        line_count = content.count(b"\n") + content.count(b"\r") - content.count(b"\r\n")
+        if content and not content.endswith((b"\n", b"\r")):
+            line_count += 1
+        return SourceEntry(
+            source_id=self.identities.file_id(str(root), str(path)),
+            relative_path=path.relative_to(root).as_posix(),
+            content_digest=self.digest(content),
+            path=str(path),
+            line_count=line_count,
+        )
 
-    def _content_digest(self, path: Path) -> str:
-        return hashlib.sha256(path.read_bytes()).hexdigest()
+    def read_digest(self, path: Path) -> str:
+        return self.digest(path.read_bytes())
+
+    def digest(self, content: bytes) -> str:
+        return hashlib.sha256(content).hexdigest()

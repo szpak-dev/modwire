@@ -4,9 +4,11 @@ from ....shared.code.models.callables.source_anonymous_callable import SourceAno
 from ....shared.code.models.callables.source_call import SourceCall
 from ....shared.code.models.callables.source_callable_value import SourceCallableValue
 from ....shared.code.models.callables.source_function import SourceFunction
+from ....shared.code.models.callables.source_unresolved_method import SourceUnresolvedMethod
 from ....shared.code.models.declarations.source_declaration import SourceDeclaration
 from ....shared.code.models.declarations.source_declaration_relation import SourceDeclarationRelation
 from ....shared.code.models.declarations.source_namespace import SourceNamespace
+from ....shared.code.models.inventories.file_inventory_coverage import FileInventoryCoverage
 from ....shared.code.models.sources.source_export import SourceExport
 from ....shared.code.models.sources.source_import import SourceImport
 from ....shared.code.models.values.source_value import SourceValue
@@ -14,6 +16,8 @@ from ....shared.values.models.value_model import ValueModel
 
 
 class ParsedSourceFile(ValueModel):
+    inventory: FileInventoryCoverage
+    unresolved_methods: list[SourceUnresolvedMethod]
     imports: list[SourceImport] = Field(default_factory=list[SourceImport])
     exports: list[SourceExport] = Field(default_factory=list[SourceExport])
     namespaces: list[SourceNamespace] = Field(default_factory=list[SourceNamespace])

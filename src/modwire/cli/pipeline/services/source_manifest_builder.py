@@ -1,5 +1,4 @@
 import hashlib
-import json
 import subprocess
 from dataclasses import dataclass
 from importlib import resources
@@ -11,6 +10,7 @@ from ....shared.code.models.sources.digest_algorithm import DigestAlgorithm
 from ....shared.code.models.sources.runtime_observation import RuntimeObservation
 from ....shared.code.models.sources.scan_policy import ScanPolicy
 from ....shared.code.models.sources.source_manifest import SourceManifest
+from ....shared.code.models.sources.source_manifest_content import SourceManifestContent
 from ..models.extractor_contract_error import ExtractorContractError
 from ..models.extractor_contract_violation import ExtractorContractViolation
 from ..models.extractor_execution_error import ExtractorExecutionError
@@ -30,18 +30,17 @@ class SourceManifestBuilder:
         sources = tuple(
             entry.artifact() for entry in sorted(entries, key=lambda item: (str(item.source_id), item.relative_path))
         )
-        payload = {
-            "policy": policy.model_dump(mode="json"),
-            "runtime": runtime.model_dump(mode="json"),
-            "sources": [source.model_dump(mode="json") for source in sources],
-        }
-        serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=True).encode("utf-8")
-        return SourceManifest(
+        content = SourceManifestContent.model_construct(
             policy=policy,
             runtime=runtime,
             sources=sources,
+        ).validate_sources()
+        return SourceManifest.model_construct(
+            policy=content.policy,
+            runtime=content.runtime,
+            sources=content.sources,
             digest_algorithm=DigestAlgorithm.SHA256,
-            digest=hashlib.sha256(serialized).hexdigest(),
+            digest=content.canonical_digest(),
         )
 
     def observe(self, request: ExtractionRequest) -> RuntimeObservation:

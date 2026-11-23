@@ -2,6 +2,7 @@ from enum import StrEnum
 
 
 class DeclarationFamily(StrEnum):
+    NAMESPACE = "namespace"
     CLASS = "class"
     ABSTRACT_CLASS = "abstract_class"
     INTERFACE = "interface"

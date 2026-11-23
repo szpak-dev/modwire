@@ -38,7 +38,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/Example.php",
+            "family": "function",
+            "qualified_name": "exampleTimestamp",
+            "ordinal": 31,
+            "content_digest": "f5d0f8041bfb9a5eae7534a1a79f3ca306007c7421fdc014c270dd1778f6211b"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "functions": [
@@ -52,10 +64,19 @@
         "source_id": "php/src/Example.php",
         "family": "function",
         "qualified_name": "exampleTimestamp",
-        "ordinal": 31
+        "ordinal": 31,
+        "content_digest": "f5d0f8041bfb9a5eae7534a1a79f3ca306007c7421fdc014c270dd1778f6211b"
       },
       "source_id": "php/src/Example.php",
       "qualified_name": "exampleTimestamp",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 4,
       "line_end": 7,
       "return_type": {
@@ -71,14 +92,15 @@
         "source_id": "php/src/Example.php",
         "family": "function",
         "qualified_name": "exampleTimestamp",
-        "ordinal": 31
+        "ordinal": 31,
+        "content_digest": "f5d0f8041bfb9a5eae7534a1a79f3ca306007c7421fdc014c270dd1778f6211b"
       },
       "ordinal": 1,
       "target_callable_id": null,
       "source_id": "php/src/Example.php",
       "line": 6,
       "expression": "DateTimeImmutable->format",
-      "resolution": "unresolved",
+      "resolution": "dynamic",
       "target_name": "format"
     },
     {
@@ -86,7 +108,8 @@
         "source_id": "php/src/Example.php",
         "family": "function",
         "qualified_name": "exampleTimestamp",
-        "ordinal": 31
+        "ordinal": 31,
+        "content_digest": "f5d0f8041bfb9a5eae7534a1a79f3ca306007c7421fdc014c270dd1778f6211b"
       },
       "ordinal": 2,
       "target_callable_id": null,
@@ -97,6 +120,41 @@
       "target_name": "DateTimeImmutable"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 8,
   "code_line_count": 6,
   "public_symbol_count": 1

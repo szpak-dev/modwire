@@ -5,7 +5,21 @@
   "namespaces": [
     {
       "kind": "module",
-      "qualified_name": "ExampleSupport"
+      "declaration_id": {
+        "source_id": "ruby/src/example_support.rb",
+        "family": "namespace",
+        "qualified_name": "ExampleSupport",
+        "ordinal": 1,
+        "content_digest": "18dafb28f57d2547e469b2165243d370fe7c271a91df750313adc1aef7ba1ff4"
+      },
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     }
   ],
   "declarations": [
@@ -19,9 +33,36 @@
         "source_id": "ruby/src/example_support.rb",
         "family": "type",
         "qualified_name": "ExampleSupport",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "18dafb28f57d2547e469b2165243d370fe7c271a91df750313adc1aef7ba1ff4"
       },
       "kind": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "example_target",
@@ -33,11 +74,38 @@
             "source_id": "ruby/src/example_support.rb",
             "family": "method",
             "qualified_name": "ExampleSupport.example_target",
-            "ordinal": 25
+            "ordinal": 25,
+            "content_digest": "18dafb28f57d2547e469b2165243d370fe7c271a91df750313adc1aef7ba1ff4"
           },
           "source_id": "ruby/src/example_support.rb",
           "qualified_name": "ExampleSupport.example_target",
           "kind": "type_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example_support.rb",
+                "family": "type",
+                "qualified_name": "ExampleSupport",
+                "ordinal": 1,
+                "content_digest": "18dafb28f57d2547e469b2165243d370fe7c271a91df750313adc1aef7ba1ff4"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "ExampleSupport",
+              "target": {
+                "declaration_id": {
+                  "source_id": "ruby/src/example_support.rb",
+                  "family": "type",
+                  "qualified_name": "ExampleSupport",
+                  "ordinal": 1,
+                  "content_digest": "18dafb28f57d2547e469b2165243d370fe7c271a91df750313adc1aef7ba1ff4"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
           "line_start": 2,
           "line_end": 4,
           "parameters": [
@@ -56,13 +124,49 @@
             "source_id": "ruby/src/example_support.rb",
             "family": "type",
             "qualified_name": "ExampleSupport",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "18dafb28f57d2547e469b2165243d370fe7c271a91df750313adc1aef7ba1ff4"
           }
         }
       ]
     }
   ],
   "functions": [],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 6,
   "code_line_count": 5,
   "public_symbol_count": 1

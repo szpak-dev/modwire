@@ -11,7 +11,7 @@ from ....shared.code.models.sources.source_file import SourceFile
 @dataclass(frozen=True)
 class SourceFileFactory:
     def create(self, file_id: FileId, import_identity: ImportIdentity, parsed: ParsedSourceFile) -> SourceFile:
-        return SourceFile(
+        return SourceFile.model_construct(
             file_id=file_id,
             import_identity=import_identity,
             imports=parsed.imports,
@@ -24,7 +24,9 @@ class SourceFileFactory:
             anonymous_callables=tuple(parsed.anonymous_callables),
             calls=tuple(parsed.calls),
             declaration_relations=tuple(parsed.declaration_relations),
+            inventory=parsed.inventory,
+            unresolved_methods=tuple(parsed.unresolved_methods),
             line_count=parsed.line_count,
             code_line_count=parsed.code_line_count,
             public_symbol_count=parsed.public_symbol_count,
-        )
+        ).validate_facts()

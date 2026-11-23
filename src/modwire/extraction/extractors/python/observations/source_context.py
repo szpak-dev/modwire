@@ -9,3 +9,4 @@ class PythonSourceContext:
     path: str
     sources_root: str
     content: str
+    content_digest: str

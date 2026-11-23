@@ -2,7 +2,8 @@ import ast
 from dataclasses import dataclass
 
 from .....shared.code.models.declarations.declaration_identity import DeclarationIdentity
-from .....shared.code.models.sources.identity import FileId
+from .....shared.code.models.declarations.source_resolved_target import SourceResolvedTarget
+from .....shared.code.models.declarations.source_unresolved_target import SourceUnresolvedTarget
 from .call_reference import PythonCallReference
 
 
@@ -11,10 +12,5 @@ class PythonCallCandidate:
     node: ast.Call
     reference: PythonCallReference
     ordinal: int
-    source_qualified_name: str
-    owner_name: str
-    source_id: FileId
     source_callable_id: DeclarationIdentity
-    by_name: dict[str, list[DeclarationIdentity]]
-    by_qualified_name: dict[str, list[DeclarationIdentity]]
-    constructors_by_name: dict[str, list[DeclarationIdentity]]
+    target: SourceResolvedTarget | SourceUnresolvedTarget

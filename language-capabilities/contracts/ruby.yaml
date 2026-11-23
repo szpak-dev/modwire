@@ -8,6 +8,10 @@ runtime:
     major: 4
     minor: 0
     patch: 7
+  rejected_versions:
+  - major: 2
+    minor: 6
+    patch: 10
   packages:
   - manager: gem
     name: prism
@@ -41,6 +45,13 @@ fixtures:
     sources:
     - ruby/src/example.rb
     - ruby_receivers/src/example.rb
+    - ruby_ownership/src/dynamic_singleton.rb
+    - ruby_ownership/src/qualified_declaration.rb
+    - ruby_ownership/src/qualified_receiver.rb
+    - ruby_ownership/src/singleton_owner.rb
+    - ruby_ownership/src/member_context.rb
+    - ruby_ownership/src/receiver_context.rb
+    - ruby_ownership/src/generated_receiver.rb
 capabilities:
   sources:
     status: supported
@@ -59,7 +70,7 @@ capabilities:
   modifiers:
     status: partial
   attributes:
-    status: unsupported
+    status: partial
   assigned_values:
     status: unsupported
   inheritance:
@@ -124,7 +135,8 @@ scenarios:
     capability: callables
     evidence: supported
     state: present
-    observation: {kind: callable, qualified_name: ExampleAbstract.example_required, callable_kind: instance_method}
+    observation: {kind: callable, qualified_name: ExampleAbstract.example_required, callable_kind:
+        instance_method}
   - kind: capability
     capability: calls
     evidence: supported
@@ -140,7 +152,8 @@ scenarios:
     capability: composition
     evidence: supported
     state: present
-    observation: {kind: declaration_relation, source: ExampleAbstract, relation: includes, target: ExampleLogging}
+    observation: {kind: declaration_relation, source: ExampleAbstract, relation: includes, target:
+        ExampleLogging}
   - kind: capability
     capability: dependencies
     evidence: supported
@@ -156,7 +169,8 @@ scenarios:
     aspect: semantics
     evidence: supported
     state: present
-    observation: {kind: declaration_relation, source: ExampleAbstract, relation: includes, target: ExampleLogging}
+    observation: {kind: declaration_relation, source: ExampleAbstract, relation: includes, target:
+        ExampleLogging}
   - kind: relationship
     relationship: member
     aspect: semantics
@@ -175,7 +189,8 @@ scenarios:
     aspect: inventory
     evidence: supported
     state: present
-    observation: {kind: declaration_relation, source: ExampleAbstract, relation: includes, target: ExampleLogging}
+    observation: {kind: declaration_relation, source: ExampleAbstract, relation: includes, target:
+        ExampleLogging}
   - kind: relationship
     relationship: member
     aspect: inventory
@@ -265,9 +280,10 @@ scenarios:
   claims:
   - kind: capability
     capability: attributes
-    evidence: boundary
-    state: absent
-    observation: {kind: attribute, owner: ExampleBase, name: example_generated_attribute, member_kind: instance}
+    evidence: supported
+    state: present
+    observation: {kind: attribute, owner: ExampleBase, name: example_generated_attribute, member_kind:
+        instance}
   - kind: capability
     capability: assigned_values
     evidence: boundary
@@ -278,15 +294,34 @@ scenarios:
   - kind: relationship
     relationship: member
     aspect: semantics
+    evidence: supported
+    state: present
+    observation: {kind: attribute, owner: ExampleBase, name: example_generated_attribute, member_kind:
+        instance}
+  - kind: relationship
+    relationship: member
+    aspect: inventory
+    evidence: supported
+    state: present
+    observation: {kind: attribute, owner: ExampleBase, name: example_generated_attribute, member_kind:
+        instance}
+  - kind: capability
+    capability: attributes
     evidence: boundary
     state: absent
-    observation: {kind: attribute, owner: ExampleBase, name: example_generated_attribute, member_kind: instance}
+    observation: {kind: attribute, owner: ExampleBase, name: example_attribute_name, member_kind: instance}
+  - kind: relationship
+    relationship: member
+    aspect: semantics
+    evidence: boundary
+    state: absent
+    observation: {kind: attribute, owner: ExampleBase, name: example_attribute_name, member_kind: instance}
   - kind: relationship
     relationship: member
     aspect: inventory
     evidence: boundary
     state: absent
-    observation: {kind: attribute, owner: ExampleBase, name: example_generated_attribute, member_kind: instance}
+    observation: {kind: attribute, owner: ExampleBase, name: example_attribute_name, member_kind: instance}
 - name: dynamic-namespace
   fixture: gaps
   source: src/example_capability_gaps.rb
@@ -304,13 +339,15 @@ scenarios:
     capability: composition
     evidence: boundary
     state: absent
-    observation: {kind: declaration_relation, source: ExampleRuntime, relation: includes, target: ExampleIncluded}
+    observation: {kind: declaration_relation, source: ExampleRuntime, relation: includes, target:
+        ExampleIncluded}
   - kind: relationship
     relationship: declaration
     aspect: inventory
     evidence: boundary
     state: absent
-    observation: {kind: declaration_relation, source: ExampleRuntime, relation: includes, target: ExampleIncluded}
+    observation: {kind: declaration_relation, source: ExampleRuntime, relation: includes, target:
+        ExampleIncluded}
 - name: dynamic-dependency
   fixture: gaps
   source: src/example_capability_gaps.rb
@@ -385,14 +422,14 @@ manifests:
   scenarios:
   - name: canonical
     source: canonical/src/example.rb
-    facts_digest: 6c281e644f269a3df877d26414600a0881764dcd07eb3c4dc60cb521d266e97e
+    facts_digest: 6093043ff9af55b6ff7fe1419b04cbfc785cf397dbd1ee87200bb91cb3df63b7
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.rb}
     - state: present
       observation: {kind: namespace, qualified_name: ExampleFormatting, namespace_kind: module}
     - state: present
-      observation: {kind: symbol, qualified_name: ExampleClassMethods.ExampleAbstract, symbol_kind: class}
+      observation: {kind: symbol, qualified_name: src/example.ExampleAbstract, symbol_kind: class}
     - state: present
       observation: {kind: callable, qualified_name: ExampleAbstract.initialize, callable_kind: constructor}
     - state: present
@@ -409,32 +446,34 @@ manifests:
       observation: {kind: dependency, source: src/example.rb, target: json, resolution: external}
   - name: calls
     source: calls/src/example.rb
-    facts_digest: 1e9a2955fdccf1085918f1b8a89a737c13f81eb18f9bd6ca7d85376d58971456
+    facts_digest: 8201290869c7e6c806f219a56d008baa1c40b9ac5430189d6d0c3a9fc87a6f42
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.rb}
     - state: present
-      observation: {kind: call, owner: ExampleCalls.example_source, target: example_target, resolution: resolved}
+      observation: {kind: call, owner: ExampleCalls.example_source, target: example_target, resolution:
+          resolved}
   - name: no_calls
     source: no_calls/src/example.rb
-    facts_digest: dcb77d05d873e1979ac589b609dfc903058c8e5def6d2d89f8392247a27d1e28
+    facts_digest: bf5409a64a891d789a22ec3d165fe60c346c0273a84b2f533653d3fd88e3e3a0
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.rb}
     - state: absent
-      observation: {kind: call, owner: ExampleCalls.example_source, target: example_target, resolution: resolved}
+      observation: {kind: call, owner: ExampleCalls.example_source, target: example_target, resolution:
+          resolved}
   - name: negative_members
     source: negative_members/src/example.rb
-    facts_digest: 9573fe4f12809f4feabcb5b79c7bd14ca1b2656dc88f6def10a978670dbf60c0
+    facts_digest: 2da7d54096be83ec9ed42369409744c219300092691d5e330768dd6998956768
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.rb}
     - state: absent
-      observation: {kind: symbol, qualified_name: src/example.ExampleValue.example_generated_method, symbol_kind:
-          callable}
+      observation: {kind: symbol, qualified_name: src/example.ExampleValue.example_generated_method,
+          symbol_kind: callable}
   - name: dependencies
     source: dependencies/src/example.rb
-    facts_digest: d21730cc32cf81078b7b6f6c2cdba3b4539fc7e184b6aef6dcdedb6f07f99094
+    facts_digest: ee237b71b7aa7cb5870488b310ef761006ffb30c5b4ea1250b9f3c46995d87d5
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.rb}
@@ -442,13 +481,13 @@ manifests:
       observation: {kind: dependency, source: src/example.rb, target: json, resolution: external}
   - name: source_edit_before
     source: source_edit_before/src/nested/example.rb
-    facts_digest: a004f2b754646de13b135882a1831a41d1207c4904988601c0386548e79eacad
+    facts_digest: b9fdd5a1c3ffe244561cf9ce343b9e6759d10d04c5b28c8df06f7cae5ba33a37
     claims:
     - state: present
       observation: {kind: source, relative_path: src/nested/example.rb}
   - name: source_edit_after
     source: source_edit_after/src/example.rb
-    facts_digest: 9e9c1ce4fba47a3977a7d5733b1839eb3032c681f56cd76aad9c5d1093d2132a
+    facts_digest: 2fa7651179330012d8696dede68f3d81b4f0444f36932622a5a4c50468c13cda
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.rb}

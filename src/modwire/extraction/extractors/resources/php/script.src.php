@@ -13,6 +13,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt;
 use PhpParser\ParserFactory;
+use PhpParser\Parser;
 use PhpParser\PrettyPrinter\Standard;
 
 function line_count_for_content(string $content): int {
@@ -103,21 +104,18 @@ function imported_symbol_name(string $path): string {
     return end($parts) ?: '';
 }
 
-function walk_nodes(array $nodes, callable $callback, array $parents = []): void {
-    foreach ($nodes as $node) {
-        if (!$node instanceof Node) {
-            continue;
+function walk_nodes(Node|array $nodes, callable $callback, array $parents = []): void {
+    if (is_array($nodes)) {
+        foreach ($nodes as $node) {
+            if ($node instanceof Node) walk_nodes($node, $callback, $parents);
         }
-        $callback($node, $parents);
-        $nextParents = [...$parents, $node];
-        foreach ($node->getSubNodeNames() as $name) {
-            $child = $node->{$name};
-            if ($child instanceof Node) {
-                walk_nodes([$child], $callback, $nextParents);
-            } elseif (is_array($child)) {
-                walk_nodes($child, $callback, $nextParents);
-            }
-        }
+        return;
+    }
+    $callback($nodes, $parents);
+    $parents[] = $nodes;
+    foreach ($nodes->getSubNodeNames() as $name) {
+        $child = $nodes->{$name};
+        if ($child instanceof Node || is_array($child)) walk_nodes($child, $callback, $parents);
     }
 }
 
@@ -132,15 +130,6 @@ function nearest_parent(array $parents, string ...$classes): ?Node {
     return null;
 }
 
-function is_top_level(array $parents): bool {
-    foreach ($parents as $parent) {
-        if (!$parent instanceof Stmt\Namespace_) {
-            return false;
-        }
-    }
-    return true;
-}
-
 function function_parent(array $parents): ?Node {
     return nearest_parent(
         $parents,
@@ -149,10 +138,6 @@ function function_parent(array $parents): ?Node {
         Expr\Closure::class,
         Expr\ArrowFunction::class,
     );
-}
-
-function class_visibility(Stmt\ClassLike $node): string {
-    return 'public';
 }
 
 function member_visibility(Stmt\ClassMethod|Stmt\Property|Stmt\ClassConst $node): string {
@@ -196,18 +181,18 @@ function type_annotation(Node|Name|string|null $type): string {
     return node_name($type);
 }
 
-function source_type(Node|Name|string|null $type): array {
+function source_type(Node|Name|string|null $type, NativeSourceRecord $record): NativeValueReference {
     if ($type === null || $type === '') {
-        return ['kind' => 'absent'];
+        return $record->value('types', ['kind' => 'absent']);
     }
     if ($type instanceof Name || $type instanceof Node\Identifier || is_string($type)) {
-        return [
+        return $record->value('types', [
             'kind' => 'reference',
             'name' => type_annotation($type),
             'arguments' => [],
-        ];
+        ]);
     }
-    return ['kind' => 'unsupported'];
+    return $record->value('types', ['kind' => 'unsupported']);
 }
 
 function type_is_optional(Node|Name|string|null $type): bool {
@@ -241,16 +226,211 @@ function declaration_annotations(Stmt\ClassLike $node): array {
     return $annotations;
 }
 
-function parameter_definitions(array $params): array {
-    return array_map(fn (Param $param): array => [
+function parameter_definitions(array $params, NativeSourceRecord $record): array {
+    return array_map(fn (Param $param): NativeValueReference => $record->value('parameters', [
         'name' => var_name($param->var),
-        'type' => source_type($param->type),
+        'type' => source_type($param->type, $record),
         'kind' => $param->variadic ? 'variadic_positional' : 'positional',
         'has_default' => $param->default !== null || $param->variadic,
-    ], $params);
+    ]), $params);
 }
 
-function source_export_entry(string $name, string $kind): array {
+final class PhpExtractorInvariantFailure extends RuntimeException {}
+
+final class NativeValueReference implements JsonSerializable, ArrayAccess {
+    public int $index = 0;
+
+    public function __construct(public readonly array|string $document) {}
+    public function jsonSerialize(): int { return $this->index; }
+    public function __serialize(): array { return [spl_object_id($this)]; }
+    public function offsetExists(mixed $offset): bool { return isset($this->document[$offset]); }
+    public function offsetGet(mixed $offset): mixed { return $this->document[$offset]; }
+    public function offsetSet(mixed $offset, mixed $value): void {
+        throw new PhpExtractorInvariantFailure('Native values are immutable.');
+    }
+    public function offsetUnset(mixed $offset): void {
+        throw new PhpExtractorInvariantFailure('Native values are immutable.');
+    }
+}
+
+final class NativeValueTable {
+    private array $values = [];
+
+    public function add(array|string $document): NativeValueReference {
+        $key = serialize($document);
+        return $this->values[$key] ??= new NativeValueReference($document);
+    }
+
+    public function encode(int $offset): array {
+        $documents = [];
+        foreach ($this->values as $value) {
+            $value->index = $offset++;
+            $documents[] = $value->document;
+        }
+        return $documents;
+    }
+}
+
+final class NativeSourceRecord {
+    private array $tables = [];
+    public readonly NativeValueReference $sourceId;
+    public readonly NativeValueReference $contentDigest;
+
+    public function __construct(string $sourceId, string $contentDigest) {
+        foreach (['texts', 'identities', 'targets', 'types', 'coverages', 'member_inventories',
+                  'namespaces', 'placements', 'assignments', 'parameters'] as $name) {
+            $this->tables[$name] = new NativeValueTable();
+        }
+        $this->sourceId = $this->value('texts', $sourceId);
+        $this->contentDigest = $this->value('texts', $contentDigest);
+    }
+
+    public function value(string $table, array|string $document): NativeValueReference {
+        return $this->tables[$table]->add($document);
+    }
+
+    public function encode(array $facts): array {
+        $record = ['source_id' => $this->sourceId->document];
+        $offset = 0;
+        foreach ($this->tables as $name => $table) {
+            $record[$name] = $table->encode($offset);
+            $offset += count($record[$name]);
+        }
+        $record['facts'] = $facts;
+        return $record;
+    }
+}
+
+final class PhpStructuralIndex {
+    public readonly NativeSourceRecord $record;
+    public array $nodes = [];
+    public array $identities = [];
+    public array $identitiesByQualifiedName = [];
+    public array $parents = [];
+    public array $scopes = [];
+    public array $namespaces = [];
+    public array $limitations = [];
+
+    public function __construct(public readonly string $sourceId, public readonly string $contentDigest, array $nodes) {
+        $this->record = new NativeSourceRecord($sourceId, $contentDigest);
+        walk_nodes($nodes, function (Node $node, array $parents): void {
+            $id = spl_object_id($node);
+            $this->nodes[$id] = $node;
+            $this->parents[$id] = $parents;
+            if ($node instanceof Stmt\Foreach_ || $node instanceof Stmt\Catch_ || $node instanceof Expr\AssignRef ||
+                ($node instanceof Expr\Assign && !($node->var instanceof Expr\Variable && is_string($node->var->name)))) {
+                $this->limit('values', $node, 'Binding target is not represented as a named source value.');
+                $this->limit('callable_values', $node, 'Callable ownership of this binding is not represented.');
+            }
+            $family = null;
+            $name = '';
+            if ($node instanceof Stmt\Namespace_) {
+                $family = 'namespace';
+                $name = $node->name === null ? '<global>' : str_replace('\\', '.', $node->name->toString());
+            } elseif ($node instanceof Stmt\ClassLike) {
+                $family = $node instanceof Stmt\Interface_ ? 'interface' : ($node instanceof Stmt\Trait_ ? 'type' : (($node instanceof Stmt\Class_ && $node->isAbstract()) ? 'abstract_class' : 'class'));
+                $name = $node->name === null ? '<anonymous>@' . declaration_ordinal($node) : $node->name->toString();
+            } elseif ($node instanceof Stmt\ClassMethod || $node instanceof Stmt\Function_) {
+                $family = $node instanceof Stmt\ClassMethod ? 'method' : 'function';
+                $name = $node->name->toString();
+            } elseif ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
+                $parent = $parents === [] ? null : $parents[count($parents)-1];
+                $bound = $parent instanceof Expr\Assign && $parent->var instanceof Expr\Variable && is_string($parent->var->name);
+                $family = $bound ? 'value' : 'callable';
+                $name = $bound ? $parent->var->name : '<anonymous>@' . declaration_ordinal($node);
+            }
+            if ($family !== null) {
+                $owner = $this->nearestIdentity($parents);
+                $qualified = $owner === null || $family === 'namespace' ? $name : $owner['qualified_name'] . '.' . $name;
+                $this->identities[spl_object_id($node)] = $this->createIdentity($family, $qualified, $node);
+                $this->scopes[spl_object_id($node)] = $this->identities[spl_object_id($node)];
+                if ($node instanceof Stmt\Namespace_) {
+                    $this->namespaces[] = ['kind' => 'namespace', 'declaration_id' => $this->identities[spl_object_id($node)],
+                        'placement' => $this->placement($node)];
+                }
+            } elseif ($node instanceof Expr\Assign && $node->var instanceof Expr\Variable && is_string($node->var->name) &&
+                !($node->expr instanceof Expr\Closure || $node->expr instanceof Expr\ArrowFunction)) {
+                $this->identities[spl_object_id($node)] = $this->createIdentity('value', $this->qualifiedName($node->var->name, $node), $node);
+            } elseif ($node instanceof Node\Const_) {
+                $this->identities[spl_object_id($node)] = $this->createIdentity('value', $this->qualifiedName($node->name->toString(), $node), $node);
+            }
+        });
+        foreach ($this->identities as $key => $identity) {
+            $this->identitiesByQualifiedName[$identity['qualified_name']][] = $key;
+        }
+    }
+
+    public function visit(callable $callback): void {
+        foreach ($this->nodes as $id => $node) $callback($node, $this->parents[$id]);
+    }
+
+    public function createIdentity(string $family, string $name, Node $node): NativeValueReference {
+        return $this->record->value('identities', ['source_id' => $this->record->sourceId, 'content_digest' => $this->record->contentDigest,
+            'family' => $family, 'qualified_name' => $name, 'ordinal' => declaration_ordinal($node)]);
+    }
+
+    public function qualifiedName(string $name, Node $node): string {
+        $owner = $this->nearestIdentity($this->parents[spl_object_id($node)]);
+        return $owner === null ? $name : $owner['qualified_name'] . '.' . $name;
+    }
+
+    public function limit(string $family, Node $node, string $description): void {
+        $this->limitations[$family][] = ['kind' => 'unsupported_syntax', 'description' => $description,
+            'location' => ['kind' => 'source', 'start_line' => $node->getStartLine(), 'end_line' => $node->getEndLine()]];
+    }
+
+    public function nearestIdentity(array $parents): ?NativeValueReference {
+        for ($position = count($parents) - 1; $position >= 0; $position--) {
+            $parent = $parents[$position];
+            if (isset($this->scopes[spl_object_id($parent)])) return $this->scopes[spl_object_id($parent)];
+        }
+        return null;
+    }
+
+    public function placement(Node $node): NativeValueReference {
+        $parents = $this->parents[spl_object_id($node)];
+        $parent = $this->nearestIdentity($parents);
+        $scope = $parent === null ? ['kind' => 'file'] : ['kind' => 'declaration', 'declaration_id' => $parent];
+        $namespace = ['kind' => 'none'];
+        for ($position = count($parents) - 1; $position >= 0; $position--) {
+            $ancestor = $parents[$position];
+            if ($ancestor instanceof Stmt\Namespace_) {
+                $identity = $this->identities[spl_object_id($ancestor)];
+                $namespace = ['kind' => 'member', 'namespace_reference' => $identity['qualified_name'],
+                    'target' => $this->record->value('targets', ['kind' => 'resolved', 'declaration_id' => $identity])];
+                break;
+            }
+        }
+        return $this->record->value('placements', ['lexical_scope' => $scope,
+            'namespace' => $this->record->value('namespaces', $namespace)]);
+    }
+
+    public function resolve(string $reference, Node $source): NativeValueReference {
+        $name = str_replace('\\', '.', ltrim($reference, '\\'));
+        $scope = $this->nearestIdentity($this->parents[spl_object_id($source)]);
+        $prefix = $scope === null ? '' : $scope['qualified_name'];
+        while (true) {
+            $qualified = $prefix === '' || str_starts_with($reference, '\\') ? $name : $prefix . '.' . $name;
+            $matches = $this->identitiesByQualifiedName[$qualified] ?? [];
+            if (count($matches) === 1) return $this->record->value('targets', ['kind' => 'resolved', 'declaration_id' => $this->identities[$matches[0]]]);
+            if (count($matches) > 1) return $this->record->value('targets', ['kind' => 'unresolved', 'reason' => 'ambiguous']);
+            if ($prefix === '') return $this->record->value('targets', ['kind' => 'unresolved', 'reason' => 'external']);
+            $separator = strrpos($prefix, '.');
+            $prefix = $separator === false ? '' : substr($prefix, 0, $separator);
+        }
+    }
+}
+
+function inventory_coverage(NativeSourceRecord $record, array $limitations = [], string $status = 'complete'): NativeValueReference {
+    return $record->value('coverages', ['status' => $limitations === [] ? $status : 'incomplete', 'limitations' => $limitations]);
+}
+
+function member_inventory(NativeSourceRecord $record): NativeValueReference {
+    return $record->value('member_inventories', ['methods' => inventory_coverage($record), 'abstract_methods' => inventory_coverage($record),
+        'properties' => inventory_coverage($record), 'signatures' => inventory_coverage($record, [], 'not_applicable')]);
+}
+
+function source_export_entry(string $name, string $kind, NativeValueReference $identity): array {
     return [
         'name' => $name,
         'local_name' => $name,
@@ -263,14 +443,14 @@ function source_export_entry(string $name, string $kind): array {
         'is_default' => false,
         'is_aliased' => false,
         'statement_id' => 0,
+        'binding' => ['kind' => 'resolved', 'declaration_ids' => [$identity]],
     ];
 }
 
 function source_callable_entry(
-    string $sourceId,
+    PhpStructuralIndex $index,
     string $name,
-    string $qualifiedName,
-    ?array $ownerDeclarationId,
+    ?NativeValueReference $ownerDeclarationId,
     string $kind,
     string $visibility,
     Node $node,
@@ -279,21 +459,12 @@ function source_callable_entry(
     string $declarationKind = 'assignment',
     string $scope = 'module'
 ): array {
-    $family = $kind === 'function'
-        ? 'function'
-        : (in_array($kind, ['instance_method', 'type_method', 'static_method', 'constructor'], true)
-            ? 'method'
-            : ($kind === 'callable_value' ? 'value' : 'callable'));
     $entry = [
-        'declaration_id' => [
-            'source_id' => $sourceId,
-            'family' => $family,
-            'qualified_name' => $qualifiedName,
-            'ordinal' => declaration_ordinal($node),
-        ],
-        'source_id' => $sourceId,
+        'declaration_id' => $index->identities[spl_object_id($node)],
+        'source_id' => $index->record->sourceId,
+        'placement' => $index->placement($node),
         'name' => $name,
-        'qualified_name' => $qualifiedName,
+        'qualified_name' => $index->identities[spl_object_id($node)]['qualified_name'],
         'kind' => $kind,
         'visibility' => $visibility,
         'visibility_intent' => visibility_intent($name, $visibility),
@@ -302,7 +473,7 @@ function source_callable_entry(
         'line_end' => $node->getEndLine(),
         'line_count' => line_span($node),
         'parameters' => $parameters,
-        'return_type' => source_type($returnType),
+        'return_type' => source_type($returnType, $index->record),
         'decorators' => [],
         'docstring' => '',
     ];
@@ -318,7 +489,7 @@ function source_callable_entry(
 }
 
 function source_value_entry(
-    string $sourceId,
+    PhpStructuralIndex $index,
     string $name,
     string $visibility,
     Node $node,
@@ -327,12 +498,8 @@ function source_value_entry(
     string $scope
 ): array {
     return [
-        'declaration_id' => [
-            'source_id' => $sourceId,
-            'family' => 'value',
-            'qualified_name' => $name,
-            'ordinal' => declaration_ordinal($node),
-        ],
+        'declaration_id' => $index->identities[spl_object_id($node)],
+        'placement' => $index->placement($node),
         'name' => $name,
         'visibility' => $visibility,
         'visibility_intent' => visibility_intent($name, $visibility),
@@ -344,8 +511,8 @@ function source_value_entry(
 }
 
 function source_property_entry(
-    string $sourceId,
-    array $ownerDeclarationId,
+    PhpStructuralIndex $index,
+    NativeValueReference $ownerDeclarationId,
     string $name,
     Node $node,
     Node|Name|string|null $type,
@@ -354,23 +521,19 @@ function source_property_entry(
     string $memberKind
 ): array {
     return [
-        'declaration_id' => [
-            'source_id' => $sourceId,
-            'family' => 'property',
-            'qualified_name' => $ownerDeclarationId['qualified_name'] . '.' . $name,
-            'ordinal' => declaration_ordinal($node),
-        ],
+        'declaration_id' => $index->createIdentity('property', $ownerDeclarationId['qualified_name'] . '.' . $name, $node),
         'owner_declaration_id' => $ownerDeclarationId,
+        'placement' => $index->placement($node),
         'name' => $name,
         'is_optional' => $isOptional,
-        'type' => source_type($type),
+        'type' => source_type($type, $index->record),
         'visibility' => $visibility,
         'member_kind' => $memberKind,
-        'assigned_values' => [[
+        'assigned_values' => [$index->record->value('assignments', [
             'kind' => 'unsupported',
             'expression' => '',
             'reference' => '',
-        ]],
+        ])],
     ];
 }
 
@@ -437,15 +600,16 @@ function source_text(Node $node, string $content): string {
     return substr($content, $node->getStartFilePos(), $node->getEndFilePos() - $node->getStartFilePos() + 1);
 }
 
-function collect_imports(array $nodes, string $content): array {
+function collect_imports(string $content, PhpStructuralIndex $index): array {
     $imports = [];
     $statementId = 0;
 
-    walk_nodes($nodes, function (Node $node, array $parents) use ($content, &$imports, &$statementId): void {
+    $index->visit(function (Node $node, array $parents) use ($content, $index, &$imports, &$statementId): void {
         if (!$node instanceof Stmt\Use_ && !$node instanceof Stmt\GroupUse) {
             return;
         }
-        if (!is_top_level($parents)) {
+        $scope = $index->nearestIdentity($index->parents[spl_object_id($node)]);
+        if ($scope !== null && $scope['family'] !== 'namespace') {
             return;
         }
 
@@ -481,300 +645,89 @@ function collect_imports(array $nodes, string $content): array {
     return $imports;
 }
 
-function collect_definitions(array $nodes, string $sourceId): array {
-    $classes = [];
-    $interfaces = [];
-    $traits = [];
-    $abstractClasses = [];
-    $functions = [];
+function collect_definitions(PhpStructuralIndex $index, array $callables): array {
+    $declarations = [];
     $exports = [];
-    $classNames = [];
-    $inheritance = [];
-
-    walk_nodes($nodes, function (Node $node, array $parents) use (
-        $sourceId,
-        &$classes,
-        &$interfaces,
-        &$traits,
-        &$abstractClasses,
-        &$functions,
-        &$exports,
-        &$classNames,
-        &$inheritance
-    ): void {
-        if ($node instanceof Stmt\Class_ && $node->name !== null && function_parent($parents) === null) {
-            $name = node_name($node->name);
-            $family = $node->isAbstract() ? 'abstract_class' : 'class';
-            $declarationId = [
-                'source_id' => $sourceId,
-                'family' => $family,
-                'qualified_name' => $name,
-                'ordinal' => declaration_ordinal($node),
-            ];
-            $classNames[spl_object_id($node)] = $name;
-            if ($node->extends !== null) {
-                $inheritance[] = [
-                    'source_declaration_id' => $declarationId,
-                    'kind' => 'extends',
-                    'target_reference' => node_name($node->extends),
-                ];
-            }
-            foreach ($node->implements as $target) {
-                $inheritance[] = [
-                    'source_declaration_id' => $declarationId,
-                    'kind' => 'implements',
-                    'target_reference' => node_name($target),
-                ];
-            }
-            $properties = [];
-            foreach ($node->getProperties() as $property) {
-                foreach ($property->props as $propertyProperty) {
-                    $propertyName = $propertyProperty->name->toString();
-                    $properties[$propertyName] = source_property_entry(
-                        $sourceId,
-                        $declarationId,
-                        $propertyName,
-                        $propertyProperty,
-                        $property->type,
-                        $propertyProperty->default instanceof Expr\ConstFetch
-                            && strtolower(node_name($propertyProperty->default->name)) === 'null'
-                            || type_is_optional($property->type),
-                        member_visibility($property),
-                        $property->isStatic() ? 'static' : 'instance'
-                    );
+    $relations = [];
+    $index->visit(function (Node $node, array $parents) use ($index, $callables, &$declarations, &$exports, &$relations): void {
+        if ($node instanceof Stmt\Function_) {
+            $identity = $index->identities[spl_object_id($node)];
+            $exports[] = source_export_entry($identity['qualified_name'], 'function', $identity);
+            return;
+        }
+        if (!$node instanceof Stmt\ClassLike) return;
+        $identity = $index->identities[spl_object_id($node)];
+        $kind = $node instanceof Stmt\Trait_ ? 'trait' : ($node instanceof Stmt\Enum_ ? 'enum' : $identity['family']);
+        $properties = [];
+        foreach ($node->stmts as $member) {
+            if ($member instanceof Stmt\Property) {
+                foreach ($member->props as $property) {
+                    $properties[] = source_property_entry($index, $identity, $property->name->toString(), $property,
+                        $member->type, type_is_optional($member->type), member_visibility($member), $member->isStatic() ? 'static' : 'instance');
                 }
-            }
-            foreach ($node->getMethods() as $method) {
-                if ($method->name->toString() !== '__construct') {
-                    continue;
-                }
-                foreach ($method->params as $param) {
-                    if (($param->flags ?? 0) !== 0) {
-                        $propertyName = var_name($param->var);
-                        $properties[$propertyName] = source_property_entry(
-                            $sourceId,
-                            $declarationId,
-                            $propertyName,
-                            $param,
-                            $param->type,
-                            $param->default !== null || type_is_optional($param->type),
-                            parameter_visibility($param),
-                            'instance'
-                        );
+            } elseif ($member instanceof Stmt\ClassMethod) {
+                foreach ($member->params as $parameter) {
+                    if ($parameter->flags !== 0 && $parameter->var instanceof Expr\Variable && is_string($parameter->var->name)) {
+                        $properties[] = source_property_entry($index, $identity, $parameter->var->name, $parameter,
+                            $parameter->type, type_is_optional($parameter->type), parameter_visibility($parameter), 'instance');
                     }
                 }
+            } elseif ($member instanceof Stmt\TraitUse) {
+                foreach ($member->traits as $trait) $relations[] = ['source_declaration_id' => $identity,
+                    'kind' => 'uses_trait', 'target_reference' => $trait->toString(), 'target' => $index->resolve($trait->toString(), $node)];
             }
-            $methods = [];
-            $abstractMethods = [];
-            $concreteMethods = [];
-            foreach ($node->getMethods() as $method) {
-                $methodName = $method->name->toString();
-                $parameters = parameter_definitions($method->params);
-                $entry = source_callable_entry(
-                    $sourceId,
-                    $methodName,
-                    $name . '.' . $methodName,
-                    $declarationId,
-                    $methodName === '__construct'
-                        ? 'constructor'
-                        : ($method->isStatic() ? 'static_method' : 'instance_method'),
-                    member_visibility($method),
-                    $method,
-                    $parameters,
-                    $method->returnType
-                );
-                if ($node->isAbstract()) {
-                    if ($method->isAbstract()) {
-                        $abstractMethods[] = $entry;
-                    } else {
-                        $concreteMethods[] = $entry;
-                    }
-                } else {
-                    $methods[] = $entry;
+        }
+        $methods = [];
+        $abstract = [];
+        foreach ($node->getMethods() as $method) {
+            $methodId = $index->identities[spl_object_id($method)];
+            foreach ($callables as $callable) {
+                if ($callable['declaration_id'] === $methodId) {
+                    if ($method->isAbstract() || $node instanceof Stmt\Interface_) $abstract[] = $callable;
+                    else $methods[] = $callable;
                 }
             }
-            $base = [
-                'declaration_id' => $declarationId,
-                'kind' => $family,
-                'name' => $name,
-                'visibility' => class_visibility($node),
-                'visibility_intent' => visibility_intent($name, class_visibility($node)),
-                'declaration_annotations' => declaration_annotations($node),
-                'properties' => array_values($properties),
-                'line_count' => line_span($node),
-            ];
-            if ($node->isAbstract()) {
-                $abstractClasses[] = [
-                    ...$base,
-                    'abstract_methods' => $abstractMethods,
-                    'methods' => $concreteMethods,
-                ];
-                $exports[] = source_export_entry($name, 'abstract_class');
-            } else {
-                $classes[] = [
-                    ...$base,
-                    'methods' => $methods,
-                ];
-                $exports[] = source_export_entry($name, 'class');
-            }
-            return;
         }
-
-        if ($node instanceof Stmt\Interface_ && function_parent($parents) === null) {
-            $name = node_name($node->name);
-            $declarationId = [
-                'source_id' => $sourceId,
-                'family' => 'interface',
-                'qualified_name' => $name,
-                'ordinal' => declaration_ordinal($node),
-            ];
-            foreach ($node->extends as $target) {
-                $inheritance[] = [
-                    'source_declaration_id' => $declarationId,
-                    'kind' => 'extends',
-                    'target_reference' => node_name($target),
-                ];
-            }
-            $methods = [];
-            foreach ($node->getMethods() as $method) {
-                $parameters = parameter_definitions($method->params);
-                $methodName = $method->name->toString();
-                $methods[] = source_callable_entry(
-                    $sourceId,
-                    $methodName,
-                    $name . '.' . $methodName,
-                    $declarationId,
-                    $method->isStatic() ? 'static_method' : 'instance_method',
-                    'public',
-                    $method,
-                    $parameters,
-                    $method->returnType
-                );
-            }
-            $interfaces[] = [
-                'declaration_id' => $declarationId,
-                'kind' => 'interface',
-                'name' => $name,
-                'visibility' => 'public',
-                'visibility_intent' => visibility_intent($name, 'public'),
-                'declaration_annotations' => declaration_annotations($node),
-                'methods' => $methods,
-                'properties' => [],
-                'signatures' => [],
-                'line_count' => line_span($node),
-            ];
-            $exports[] = source_export_entry($name, 'interface');
-            return;
+        $targets = [];
+        if ($node instanceof Stmt\Class_) {
+            if ($node->extends !== null) $targets[] = ['extends', $node->extends];
+            foreach ($node->implements as $target) $targets[] = ['implements', $target];
+        } elseif ($node instanceof Stmt\Interface_) {
+            foreach ($node->extends as $target) $targets[] = ['extends', $target];
+        } elseif ($node instanceof Stmt\Enum_) {
+            foreach ($node->implements as $target) $targets[] = ['implements', $target];
         }
-
-        if ($node instanceof Stmt\Trait_ && function_parent($parents) === null) {
-            $name = node_name($node->name);
-            $declarationId = [
-                'source_id' => $sourceId,
-                'family' => 'type',
-                'qualified_name' => $name,
-                'ordinal' => declaration_ordinal($node),
-            ];
-            $properties = [];
-            foreach ($node->getProperties() as $property) {
-                foreach ($property->props as $propertyProperty) {
-                    $propertyName = $propertyProperty->name->toString();
-                    $properties[] = source_property_entry(
-                        $sourceId,
-                        $declarationId,
-                        $propertyName,
-                        $propertyProperty,
-                        $property->type,
-                        $propertyProperty->default instanceof Expr\ConstFetch
-                            && strtolower(node_name($propertyProperty->default->name)) === 'null'
-                            || type_is_optional($property->type),
-                        member_visibility($property),
-                        $property->isStatic() ? 'static' : 'instance'
-                    );
-                }
-            }
-            $methods = [];
-            foreach ($node->getMethods() as $method) {
-                $methodName = $method->name->toString();
-                $methods[] = source_callable_entry(
-                    $sourceId,
-                    $methodName,
-                    $name . '.' . $methodName,
-                    $declarationId,
-                    $method->isStatic() ? 'static_method' : 'instance_method',
-                    member_visibility($method),
-                    $method,
-                    parameter_definitions($method->params),
-                    $method->returnType
-                );
-            }
-            $traits[] = [
-                'declaration_id' => $declarationId,
-                'kind' => 'trait',
-                'name' => $name,
-                'visibility' => 'public',
-                'visibility_intent' => visibility_intent($name, 'public'),
-                'declaration_annotations' => declaration_annotations($node),
-                'methods' => $methods,
-                'properties' => $properties,
-                'signatures' => [],
-                'line_count' => line_span($node),
-            ];
-            $exports[] = source_export_entry($name, 'type');
-            return;
-        }
-
-        if ($node instanceof Stmt\Function_ && function_parent($parents) === null) {
-            $name = node_name($node->name);
-            $exports[] = source_export_entry($name, 'function');
-        }
+        foreach ($targets as [$relationKind, $target]) $relations[] = ['source_declaration_id' => $identity,
+            'kind' => $relationKind, 'target_reference' => $target->toString(), 'target' => $index->resolve($target->toString(), $node)];
+        $declarations[] = ['declaration_id' => $identity, 'kind' => $kind, 'name' => $identity['qualified_name'],
+            'visibility' => 'public', 'visibility_intent' => 'public', 'declaration_annotations' => declaration_annotations($node),
+            'line_count' => line_span($node), 'methods' => $methods, 'abstract_methods' => $abstract, 'properties' => $properties,
+            'signatures' => [], 'inventory' => member_inventory($index->record), 'placement' => $index->placement($node)];
+        if ($node->name !== null) $exports[] = source_export_entry($identity['qualified_name'],
+            in_array($kind, ['trait', 'enum'], true) ? 'type' : $kind, $identity);
     });
-
-    return [
-        'declarations' => [...$classes, ...$interfaces, ...$traits, ...$abstractClasses],
-        'functions' => $functions,
-        'exports' => $exports,
-        'class_names' => $classNames,
-        'declaration_relations' => $inheritance,
-    ];
+    return ['declarations' => $declarations, 'exports' => $exports, 'declaration_relations' => $relations];
 }
 
-function callable_name_for_expr(Expr\Closure|Expr\ArrowFunction $node, array $parents): array {
-    $parent = $parents[count($parents) - 1] ?? null;
-    if ($parent instanceof Expr\Assign && $parent->var instanceof Expr\Variable && is_string($parent->var->name)) {
-        return [$parent->var->name, $parent->var->name, '', 'private', $parent];
-    }
-    if ($parent instanceof Arg) {
-        $name = '<anonymous>@' . $node->getStartLine();
-        return [$name, $name, '', 'private', $node];
-    }
-    $name = '<anonymous>@' . $node->getStartLine();
-    return [$name, $name, '', 'private', $node];
-}
-
-function collect_values_and_callables(array $nodes, string $sourceId): array {
+function collect_values_and_callables(PhpStructuralIndex $index): array {
     $values = [];
     $callables = [];
     $callableRanges = [];
 
-    $addCallable = function (array $entry, Node $node, string $ownerName) use (&$callables, &$callableRanges): void {
+    $addCallable = function (array $entry, Node $node) use (&$callables, &$callableRanges): void {
         $callables[] = $entry;
-        $callableRanges[spl_object_id($node)] = [
-            'declarationId' => $entry['declaration_id'],
-            'ownerName' => $ownerName,
-            'node' => $node,
-        ];
+        $callableRanges[spl_object_id($node)] = $entry['declaration_id'];
     };
 
-    walk_nodes($nodes, function (Node $node, array $parents) use (
-        $sourceId,
+    $index->visit(function (Node $node, array $parents) use (
+        $index,
         &$values,
         $addCallable
     ): void {
         if ($node instanceof Expr\Assign && $node->var instanceof Expr\Variable && is_string($node->var->name)) {
             if (!$node->expr instanceof Expr\Closure && !$node->expr instanceof Expr\ArrowFunction) {
                 $values[] = source_value_entry(
-                    $sourceId,
+                    $index,
                     $node->var->name,
                     'private',
                     $node,
@@ -788,7 +741,7 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
         if ($node instanceof Stmt\Const_) {
             foreach ($node->consts as $const) {
                 $values[] = source_value_entry(
-                    $sourceId,
+                    $index,
                     $const->name->toString(),
                     'public',
                     $const,
@@ -802,7 +755,7 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
         if ($node instanceof Stmt\ClassConst) {
             foreach ($node->consts as $const) {
                 $values[] = source_value_entry(
-                    $sourceId,
+                    $index,
                     $const->name->toString(),
                     member_visibility($node),
                     $const,
@@ -816,63 +769,53 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
         if ($node instanceof Stmt\Function_) {
             $name = node_name($node->name);
             $addCallable(source_callable_entry(
-                $sourceId,
-                $name,
+                $index,
                 $name,
                 null,
                 'function',
                 'public',
                 $node,
-                parameter_definitions($node->params),
+                parameter_definitions($node->params, $index->record),
                 $node->returnType
-            ), $node, '');
+            ), $node);
             return;
         }
 
-        if ($node instanceof Stmt\ClassMethod && !$node->isAbstract()) {
-            $owner = nearest_parent($parents, Stmt\Class_::class, Stmt\Trait_::class);
-            $ownerName = $owner instanceof Stmt\ClassLike && $owner->name !== null ? node_name($owner->name) : '';
-            $ownerDeclarationId = $owner instanceof Stmt\ClassLike && $owner->name !== null
-                ? [
-                    'source_id' => $sourceId,
-                    'family' => $owner instanceof Stmt\Trait_
-                        ? 'type'
-                        : ($owner->isAbstract() ? 'abstract_class' : 'class'),
-                    'qualified_name' => $ownerName,
-                    'ordinal' => declaration_ordinal($owner),
-                ]
-                : null;
+        if ($node instanceof Stmt\ClassMethod) {
+            $owner = nearest_parent($parents, Stmt\ClassLike::class);
+            if (!$owner instanceof Stmt\ClassLike) throw new PhpExtractorInvariantFailure('PHP method has no native class owner.');
+            $ownerDeclarationId = $index->identities[spl_object_id($owner)];
             $name = node_name($node->name);
             $kind = $name === '__construct' ? 'constructor' : ($node->isStatic() ? 'static_method' : 'instance_method');
             $addCallable(source_callable_entry(
-                $sourceId,
+                $index,
                 $name,
-                $ownerName !== '' ? $ownerName . '.' . $name : $name,
                 $ownerDeclarationId,
                 $kind,
                 member_visibility($node),
                 $node,
-                parameter_definitions($node->params),
+                parameter_definitions($node->params, $index->record),
                 $node->returnType
-            ), $node, $ownerName);
+            ), $node);
             return;
         }
 
         if ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
-            [$name, $qualifiedName, $ownerName, $visibility, $startNode] = callable_name_for_expr($node, $parents);
+            $parent = $parents[count($parents) - 1];
+            $bound = $parent instanceof Expr\Assign && $parent->var instanceof Expr\Variable && is_string($parent->var->name);
+            $name = $bound ? $parent->var->name : '<anonymous>@' . declaration_ordinal($node);
             $addCallable(source_callable_entry(
-                $sourceId,
+                $index,
                 $name,
-                $qualifiedName,
                 null,
-                str_starts_with($name, '<anonymous>@') ? 'anonymous' : 'callable_value',
-                $visibility,
-                $startNode,
-                parameter_definitions($node->params),
+                $bound ? 'callable_value' : 'anonymous',
+                'private',
+                $node,
+                parameter_definitions($node->params, $index->record),
                 $node->returnType,
                 'assignment',
                 function_parent($parents) === null ? 'module' : 'local'
-            ), $node, $ownerName);
+            ), $node);
         }
     });
 
@@ -883,96 +826,50 @@ function collect_values_and_callables(array $nodes, string $sourceId): array {
     ];
 }
 
-function collect_calls(array $nodes, string $sourceId, array $callables, array $callableRanges): array {
+function collect_calls(PhpStructuralIndex $index, array $callables, array $callableRanges): array {
     $calls = [];
     $nextOrdinalByOwner = array_fill_keys(array_keys($callableRanges), 1);
-    $byName = [];
-    $byQualifiedName = [];
-    $constructorsByName = [];
-
-    foreach ($callables as $callable) {
-        $byQualifiedName[$callable['qualified_name']][] = $callable['declaration_id'];
-        if (in_array($callable['kind'], ['function', 'callable_value'], true)) {
-            $byName[$callable['name']][] = $callable['declaration_id'];
-        }
-        if ($callable['kind'] === 'constructor') {
-            $ownerName = $callable['owner_declaration_id']['qualified_name'];
-            $constructorsByName[$ownerName][] = $callable['declaration_id'];
-        }
-    }
-
-    walk_nodes($nodes, function (Node $node, array $parents) use (
-        &$calls,
-        &$nextOrdinalByOwner,
-        $sourceId,
-        $callableRanges,
-        $byName,
-        $byQualifiedName,
-        $constructorsByName
-    ): void {
-        $expression = '';
-        $isConstructor = false;
-        if ($node instanceof Expr\FuncCall) {
-            $expression = expr_name($node->name);
-        } elseif ($node instanceof Expr\MethodCall) {
-            $expression = expr_name($node);
-        } elseif ($node instanceof Expr\StaticCall) {
-            $expression = expr_name($node);
-        } elseif ($node instanceof Expr\New_) {
-            $expression = expr_name($node->class);
-            $isConstructor = true;
-        } else {
-            return;
-        }
-
+    $index->visit(function (Node $node, array $parents) use (&$calls, &$nextOrdinalByOwner, $index, $callableRanges, $callables): void {
+        if (!$node instanceof Expr\FuncCall && !$node instanceof Expr\MethodCall && !$node instanceof Expr\NullsafeMethodCall && !$node instanceof Expr\StaticCall && !$node instanceof Expr\New_) return;
         $owner = function_parent($parents);
-        if ($owner === null) {
-            return;
+        if ($owner === null) return;
+        $range = $callableRanges[spl_object_id($owner)];
+        $expression = $node instanceof Expr\FuncCall ? expr_name($node->name) : ($node instanceof Expr\New_ ? expr_name($node->class) : expr_name($node));
+        $reference = $expression;
+        $dynamic = false;
+        if ($node instanceof Expr\MethodCall || $node instanceof Expr\NullsafeMethodCall) {
+            $class = nearest_parent($parents, Stmt\ClassLike::class);
+            if ($class !== null && $node->var instanceof Expr\Variable && $node->var->name === 'this' && $node->name instanceof Node\Identifier) {
+                $reference = '\\' . $index->identities[spl_object_id($class)]['qualified_name'] . '.' . $node->name->toString();
+            } else $dynamic = true;
+        } elseif ($node instanceof Expr\StaticCall) {
+            if ($node->class instanceof Name && $node->name instanceof Node\Identifier) {
+                $class = nearest_parent($parents, Stmt\ClassLike::class);
+                $reference = $node->class->toString();
+                if ($reference === 'self' && $class !== null) $reference = '\\' . $index->identities[spl_object_id($class)]['qualified_name'];
+                elseif (in_array($reference, ['static', 'parent'], true)) $dynamic = true;
+                $reference .= '.' . $node->name->toString();
+            } else $dynamic = true;
+        } elseif ($node instanceof Expr\FuncCall && $node->name instanceof Expr\Variable && is_string($node->name->name)) {
+            $reference = $node->name->name;
+        } elseif ($node instanceof Expr\FuncCall && !$node->name instanceof Name) $dynamic = true;
+        elseif ($node instanceof Expr\New_ && !$node->class instanceof Name) $dynamic = true;
+        $target = $dynamic ? ['kind' => 'unresolved', 'reason' => 'dynamic'] : $index->resolve($reference, $node);
+        $candidates = [];
+        if ($target['kind'] === 'resolved') foreach ($callables as $callable) {
+            if ($node instanceof Expr\New_) {
+                if ($callable['kind'] === 'constructor' && $callable['owner_declaration_id'] === $target['declaration_id']) $candidates[] = $callable['declaration_id'];
+            } elseif ($callable['declaration_id'] === $target['declaration_id']) $candidates[] = $callable['declaration_id'];
         }
-        $range = $callableRanges[spl_object_id($owner)] ?? null;
-        if ($range === null || $expression === '') {
-            return;
-        }
-
-        $ownerId = spl_object_id($owner);
-        $ordinal = $nextOrdinalByOwner[$ownerId];
-        $nextOrdinalByOwner[$ownerId] = $ordinal + 1;
-
-        $targetCallableId = null;
-        $resolution = 'unresolved';
-        if ($isConstructor && count($constructorsByName[$expression] ?? []) === 1) {
-            $targetCallableId = $constructorsByName[$expression][0];
-            $resolution = 'resolved';
-        } elseif (count($byQualifiedName[$expression] ?? []) === 1) {
-            $targetCallableId = $byQualifiedName[$expression][0];
-            $resolution = 'resolved';
-        } elseif (str_starts_with($expression, '$this->') && $range['ownerName'] !== '') {
-            $qualifiedName = $range['ownerName'] . '.' . substr($expression, strlen('$this->'));
-            if (count($byQualifiedName[$qualifiedName] ?? []) === 1) {
-                $targetCallableId = $byQualifiedName[$qualifiedName][0];
-                $resolution = 'resolved';
-            }
-        } elseif (count($byName[$expression] ?? []) === 1) {
-            $targetCallableId = $byName[$expression][0];
-            $resolution = 'resolved';
-        }
-
-        $calls[] = [
-            'source_callable_id' => $range['declarationId'],
-            'ordinal' => $ordinal,
-            'target_callable_id' => $targetCallableId,
-            'source_id' => $sourceId,
-            'line' => $node->getStartLine(),
-            'expression' => $expression,
-            'resolution' => $resolution,
-            'target_name' => expression_target_name($expression),
-        ];
+        $calls[] = ['source_callable_id' => $range, 'ordinal' => $nextOrdinalByOwner[spl_object_id($owner)]++,
+            'target_callable_id' => count($candidates) === 1 ? $candidates[0] : null, 'source_id' => $index->record->sourceId,
+            'line' => $node->getStartLine(), 'expression' => $expression === '' ? (new Standard())->prettyPrintExpr($node) : $expression,
+            'resolution' => count($candidates) === 1 ? 'resolved' : ($dynamic ? 'dynamic' : 'unresolved'), 'target_name' => expression_target_name($expression)];
     });
-
     return $calls;
 }
 
-function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRoot = null): array {
+function extract_file(Parser $parser, string $path, ?string $sourceId = null, ?string $sourcesRoot = null): array {
     $content = file_get_contents($path);
     if ($content === false) {
         fwrite(STDERR, "Unable to read PHP file: {$path}\n");
@@ -980,10 +877,10 @@ function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRo
     }
 
     try {
-        $nodes = (new ParserFactory())->createForHostVersion()->parse($content) ?? [];
+        $nodes = $parser->parse($content) ?? [];
     } catch (Error $error) {
         if ($error->getStartLine() < 1 || !$error->hasColumnInfo()) {
-            throw new LogicException("PHP parser omitted the source parse location for {$path}.", previous: $error);
+            throw new PhpExtractorInvariantFailure("PHP parser omitted the source parse location for {$path}.", previous: $error);
         }
         $failure = [
             'code' => 'source_parse',
@@ -999,13 +896,24 @@ function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRo
 
     $root = $sourcesRoot ?? dirname($path);
     $resolvedSourceId = $sourceId ?? source_id_for_path($path, $root);
-    $definitions = collect_definitions($nodes, $resolvedSourceId);
-    $graph = collect_values_and_callables($nodes, $resolvedSourceId);
+    $index = new PhpStructuralIndex($resolvedSourceId, hash('sha256', $content), $nodes);
+    $graph = collect_values_and_callables($index);
+    $definitions = collect_definitions($index, $graph['callables']);
+    foreach ($graph['values'] as $value) {
+        if ($value['declaration_kind'] === 'constant' && $value['scope'] === 'module') {
+            $definitions['exports'][] = source_export_entry($value['name'], 'value', $value['declaration_id']);
+        }
+    }
+    $inventory = [];
+    foreach (['declarations', 'functions', 'values', 'callable_values', 'anonymous_callables', 'namespaces', 'exports'] as $family) $inventory[$family] = inventory_coverage($index->record, $index->limitations[$family] ?? []);
+    $inventory['unresolved_methods'] = inventory_coverage($index->record, [], 'not_applicable');
 
-    return [
-        'imports' => collect_imports($nodes, $content),
+    return $index->record->encode([
+        'imports' => collect_imports($content, $index),
         'exports' => $definitions['exports'],
-        'namespaces' => [],
+        'namespaces' => $index->namespaces,
+        'inventory' => $inventory,
+        'unresolved_methods' => [],
         'declarations' => $definitions['declarations'],
         'functions' => array_values(array_filter(
             $graph['callables'],
@@ -1020,33 +928,16 @@ function extract_file(string $path, ?string $sourceId = null, ?string $sourcesRo
             $graph['callables'],
             fn (array $callable): bool => $callable['kind'] === 'anonymous'
         )),
-        'calls' => collect_calls($nodes, $resolvedSourceId, $graph['callables'], $graph['callable_ranges']),
+        'calls' => collect_calls($index, $graph['callables'], $graph['callable_ranges']),
         'declaration_relations' => $definitions['declaration_relations'],
         'line_count' => line_count_for_content($content),
         'code_line_count' => code_line_count_for_content($content),
         'public_symbol_count' => count($definitions['exports']),
-    ];
+    ]);
 }
 
-function extract_batch_from_stdin(string $sourcesRoot): array {
-    $pathsBySourceId = json_decode(stream_get_contents(STDIN), true);
-    if (!is_array($pathsBySourceId)) {
-        fwrite(STDERR, "Expected a JSON object mapping source ids to PHP file paths.\n");
-        exit(1);
-    }
-
-    $result = [];
-    foreach ($pathsBySourceId as $sourceId => $path) {
-        if (!is_string($sourceId) || !is_string($path)) {
-            fwrite(STDERR, "Expected source ids and paths to be strings.\n");
-            exit(1);
-        }
-        $result[$sourceId] = extract_file($path, $sourceId, $sourcesRoot);
-    }
-    return $result;
-}
-
-function write_batch_jsonl_from_stdin(string $sourcesRoot): void {
+function write_batch_from_stdin(string $sourcesRoot): void {
+    $parser = (new ParserFactory())->createForHostVersion();
     $pathsBySourceId = json_decode(stream_get_contents(STDIN), true);
     if (!is_array($pathsBySourceId)) {
         fwrite(STDERR, "Expected a JSON object mapping source ids to PHP file paths.\n");
@@ -1058,19 +949,13 @@ function write_batch_jsonl_from_stdin(string $sourcesRoot): void {
             fwrite(STDERR, "Expected source ids and paths to be strings.\n");
             exit(1);
         }
-        echo json_encode([
-            $sourceId,
-            extract_file($path, $sourceId, $sourcesRoot),
-        ]) . "\n";
+        echo json_encode(extract_file($parser, $path, $sourceId, $sourcesRoot), JSON_THROW_ON_ERROR) . "\n";
+        fflush(STDOUT);
     }
 }
 
 if (($argv[1] ?? null) === '--batch') {
-    if (in_array('--jsonl', $argv, true)) {
-        write_batch_jsonl_from_stdin($argv[2] ?? getcwd());
-    } else {
-        echo json_encode(extract_batch_from_stdin($argv[2] ?? getcwd()));
-    }
+    write_batch_from_stdin($argv[2] ?? getcwd());
 } else {
-    echo json_encode(extract_file($argv[1], null, $argv[2] ?? dirname($argv[1])));
+    echo json_encode(extract_file((new ParserFactory())->createForHostVersion(), $argv[1], null, $argv[2] ?? dirname($argv[1])));
 }

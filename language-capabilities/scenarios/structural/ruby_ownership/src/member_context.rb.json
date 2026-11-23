@@ -1,0 +1,558 @@
+{
+  "declarations": [
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleOwner",
+      "declaration_kind": "class"
+    }
+  ],
+  "callables": [
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.example_direct",
+      "callable_kind": "type_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.example_direct.example_lambda",
+      "callable_kind": "callable_value"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.example_singleton",
+      "callable_kind": "type_method"
+    },
+    {
+      "kind": "callable",
+      "qualified_name": "ExampleOwner.example_instance",
+      "callable_kind": "instance_method"
+    }
+  ],
+  "attributes": [
+    {
+      "kind": "attribute",
+      "owner": "ExampleOwner",
+      "name": "@example_shared",
+      "member_kind": "static"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleOwner",
+      "name": "@example_value",
+      "member_kind": "static"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleOwner",
+      "name": "@example_lambda",
+      "member_kind": "static"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleOwner",
+      "name": "@example_singleton",
+      "member_kind": "static"
+    },
+    {
+      "kind": "attribute",
+      "owner": "ExampleOwner",
+      "name": "@example_value",
+      "member_kind": "instance"
+    }
+  ],
+  "namespaces": [],
+  "signatures": {},
+  "spans": [
+    {
+      "kind": "exact_span",
+      "owner": "ExampleOwner.example_direct",
+      "start": 4,
+      "end": 7
+    },
+    {
+      "kind": "exact_span",
+      "owner": "ExampleOwner.example_direct.example_lambda",
+      "start": 6,
+      "end": 6
+    },
+    {
+      "kind": "exact_span",
+      "owner": "ExampleOwner.example_singleton",
+      "start": 11,
+      "end": 13
+    },
+    {
+      "kind": "exact_span",
+      "owner": "ExampleOwner.example_instance",
+      "start": 16,
+      "end": 18
+    }
+  ],
+  "owners": [
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_direct",
+        "ordinal": 45,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 1,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_singleton",
+        "ordinal": 194,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 1,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_instance",
+        "ordinal": 262,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 1,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "property",
+        "qualified_name": "ExampleOwner.@example_shared",
+        "ordinal": 22,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 1,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "property",
+        "qualified_name": "ExampleOwner.@example_value",
+        "ordinal": 73,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 1,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "property",
+        "qualified_name": "ExampleOwner.@example_lambda",
+        "ordinal": 118,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 1,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "property",
+        "qualified_name": "ExampleOwner.@example_singleton",
+        "ordinal": 222,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 1,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "property",
+        "qualified_name": "ExampleOwner.@example_value",
+        "ordinal": 287,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 1,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      }
+    ]
+  ],
+  "unresolved_methods": [],
+  "parameters": {
+    "ExampleOwner.example_direct": [],
+    "ExampleOwner.example_direct.example_lambda": [],
+    "ExampleOwner.example_singleton": [],
+    "ExampleOwner.example_instance": []
+  },
+  "returns": {
+    "ExampleOwner.example_direct": {
+      "kind": "absent"
+    },
+    "ExampleOwner.example_direct.example_lambda": {
+      "kind": "absent"
+    },
+    "ExampleOwner.example_singleton": {
+      "kind": "absent"
+    },
+    "ExampleOwner.example_instance": {
+      "kind": "absent"
+    }
+  },
+  "gaps": {},
+  "placements": [
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 1,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_direct",
+        "ordinal": 45,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/member_context.rb",
+            "family": "class",
+            "qualified_name": "ExampleOwner",
+            "ordinal": 1,
+            "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "value",
+        "qualified_name": "ExampleOwner.example_direct.example_lambda",
+        "ordinal": 113,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/member_context.rb",
+            "family": "method",
+            "qualified_name": "ExampleOwner.example_direct",
+            "ordinal": 45,
+            "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_singleton",
+        "ordinal": 194,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "block",
+          "container": {
+            "kind": "declaration",
+            "declaration_id": {
+              "source_id": "ruby_ownership/src/member_context.rb",
+              "family": "class",
+              "qualified_name": "ExampleOwner",
+              "ordinal": 1,
+              "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+            }
+          },
+          "start_utf8_offset": 148,
+          "end_utf8_offset": 257
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_instance",
+        "ordinal": 262,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/member_context.rb",
+            "family": "class",
+            "qualified_name": "ExampleOwner",
+            "ordinal": 1,
+            "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "property",
+        "qualified_name": "ExampleOwner.@example_shared",
+        "ordinal": 22,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/member_context.rb",
+            "family": "class",
+            "qualified_name": "ExampleOwner",
+            "ordinal": 1,
+            "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "property",
+        "qualified_name": "ExampleOwner.@example_value",
+        "ordinal": 73,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/member_context.rb",
+            "family": "method",
+            "qualified_name": "ExampleOwner.example_direct",
+            "ordinal": 45,
+            "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "property",
+        "qualified_name": "ExampleOwner.@example_lambda",
+        "ordinal": 118,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/member_context.rb",
+            "family": "value",
+            "qualified_name": "ExampleOwner.example_direct.example_lambda",
+            "ordinal": 113,
+            "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "property",
+        "qualified_name": "ExampleOwner.@example_singleton",
+        "ordinal": 222,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/member_context.rb",
+            "family": "method",
+            "qualified_name": "ExampleOwner.example_singleton",
+            "ordinal": 194,
+            "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "property",
+        "qualified_name": "ExampleOwner.@example_value",
+        "ordinal": 287,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "ruby_ownership/src/member_context.rb",
+            "family": "method",
+            "qualified_name": "ExampleOwner.example_instance",
+            "ordinal": 262,
+            "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ]
+  ],
+  "exports": [],
+  "relations": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "incomplete",
+      "limitations": [
+        {
+          "kind": "unresolved_ownership",
+          "location": {
+            "kind": "source",
+            "start_line": 10,
+            "end_line": 10
+          },
+          "description": "Instance variable receiver has no exact source declaration."
+        }
+      ]
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "member_inventories": [
+    [
+      {
+        "source_id": "ruby_ownership/src/member_context.rb",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 1,
+        "content_digest": "ddc516b200407b702f8b41efc0f57c9065c0347ac385ccd4a7402a4d341401d0"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ]
+  ]
+}

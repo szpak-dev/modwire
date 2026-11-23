@@ -1,5 +1,7 @@
 from enum import StrEnum
 
+from ..declarations.declaration_family import DeclarationFamily
+
 
 class SourceCallableKind(StrEnum):
     FUNCTION = "function"
@@ -9,3 +11,13 @@ class SourceCallableKind(StrEnum):
     CONSTRUCTOR = "constructor"
     CALLABLE_VALUE = "callable_value"
     ANONYMOUS = "anonymous"
+
+    @property
+    def declaration_family(self) -> DeclarationFamily:
+        if self is SourceCallableKind.FUNCTION:
+            return DeclarationFamily.FUNCTION
+        if self is SourceCallableKind.CALLABLE_VALUE:
+            return DeclarationFamily.VALUE
+        if self is SourceCallableKind.ANONYMOUS:
+            return DeclarationFamily.CALLABLE
+        return DeclarationFamily.METHOD

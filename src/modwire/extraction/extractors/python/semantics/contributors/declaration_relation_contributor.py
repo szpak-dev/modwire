@@ -7,9 +7,7 @@ from ......shared.code.models.declarations.source_declaration_relation_kind impo
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
 from ..catalog import PythonSemanticCatalog
-from ..classes.classifier import PythonClassClassifier
 from ..contribution import PythonSemanticContribution
-from ..policies.declaration_identity_factory import PythonDeclarationIdentityFactory
 from ..policies.expression_reference_reader import PythonExpressionReferenceReader
 from ..reader import PythonSemanticContributor
 
@@ -17,9 +15,7 @@ from ..reader import PythonSemanticContributor
 @injectable(as_type=PythonSemanticContributor, qualifier="80-declaration-relation")
 @dataclass(frozen=True)
 class DeclarationRelationSemanticContributor(PythonSemanticContributor):
-    classes: PythonClassClassifier
     references: PythonExpressionReferenceReader
-    identities: PythonDeclarationIdentityFactory
 
     @property
     def order(self) -> int:
@@ -31,19 +27,16 @@ class DeclarationRelationSemanticContributor(PythonSemanticContributor):
         catalog: PythonSemanticCatalog,
         context: PythonSourceContext,
     ) -> PythonSemanticContribution:
-        return PythonSemanticContribution(
-            declaration_relations=tuple(
+        relations: list[SourceDeclarationRelation] = []
+        for candidate in observation.declaration_relations:
+            reference = self.references.read(candidate)
+            target, _ = catalog.resolve(reference, candidate.source.binding_scope)
+            relations.append(
                 SourceDeclarationRelation(
-                    source_declaration_id=self.identities.create(
-                        context.source_id,
-                        self.classes.classify(candidate.source),
-                        candidate.source.node.name,
-                        candidate.source.node.lineno,
-                        candidate.source.node.col_offset,
-                    ),
+                    source_declaration_id=catalog.scope_identities[candidate.source.node],
                     kind=SourceDeclarationRelationKind.EXTENDS,
-                    target_reference=self.references.read(candidate),
+                    target_reference=reference,
+                    target=target,
                 )
-                for candidate in observation.declaration_relations
             )
-        )
+        return PythonSemanticContribution(declaration_relations=tuple(relations))

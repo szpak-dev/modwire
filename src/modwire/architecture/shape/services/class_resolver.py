@@ -6,6 +6,8 @@ from ....shared.code.models.declarations.source_symbol import SourceSymbol
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, SymbolShapeResolverInterface
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
+from ..models.shape_rule_kind import ShapeRuleKind
+from ..models.shape_symbol_kind import ShapeSymbolKind
 from ..models.shape_violation import ShapeViolation
 
 
@@ -26,7 +28,7 @@ class ClassResolver(SymbolShapeResolverInterface, BaseShapeResolver):
             violations.extend(
                 self.class_violations(
                     source_id=class_result.source_id,
-                    symbol_kind="class",
+                    symbol_kind=ShapeSymbolKind.CLASS,
                     symbol=class_result.item,
                     method_count=len(class_result.item.methods),
                     config=config,
@@ -36,7 +38,7 @@ class ClassResolver(SymbolShapeResolverInterface, BaseShapeResolver):
             violations.extend(
                 self.class_violations(
                     source_id=interface_result.source_id,
-                    symbol_kind="interface",
+                    symbol_kind=ShapeSymbolKind.INTERFACE,
                     symbol=interface_result.item,
                     method_count=len(interface_result.item.methods),
                     config=config,
@@ -46,7 +48,7 @@ class ClassResolver(SymbolShapeResolverInterface, BaseShapeResolver):
             violations.extend(
                 self.class_violations(
                     source_id=type_result.source_id,
-                    symbol_kind="type",
+                    symbol_kind=ShapeSymbolKind.TYPE,
                     symbol=type_result.item,
                     method_count=None,
                     config=config,
@@ -55,12 +57,18 @@ class ClassResolver(SymbolShapeResolverInterface, BaseShapeResolver):
         return tuple(violations)
 
     def class_violations(
-        self, *, source_id: str, symbol_kind: str, symbol: SourceSymbol, method_count: int | None, config: ShapeRules
+        self,
+        *,
+        source_id: str,
+        symbol_kind: ShapeSymbolKind,
+        symbol: SourceSymbol,
+        method_count: int | None,
+        config: ShapeRules,
     ) -> tuple[ShapeViolation, ...]:
         violations = [
             self.limit_violation(
                 source_id=source_id,
-                rule_name="max_class_lines",
+                rule_name=ShapeRuleKind.MAX_CLASS_LINES,
                 actual=symbol.line_count,
                 limit=config.max_class_lines,
                 symbol_kind=symbol_kind,
@@ -71,7 +79,7 @@ class ClassResolver(SymbolShapeResolverInterface, BaseShapeResolver):
             violations.append(
                 self.limit_violation(
                     source_id=source_id,
-                    rule_name="max_methods_per_class",
+                    rule_name=ShapeRuleKind.MAX_METHODS_PER_CLASS,
                     actual=method_count,
                     limit=config.max_methods_per_class,
                     symbol_kind=symbol_kind,

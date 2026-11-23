@@ -6,11 +6,16 @@ import statistics
 import subprocess
 import sys
 import time
+from collections.abc import Callable
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, cast
 
 from modwire.application import ModwireApplication, ScanPolicy
 
+from .argument_default import ArgumentDefault
+from .arguments import BenchmarkArguments
+from .profiling.benchmark import ProfileBenchmark
 from .project import Project
 
 
@@ -18,40 +23,61 @@ class BigProjectBenchmark:
     repository_root = Path(__file__).resolve().parents[3]
     default_config = Path(__file__).with_name("projects.json")
 
-    def __init__(self, config: dict[str, Any], clone_root: Path, refresh: bool, repetitions: int) -> None:
+    def __init__(
+        self,
+        config: dict[str, Any],
+        clone_root: Path,
+        refresh: bool,
+        repetitions: int,
+        profile_max_workers: int | ArgumentDefault,
+    ) -> None:
         self.config = config
         self.clone_root = clone_root
         self.refresh = refresh
         self.repetitions = repetitions
+        self.profile_max_workers = profile_max_workers
         self.application = ModwireApplication.create()
 
     @classmethod
     def main(cls) -> int:
         parser = argparse.ArgumentParser(description="Measure Modwire extraction on large public projects.")
         parser.add_argument("--config", type=Path, default=cls.default_config)
-        parser.add_argument("--clone-root", type=Path)
+        parser.add_argument("--clone-root", type=Path, default=ArgumentDefault.UNSET)
         parser.add_argument("--refresh", action="store_true")
         parser.add_argument("--repeat", type=int, default=3)
         parser.add_argument("--only", metavar="LANGUAGE/PROJECT", action="append", default=[])
-        arguments = parser.parse_args()
+        parser.add_argument("--profile-dir", type=Path, default=ArgumentDefault.UNSET)
+        parser.add_argument("--profile-max-workers", type=int, default=ArgumentDefault.UNSET)
+        arguments = parser.parse_args(namespace=BenchmarkArguments())
         if arguments.repeat < 1:
             parser.error("--repeat must be at least 1")
+        if arguments.profile_max_workers is not ArgumentDefault.UNSET and arguments.profile_max_workers < 1:
+            parser.error("--profile-max-workers must be at least 1")
         config = cls.load_config(arguments.config)
-        configured_root = cls.repository_root / config["github"]["clone_root"]
-        benchmark = cls(config, arguments.clone_root or configured_root, arguments.refresh, arguments.repeat)
-        return benchmark.run(set(arguments.only))
+        configured_root = cls.repository_root / Path(config["github"]["clone_root"]).expanduser()
+        clone_root = configured_root if arguments.clone_root is ArgumentDefault.UNSET else arguments.clone_root
+        benchmark = cls(config, clone_root, arguments.refresh, arguments.repeat, arguments.profile_max_workers)
+        if arguments.profile_dir is not ArgumentDefault.UNSET:
+            profile = ProfileBenchmark(arguments.config, benchmark.clone_root, arguments.profile_dir)
+            if arguments.profile_max_workers is not ArgumentDefault.UNSET:
+                profile = replace(profile, max_workers=min(profile.max_workers, arguments.profile_max_workers))
+            return benchmark.run(set(arguments.only), profile.run)
+        return benchmark.run(set(arguments.only), benchmark.measure_projects)
 
     @staticmethod
     def load_config(path: Path) -> dict[str, Any]:
         with path.open(encoding="utf-8") as config_file:
             return cast(dict[str, Any], json.load(config_file))
 
-    def run(self, selected: set[str]) -> int:
+    def run(self, selected: set[str], measure: Callable[[list[Project]], int]) -> int:
         projects = [project for project in self.projects() if not selected or project.label in selected]
         missing = sorted(selected - {project.label for project in projects})
         if missing:
             print(f"Unknown project label(s): {', '.join(missing)}", file=sys.stderr)
             return 2
+        return measure(projects)
+
+    def measure_projects(self, projects: list[Project]) -> int:
         self.clone_root.mkdir(parents=True, exist_ok=True)
         print(f"Big project root: {self.clone_root}")
         print(f"Projects: {len(projects)}")
@@ -91,12 +117,17 @@ class BigProjectBenchmark:
             return False
 
     def measure_extraction(self, project: Project, project_root: Path, sync_seconds: float, started: float) -> None:
+        if self.profile_max_workers is not ArgumentDefault.UNSET:
+            strategy = self.application.extraction.request(project.language, str(project_root)).strategy
+            strategy.batch_config = strategy.batch_config.model_copy(
+                update={"max_workers": min(self.profile_max_workers, strategy.batch_config.max_workers)}
+            )
         generate_map_durations: list[float] = []
         measurements: list[tuple[int, int, int, int]] = []
         reference_code_map = None
         for _ in range(self.repetitions):
             extract_started = time.perf_counter()
-            code_map = self.application.generate_map(project.language, project_root, self.scan_policy())
+            code_map = self.application.generate_map(project.language, str(project_root), self.scan_policy())
             generate_map_durations.append(time.perf_counter() - extract_started)
             if reference_code_map is None:
                 reference_code_map = code_map

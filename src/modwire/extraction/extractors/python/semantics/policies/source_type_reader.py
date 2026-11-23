@@ -1,6 +1,7 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -12,13 +13,25 @@ from ......shared.code.models.source_types.unsupported import SourceTypeUnsuppor
 @injectable
 @dataclass(frozen=True)
 class PythonSourceTypeReader:
+    @cached_property
+    def visit_dispatch(self) -> Callable[[ast.expr], SourceTypeReference | SourceTypeUnsupported]:
+        return self.visit
+
+    @cached_property
+    def reference_name_dispatch(self) -> Callable[[ast.expr], str]:
+        return self.reference_name
+
+    @cached_property
+    def arguments_dispatch(self) -> Callable[[ast.expr], tuple[ast.expr, ...]]:
+        return self.arguments
+
     def read(
         self,
         annotation: ast.expr | None,
     ) -> SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported:
         if annotation is None:
             return SourceTypeAbsent()
-        return self.visit(annotation)
+        return self.visit_dispatch(annotation)
 
     @singledispatchmethod
     def visit(self, annotation: ast.expr) -> SourceTypeReference | SourceTypeUnsupported:
@@ -34,11 +47,11 @@ class PythonSourceTypeReader:
 
     @visit.register
     def visit_subscript(self, annotation: ast.Subscript) -> SourceTypeReference | SourceTypeUnsupported:
-        name = self.reference_name(annotation.value)
+        name = self.reference_name_dispatch(annotation.value)
         if not name:
             return SourceTypeUnsupported()
-        arguments = self.arguments(annotation.slice)
-        return SourceTypeReference(name=name, arguments=tuple(self.visit(argument) for argument in arguments))
+        arguments = self.arguments_dispatch(annotation.slice)
+        return SourceTypeReference(name=name, arguments=tuple(self.visit_dispatch(argument) for argument in arguments))
 
     @visit.register
     def visit_constant(self, annotation: ast.Constant) -> SourceTypeReference | SourceTypeUnsupported:

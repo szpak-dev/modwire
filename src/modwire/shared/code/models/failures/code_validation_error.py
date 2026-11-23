@@ -1,3 +1,4 @@
+from ....failures.models.modwire_error_code import ModwireErrorCode
 from .code_error import CodeError
 from .code_violation import CodeViolation
 
@@ -5,7 +6,7 @@ from .code_violation import CodeViolation
 class CodeValidationError(CodeError):
     """Report shared code evidence that violates its typed contract."""
 
-    code = "code_validation"
+    code = ModwireErrorCode.CODE_VALIDATION
 
     def __init__(self, violation: CodeViolation, subject: str) -> None:
         self.violation = violation

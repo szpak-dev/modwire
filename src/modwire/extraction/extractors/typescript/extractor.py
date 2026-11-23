@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from wireup import injectable
 
 from ....shared.code.models.capabilities.capability_coverage import CapabilityCoverage
@@ -12,21 +10,21 @@ from ....shared.code.models.sources.identity import FileId, ImportIdentity
 from ....shared.code.models.sources.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
-from ..models.batch_output_format import BatchOutputFormat
 from ..models.entrypoints.file_entrypoint import FileExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
 
 
 @injectable(as_type=SourceExtractor, qualifier="typescript")
-@dataclass(frozen=True)
 class TypeScriptExtractor(SourceExtractor):
-    @property
-    def runtime(self) -> ExtractorRuntime:
-        return ExtractorRuntime(
+    runtime: ExtractorRuntime
+    batch_config: BatchConfig
+
+    def __init__(self) -> None:
+        self.runtime = ExtractorRuntime(
             order=1,
             descriptor=ExtractorDescriptor(
                 id="modwire.typescript.ts-morph",
-                version="3",
+                version="4",
                 language="typescript",
                 runtime="node",
             ),
@@ -71,8 +69,8 @@ class TypeScriptExtractor(SourceExtractor):
                     capability=FactCapability.ANNOTATIONS,
                     status=CapabilityStatus.PARTIAL,
                     explanation=(
-                        "Class decorator expressions and declared type annotations are extracted; "
-                        "decorators on other declarations are not yet emitted."
+                        "Authored class and callable decorator expressions are preserved without evaluation; "
+                        "property decorator payloads are not represented."
                     ),
                 ),
                 CapabilityCoverage(
@@ -100,8 +98,8 @@ class TypeScriptExtractor(SourceExtractor):
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.NAMESPACES,
-                    status=CapabilityStatus.UNSUPPORTED,
-                    explanation="TypeScript namespace declarations are not extracted yet.",
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation="Authored namespace declarations retain exact identities and lexical placement.",
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.DECLARATION_KINDS,
@@ -178,14 +176,11 @@ class TypeScriptExtractor(SourceExtractor):
             ),
         )
 
-    @property
-    def batch_config(self) -> BatchConfig:
-        return BatchConfig(
+        self.batch_config = BatchConfig(
             size=500,
             parallel_threshold=1000,
             parallel_size=500,
             max_workers=16,
-            output_format=BatchOutputFormat.JSON_LINES,
         )
 
     def import_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:

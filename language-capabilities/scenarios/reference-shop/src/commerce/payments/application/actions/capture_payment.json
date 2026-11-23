@@ -13,7 +13,8 @@
         "source_id": "src/commerce/payments/application/actions/capture_payment",
         "family": "class",
         "qualified_name": "CapturePayment",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "523b46d792c6200f7ddd9aa36d4c398f63cdd56473d8dc74176abfc2b6b47362"
       },
       "kind": "class",
       "methods": [
@@ -27,7 +28,8 @@
             "source_id": "src/commerce/payments/application/actions/capture_payment",
             "family": "method",
             "qualified_name": "CapturePayment.capture",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "523b46d792c6200f7ddd9aa36d4c398f63cdd56473d8dc74176abfc2b6b47362"
           },
           "source_id": "src/commerce/payments/application/actions/capture_payment",
           "qualified_name": "CapturePayment.capture",
@@ -50,14 +52,91 @@
             "source_id": "src/commerce/payments/application/actions/capture_payment",
             "family": "class",
             "qualified_name": "CapturePayment",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "523b46d792c6200f7ddd9aa36d4c398f63cdd56473d8dc74176abfc2b6b47362"
+          },
+          "placement": {
+            "lexical_scope": {
+              "kind": "declaration",
+              "declaration_id": {
+                "source_id": "src/commerce/payments/application/actions/capture_payment",
+                "family": "class",
+                "qualified_name": "CapturePayment",
+                "ordinal": 1,
+                "content_digest": "523b46d792c6200f7ddd9aa36d4c398f63cdd56473d8dc74176abfc2b6b47362"
+              }
+            },
+            "namespace": {
+              "kind": "none"
+            }
           }
         }
-      ]
+      ],
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
     }
   ],
   "functions": [],
   "line_count": 0,
   "code_line_count": 0,
-  "public_symbol_count": 1
+  "public_symbol_count": 1,
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "unresolved_methods": []
 }

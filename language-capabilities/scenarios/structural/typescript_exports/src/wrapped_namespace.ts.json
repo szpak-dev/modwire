@@ -1,0 +1,195 @@
+{
+  "declarations": [
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleNamespace.ExampleClass",
+      "declaration_kind": "class"
+    }
+  ],
+  "callables": [],
+  "attributes": [],
+  "namespaces": [
+    {
+      "kind": "namespace",
+      "qualified_name": "ExampleNamespace",
+      "namespace_kind": "namespace"
+    }
+  ],
+  "signatures": {},
+  "spans": [],
+  "owners": [],
+  "unresolved_methods": [],
+  "parameters": {},
+  "returns": {},
+  "gaps": {},
+  "placements": [
+    [
+      {
+        "source_id": "typescript_exports/src/wrapped_namespace.ts",
+        "family": "class",
+        "qualified_name": "ExampleNamespace.ExampleClass",
+        "ordinal": 32,
+        "content_digest": "42b22539df3a689937170bbd5cfc387a7e12068d648aeb286b5d34b2ca009015"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "typescript_exports/src/wrapped_namespace.ts",
+            "family": "namespace",
+            "qualified_name": "ExampleNamespace",
+            "ordinal": 1,
+            "content_digest": "42b22539df3a689937170bbd5cfc387a7e12068d648aeb286b5d34b2ca009015"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "ExampleNamespace",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "typescript_exports/src/wrapped_namespace.ts",
+              "family": "namespace",
+              "qualified_name": "ExampleNamespace",
+              "ordinal": 1,
+              "content_digest": "42b22539df3a689937170bbd5cfc387a7e12068d648aeb286b5d34b2ca009015"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "typescript_exports/src/wrapped_namespace.ts",
+        "family": "namespace",
+        "qualified_name": "ExampleNamespace",
+        "ordinal": 1,
+        "content_digest": "42b22539df3a689937170bbd5cfc387a7e12068d648aeb286b5d34b2ca009015"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ]
+  ],
+  "exports": [
+    {
+      "name": "ExampleClass",
+      "local_name": "ExampleClass",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 32,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "typescript_exports/src/wrapped_namespace.ts",
+            "family": "class",
+            "qualified_name": "ExampleNamespace.ExampleClass",
+            "ordinal": 32,
+            "content_digest": "42b22539df3a689937170bbd5cfc387a7e12068d648aeb286b5d34b2ca009015"
+          }
+        ]
+      }
+    },
+    {
+      "name": "default",
+      "local_name": "(ExampleNamespace.ExampleClass)",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": true,
+      "is_aliased": true,
+      "statement_id": 63,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "typescript_exports/src/wrapped_namespace.ts",
+            "family": "class",
+            "qualified_name": "ExampleNamespace.ExampleClass",
+            "ordinal": 32,
+            "content_digest": "42b22539df3a689937170bbd5cfc387a7e12068d648aeb286b5d34b2ca009015"
+          }
+        ]
+      }
+    }
+  ],
+  "relations": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "member_inventories": [
+    [
+      {
+        "source_id": "typescript_exports/src/wrapped_namespace.ts",
+        "family": "class",
+        "qualified_name": "ExampleNamespace.ExampleClass",
+        "ordinal": 32,
+        "content_digest": "42b22539df3a689937170bbd5cfc387a7e12068d648aeb286b5d34b2ca009015"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
+    ]
+  ]
+}

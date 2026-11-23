@@ -14,7 +14,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 1,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/params.ts",
+            "family": "function",
+            "qualified_name": "exampleParameters",
+            "ordinal": 1,
+            "content_digest": "fc69fca8220d451d171fc74a6593003ecf61c85790335bd1e4ce77decba17d04"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "functions": [
@@ -28,10 +40,19 @@
         "source_id": "typescript/src/params.ts",
         "family": "function",
         "qualified_name": "exampleParameters",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "fc69fca8220d451d171fc74a6593003ecf61c85790335bd1e4ce77decba17d04"
       },
       "source_id": "typescript/src/params.ts",
       "qualified_name": "exampleParameters",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 1,
       "line_end": 3,
       "parameters": [
@@ -48,8 +69,7 @@
           "type": {
             "kind": "unsupported"
           },
-          "kind": "variadic_positional",
-          "has_default": true
+          "kind": "variadic_positional"
         }
       ],
       "return_type": {
@@ -65,7 +85,8 @@
         "source_id": "typescript/src/params.ts",
         "family": "function",
         "qualified_name": "exampleParameters",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "fc69fca8220d451d171fc74a6593003ecf61c85790335bd1e4ce77decba17d04"
       },
       "ordinal": 1,
       "target_callable_id": null,
@@ -76,6 +97,41 @@
       "target_name": "join"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 4,
   "code_line_count": 3,
   "public_symbol_count": 1

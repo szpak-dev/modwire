@@ -18,6 +18,8 @@ from .architecture.report.models.report_node import ReportNode
 from .architecture.shape.models.architecture_shape_error import ArchitectureShapeError
 from .architecture.shape.models.architecture_shape_validation_error import ArchitectureShapeValidationError
 from .architecture.shape.models.architecture_shape_violation import ArchitectureShapeViolation
+from .architecture.shape.models.shape_rule_kind import ShapeRuleKind
+from .architecture.shape.models.shape_symbol_kind import ShapeSymbolKind
 from .cli.cache.models.cache_access_error import CacheAccessError
 from .cli.cache.models.cache_error import CacheError
 from .cli.cache.models.cache_options import CacheOptions
@@ -43,6 +45,7 @@ from .cli.pipeline.models.pipeline_violation import PipelineViolation
 from .cli.pipeline.models.source_access_error import SourceAccessError
 from .cli.pipeline.models.source_observation import SourceObservation
 from .cli.pipeline.models.source_observation_invalidated_error import SourceObservationInvalidatedError
+from .extraction.extractors.models.batch_planner_kind import BatchPlannerKind
 from .extraction.extractors.models.duplicate_identity_error import DuplicateIdentityError
 from .extraction.extractors.models.extraction_error import ExtractionError
 from .extraction.extractors.models.extractor_error import ExtractorError
@@ -86,6 +89,7 @@ from .shared.code.models.callables.source_parameter import SourceParameter
 from .shared.code.models.callables.source_parameter_kind import SourceParameterKind
 from .shared.code.models.callables.source_signature import SourceSignature
 from .shared.code.models.callables.source_signature_kind import SourceSignatureKind
+from .shared.code.models.callables.source_unresolved_method import SourceUnresolvedMethod
 from .shared.code.models.capabilities.capability_coverage import CapabilityCoverage
 from .shared.code.models.capabilities.capability_status import CapabilityStatus
 from .shared.code.models.capabilities.fact_capability import FactCapability
@@ -93,12 +97,24 @@ from .shared.code.models.capabilities.relationship_coverage import RelationshipC
 from .shared.code.models.capabilities.relationship_family import RelationshipFamily
 from .shared.code.models.declarations.declaration_family import DeclarationFamily
 from .shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from .shared.code.models.declarations.source_binding_kind import SourceBindingKind
+from .shared.code.models.declarations.source_block_scope import SourceBlockScope
 from .shared.code.models.declarations.source_declaration import SourceDeclaration
 from .shared.code.models.declarations.source_declaration_relation import SourceDeclarationRelation
 from .shared.code.models.declarations.source_declaration_relation_kind import SourceDeclarationRelationKind
+from .shared.code.models.declarations.source_declaration_scope import SourceDeclarationScope
+from .shared.code.models.declarations.source_file_scope import SourceFileScope
 from .shared.code.models.declarations.source_namespace import SourceNamespace
 from .shared.code.models.declarations.source_namespace_kind import SourceNamespaceKind
+from .shared.code.models.declarations.source_namespace_membership import SourceNamespaceMembership
+from .shared.code.models.declarations.source_namespace_membership_kind import SourceNamespaceMembershipKind
+from .shared.code.models.declarations.source_no_namespace import SourceNoNamespace
+from .shared.code.models.declarations.source_placement import SourcePlacement
+from .shared.code.models.declarations.source_resolved_target import SourceResolvedTarget
+from .shared.code.models.declarations.source_scope_kind import SourceScopeKind
 from .shared.code.models.declarations.source_symbol_kind import SourceSymbolKind
+from .shared.code.models.declarations.source_unresolved_reason import SourceUnresolvedReason
+from .shared.code.models.declarations.source_unresolved_target import SourceUnresolvedTarget
 from .shared.code.models.declarations.source_visibility import SourceVisibility
 from .shared.code.models.dependencies.dependency_graph import DependencyGraph
 from .shared.code.models.dependencies.edge import Edge
@@ -109,6 +125,15 @@ from .shared.code.models.dependencies.source_dependency_resolution import Source
 from .shared.code.models.failures.code_error import CodeError
 from .shared.code.models.failures.code_validation_error import CodeValidationError
 from .shared.code.models.failures.code_violation import CodeViolation
+from .shared.code.models.inventories.file_inventory_coverage import FileInventoryCoverage
+from .shared.code.models.inventories.inventory_coverage import InventoryCoverage
+from .shared.code.models.inventories.inventory_limitation import InventoryLimitation
+from .shared.code.models.inventories.inventory_limitation_kind import InventoryLimitationKind
+from .shared.code.models.inventories.inventory_location_kind import InventoryLocationKind
+from .shared.code.models.inventories.inventory_scope_location import InventoryScopeLocation
+from .shared.code.models.inventories.inventory_source_location import InventorySourceLocation
+from .shared.code.models.inventories.inventory_status import InventoryStatus
+from .shared.code.models.inventories.member_inventory_coverage import MemberInventoryCoverage
 from .shared.code.models.maps.code_map import CodeMap
 from .shared.code.models.maps.code_map_producer import CodeMapProducer
 from .shared.code.models.maps.extractor_descriptor import ExtractorDescriptor
@@ -136,6 +161,7 @@ from .shared.code.models.sources.source_import import SourceImport
 from .shared.code.models.sources.source_imported_symbol import SourceImportedSymbol
 from .shared.code.models.sources.source_manifest import SourceManifest
 from .shared.code.models.sources.source_manifest_identity import SourceManifestIdentity
+from .shared.code.models.sources.source_resolved_export_binding import SourceResolvedExportBinding
 from .shared.code.models.values.source_assigned_value import SourceAssignedValue
 from .shared.code.models.values.source_assigned_value_kind import SourceAssignedValueKind
 from .shared.code.models.values.source_class_property import SourceClassProperty
@@ -144,8 +170,36 @@ from .shared.code.models.values.source_value import SourceValue
 from .shared.code.models.values.source_value_declaration_kind import SourceValueDeclarationKind
 from .shared.code.models.values.source_value_scope import SourceValueScope
 from .shared.failures.models.modwire_error import ModwireError
+from .shared.failures.models.modwire_error_code import ModwireErrorCode
 
 __all__ = [
+    "ShapeRuleKind",
+    "ShapeSymbolKind",
+    "BatchPlannerKind",
+    "ModwireErrorCode",
+    "FileInventoryCoverage",
+    "InventoryCoverage",
+    "InventoryLimitation",
+    "InventoryLimitationKind",
+    "InventoryLocationKind",
+    "InventoryScopeLocation",
+    "InventorySourceLocation",
+    "InventoryStatus",
+    "MemberInventoryCoverage",
+    "SourceBindingKind",
+    "SourceBlockScope",
+    "SourceDeclarationScope",
+    "SourceFileScope",
+    "SourceNamespaceMembership",
+    "SourceNamespaceMembershipKind",
+    "SourceNoNamespace",
+    "SourcePlacement",
+    "SourceResolvedExportBinding",
+    "SourceResolvedTarget",
+    "SourceScopeKind",
+    "SourceUnresolvedMethod",
+    "SourceUnresolvedReason",
+    "SourceUnresolvedTarget",
     "ArchitectureConfigError",
     "ArchitectureConfigValidationError",
     "ArchitectureConfigViolation",

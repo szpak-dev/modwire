@@ -8,6 +8,7 @@ runtime:
     major: 24
     minor: 2
     patch: 0
+  rejected_versions: []
   packages: []
 fixtures:
   source_suffixes:
@@ -40,6 +41,12 @@ fixtures:
     sources:
     - typescript/src/example.ts
     - typescript_payloads/src/example.ts
+    - typescript_exports/src/default_callable.ts
+    - typescript_exports/src/export_equals.ts
+    - typescript_exports/src/parenthesized_default.ts
+    - typescript_exports/src/wrapped_callable.ts
+    - typescript_exports/src/wrapped_identifier.ts
+    - typescript_exports/src/wrapped_namespace.ts
 capabilities:
   sources:
     status: supported
@@ -64,7 +71,7 @@ capabilities:
   inheritance:
     status: supported
   namespaces:
-    status: unsupported
+    status: supported
   declaration_kinds:
     status: supported
   composition:
@@ -188,15 +195,16 @@ scenarios:
     evidence: supported
     state: present
     observation: {kind: empty_source, relative_path: src/type-reference-empty.ts}
-- name: non-class-decorator-boundary
+- name: decorator-expressions
   fixture: gaps
   source: src/example-capability-gaps.ts
   claims:
   - kind: capability
     capability: annotations
     evidence: boundary
-    state: absent
-    observation: {kind: annotation, owner: ExampleAssignedValue.exampleMethod, expression: ExampleMethodDecorator}
+    state: present
+    observation: {kind: annotation, owner: ExampleAssignedValue.exampleMethod, expression:
+        ExampleMethodDecorator}
   - kind: capability
     capability: annotations
     evidence: supported
@@ -242,8 +250,8 @@ scenarios:
   claims:
   - kind: capability
     capability: namespaces
-    evidence: boundary
-    state: absent
+    evidence: supported
+    state: present
     observation: {kind: namespace, qualified_name: ExampleNamespace, namespace_kind: namespace}
 - name: heritage-only-composition-boundary
   fixture: gaps
@@ -253,7 +261,8 @@ scenarios:
     capability: composition
     evidence: boundary
     state: absent
-    observation: {kind: declaration_relation, source: ExampleCombined, relation: includes, target: ExampleFirst}
+    observation: {kind: declaration_relation, source: ExampleCombined, relation: includes, target:
+        ExampleFirst}
 - name: non-callable-span-boundary
   fixture: gaps
   source: src/example-capability-gaps.ts
@@ -283,7 +292,8 @@ scenarios:
     aspect: semantics
     evidence: boundary
     state: absent
-    observation: {kind: attribute, owner: ExampleAssignedValue, name: exampleRuntimeMember, member_kind: instance}
+    observation: {kind: attribute, owner: ExampleAssignedValue, name: exampleRuntimeMember, member_kind:
+        instance}
 - name: type-reference-grammar-boundary
   fixture: types
   source: src/type-reference-cases.ts
@@ -350,7 +360,7 @@ manifests:
   scenarios:
   - name: canonical
     source: canonical/src/example.ts
-    facts_digest: 9ce704b02214d5f54105f8868fc261a514ef373cca957f99e413f2f34b3c6da9
+    facts_digest: 38d6c5bf90df07e1f19dafb970b660342c2a533b49f0ca018f5cb2ed339ded61
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.ts}
@@ -361,7 +371,8 @@ manifests:
     - state: present
       observation: {kind: parameter, owner: ExampleContract.exampleRequired, position: 0}
     - state: present
-      observation: {kind: attribute, owner: ExampleImplementation, name: exampleOptional, member_kind: instance}
+      observation: {kind: attribute, owner: ExampleImplementation, name: exampleOptional, member_kind:
+          instance}
     - state: present
       observation: {kind: call, owner: ExampleImplementation.examplePath, target: join, resolution: unresolved}
     - state: present
@@ -371,7 +382,7 @@ manifests:
       observation: {kind: dependency, source: src/example.ts, target: node:path, resolution: external}
   - name: calls
     source: calls/src/example.ts
-    facts_digest: 39b47455ded703134c3d692a30055782247b72904991ac0997e8794cfc3f5d65
+    facts_digest: e73f45f8cb0d4536aa67ce87b36193284a36a22ababde0015207ddfa0fac65ed
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.ts}
@@ -379,7 +390,7 @@ manifests:
       observation: {kind: call, owner: exampleSource, target: exampleTarget, resolution: resolved}
   - name: no_calls
     source: no_calls/src/example.ts
-    facts_digest: ba7ee473f060121e8d05eb2fb8b54f2a2a3e1101b69782af04b5376a11ed1a87
+    facts_digest: f581a9c5fc15b8e1bb3d5bef10fd04ae14b98a5a49f1e7dbe0c81bbc218b20b6
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.ts}
@@ -387,7 +398,7 @@ manifests:
       observation: {kind: call, owner: exampleSource, target: exampleTarget, resolution: resolved}
   - name: negative_members
     source: negative_members/src/example.ts
-    facts_digest: d1a7d02babdf316e1f19dc6ac61e6871b470cca293a39a261da9028c6448a5de
+    facts_digest: 63f5c6a8a7b9a2bbc0ed344dae5d9ed86a6dba64354d04e0d3e97e8ee00199ff
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.ts}
@@ -395,7 +406,7 @@ manifests:
       observation: {kind: symbol, qualified_name: src/example.ExampleAbstract, symbol_kind: abstract_class}
   - name: dependencies
     source: dependencies/src/example.ts
-    facts_digest: 88e84538780939028b02e539d523aeac55287d754b5acc04c77673acb04c5f70
+    facts_digest: 65ca6692bc9daddb49d92bbce2387a3c116304ed12d9ea9d9c2b868565f55ef0
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.ts}
@@ -403,13 +414,13 @@ manifests:
       observation: {kind: dependency, source: src/example.ts, target: node:path, resolution: external}
   - name: source_edit_before
     source: source_edit_before/src/nested/example.ts
-    facts_digest: 49679e76850b6245893ab649fa17d39cbbe383446bcd0fbe3607b540fc280fa3
+    facts_digest: a0a91df4618b10dfa41867c95db0d2f1e1c81f87dafbb27edd7cb8768c7a94c6
     claims:
     - state: present
       observation: {kind: source, relative_path: src/nested/example.ts}
   - name: source_edit_after
     source: source_edit_after/src/example.ts
-    facts_digest: 5c3cda2ab24ebdc7868900e303d9da44a3a950bd6f0013c4e8507d3ceca0445f
+    facts_digest: 9785a7767484db5ba626c21c7a102efee46ec9e31484b4d7c4e161115f4a3c67
     claims:
     - state: present
       observation: {kind: source, relative_path: src/example.ts}

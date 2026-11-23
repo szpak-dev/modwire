@@ -13,9 +13,36 @@
         "source_id": "ruby/src/example.rb",
         "family": "class",
         "qualified_name": "ExampleValue",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "55ee52b9cfdd6b3078748dccd1aa7048865ae3ea433a23799b32674991eeb35e"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "initialize",
@@ -27,11 +54,27 @@
             "source_id": "ruby/src/example.rb",
             "family": "method",
             "qualified_name": "ExampleValue.initialize",
-            "ordinal": 61
+            "ordinal": 61,
+            "content_digest": "55ee52b9cfdd6b3078748dccd1aa7048865ae3ea433a23799b32674991eeb35e"
           },
           "source_id": "ruby/src/example.rb",
           "qualified_name": "ExampleValue.initialize",
           "kind": "constructor",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "class",
+                "qualified_name": "ExampleValue",
+                "ordinal": 1,
+                "content_digest": "55ee52b9cfdd6b3078748dccd1aa7048865ae3ea433a23799b32674991eeb35e"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 4,
           "line_end": 6,
           "return_type": {
@@ -41,13 +84,189 @@
             "source_id": "ruby/src/example.rb",
             "family": "class",
             "qualified_name": "ExampleValue",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "55ee52b9cfdd6b3078748dccd1aa7048865ae3ea433a23799b32674991eeb35e"
           }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "property",
+            "qualified_name": "ExampleValue.example_runtime_member",
+            "ordinal": 34,
+            "content_digest": "55ee52b9cfdd6b3078748dccd1aa7048865ae3ea433a23799b32674991eeb35e"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "class",
+            "qualified_name": "ExampleValue",
+            "ordinal": 1,
+            "content_digest": "55ee52b9cfdd6b3078748dccd1aa7048865ae3ea433a23799b32674991eeb35e"
+          },
+          "name": "example_runtime_member",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "class",
+                "qualified_name": "ExampleValue",
+                "ordinal": 1,
+                "content_digest": "55ee52b9cfdd6b3078748dccd1aa7048865ae3ea433a23799b32674991eeb35e"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
+          "assigned_values": [
+            {
+              "kind": "unassigned",
+              "expression": "",
+              "reference": ""
+            }
+          ]
+        },
+        {
+          "declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "property",
+            "qualified_name": "ExampleValue.@example_runtime_member",
+            "ordinal": 80,
+            "content_digest": "55ee52b9cfdd6b3078748dccd1aa7048865ae3ea433a23799b32674991eeb35e"
+          },
+          "owner_declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "class",
+            "qualified_name": "ExampleValue",
+            "ordinal": 1,
+            "content_digest": "55ee52b9cfdd6b3078748dccd1aa7048865ae3ea433a23799b32674991eeb35e"
+          },
+          "name": "@example_runtime_member",
+          "is_optional": false,
+          "type": {
+            "kind": "absent"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/example.rb",
+                "family": "method",
+                "qualified_name": "ExampleValue.initialize",
+                "ordinal": 61,
+                "content_digest": "55ee52b9cfdd6b3078748dccd1aa7048865ae3ea433a23799b32674991eeb35e"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
+          "assigned_values": [
+            {
+              "kind": "unassigned",
+              "expression": "",
+              "reference": ""
+            }
+          ]
         }
       ]
     }
   ],
   "functions": [],
+  "anonymous_callables": [
+    {
+      "name": "<lambda@165>",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 3,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "ruby/src/example.rb",
+        "family": "callable",
+        "qualified_name": "ExampleValue.<lambda@165>",
+        "ordinal": 166,
+        "content_digest": "55ee52b9cfdd6b3078748dccd1aa7048865ae3ea433a23799b32674991eeb35e"
+      },
+      "source_id": "ruby/src/example.rb",
+      "qualified_name": "ExampleValue.<lambda@165>",
+      "placement": {
+        "lexical_scope": {
+          "declaration_id": {
+            "source_id": "ruby/src/example.rb",
+            "family": "class",
+            "qualified_name": "ExampleValue",
+            "ordinal": 1,
+            "content_digest": "55ee52b9cfdd6b3078748dccd1aa7048865ae3ea433a23799b32674991eeb35e"
+          },
+          "kind": "declaration"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "line_start": 8,
+      "line_end": 10,
+      "parameters": [
+        {
+          "name": "example_value",
+          "type": {
+            "kind": "absent"
+          },
+          "kind": "positional"
+        }
+      ],
+      "return_type": {
+        "kind": "absent"
+      },
+      "kind": "anonymous"
+    }
+  ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 12,
   "code_line_count": 9,
   "public_symbol_count": 1

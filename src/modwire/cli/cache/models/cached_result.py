@@ -16,6 +16,9 @@ class CachedResult[Result](ValueModel):
     outcomes: tuple[CacheOutcome, ...]
 
     @model_validator(mode="after")
+    def validate_document(self) -> Self:
+        return self.validate_outcomes()
+
     def validate_outcomes(self) -> Self:
         if not self.outcomes:
             raise CacheValidationError(CacheViolation.MISSING_CACHE_OUTCOME, "cached result")

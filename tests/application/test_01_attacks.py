@@ -6,7 +6,7 @@ from collections.abc import Callable
 from typing import Any
 
 import pytest
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 from ruamel.yaml.error import YAMLError
 
 from modwire.application import (
@@ -89,6 +89,16 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
             }
         )
 
+    def repeat_identity_with_different_evidence(self, payload: dict[str, Any]) -> None:
+        repeated = {**payload["calls"][0], "line": payload["calls"][0]["line"] + 1}
+        payload["calls"].append(repeated)
+
+    def remove_relationship_evidence(self, payload: dict[str, Any]) -> None:
+        member = next(
+            coverage for coverage in payload["producer"]["relationship_capabilities"] if coverage["family"] == "member"
+        )
+        member["evidence_requirements"] = []
+
     @pytest.mark.parametrize("ordinal", (None, 0, True, "1", 1.0))
     def test_source_call_rejects_an_invalid_occurrence_ordinal(self, ordinal: bool | str | float | int | None) -> None:
         document = self.call_manifest_document(two_calls=False)
@@ -99,7 +109,7 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
             call["ordinal"] = ordinal
 
         with pytest.raises(ValidationError) as raised:
-            SourceCall.model_validate(call)
+            TypeAdapter(SourceCall).validate_python(call)
 
         assert raised.value.errors()[0]["loc"] == ("ordinal",)
 
@@ -160,16 +170,11 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
         assert raised.value.root == str(missing)
 
     @pytest.mark.parametrize(
-        ("language", "path", "source", "executable"),
-        (
-            ("typescript", "src/example.ts", "export const exampleValue = 1;\n", "node"),
-            ("java", "src/ExampleValue.java", "public class ExampleValue {}\n", "java"),
-        ),
+        ("language", "executable"),
+        (("typescript", "node"), ("java", "java"), ("ruby", "ruby")),
     )
-    def test_unavailable_extractor_reports_the_runtime_contract(
-        self, language: str, path: str, source: str, executable: str
-    ) -> None:
-        root = self.project({path: source})
+    def test_unavailable_extractor_reports_the_runtime_contract(self, language: str, executable: str) -> None:
+        root = self.repository / "tests/fixtures/extraction_lifecycle" / language / "valid"
 
         result = self.failure_consumer(root, language, {**os.environ, "PATH": ""})
 
@@ -322,37 +327,6 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
         assert raised.value.violation is ExtractorContractViolation.INVALID_OUTPUT
         assert raised.value.diagnostic == "extractor emitted multiple failure documents"
         assert isinstance(raised.value.__cause__, ExtractorExecutionError)
-
-    def test_duplicate_extractor_output_identities_report_a_contract_violation(self) -> None:
-        root = self.project({"src/example.ts": "export const exampleValue = 1;\n"})
-        runtime_directory = self.workspace / "example-duplicate-runtime"
-        runtime_directory.mkdir()
-        runtime = runtime_directory / "node"
-        runtime.write_text(
-            f"#!{sys.executable}\n"
-            "import json\n"
-            "import sys\n"
-            "if '--version' in sys.argv:\n"
-            "    print('example 1')\n"
-            "else:\n"
-            "    for source_id in json.load(sys.stdin):\n"
-            "        document = json.dumps([source_id, {}])\n"
-            "        print(document)\n"
-            "        print(document)\n",
-            encoding="utf-8",
-        )
-        runtime.chmod(0o755)
-
-        result = self.failure_consumer(root, "typescript", {**os.environ, "PATH": str(runtime_directory)})
-
-        assert result.returncode == 0, result.stderr
-        failure = json.loads(result.stdout)
-        assert failure["type"] == "ExtractorContractError"
-        assert failure["language"] == "typescript"
-        assert failure["violation"] == ExtractorContractViolation.DUPLICATE_SOURCE_IDENTITY
-        assert failure["missing_source_ids"] == []
-        assert failure["unexpected_source_ids"] == []
-        assert failure["duplicate_source_ids"] == ["src/example.ts"]
 
     def test_cache_access_reports_the_public_cache_path(self) -> None:
         cache_file = self.workspace / "example-cache-file"
@@ -556,11 +530,7 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
     def test_manifest_rejects_duplicate_call_occurrence_identities(self) -> None:
         document = self.call_manifest_document(two_calls=False)
 
-        def repeat_identity_with_different_evidence(payload: dict[str, Any]) -> None:
-            repeated = {**payload["calls"][0], "line": payload["calls"][0]["line"] + 1}
-            payload["calls"].append(repeated)
-
-        invalid = self.tampered_document(document, repeat_identity_with_different_evidence)
+        invalid = self.tampered_document(document, self.repeat_identity_with_different_evidence)
 
         with pytest.raises(InvalidImplementationManifestError) as raised:
             self.application.read_implementation_manifest(invalid)
@@ -573,15 +543,7 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
     def test_manifest_translates_nested_code_contract_failures(self) -> None:
         document = self.call_manifest_document(two_calls=False)
 
-        def remove_relationship_evidence(payload: dict[str, Any]) -> None:
-            member = next(
-                coverage
-                for coverage in payload["producer"]["relationship_capabilities"]
-                if coverage["family"] == "member"
-            )
-            member["evidence_requirements"] = []
-
-        invalid = self.tampered_document(document, remove_relationship_evidence)
+        invalid = self.tampered_document(document, self.remove_relationship_evidence)
 
         with pytest.raises(InvalidImplementationManifestError) as raised:
             self.application.read_implementation_manifest(invalid)

@@ -7,6 +7,8 @@ from ....shared.code.models.values.source_class_property import SourceClassPrope
 from ...config.models.shape_rules import ShapeRules
 from ..domain import BaseShapeResolver, SymbolShapeResolverInterface
 from ..models.shape_realm_architecture_map import ShapeRealmArchitectureMap
+from ..models.shape_rule_kind import ShapeRuleKind
+from ..models.shape_symbol_kind import ShapeSymbolKind
 from ..models.shape_violation import ShapeViolation
 
 
@@ -30,7 +32,7 @@ class PropertyResolver(SymbolShapeResolverInterface, BaseShapeResolver):
             violations.extend(
                 self.property_violations(
                     source_id=class_result.source_id,
-                    symbol_kind="class_property",
+                    symbol_kind=ShapeSymbolKind.CLASS_PROPERTY,
                     symbol_name=source_class.name,
                     properties=source_class.properties,
                 )
@@ -40,7 +42,7 @@ class PropertyResolver(SymbolShapeResolverInterface, BaseShapeResolver):
             violations.extend(
                 self.property_violations(
                     source_id=interface_result.source_id,
-                    symbol_kind="interface_property",
+                    symbol_kind=ShapeSymbolKind.INTERFACE_PROPERTY,
                     symbol_name=source_interface.name,
                     properties=source_interface.properties,
                 )
@@ -50,7 +52,7 @@ class PropertyResolver(SymbolShapeResolverInterface, BaseShapeResolver):
             violations.extend(
                 self.property_violations(
                     source_id=type_result.source_id,
-                    symbol_kind="type_property",
+                    symbol_kind=ShapeSymbolKind.TYPE_PROPERTY,
                     symbol_name=source_type.name,
                     properties=source_type.properties,
                 )
@@ -62,7 +64,7 @@ class PropertyResolver(SymbolShapeResolverInterface, BaseShapeResolver):
             violations.extend(
                 self.property_violations(
                     source_id=abstract_class_result.source_id,
-                    symbol_kind="abstract_class_property",
+                    symbol_kind=ShapeSymbolKind.ABSTRACT_CLASS_PROPERTY,
                     symbol_name=abstract_class.name,
                     properties=abstract_class.properties,
                 )
@@ -70,12 +72,17 @@ class PropertyResolver(SymbolShapeResolverInterface, BaseShapeResolver):
         return tuple(violations)
 
     def property_violations(
-        self, *, source_id: str, symbol_kind: str, symbol_name: str, properties: Sequence[SourceClassProperty]
+        self,
+        *,
+        source_id: str,
+        symbol_kind: ShapeSymbolKind,
+        symbol_name: str,
+        properties: Sequence[SourceClassProperty],
     ) -> tuple[ShapeViolation, ...]:
         return tuple(
             ShapeViolation(
                 source_id=source_id,
-                rule_name="allow_optional_class_properties",
+                rule_name=ShapeRuleKind.ALLOW_OPTIONAL_CLASS_PROPERTIES,
                 actual=True,
                 limit=False,
                 symbol_kind=symbol_kind,

@@ -13,9 +13,36 @@
         "source_id": "ruby/src/nested/example.rb",
         "family": "class",
         "qualified_name": "Example",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "058ab16157218dde6e7074bd7b72571c039439345ced145e53c7998a6353e831"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "example_value",
@@ -27,11 +54,27 @@
             "source_id": "ruby/src/nested/example.rb",
             "family": "method",
             "qualified_name": "Example.example_value",
-            "ordinal": 17
+            "ordinal": 17,
+            "content_digest": "058ab16157218dde6e7074bd7b72571c039439345ced145e53c7998a6353e831"
           },
           "source_id": "ruby/src/nested/example.rb",
           "qualified_name": "Example.example_value",
           "kind": "type_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "ruby/src/nested/example.rb",
+                "family": "class",
+                "qualified_name": "Example",
+                "ordinal": 1,
+                "content_digest": "058ab16157218dde6e7074bd7b72571c039439345ced145e53c7998a6353e831"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 2,
           "line_end": 4,
           "return_type": {
@@ -41,13 +84,49 @@
             "source_id": "ruby/src/nested/example.rb",
             "family": "class",
             "qualified_name": "Example",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "058ab16157218dde6e7074bd7b72571c039439345ced145e53c7998a6353e831"
           }
         }
       ]
     }
   ],
   "functions": [],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 6,
   "code_line_count": 5,
   "public_symbol_count": 1

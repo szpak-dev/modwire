@@ -25,7 +25,7 @@ class CacheIdentity:
 
     SOURCE_VERSION: ClassVar[int] = 2
     SOURCE_SET_VERSION: ClassVar[int] = 3
-    CODE_MAP_VERSION: ClassVar[int] = 2
+    CODE_MAP_VERSION: ClassVar[int] = 3
     REPORT_VERSION: ClassVar[int] = 1
 
     def source(

@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from wireup import injectable
 
 from ....shared.code.models.capabilities.capability_coverage import CapabilityCoverage
@@ -12,21 +10,24 @@ from ....shared.code.models.sources.identity import FileId, ImportIdentity
 from ....shared.code.models.sources.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
-from ..models.batch_output_format import BatchOutputFormat
+from ..models.batch_planner_kind import BatchPlannerKind
 from ..models.entrypoints.file_entrypoint import FileExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
+from ..models.native_output_format import NativeOutputFormat
 
 
 @injectable(as_type=SourceExtractor, qualifier="ruby")
-@dataclass(frozen=True)
 class RubyExtractor(SourceExtractor):
-    @property
-    def runtime(self) -> ExtractorRuntime:
-        return ExtractorRuntime(
+    runtime: ExtractorRuntime
+    batch_config: BatchConfig
+
+    def __init__(self) -> None:
+        self.runtime = ExtractorRuntime(
             order=4,
+            output_format=NativeOutputFormat.INDEXED_JSONL,
             descriptor=ExtractorDescriptor(
                 id="modwire.ruby.prism",
-                version="2",
+                version="3",
                 language="ruby",
                 runtime="ruby",
             ),
@@ -84,8 +85,11 @@ class RubyExtractor(SourceExtractor):
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.ATTRIBUTES,
-                    status=CapabilityStatus.UNSUPPORTED,
-                    explanation="Ruby instance, class, and generated attributes are not extracted.",
+                    status=CapabilityStatus.PARTIAL,
+                    explanation=(
+                        "Instance writes and literal attribute declarations are preserved; "
+                        "dynamic attribute names remain incomplete."
+                    ),
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.ASSIGNED_VALUES,
@@ -151,8 +155,8 @@ class RubyExtractor(SourceExtractor):
                     ),
                     inventory=CapabilityStatus.PARTIAL,
                     inventory_explanation=(
-                        "Declared method and static call evidence is emitted, but attributes and assigned-value "
-                        "relationship evidence are not available."
+                        "Declared methods, literal attributes and static calls are emitted; dynamic members, "
+                        "aliases and assigned-value relationship evidence remain incomplete."
                     ),
                 ),
                 RelationshipCoverage(
@@ -173,11 +177,11 @@ class RubyExtractor(SourceExtractor):
             file_extensions=(".rb",),
             command=("ruby",),
             version_arguments=(
-                "-rprism",
                 "-e",
                 (
-                    'abort "Ruby 4.0.x and Prism 1.9.x are required." unless '
-                    'RUBY_VERSION.start_with?("4.0.") && Prism::VERSION.start_with?("1.9."); '
+                    'abort "Ruby 4.0.x is required." unless RUBY_VERSION.start_with?("4.0."); '
+                    'require "prism"; '
+                    'abort "Prism 1.9.x is required." unless Prism::VERSION.start_with?("1.9."); '
                     'print "ruby #{RUBY_VERSION}; prism #{Prism::VERSION}"'
                 ),
             ),
@@ -188,14 +192,12 @@ class RubyExtractor(SourceExtractor):
             ),
         )
 
-    @property
-    def batch_config(self) -> BatchConfig:
-        return BatchConfig(
+        self.batch_config = BatchConfig(
             size=500,
             parallel_threshold=500,
             parallel_size=500,
             max_workers=8,
-            output_format=BatchOutputFormat.JSON_LINES,
+            planner=BatchPlannerKind.BALANCED,
         )
 
     def import_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:

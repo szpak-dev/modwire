@@ -37,12 +37,448 @@
   ],
   "signatures": {},
   "spans": [],
-  "owners": {},
+  "owners": [],
   "parameters": {},
   "returns": {},
   "gaps": {
-    "namespace_owner": "Bind each same-named ExampleNested to its exact namespace.",
-    "alias_target": "Distinguish ExampleText=string from ExampleNumber=number.",
-    "local_inventory": "Distinguish complete-empty, unsupported-empty and partially observed inventories on each declaration; retain trustworthy siblings."
-  }
+    "alias_target": "Distinguish ExampleText=string from ExampleNumber=number."
+  },
+  "placements": [
+    [
+      {
+        "source_id": "typescript_payloads/src/example.ts",
+        "family": "type",
+        "qualified_name": "ExampleText",
+        "ordinal": 1,
+        "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "typescript_payloads/src/example.ts",
+        "family": "type",
+        "qualified_name": "ExampleNumber",
+        "ordinal": 35,
+        "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "typescript_payloads/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleFirst.ExampleNested",
+        "ordinal": 108,
+        "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "typescript_payloads/src/example.ts",
+            "family": "namespace",
+            "qualified_name": "ExampleFirst",
+            "ordinal": 72,
+            "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "ExampleFirst",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "typescript_payloads/src/example.ts",
+              "family": "namespace",
+              "qualified_name": "ExampleFirst",
+              "ordinal": 72,
+              "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "typescript_payloads/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleSecond.ExampleNested",
+        "ordinal": 178,
+        "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "typescript_payloads/src/example.ts",
+            "family": "namespace",
+            "qualified_name": "ExampleSecond",
+            "ordinal": 141,
+            "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+          }
+        },
+        "namespace": {
+          "kind": "member",
+          "namespace_reference": "ExampleSecond",
+          "target": {
+            "kind": "resolved",
+            "declaration_id": {
+              "source_id": "typescript_payloads/src/example.ts",
+              "family": "namespace",
+              "qualified_name": "ExampleSecond",
+              "ordinal": 141,
+              "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+            }
+          }
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "typescript_payloads/src/example.ts",
+        "family": "namespace",
+        "qualified_name": "ExampleFirst",
+        "ordinal": 72,
+        "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "typescript_payloads/src/example.ts",
+        "family": "namespace",
+        "qualified_name": "ExampleSecond",
+        "ordinal": 141,
+        "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ]
+  ],
+  "exports": [
+    {
+      "name": "ExampleText",
+      "local_name": "ExampleText",
+      "kind": "type",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 1,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "typescript_payloads/src/example.ts",
+            "family": "type",
+            "qualified_name": "ExampleText",
+            "ordinal": 1,
+            "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExampleNumber",
+      "local_name": "ExampleNumber",
+      "kind": "type",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 35,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "typescript_payloads/src/example.ts",
+            "family": "type",
+            "qualified_name": "ExampleNumber",
+            "ordinal": 35,
+            "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExampleFirst",
+      "local_name": "ExampleFirst",
+      "kind": "module",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 72,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "typescript_payloads/src/example.ts",
+            "family": "namespace",
+            "qualified_name": "ExampleFirst",
+            "ordinal": 72,
+            "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExampleNested",
+      "local_name": "ExampleNested",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 108,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "typescript_payloads/src/example.ts",
+            "family": "class",
+            "qualified_name": "ExampleFirst.ExampleNested",
+            "ordinal": 108,
+            "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExampleSecond",
+      "local_name": "ExampleSecond",
+      "kind": "module",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 141,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "typescript_payloads/src/example.ts",
+            "family": "namespace",
+            "qualified_name": "ExampleSecond",
+            "ordinal": 141,
+            "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExampleNested",
+      "local_name": "ExampleNested",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 178,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "typescript_payloads/src/example.ts",
+            "family": "class",
+            "qualified_name": "ExampleSecond.ExampleNested",
+            "ordinal": 178,
+            "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+          }
+        ]
+      }
+    }
+  ],
+  "relations": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "member_inventories": [
+    [
+      {
+        "source_id": "typescript_payloads/src/example.ts",
+        "family": "type",
+        "qualified_name": "ExampleText",
+        "ordinal": 1,
+        "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "typescript_payloads/src/example.ts",
+        "family": "type",
+        "qualified_name": "ExampleNumber",
+        "ordinal": 35,
+        "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "typescript_payloads/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleFirst.ExampleNested",
+        "ordinal": 108,
+        "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "typescript_payloads/src/example.ts",
+        "family": "class",
+        "qualified_name": "ExampleSecond.ExampleNested",
+        "ordinal": 178,
+        "content_digest": "8c562e361ddff59bb480c5d86108050deed3948cfeff93512658c2259d70c2f5"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
+    ]
+  ],
+  "unresolved_methods": []
 }

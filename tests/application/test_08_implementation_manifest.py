@@ -1,6 +1,7 @@
 import hashlib
 import json
 import shutil
+from dataclasses import replace
 
 import pytest
 from pydantic import JsonValue, TypeAdapter
@@ -8,9 +9,15 @@ from pydantic import JsonValue, TypeAdapter
 from modwire.application import (
     CodeMap,
     CodeValidationError,
+    DeclarationFamily,
     DigestAlgorithm,
     FactCapability,
     RelationshipFamily,
+    SourceNamespace,
+    SourceNamespaceKind,
+    SourceNamespaceMembership,
+    SourcePlacement,
+    SourceResolvedTarget,
 )
 
 from ..support.code_map import CodeMapFactory
@@ -55,21 +62,22 @@ class TestImplementationManifest(ApplicationTestCase):
         assert tuple(item.kind for item in manifest.symbols) == ("value_literal",)
 
     def test_public_manifest_uses_one_authored_namespace_across_multiple_sources(self) -> None:
-        namespace = {"kind": "namespace", "qualified_name": "Example.Shared"}
         code_map = (
             CodeMapFactory()
             .queryable(
                 {
                     "example_first.source": {
-                        "namespaces": [namespace],
                         "declarations": [
-                            CodeMapFactory().source_class("ExampleFirst", line_count=1, methods=(), properties=())
+                            CodeMapFactory().source_class(
+                                "Example.Shared.ExampleFirst", line_count=1, methods=(), properties=()
+                            )
                         ],
                     },
                     "example_second.source": {
-                        "namespaces": [namespace],
                         "declarations": [
-                            CodeMapFactory().source_class("ExampleSecond", line_count=1, methods=(), properties=())
+                            CodeMapFactory().source_class(
+                                "Example.Shared.ExampleSecond", line_count=1, methods=(), properties=()
+                            )
                         ],
                     },
                 },
@@ -77,6 +85,29 @@ class TestImplementationManifest(ApplicationTestCase):
             )
             .code_map
         )
+        files = {}
+        for source_id, source in code_map.extraction.files.items():
+            declaration = source.declarations[0]
+            namespace_id = replace(
+                declaration.declaration_id, family=DeclarationFamily.NAMESPACE, qualified_name="Example.Shared"
+            )
+            namespace = SourceNamespace(
+                kind=SourceNamespaceKind.NAMESPACE, declaration_id=namespace_id, placement=declaration.placement
+            )
+            placement = SourcePlacement(
+                lexical_scope=declaration.placement.lexical_scope,
+                namespace=SourceNamespaceMembership(
+                    namespace_reference="Example.Shared", target=SourceResolvedTarget(declaration_id=namespace_id)
+                ),
+            )
+            files[source_id] = source.model_copy(
+                update={
+                    "namespaces": (namespace,),
+                    "declarations": (declaration.model_copy(update={"placement": placement}),),
+                }
+            )
+        code_map = code_map.model_copy(update={"extraction": code_map.extraction.model_copy(update={"files": files})})
+        code_map = CodeMap.model_validate_json(code_map.to_json())
         format = self.application.implementation_manifest_formats()[0]
         manifest = self.application.read_implementation_manifest(
             self.application.implementation_manifest(code_map, format)
@@ -103,7 +134,7 @@ class TestImplementationManifest(ApplicationTestCase):
             )
 
             assert tuple(format.id for format in formats) == ("canonical-json",), language.value
-            assert manifest.schema_version == 10, language.value
+            assert manifest.schema_version == 11, language.value
             assert manifest.producer.extractor.language == language.value
             assert manifest.producer == code_map.producer
             assert manifest.source_manifest == code_map.extraction.manifest

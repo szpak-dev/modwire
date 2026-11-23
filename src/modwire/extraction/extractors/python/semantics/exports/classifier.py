@@ -36,6 +36,7 @@ class PythonExportRule(ABC):
                 is_default=False,
                 is_aliased=candidate.is_aliased,
                 statement_id=candidate.statement_id,
+                binding=candidate.binding,
             ),
         )
 

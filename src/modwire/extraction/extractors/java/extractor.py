@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from wireup import injectable
 
 from ....shared.code.models.capabilities.capability_coverage import CapabilityCoverage
@@ -13,21 +11,23 @@ from ....shared.code.models.sources.identity import FileId, ImportIdentity
 from ....shared.code.models.sources.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
-from ..models.batch_output_format import BatchOutputFormat
 from ..models.entrypoints.file_entrypoint import FileExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
+from ..models.native_output_format import NativeOutputFormat
 
 
 @injectable(as_type=SourceExtractor, qualifier="java")
-@dataclass(frozen=True)
 class JavaExtractor(SourceExtractor):
-    @property
-    def runtime(self) -> ExtractorRuntime:
-        return ExtractorRuntime(
+    runtime: ExtractorRuntime
+    batch_config: BatchConfig
+
+    def __init__(self) -> None:
+        self.runtime = ExtractorRuntime(
             order=3,
+            output_format=NativeOutputFormat.INDEXED_JSONL,
             descriptor=ExtractorDescriptor(
                 id="modwire.java.javaparser",
-                version="2",
+                version="4",
                 language="java",
                 runtime="java",
             ),
@@ -174,14 +174,9 @@ class JavaExtractor(SourceExtractor):
             ),
         )
 
-    @property
-    def batch_config(self) -> BatchConfig:
-        return BatchConfig(
-            size=500,
-            parallel_threshold=500,
-            parallel_size=500,
-            max_workers=8,
-            output_format=BatchOutputFormat.JSON_LINES,
+        self.batch_config = BatchConfig(
+            size=10000,
+            max_workers=1,
         )
 
     def import_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:

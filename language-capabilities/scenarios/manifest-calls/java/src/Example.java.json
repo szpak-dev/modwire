@@ -13,9 +13,36 @@
         "source_id": "java/src/Example.java",
         "family": "class",
         "qualified_name": "Example",
-        "ordinal": 10001
+        "ordinal": 4294967297,
+        "content_digest": "487eed06a2c2977d89e9bf5e0add1c8ef27c77cee21476d00aa3f6cf7d3d8a48"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "exampleTarget",
@@ -27,11 +54,27 @@
             "source_id": "java/src/Example.java",
             "family": "method",
             "qualified_name": "Example.exampleTarget",
-            "ordinal": 20005
+            "ordinal": 8589934597,
+            "content_digest": "487eed06a2c2977d89e9bf5e0add1c8ef27c77cee21476d00aa3f6cf7d3d8a48"
           },
           "source_id": "java/src/Example.java",
           "qualified_name": "Example.exampleTarget",
           "kind": "static_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "java/src/Example.java",
+                "family": "class",
+                "qualified_name": "Example",
+                "ordinal": 4294967297,
+                "content_digest": "487eed06a2c2977d89e9bf5e0add1c8ef27c77cee21476d00aa3f6cf7d3d8a48"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 2,
           "line_end": 4,
           "parameters": [
@@ -52,7 +95,8 @@
             "source_id": "java/src/Example.java",
             "family": "class",
             "qualified_name": "Example",
-            "ordinal": 10001
+            "ordinal": 4294967297,
+            "content_digest": "487eed06a2c2977d89e9bf5e0add1c8ef27c77cee21476d00aa3f6cf7d3d8a48"
           }
         },
         {
@@ -65,11 +109,27 @@
             "source_id": "java/src/Example.java",
             "family": "method",
             "qualified_name": "Example.exampleSource",
-            "ordinal": 60005
+            "ordinal": 25769803781,
+            "content_digest": "487eed06a2c2977d89e9bf5e0add1c8ef27c77cee21476d00aa3f6cf7d3d8a48"
           },
           "source_id": "java/src/Example.java",
           "qualified_name": "Example.exampleSource",
           "kind": "static_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "java/src/Example.java",
+                "family": "class",
+                "qualified_name": "Example",
+                "ordinal": 4294967297,
+                "content_digest": "487eed06a2c2977d89e9bf5e0add1c8ef27c77cee21476d00aa3f6cf7d3d8a48"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 6,
           "line_end": 9,
           "parameters": [
@@ -90,7 +150,8 @@
             "source_id": "java/src/Example.java",
             "family": "class",
             "qualified_name": "Example",
-            "ordinal": 10001
+            "ordinal": 4294967297,
+            "content_digest": "487eed06a2c2977d89e9bf5e0add1c8ef27c77cee21476d00aa3f6cf7d3d8a48"
           }
         }
       ]
@@ -103,14 +164,16 @@
         "source_id": "java/src/Example.java",
         "family": "method",
         "qualified_name": "Example.exampleSource",
-        "ordinal": 60005
+        "ordinal": 25769803781,
+        "content_digest": "487eed06a2c2977d89e9bf5e0add1c8ef27c77cee21476d00aa3f6cf7d3d8a48"
       },
       "ordinal": 1,
       "target_callable_id": {
         "source_id": "java/src/Example.java",
         "family": "method",
         "qualified_name": "Example.exampleTarget",
-        "ordinal": 20005
+        "ordinal": 8589934597,
+        "content_digest": "487eed06a2c2977d89e9bf5e0add1c8ef27c77cee21476d00aa3f6cf7d3d8a48"
       },
       "source_id": "java/src/Example.java",
       "line": 7,
@@ -123,14 +186,16 @@
         "source_id": "java/src/Example.java",
         "family": "method",
         "qualified_name": "Example.exampleSource",
-        "ordinal": 60005
+        "ordinal": 25769803781,
+        "content_digest": "487eed06a2c2977d89e9bf5e0add1c8ef27c77cee21476d00aa3f6cf7d3d8a48"
       },
       "ordinal": 2,
       "target_callable_id": {
         "source_id": "java/src/Example.java",
         "family": "method",
         "qualified_name": "Example.exampleTarget",
-        "ordinal": 20005
+        "ordinal": 8589934597,
+        "content_digest": "487eed06a2c2977d89e9bf5e0add1c8ef27c77cee21476d00aa3f6cf7d3d8a48"
       },
       "source_id": "java/src/Example.java",
       "line": 8,
@@ -139,6 +204,41 @@
       "target_name": "exampleTarget"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 11,
   "code_line_count": 9,
   "public_symbol_count": 0

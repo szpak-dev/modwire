@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from modwire.application import ModwireApplication
 
 from .base_test import ApplicationTestCase
@@ -21,20 +23,22 @@ class TestModwireApplication(ApplicationTestCase):
             "architecture.insights",
         )
 
-    def test_installed_distribution_configures_maps_and_reports_source(self) -> None:
-        project = self.project({"src/example.py": "def example_function():\n    return 1\n"})
-        result = self.installed_consumer(project, "python")
+    @pytest.mark.parametrize("language", ("python", "ruby"))
+    def test_installed_distribution_configures_maps_and_reports_source(self, language: str) -> None:
+        project = self.repository / "tests/fixtures/extraction_lifecycle" / language / "valid"
+        result = self.installed_consumer(project, language)
         assert result.returncode == 0, result.stderr
 
-    def test_installed_distribution_reports_non_python_parse_failure(self) -> None:
-        project = self.project({"src/example.ts": "export const = ;\n"})
-        result = self.installed_failure_consumer(project, "typescript")
+    @pytest.mark.parametrize("language", ("typescript", "ruby"))
+    def test_installed_distribution_reports_non_python_parse_failure(self, language: str) -> None:
+        project = self.repository / "tests/fixtures/extraction_lifecycle" / language / "invalid"
+        result = self.installed_failure_consumer(project, language)
 
         assert result.returncode == 0, result.stderr
         failure = json.loads(result.stdout)
         assert failure["type"] == "SourceParseError"
-        assert failure["language"] == "typescript"
-        assert failure["path"].endswith("src/example.ts")
+        assert failure["language"] == language
+        assert failure["path"].endswith(next(project.iterdir()).name)
         assert failure["line"] > 0
         assert failure["column"] > 0
         assert failure["diagnostic"]

@@ -3,16 +3,23 @@ from modwire.application import (
     DependencyGraph,
     Edge,
     FileId,
+    FileInventoryCoverage,
     ImportIdentity,
     ImportSpecifier,
+    MemberInventoryCoverage,
     SourceClassMethod,
     SourceDeclaration,
+    SourceDeclarationScope,
     SourceDependencyKind,
     SourceDependencyResolution,
     SourceFile,
+    SourceFileScope,
+    SourceNoNamespace,
+    SourcePlacement,
     SourceTypeUnsupported,
 )
 
+from ..code_map import CodeMapFactory
 from .fixture_contract_error import FixtureContractError
 from .language_capability_matrix.oracle.ownership import FixtureSourceOwnership
 from .language_capability_matrix.projections.reference_projection import ReferenceProjection
@@ -25,6 +32,9 @@ class FixtureCodeMapProjector:
         ):
             raise FixtureContractError("reference projection requires consistent source paths and graph identities")
         unsupported_type = SourceTypeUnsupported()
+        file_placement = SourcePlacement(lexical_scope=SourceFileScope(), namespace=SourceNoNamespace())
+        file_inventory = FileInventoryCoverage.model_validate(CodeMapFactory().inventory(FileInventoryCoverage))
+        member_inventory = MemberInventoryCoverage.model_validate(CodeMapFactory().inventory(MemberInventoryCoverage))
         source_ids = {
             FileId(item.authored.value.as_posix()): FileId(item.canonical.value.as_posix())
             for item in projection.mappings.sources
@@ -64,6 +74,10 @@ class FixtureCodeMapProjector:
                                     "qualified_name": callable_identity.qualified_name,
                                     "declaration_id": callable_identity,
                                     "owner_declaration_id": identity,
+                                    "placement": SourcePlacement(
+                                        lexical_scope=SourceDeclarationScope(declaration_id=identity),
+                                        namespace=SourceNoNamespace(),
+                                    ),
                                     "parameters": tuple(
                                         parameter.model_copy(
                                             update={
@@ -90,6 +104,8 @@ class FixtureCodeMapProjector:
                         update={
                             "name": identity.qualified_name,
                             "declaration_id": identity,
+                            "placement": file_placement,
+                            "inventory": member_inventory,
                             "declaration_annotations": (),
                             "line_count": 0,
                             "methods": methods,
@@ -112,6 +128,8 @@ class FixtureCodeMapProjector:
                         "values": (),
                         "callable_values": (),
                         "anonymous_callables": (),
+                        "unresolved_methods": (),
+                        "inventory": file_inventory,
                         "calls": (),
                         "declaration_relations": (),
                         "line_count": 0,

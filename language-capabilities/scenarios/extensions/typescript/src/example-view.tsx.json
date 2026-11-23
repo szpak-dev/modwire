@@ -14,7 +14,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 1,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example-view.tsx",
+            "family": "function",
+            "qualified_name": "ExampleView",
+            "ordinal": 1,
+            "content_digest": "bf9cb2f1b0256ab8d2461650a96291e37ea04cb088a5a016baf9c7fdc26eb344"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "functions": [
@@ -28,15 +40,24 @@
         "source_id": "typescript/src/example-view.tsx",
         "family": "function",
         "qualified_name": "ExampleView",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "bf9cb2f1b0256ab8d2461650a96291e37ea04cb088a5a016baf9c7fdc26eb344"
       },
       "source_id": "typescript/src/example-view.tsx",
       "qualified_name": "ExampleView",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 1,
       "line_end": 3,
       "parameters": [
         {
-          "name": "exampleLabel",
+          "name": "{ exampleLabel }",
           "type": {
             "kind": "unsupported"
           },
@@ -49,6 +70,41 @@
       "kind": "function"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 4,
   "code_line_count": 3,
   "public_symbol_count": 1

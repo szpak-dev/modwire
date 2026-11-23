@@ -1,6 +1,12 @@
 kind: source_facts
 policy: {}
 sources:
+  python/src/receiver_context.py: language-capabilities/scenarios/structural/python/src/receiver_context.py.json
+  ruby_ownership/src/receiver_context.rb: language-capabilities/scenarios/structural/ruby_ownership/src/receiver_context.rb.json
+  ruby_ownership/src/member_context.rb: language-capabilities/scenarios/structural/ruby_ownership/src/member_context.rb.json
+  typescript_exports/src/parenthesized_default.ts: language-capabilities/scenarios/structural/typescript_exports/src/parenthesized_default.ts.json
+  typescript_exports/src/wrapped_callable.ts: language-capabilities/scenarios/structural/typescript_exports/src/wrapped_callable.ts.json
+  typescript_exports/src/wrapped_identifier.ts: language-capabilities/scenarios/structural/typescript_exports/src/wrapped_identifier.ts.json
   python/src/example.py: language-capabilities/scenarios/structural/python/src/example.py.json
   typescript/src/example.ts: language-capabilities/scenarios/structural/typescript/src/example.ts.json
   typescript_payloads/src/example.ts: language-capabilities/scenarios/structural/typescript_payloads/src/example.ts.json
@@ -8,3 +14,11 @@ sources:
   java/src/Example.java: language-capabilities/scenarios/structural/java/src/Example.java.json
   ruby/src/example.rb: language-capabilities/scenarios/structural/ruby/src/example.rb.json
   ruby_receivers/src/example.rb: language-capabilities/scenarios/structural/ruby_receivers/src/example.rb.json
+  ruby_ownership/src/dynamic_singleton.rb: language-capabilities/scenarios/structural/ruby_ownership/src/dynamic_singleton.rb.json
+  ruby_ownership/src/qualified_declaration.rb: language-capabilities/scenarios/structural/ruby_ownership/src/qualified_declaration.rb.json
+  ruby_ownership/src/qualified_receiver.rb: language-capabilities/scenarios/structural/ruby_ownership/src/qualified_receiver.rb.json
+  ruby_ownership/src/singleton_owner.rb: language-capabilities/scenarios/structural/ruby_ownership/src/singleton_owner.rb.json
+  typescript_exports/src/default_callable.ts: language-capabilities/scenarios/structural/typescript_exports/src/default_callable.ts.json
+  typescript_exports/src/export_equals.ts: language-capabilities/scenarios/structural/typescript_exports/src/export_equals.ts.json
+  ruby_ownership/src/generated_receiver.rb: language-capabilities/scenarios/structural/ruby_ownership/src/generated_receiver.rb.json
+  typescript_exports/src/wrapped_namespace.ts: language-capabilities/scenarios/structural/typescript_exports/src/wrapped_namespace.ts.json

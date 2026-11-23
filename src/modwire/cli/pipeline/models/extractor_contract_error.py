@@ -1,12 +1,13 @@
 from ....extraction.extractors.models.extractor_error import ExtractorError
 from ....shared.code.models.sources.identity import FileId
+from ....shared.failures.models.modwire_error_code import ModwireErrorCode
 from .extractor_contract_violation import ExtractorContractViolation
 
 
 class ExtractorContractError(ExtractorError):
     """Report extractor output that violates the registered runtime contract."""
 
-    code = "extractor_contract"
+    code = ModwireErrorCode.EXTRACTOR_CONTRACT
 
     def __init__(
         self,

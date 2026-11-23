@@ -28,8 +28,8 @@
   ],
   "exports": [
     {
-      "name": "ExampleContract",
-      "local_name": "ExampleContract",
+      "name": "ExampleShapes.ExampleContract",
+      "local_name": "ExampleShapes.ExampleContract",
       "kind": "interface",
       "crossing_type": "symbol",
       "path": "",
@@ -38,11 +38,23 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "interface",
+            "qualified_name": "ExampleShapes.ExampleContract",
+            "ordinal": 142,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
-      "name": "ExampleAbstract",
-      "local_name": "ExampleAbstract",
+      "name": "ExampleShapes.ExampleAbstract",
+      "local_name": "ExampleShapes.ExampleAbstract",
       "kind": "abstract_class",
       "crossing_type": "symbol",
       "path": "",
@@ -51,11 +63,23 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "abstract_class",
+            "qualified_name": "ExampleShapes.ExampleAbstract",
+            "ordinal": 240,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
-      "name": "ExampleImplementation",
-      "local_name": "ExampleImplementation",
+      "name": "ExampleShapes.ExampleImplementation",
+      "local_name": "ExampleShapes.ExampleImplementation",
       "kind": "class",
       "crossing_type": "symbol",
       "path": "",
@@ -64,11 +88,23 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "class",
+            "qualified_name": "ExampleShapes.ExampleImplementation",
+            "ordinal": 443,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
-      "name": "exampleFunction",
-      "local_name": "exampleFunction",
+      "name": "ExampleShapes.exampleFunction",
+      "local_name": "ExampleShapes.exampleFunction",
       "kind": "function",
       "crossing_type": "symbol",
       "path": "",
@@ -77,173 +113,69 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "function",
+            "qualified_name": "ExampleShapes.exampleFunction",
+            "ordinal": 914,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          }
+        ],
+        "kind": "resolved"
+      }
+    },
+    {
+      "name": "EXAMPLE_CONSTANT",
+      "local_name": "EXAMPLE_CONSTANT",
+      "kind": "value",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "value",
+            "qualified_name": "ExampleShapes.EXAMPLE_CONSTANT",
+            "ordinal": 63,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          }
+        ],
+        "kind": "resolved"
+      }
+    }
+  ],
+  "namespaces": [
+    {
+      "kind": "namespace",
+      "declaration_id": {
+        "source_id": "php/src/ExampleShapes.php",
+        "family": "namespace",
+        "qualified_name": "ExampleShapes",
+        "ordinal": 7,
+        "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+      },
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     }
   ],
   "declarations": [
     {
-      "name": "ExampleImplementation",
-      "visibility": "public",
-      "visibility_intent": "public",
-      "line_count": 15,
-      "declaration_annotations": [
-        "\\Attribute"
-      ],
-      "declaration_id": {
-        "source_id": "php/src/ExampleShapes.php",
-        "family": "class",
-        "qualified_name": "ExampleImplementation",
-        "ordinal": 443
-      },
-      "kind": "class",
-      "methods": [
-        {
-          "name": "__construct",
-          "visibility": "public",
-          "visibility_intent": "public",
-          "line_count": 1,
-          "declaration_annotations": [],
-          "declaration_id": {
-            "source_id": "php/src/ExampleShapes.php",
-            "family": "method",
-            "qualified_name": "ExampleImplementation.__construct",
-            "ordinal": 548
-          },
-          "source_id": "php/src/ExampleShapes.php",
-          "qualified_name": "ExampleImplementation.__construct",
-          "kind": "constructor",
-          "line_start": 27,
-          "line_end": 27,
-          "parameters": [
-            {
-              "name": "exampleOptional",
-              "type": {
-                "kind": "unsupported"
-              },
-              "kind": "positional",
-              "has_default": true
-            }
-          ],
-          "return_type": {
-            "kind": "absent"
-          },
-          "owner_declaration_id": {
-            "source_id": "php/src/ExampleShapes.php",
-            "family": "class",
-            "qualified_name": "ExampleImplementation",
-            "ordinal": 443
-          }
-        },
-        {
-          "name": "exampleRequired",
-          "visibility": "public",
-          "visibility_intent": "public",
-          "line_count": 4,
-          "declaration_annotations": [],
-          "declaration_id": {
-            "source_id": "php/src/ExampleShapes.php",
-            "family": "method",
-            "qualified_name": "ExampleImplementation.exampleRequired",
-            "ordinal": 624
-          },
-          "source_id": "php/src/ExampleShapes.php",
-          "qualified_name": "ExampleImplementation.exampleRequired",
-          "kind": "instance_method",
-          "line_start": 29,
-          "line_end": 32,
-          "parameters": [
-            {
-              "name": "exampleValue",
-              "type": {
-                "name": "string",
-                "kind": "reference"
-              },
-              "kind": "positional"
-            }
-          ],
-          "return_type": {
-            "name": "string",
-            "kind": "reference"
-          },
-          "owner_declaration_id": {
-            "source_id": "php/src/ExampleShapes.php",
-            "family": "class",
-            "qualified_name": "ExampleImplementation",
-            "ordinal": 443
-          }
-        },
-        {
-          "name": "exampleTimestamp",
-          "visibility": "public",
-          "visibility_intent": "public",
-          "line_count": 4,
-          "declaration_annotations": [],
-          "declaration_id": {
-            "source_id": "php/src/ExampleShapes.php",
-            "family": "method",
-            "qualified_name": "ExampleImplementation.exampleTimestamp",
-            "ordinal": 733
-          },
-          "source_id": "php/src/ExampleShapes.php",
-          "qualified_name": "ExampleImplementation.exampleTimestamp",
-          "kind": "instance_method",
-          "line_start": 34,
-          "line_end": 37,
-          "parameters": [
-            {
-              "name": "exampleValue",
-              "type": {
-                "name": "string",
-                "kind": "reference"
-              },
-              "kind": "positional"
-            }
-          ],
-          "return_type": {
-            "name": "string",
-            "kind": "reference"
-          },
-          "owner_declaration_id": {
-            "source_id": "php/src/ExampleShapes.php",
-            "family": "class",
-            "qualified_name": "ExampleImplementation",
-            "ordinal": 443
-          }
-        }
-      ],
-      "properties": [
-        {
-          "declaration_id": {
-            "source_id": "php/src/ExampleShapes.php",
-            "family": "property",
-            "qualified_name": "ExampleImplementation.exampleOptional",
-            "ordinal": 576
-          },
-          "owner_declaration_id": {
-            "source_id": "php/src/ExampleShapes.php",
-            "family": "class",
-            "qualified_name": "ExampleImplementation",
-            "ordinal": 443
-          },
-          "name": "exampleOptional",
-          "is_optional": true,
-          "type": {
-            "kind": "unsupported"
-          },
-          "visibility": "public",
-          "member_kind": "instance",
-          "assigned_values": [
-            {
-              "kind": "unsupported",
-              "expression": "",
-              "reference": ""
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "ExampleContract",
+      "name": "ExampleShapes.ExampleContract",
       "visibility": "public",
       "visibility_intent": "public",
       "line_count": 4,
@@ -251,11 +183,56 @@
       "declaration_id": {
         "source_id": "php/src/ExampleShapes.php",
         "family": "interface",
-        "qualified_name": "ExampleContract",
-        "ordinal": 142
+        "qualified_name": "ExampleShapes.ExampleContract",
+        "ordinal": 142,
+        "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
       },
       "kind": "interface",
-      "methods": [
+      "placement": {
+        "lexical_scope": {
+          "declaration_id": {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "namespace",
+            "qualified_name": "ExampleShapes",
+            "ordinal": 7,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          },
+          "kind": "declaration"
+        },
+        "namespace": {
+          "namespace_reference": "ExampleShapes",
+          "target": {
+            "declaration_id": {
+              "source_id": "php/src/ExampleShapes.php",
+              "family": "namespace",
+              "qualified_name": "ExampleShapes",
+              "ordinal": 7,
+              "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+            },
+            "kind": "resolved"
+          },
+          "kind": "member"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
+      "abstract_methods": [
         {
           "name": "exampleRequired",
           "visibility": "public",
@@ -265,12 +242,39 @@
           "declaration_id": {
             "source_id": "php/src/ExampleShapes.php",
             "family": "method",
-            "qualified_name": "ExampleContract.exampleRequired",
-            "ordinal": 174
+            "qualified_name": "ExampleShapes.ExampleContract.exampleRequired",
+            "ordinal": 174,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
           },
           "source_id": "php/src/ExampleShapes.php",
-          "qualified_name": "ExampleContract.exampleRequired",
+          "qualified_name": "ExampleShapes.ExampleContract.exampleRequired",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "php/src/ExampleShapes.php",
+                "family": "interface",
+                "qualified_name": "ExampleShapes.ExampleContract",
+                "ordinal": 142,
+                "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "ExampleShapes",
+              "target": {
+                "declaration_id": {
+                  "source_id": "php/src/ExampleShapes.php",
+                  "family": "namespace",
+                  "qualified_name": "ExampleShapes",
+                  "ordinal": 7,
+                  "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
           "line_start": 11,
           "line_end": 11,
           "parameters": [
@@ -290,14 +294,15 @@
           "owner_declaration_id": {
             "source_id": "php/src/ExampleShapes.php",
             "family": "interface",
-            "qualified_name": "ExampleContract",
-            "ordinal": 142
+            "qualified_name": "ExampleShapes.ExampleContract",
+            "ordinal": 142,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
           }
         }
       ]
     },
     {
-      "name": "ExampleAbstract",
+      "name": "ExampleShapes.ExampleAbstract",
       "visibility": "public",
       "visibility_intent": "public",
       "line_count": 9,
@@ -305,10 +310,55 @@
       "declaration_id": {
         "source_id": "php/src/ExampleShapes.php",
         "family": "abstract_class",
-        "qualified_name": "ExampleAbstract",
-        "ordinal": 240
+        "qualified_name": "ExampleShapes.ExampleAbstract",
+        "ordinal": 240,
+        "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
       },
       "kind": "abstract_class",
+      "placement": {
+        "lexical_scope": {
+          "declaration_id": {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "namespace",
+            "qualified_name": "ExampleShapes",
+            "ordinal": 7,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          },
+          "kind": "declaration"
+        },
+        "namespace": {
+          "namespace_reference": "ExampleShapes",
+          "target": {
+            "declaration_id": {
+              "source_id": "php/src/ExampleShapes.php",
+              "family": "namespace",
+              "qualified_name": "ExampleShapes",
+              "ordinal": 7,
+              "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+            },
+            "kind": "resolved"
+          },
+          "kind": "member"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "exampleConcrete",
@@ -319,12 +369,39 @@
           "declaration_id": {
             "source_id": "php/src/ExampleShapes.php",
             "family": "method",
-            "qualified_name": "ExampleAbstract.exampleConcrete",
-            "ordinal": 354
+            "qualified_name": "ExampleShapes.ExampleAbstract.exampleConcrete",
+            "ordinal": 354,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
           },
           "source_id": "php/src/ExampleShapes.php",
-          "qualified_name": "ExampleAbstract.exampleConcrete",
+          "qualified_name": "ExampleShapes.ExampleAbstract.exampleConcrete",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "php/src/ExampleShapes.php",
+                "family": "abstract_class",
+                "qualified_name": "ExampleShapes.ExampleAbstract",
+                "ordinal": 240,
+                "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "ExampleShapes",
+              "target": {
+                "declaration_id": {
+                  "source_id": "php/src/ExampleShapes.php",
+                  "family": "namespace",
+                  "qualified_name": "ExampleShapes",
+                  "ordinal": 7,
+                  "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
           "line_start": 18,
           "line_end": 21,
           "return_type": {
@@ -334,8 +411,9 @@
           "owner_declaration_id": {
             "source_id": "php/src/ExampleShapes.php",
             "family": "abstract_class",
-            "qualified_name": "ExampleAbstract",
-            "ordinal": 240
+            "qualified_name": "ExampleShapes.ExampleAbstract",
+            "ordinal": 240,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
           }
         }
       ],
@@ -349,12 +427,39 @@
           "declaration_id": {
             "source_id": "php/src/ExampleShapes.php",
             "family": "method",
-            "qualified_name": "ExampleAbstract.exampleRequired",
-            "ordinal": 277
+            "qualified_name": "ExampleShapes.ExampleAbstract.exampleRequired",
+            "ordinal": 277,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
           },
           "source_id": "php/src/ExampleShapes.php",
-          "qualified_name": "ExampleAbstract.exampleRequired",
+          "qualified_name": "ExampleShapes.ExampleAbstract.exampleRequired",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "php/src/ExampleShapes.php",
+                "family": "abstract_class",
+                "qualified_name": "ExampleShapes.ExampleAbstract",
+                "ordinal": 240,
+                "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "ExampleShapes",
+              "target": {
+                "declaration_id": {
+                  "source_id": "php/src/ExampleShapes.php",
+                  "family": "namespace",
+                  "qualified_name": "ExampleShapes",
+                  "ordinal": 7,
+                  "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
           "line_start": 16,
           "line_end": 16,
           "parameters": [
@@ -374,9 +479,328 @@
           "owner_declaration_id": {
             "source_id": "php/src/ExampleShapes.php",
             "family": "abstract_class",
-            "qualified_name": "ExampleAbstract",
-            "ordinal": 240
+            "qualified_name": "ExampleShapes.ExampleAbstract",
+            "ordinal": 240,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
           }
+        }
+      ]
+    },
+    {
+      "name": "ExampleShapes.ExampleImplementation",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 15,
+      "declaration_annotations": [
+        "\\Attribute"
+      ],
+      "declaration_id": {
+        "source_id": "php/src/ExampleShapes.php",
+        "family": "class",
+        "qualified_name": "ExampleShapes.ExampleImplementation",
+        "ordinal": 443,
+        "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+      },
+      "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "declaration_id": {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "namespace",
+            "qualified_name": "ExampleShapes",
+            "ordinal": 7,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          },
+          "kind": "declaration"
+        },
+        "namespace": {
+          "namespace_reference": "ExampleShapes",
+          "target": {
+            "declaration_id": {
+              "source_id": "php/src/ExampleShapes.php",
+              "family": "namespace",
+              "qualified_name": "ExampleShapes",
+              "ordinal": 7,
+              "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+            },
+            "kind": "resolved"
+          },
+          "kind": "member"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
+      "methods": [
+        {
+          "name": "__construct",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 1,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "method",
+            "qualified_name": "ExampleShapes.ExampleImplementation.__construct",
+            "ordinal": 548,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          },
+          "source_id": "php/src/ExampleShapes.php",
+          "qualified_name": "ExampleShapes.ExampleImplementation.__construct",
+          "kind": "constructor",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "php/src/ExampleShapes.php",
+                "family": "class",
+                "qualified_name": "ExampleShapes.ExampleImplementation",
+                "ordinal": 443,
+                "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "ExampleShapes",
+              "target": {
+                "declaration_id": {
+                  "source_id": "php/src/ExampleShapes.php",
+                  "family": "namespace",
+                  "qualified_name": "ExampleShapes",
+                  "ordinal": 7,
+                  "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
+          "line_start": 27,
+          "line_end": 27,
+          "parameters": [
+            {
+              "name": "exampleOptional",
+              "type": {
+                "kind": "unsupported"
+              },
+              "kind": "positional",
+              "has_default": true
+            }
+          ],
+          "return_type": {
+            "kind": "absent"
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "class",
+            "qualified_name": "ExampleShapes.ExampleImplementation",
+            "ordinal": 443,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          }
+        },
+        {
+          "name": "exampleRequired",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 4,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "method",
+            "qualified_name": "ExampleShapes.ExampleImplementation.exampleRequired",
+            "ordinal": 624,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          },
+          "source_id": "php/src/ExampleShapes.php",
+          "qualified_name": "ExampleShapes.ExampleImplementation.exampleRequired",
+          "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "php/src/ExampleShapes.php",
+                "family": "class",
+                "qualified_name": "ExampleShapes.ExampleImplementation",
+                "ordinal": 443,
+                "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "ExampleShapes",
+              "target": {
+                "declaration_id": {
+                  "source_id": "php/src/ExampleShapes.php",
+                  "family": "namespace",
+                  "qualified_name": "ExampleShapes",
+                  "ordinal": 7,
+                  "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
+          "line_start": 29,
+          "line_end": 32,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "string",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "class",
+            "qualified_name": "ExampleShapes.ExampleImplementation",
+            "ordinal": 443,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          }
+        },
+        {
+          "name": "exampleTimestamp",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 4,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "method",
+            "qualified_name": "ExampleShapes.ExampleImplementation.exampleTimestamp",
+            "ordinal": 733,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          },
+          "source_id": "php/src/ExampleShapes.php",
+          "qualified_name": "ExampleShapes.ExampleImplementation.exampleTimestamp",
+          "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "php/src/ExampleShapes.php",
+                "family": "class",
+                "qualified_name": "ExampleShapes.ExampleImplementation",
+                "ordinal": 443,
+                "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "ExampleShapes",
+              "target": {
+                "declaration_id": {
+                  "source_id": "php/src/ExampleShapes.php",
+                  "family": "namespace",
+                  "qualified_name": "ExampleShapes",
+                  "ordinal": 7,
+                  "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
+          "line_start": 34,
+          "line_end": 37,
+          "parameters": [
+            {
+              "name": "exampleValue",
+              "type": {
+                "name": "string",
+                "kind": "reference"
+              },
+              "kind": "positional"
+            }
+          ],
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "class",
+            "qualified_name": "ExampleShapes.ExampleImplementation",
+            "ordinal": 443,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "property",
+            "qualified_name": "ExampleShapes.ExampleImplementation.exampleOptional",
+            "ordinal": 576,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "class",
+            "qualified_name": "ExampleShapes.ExampleImplementation",
+            "ordinal": 443,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          },
+          "name": "exampleOptional",
+          "is_optional": true,
+          "type": {
+            "kind": "unsupported"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "php/src/ExampleShapes.php",
+                "family": "method",
+                "qualified_name": "ExampleShapes.ExampleImplementation.__construct",
+                "ordinal": 548,
+                "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "ExampleShapes",
+              "target": {
+                "declaration_id": {
+                  "source_id": "php/src/ExampleShapes.php",
+                  "family": "namespace",
+                  "qualified_name": "ExampleShapes",
+                  "ordinal": 7,
+                  "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
         }
       ]
     }
@@ -391,11 +815,38 @@
       "declaration_id": {
         "source_id": "php/src/ExampleShapes.php",
         "family": "function",
-        "qualified_name": "exampleFunction",
-        "ordinal": 914
+        "qualified_name": "ExampleShapes.exampleFunction",
+        "ordinal": 914,
+        "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
       },
       "source_id": "php/src/ExampleShapes.php",
-      "qualified_name": "exampleFunction",
+      "qualified_name": "ExampleShapes.exampleFunction",
+      "placement": {
+        "lexical_scope": {
+          "declaration_id": {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "namespace",
+            "qualified_name": "ExampleShapes",
+            "ordinal": 7,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          },
+          "kind": "declaration"
+        },
+        "namespace": {
+          "namespace_reference": "ExampleShapes",
+          "target": {
+            "declaration_id": {
+              "source_id": "php/src/ExampleShapes.php",
+              "family": "namespace",
+              "qualified_name": "ExampleShapes",
+              "ordinal": 7,
+              "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+            },
+            "kind": "resolved"
+          },
+          "kind": "member"
+        }
+      },
       "line_start": 40,
       "line_end": 43,
       "parameters": [
@@ -429,8 +880,9 @@
       "declaration_id": {
         "source_id": "php/src/ExampleShapes.php",
         "family": "value",
-        "qualified_name": "EXAMPLE_CONSTANT",
-        "ordinal": 63
+        "qualified_name": "ExampleShapes.EXAMPLE_CONSTANT",
+        "ordinal": 63,
+        "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
       },
       "name": "EXAMPLE_CONSTANT",
       "visibility": "public",
@@ -438,14 +890,41 @@
       "line_count": 1,
       "declaration_kind": "constant",
       "value_kind": "value_literal",
-      "scope": "module"
+      "scope": "module",
+      "placement": {
+        "lexical_scope": {
+          "declaration_id": {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "namespace",
+            "qualified_name": "ExampleShapes",
+            "ordinal": 7,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          },
+          "kind": "declaration"
+        },
+        "namespace": {
+          "namespace_reference": "ExampleShapes",
+          "target": {
+            "declaration_id": {
+              "source_id": "php/src/ExampleShapes.php",
+              "family": "namespace",
+              "qualified_name": "ExampleShapes",
+              "ordinal": 7,
+              "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+            },
+            "kind": "resolved"
+          },
+          "kind": "member"
+        }
+      }
     },
     {
       "declaration_id": {
         "source_id": "php/src/ExampleShapes.php",
         "family": "value",
-        "qualified_name": "exampleVariable",
-        "ordinal": 102
+        "qualified_name": "ExampleShapes.exampleVariable",
+        "ordinal": 102,
+        "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
       },
       "name": "exampleVariable",
       "visibility": "private",
@@ -453,7 +932,33 @@
       "line_count": 1,
       "declaration_kind": "assignment",
       "value_kind": "value_literal",
-      "scope": "module"
+      "scope": "module",
+      "placement": {
+        "lexical_scope": {
+          "declaration_id": {
+            "source_id": "php/src/ExampleShapes.php",
+            "family": "namespace",
+            "qualified_name": "ExampleShapes",
+            "ordinal": 7,
+            "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+          },
+          "kind": "declaration"
+        },
+        "namespace": {
+          "namespace_reference": "ExampleShapes",
+          "target": {
+            "declaration_id": {
+              "source_id": "php/src/ExampleShapes.php",
+              "family": "namespace",
+              "qualified_name": "ExampleShapes",
+              "ordinal": 7,
+              "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+            },
+            "kind": "resolved"
+          },
+          "kind": "member"
+        }
+      }
     }
   ],
   "calls": [
@@ -461,23 +966,25 @@
       "source_callable_id": {
         "source_id": "php/src/ExampleShapes.php",
         "family": "method",
-        "qualified_name": "ExampleImplementation.exampleTimestamp",
-        "ordinal": 733
+        "qualified_name": "ExampleShapes.ExampleImplementation.exampleTimestamp",
+        "ordinal": 733,
+        "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
       },
       "ordinal": 1,
       "target_callable_id": null,
       "source_id": "php/src/ExampleShapes.php",
       "line": 36,
       "expression": "DateTimeImmutable->format",
-      "resolution": "unresolved",
+      "resolution": "dynamic",
       "target_name": "format"
     },
     {
       "source_callable_id": {
         "source_id": "php/src/ExampleShapes.php",
         "family": "method",
-        "qualified_name": "ExampleImplementation.exampleTimestamp",
-        "ordinal": 733
+        "qualified_name": "ExampleShapes.ExampleImplementation.exampleTimestamp",
+        "ordinal": 733,
+        "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
       },
       "ordinal": 2,
       "target_callable_id": null,
@@ -491,8 +998,9 @@
       "source_callable_id": {
         "source_id": "php/src/ExampleShapes.php",
         "family": "method",
-        "qualified_name": "ExampleImplementation.exampleTimestamp",
-        "ordinal": 733
+        "qualified_name": "ExampleShapes.ExampleImplementation.exampleTimestamp",
+        "ordinal": 733,
+        "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
       },
       "ordinal": 3,
       "target_callable_id": null,
@@ -506,15 +1014,17 @@
       "source_callable_id": {
         "source_id": "php/src/ExampleShapes.php",
         "family": "method",
-        "qualified_name": "ExampleImplementation.exampleTimestamp",
-        "ordinal": 733
+        "qualified_name": "ExampleShapes.ExampleImplementation.exampleTimestamp",
+        "ordinal": 733,
+        "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
       },
       "ordinal": 4,
       "target_callable_id": {
         "source_id": "php/src/ExampleShapes.php",
         "family": "method",
-        "qualified_name": "ExampleImplementation.exampleRequired",
-        "ordinal": 624
+        "qualified_name": "ExampleShapes.ExampleImplementation.exampleRequired",
+        "ordinal": 624,
+        "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
       },
       "source_id": "php/src/ExampleShapes.php",
       "line": 36,
@@ -528,24 +1038,81 @@
       "source_declaration_id": {
         "source_id": "php/src/ExampleShapes.php",
         "family": "class",
-        "qualified_name": "ExampleImplementation",
-        "ordinal": 443
+        "qualified_name": "ExampleShapes.ExampleImplementation",
+        "ordinal": 443,
+        "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
       },
       "kind": "extends",
-      "target_reference": "ExampleAbstract"
+      "target_reference": "ExampleAbstract",
+      "target": {
+        "declaration_id": {
+          "source_id": "php/src/ExampleShapes.php",
+          "family": "abstract_class",
+          "qualified_name": "ExampleShapes.ExampleAbstract",
+          "ordinal": 240,
+          "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+        },
+        "kind": "resolved"
+      }
     },
     {
       "source_declaration_id": {
         "source_id": "php/src/ExampleShapes.php",
         "family": "class",
-        "qualified_name": "ExampleImplementation",
-        "ordinal": 443
+        "qualified_name": "ExampleShapes.ExampleImplementation",
+        "ordinal": 443,
+        "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
       },
       "kind": "implements",
-      "target_reference": "ExampleContract"
+      "target_reference": "ExampleContract",
+      "target": {
+        "declaration_id": {
+          "source_id": "php/src/ExampleShapes.php",
+          "family": "interface",
+          "qualified_name": "ExampleShapes.ExampleContract",
+          "ordinal": 142,
+          "content_digest": "7f01e7b738a35123f113c56051013dfa2f9f002220a7c4660d1be300e729990a"
+        },
+        "kind": "resolved"
+      }
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 44,
   "code_line_count": 33,
-  "public_symbol_count": 4
+  "public_symbol_count": 5
 }

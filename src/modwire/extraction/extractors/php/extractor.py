@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from wireup import injectable
 
 from ....shared.code.models.capabilities.capability_coverage import CapabilityCoverage
@@ -12,21 +10,23 @@ from ....shared.code.models.sources.identity import FileId, ImportIdentity
 from ....shared.code.models.sources.source_file import SourceFile
 from ..domain import SourceExtractor
 from ..models.batch_config import BatchConfig
-from ..models.batch_output_format import BatchOutputFormat
 from ..models.entrypoints.file_entrypoint import FileExtractorEntrypoint
 from ..models.extractor_runtime import ExtractorRuntime
+from ..models.native_output_format import NativeOutputFormat
 
 
 @injectable(as_type=SourceExtractor, qualifier="php")
-@dataclass(frozen=True)
 class PhpExtractor(SourceExtractor):
-    @property
-    def runtime(self) -> ExtractorRuntime:
-        return ExtractorRuntime(
+    runtime: ExtractorRuntime
+    batch_config: BatchConfig
+
+    def __init__(self) -> None:
+        self.runtime = ExtractorRuntime(
             order=2,
+            output_format=NativeOutputFormat.INDEXED_JSONL,
             descriptor=ExtractorDescriptor(
                 id="modwire.php.php-parser",
-                version="3",
+                version="5",
                 language="php",
                 runtime="php",
             ),
@@ -100,8 +100,8 @@ class PhpExtractor(SourceExtractor):
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.NAMESPACES,
-                    status=CapabilityStatus.UNSUPPORTED,
-                    explanation="PHP namespace declarations are not extracted yet.",
+                    status=CapabilityStatus.SUPPORTED,
+                    explanation="Authored namespace declarations retain exact identities and lexical placement.",
                 ),
                 CapabilityCoverage(
                     capability=FactCapability.DECLARATION_KINDS,
@@ -178,14 +178,11 @@ class PhpExtractor(SourceExtractor):
             ),
         )
 
-    @property
-    def batch_config(self) -> BatchConfig:
-        return BatchConfig(
+        self.batch_config = BatchConfig(
             size=500,
             parallel_threshold=500,
             parallel_size=500,
             max_workers=16,
-            output_format=BatchOutputFormat.JSON_LINES,
         )
 
     def import_identities(self, files: dict[FileId, SourceFile]) -> dict[FileId, tuple[ImportIdentity, ...]]:

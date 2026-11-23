@@ -1,10 +1,12 @@
 import ast
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
+from ......shared.code.models.callables.source_callable_kind import SourceCallableKind
 from ......shared.code.models.callables.source_parameter import SourceParameter
 from ......shared.code.models.callables.source_parameter_kind import SourceParameterKind
 from ...observations.callable_candidate import PythonCallableCandidate
@@ -13,7 +15,7 @@ from .source_type_reader import PythonSourceTypeReader
 
 class PythonParameterReader(ABC):
     @abstractmethod
-    def read(self, candidate: PythonCallableCandidate) -> tuple[SourceParameter, ...]:
+    def read(self, candidate: PythonCallableCandidate, kind: SourceCallableKind) -> tuple[SourceParameter, ...]:
         raise NotImplementedError
 
 
@@ -22,36 +24,24 @@ class PythonParameterReader(ABC):
 class SyntaxParameterReader(PythonParameterReader):
     types: PythonSourceTypeReader
 
-    def read(self, candidate: PythonCallableCandidate) -> tuple[SourceParameter, ...]:
-        parameters = self.visit(candidate.node)
-        if self.has_receiver(candidate, parameters):
+    @cached_property
+    def visit_dispatch(self) -> Callable[[ast.AST], tuple[SourceParameter, ...]]:
+        return self.visit
+
+    def read(self, candidate: PythonCallableCandidate, kind: SourceCallableKind) -> tuple[SourceParameter, ...]:
+        parameters = self.visit_dispatch(candidate.node)
+        if (
+            kind
+            in {
+                SourceCallableKind.INSTANCE_METHOD,
+                SourceCallableKind.TYPE_METHOD,
+                SourceCallableKind.CONSTRUCTOR,
+            }
+            and parameters
+            and parameters[0].kind is SourceParameterKind.POSITIONAL
+        ):
             return parameters[1:]
         return parameters
-
-    def has_receiver(
-        self,
-        candidate: PythonCallableCandidate,
-        parameters: tuple[SourceParameter, ...],
-    ) -> bool:
-        return (
-            bool(candidate.owner_name)
-            and self.is_function(candidate.node)
-            and not self.has_decorator(candidate.node, "staticmethod")
-            and bool(parameters)
-            and parameters[0].name in {"self", "cls"}
-        )
-
-    @singledispatchmethod
-    def is_function(self, node: ast.AST) -> bool:
-        return False
-
-    @is_function.register
-    def function_is_function(self, node: ast.FunctionDef) -> bool:
-        return True
-
-    @is_function.register
-    def async_function_is_function(self, node: ast.AsyncFunctionDef) -> bool:
-        return True
 
     @singledispatchmethod
     def visit(self, node: ast.AST) -> tuple[SourceParameter, ...]:
@@ -109,15 +99,3 @@ class SyntaxParameterReader(PythonParameterReader):
                 )
             )
         return tuple(parameters)
-
-    @singledispatchmethod
-    def has_decorator(self, node: ast.AST, name: str) -> bool:
-        return False
-
-    @has_decorator.register
-    def function_has_decorator(self, node: ast.FunctionDef, name: str) -> bool:
-        return any(ast.unparse(decorator).rsplit(".", 1)[-1] == name for decorator in node.decorator_list)
-
-    @has_decorator.register
-    def async_function_has_decorator(self, node: ast.AsyncFunctionDef, name: str) -> bool:
-        return any(ast.unparse(decorator).rsplit(".", 1)[-1] == name for decorator in node.decorator_list)

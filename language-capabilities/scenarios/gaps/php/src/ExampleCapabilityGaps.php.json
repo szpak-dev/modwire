@@ -4,8 +4,8 @@
   "imports": [],
   "exports": [
     {
-      "name": "ExampleTypeMarker",
-      "local_name": "ExampleTypeMarker",
+      "name": "ExampleCapabilityGaps.ExampleTypeMarker",
+      "local_name": "ExampleCapabilityGaps.ExampleTypeMarker",
       "kind": "class",
       "crossing_type": "symbol",
       "path": "",
@@ -14,11 +14,23 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "class",
+            "qualified_name": "ExampleCapabilityGaps.ExampleTypeMarker",
+            "ordinal": 41,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
-      "name": "ExampleMethodMarker",
-      "local_name": "ExampleMethodMarker",
+      "name": "ExampleCapabilityGaps.ExampleMethodMarker",
+      "local_name": "ExampleCapabilityGaps.ExampleMethodMarker",
       "kind": "class",
       "crossing_type": "symbol",
       "path": "",
@@ -27,11 +39,23 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "class",
+            "qualified_name": "ExampleCapabilityGaps.ExampleMethodMarker",
+            "ordinal": 89,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
-      "name": "ExampleTrait",
-      "local_name": "ExampleTrait",
+      "name": "ExampleCapabilityGaps.ExampleTrait",
+      "local_name": "ExampleCapabilityGaps.ExampleTrait",
       "kind": "type",
       "crossing_type": "symbol",
       "path": "",
@@ -40,11 +64,23 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "type",
+            "qualified_name": "ExampleCapabilityGaps.ExampleTrait",
+            "ordinal": 139,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
-      "name": "ExampleConsumer",
-      "local_name": "ExampleConsumer",
+      "name": "ExampleCapabilityGaps.ExampleConsumer",
+      "local_name": "ExampleCapabilityGaps.ExampleConsumer",
       "kind": "class",
       "crossing_type": "symbol",
       "path": "",
@@ -53,12 +89,44 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "class",
+            "qualified_name": "ExampleCapabilityGaps.ExampleConsumer",
+            "ordinal": 282,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+          }
+        ],
+        "kind": "resolved"
+      }
+    }
+  ],
+  "namespaces": [
+    {
+      "kind": "namespace",
+      "declaration_id": {
+        "source_id": "php/src/ExampleCapabilityGaps.php",
+        "family": "namespace",
+        "qualified_name": "ExampleCapabilityGaps",
+        "ordinal": 7,
+        "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+      },
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     }
   ],
   "declarations": [
     {
-      "name": "ExampleTypeMarker",
+      "name": "ExampleCapabilityGaps.ExampleTypeMarker",
       "visibility": "public",
       "visibility_intent": "public",
       "line_count": 2,
@@ -68,106 +136,119 @@
       "declaration_id": {
         "source_id": "php/src/ExampleCapabilityGaps.php",
         "family": "class",
-        "qualified_name": "ExampleTypeMarker",
-        "ordinal": 41
-      },
-      "kind": "class"
-    },
-    {
-      "name": "ExampleMethodMarker",
-      "visibility": "public",
-      "visibility_intent": "public",
-      "line_count": 2,
-      "declaration_annotations": [
-        "\\Attribute"
-      ],
-      "declaration_id": {
-        "source_id": "php/src/ExampleCapabilityGaps.php",
-        "family": "class",
-        "qualified_name": "ExampleMethodMarker",
-        "ordinal": 89
-      },
-      "kind": "class"
-    },
-    {
-      "name": "ExampleConsumer",
-      "visibility": "public",
-      "visibility_intent": "public",
-      "line_count": 12,
-      "declaration_annotations": [
-        "ExampleTypeMarker"
-      ],
-      "declaration_id": {
-        "source_id": "php/src/ExampleCapabilityGaps.php",
-        "family": "class",
-        "qualified_name": "ExampleConsumer",
-        "ordinal": 282
+        "qualified_name": "ExampleCapabilityGaps.ExampleTypeMarker",
+        "ordinal": 41,
+        "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
       },
       "kind": "class",
-      "methods": [
-        {
-          "name": "exampleConsumerValue",
-          "visibility": "public",
-          "visibility_intent": "public",
-          "line_count": 4,
-          "declaration_annotations": [],
+      "placement": {
+        "lexical_scope": {
           "declaration_id": {
             "source_id": "php/src/ExampleCapabilityGaps.php",
-            "family": "method",
-            "qualified_name": "ExampleConsumer.exampleConsumerValue",
-            "ordinal": 412
+            "family": "namespace",
+            "qualified_name": "ExampleCapabilityGaps",
+            "ordinal": 7,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
           },
-          "source_id": "php/src/ExampleCapabilityGaps.php",
-          "qualified_name": "ExampleConsumer.exampleConsumerValue",
-          "kind": "instance_method",
-          "line_start": 26,
-          "line_end": 29,
-          "return_type": {
-            "name": "string",
-            "kind": "reference"
+          "kind": "declaration"
+        },
+        "namespace": {
+          "namespace_reference": "ExampleCapabilityGaps",
+          "target": {
+            "declaration_id": {
+              "source_id": "php/src/ExampleCapabilityGaps.php",
+              "family": "namespace",
+              "qualified_name": "ExampleCapabilityGaps",
+              "ordinal": 7,
+              "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+            },
+            "kind": "resolved"
           },
-          "owner_declaration_id": {
-            "source_id": "php/src/ExampleCapabilityGaps.php",
-            "family": "class",
-            "qualified_name": "ExampleConsumer",
-            "ordinal": 282
-          }
+          "kind": "member"
         }
-      ],
-      "properties": [
-        {
-          "declaration_id": {
-            "source_id": "php/src/ExampleCapabilityGaps.php",
-            "family": "property",
-            "qualified_name": "ExampleConsumer.exampleValue",
-            "ordinal": 374
-          },
-          "owner_declaration_id": {
-            "source_id": "php/src/ExampleCapabilityGaps.php",
-            "family": "class",
-            "qualified_name": "ExampleConsumer",
-            "ordinal": 282
-          },
-          "name": "exampleValue",
-          "is_optional": false,
-          "type": {
-            "name": "string",
-            "kind": "reference"
-          },
-          "visibility": "public",
-          "member_kind": "instance",
-          "assigned_values": [
-            {
-              "kind": "unsupported",
-              "expression": "",
-              "reference": ""
-            }
-          ]
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
         }
-      ]
+      }
     },
     {
-      "name": "ExampleTrait",
+      "name": "ExampleCapabilityGaps.ExampleMethodMarker",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 2,
+      "declaration_annotations": [
+        "\\Attribute"
+      ],
+      "declaration_id": {
+        "source_id": "php/src/ExampleCapabilityGaps.php",
+        "family": "class",
+        "qualified_name": "ExampleCapabilityGaps.ExampleMethodMarker",
+        "ordinal": 89,
+        "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+      },
+      "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "declaration_id": {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "namespace",
+            "qualified_name": "ExampleCapabilityGaps",
+            "ordinal": 7,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+          },
+          "kind": "declaration"
+        },
+        "namespace": {
+          "namespace_reference": "ExampleCapabilityGaps",
+          "target": {
+            "declaration_id": {
+              "source_id": "php/src/ExampleCapabilityGaps.php",
+              "family": "namespace",
+              "qualified_name": "ExampleCapabilityGaps",
+              "ordinal": 7,
+              "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+            },
+            "kind": "resolved"
+          },
+          "kind": "member"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    },
+    {
+      "name": "ExampleCapabilityGaps.ExampleTrait",
       "visibility": "public",
       "visibility_intent": "public",
       "line_count": 8,
@@ -175,10 +256,55 @@
       "declaration_id": {
         "source_id": "php/src/ExampleCapabilityGaps.php",
         "family": "type",
-        "qualified_name": "ExampleTrait",
-        "ordinal": 139
+        "qualified_name": "ExampleCapabilityGaps.ExampleTrait",
+        "ordinal": 139,
+        "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
       },
       "kind": "trait",
+      "placement": {
+        "lexical_scope": {
+          "declaration_id": {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "namespace",
+            "qualified_name": "ExampleCapabilityGaps",
+            "ordinal": 7,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+          },
+          "kind": "declaration"
+        },
+        "namespace": {
+          "namespace_reference": "ExampleCapabilityGaps",
+          "target": {
+            "declaration_id": {
+              "source_id": "php/src/ExampleCapabilityGaps.php",
+              "family": "namespace",
+              "qualified_name": "ExampleCapabilityGaps",
+              "ordinal": 7,
+              "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+            },
+            "kind": "resolved"
+          },
+          "kind": "member"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "exampleTraitValue",
@@ -189,12 +315,39 @@
           "declaration_id": {
             "source_id": "php/src/ExampleCapabilityGaps.php",
             "family": "method",
-            "qualified_name": "ExampleTrait.exampleTraitValue",
-            "ordinal": 164
+            "qualified_name": "ExampleCapabilityGaps.ExampleTrait.exampleTraitValue",
+            "ordinal": 164,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
           },
           "source_id": "php/src/ExampleCapabilityGaps.php",
-          "qualified_name": "ExampleTrait.exampleTraitValue",
+          "qualified_name": "ExampleCapabilityGaps.ExampleTrait.exampleTraitValue",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "php/src/ExampleCapabilityGaps.php",
+                "family": "type",
+                "qualified_name": "ExampleCapabilityGaps.ExampleTrait",
+                "ordinal": 139,
+                "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "ExampleCapabilityGaps",
+              "target": {
+                "declaration_id": {
+                  "source_id": "php/src/ExampleCapabilityGaps.php",
+                  "family": "namespace",
+                  "qualified_name": "ExampleCapabilityGaps",
+                  "ordinal": 7,
+                  "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
           "line_start": 12,
           "line_end": 16,
           "return_type": {
@@ -204,9 +357,188 @@
           "owner_declaration_id": {
             "source_id": "php/src/ExampleCapabilityGaps.php",
             "family": "type",
-            "qualified_name": "ExampleTrait",
-            "ordinal": 139
+            "qualified_name": "ExampleCapabilityGaps.ExampleTrait",
+            "ordinal": 139,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
           }
+        }
+      ]
+    },
+    {
+      "name": "ExampleCapabilityGaps.ExampleConsumer",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 12,
+      "declaration_annotations": [
+        "ExampleTypeMarker"
+      ],
+      "declaration_id": {
+        "source_id": "php/src/ExampleCapabilityGaps.php",
+        "family": "class",
+        "qualified_name": "ExampleCapabilityGaps.ExampleConsumer",
+        "ordinal": 282,
+        "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+      },
+      "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "declaration_id": {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "namespace",
+            "qualified_name": "ExampleCapabilityGaps",
+            "ordinal": 7,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+          },
+          "kind": "declaration"
+        },
+        "namespace": {
+          "namespace_reference": "ExampleCapabilityGaps",
+          "target": {
+            "declaration_id": {
+              "source_id": "php/src/ExampleCapabilityGaps.php",
+              "family": "namespace",
+              "qualified_name": "ExampleCapabilityGaps",
+              "ordinal": 7,
+              "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+            },
+            "kind": "resolved"
+          },
+          "kind": "member"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      },
+      "methods": [
+        {
+          "name": "exampleConsumerValue",
+          "visibility": "public",
+          "visibility_intent": "public",
+          "line_count": 4,
+          "declaration_annotations": [],
+          "declaration_id": {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "method",
+            "qualified_name": "ExampleCapabilityGaps.ExampleConsumer.exampleConsumerValue",
+            "ordinal": 412,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+          },
+          "source_id": "php/src/ExampleCapabilityGaps.php",
+          "qualified_name": "ExampleCapabilityGaps.ExampleConsumer.exampleConsumerValue",
+          "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "php/src/ExampleCapabilityGaps.php",
+                "family": "class",
+                "qualified_name": "ExampleCapabilityGaps.ExampleConsumer",
+                "ordinal": 282,
+                "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "ExampleCapabilityGaps",
+              "target": {
+                "declaration_id": {
+                  "source_id": "php/src/ExampleCapabilityGaps.php",
+                  "family": "namespace",
+                  "qualified_name": "ExampleCapabilityGaps",
+                  "ordinal": 7,
+                  "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
+          "line_start": 26,
+          "line_end": 29,
+          "return_type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "class",
+            "qualified_name": "ExampleCapabilityGaps.ExampleConsumer",
+            "ordinal": 282,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+          }
+        }
+      ],
+      "properties": [
+        {
+          "declaration_id": {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "property",
+            "qualified_name": "ExampleCapabilityGaps.ExampleConsumer.exampleValue",
+            "ordinal": 374,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+          },
+          "owner_declaration_id": {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "class",
+            "qualified_name": "ExampleCapabilityGaps.ExampleConsumer",
+            "ordinal": 282,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+          },
+          "name": "exampleValue",
+          "is_optional": false,
+          "type": {
+            "name": "string",
+            "kind": "reference"
+          },
+          "visibility": "public",
+          "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "php/src/ExampleCapabilityGaps.php",
+                "family": "class",
+                "qualified_name": "ExampleCapabilityGaps.ExampleConsumer",
+                "ordinal": 282,
+                "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "namespace_reference": "ExampleCapabilityGaps",
+              "target": {
+                "declaration_id": {
+                  "source_id": "php/src/ExampleCapabilityGaps.php",
+                  "family": "namespace",
+                  "qualified_name": "ExampleCapabilityGaps",
+                  "ordinal": 7,
+                  "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+                },
+                "kind": "resolved"
+              },
+              "kind": "member"
+            }
+          },
+          "assigned_values": [
+            {
+              "kind": "unsupported",
+              "expression": "",
+              "reference": ""
+            }
+          ]
         }
       ]
     }
@@ -217,8 +549,9 @@
       "declaration_id": {
         "source_id": "php/src/ExampleCapabilityGaps.php",
         "family": "value",
-        "qualified_name": "exampleConsumer",
-        "ordinal": 510
+        "qualified_name": "ExampleCapabilityGaps.exampleConsumer",
+        "ordinal": 510,
+        "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
       },
       "name": "exampleConsumer",
       "visibility": "private",
@@ -226,9 +559,113 @@
       "line_count": 1,
       "declaration_kind": "assignment",
       "value_kind": "value_object",
-      "scope": "module"
+      "scope": "module",
+      "placement": {
+        "lexical_scope": {
+          "declaration_id": {
+            "source_id": "php/src/ExampleCapabilityGaps.php",
+            "family": "namespace",
+            "qualified_name": "ExampleCapabilityGaps",
+            "ordinal": 7,
+            "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+          },
+          "kind": "declaration"
+        },
+        "namespace": {
+          "namespace_reference": "ExampleCapabilityGaps",
+          "target": {
+            "declaration_id": {
+              "source_id": "php/src/ExampleCapabilityGaps.php",
+              "family": "namespace",
+              "qualified_name": "ExampleCapabilityGaps",
+              "ordinal": 7,
+              "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+            },
+            "kind": "resolved"
+          },
+          "kind": "member"
+        }
+      }
     }
   ],
+  "declaration_relations": [
+    {
+      "source_declaration_id": {
+        "source_id": "php/src/ExampleCapabilityGaps.php",
+        "family": "class",
+        "qualified_name": "ExampleCapabilityGaps.ExampleConsumer",
+        "ordinal": 282,
+        "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+      },
+      "kind": "uses_trait",
+      "target_reference": "ExampleTrait",
+      "target": {
+        "declaration_id": {
+          "source_id": "php/src/ExampleCapabilityGaps.php",
+          "family": "type",
+          "qualified_name": "ExampleCapabilityGaps.ExampleTrait",
+          "ordinal": 139,
+          "content_digest": "7b17cb07ea4b82d7b4b4446480d3a2b2940ce44aee0ef8a0d818ca13125a5e53"
+        },
+        "kind": "resolved"
+      }
+    }
+  ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "incomplete",
+      "limitations": [
+        {
+          "kind": "unsupported_syntax",
+          "location": {
+            "start_line": 33,
+            "end_line": 33,
+            "kind": "source"
+          },
+          "description": "Binding target is not represented as a named source value."
+        }
+      ]
+    },
+    "callable_values": {
+      "status": "incomplete",
+      "limitations": [
+        {
+          "kind": "unsupported_syntax",
+          "location": {
+            "start_line": 33,
+            "end_line": 33,
+            "kind": "source"
+          },
+          "description": "Callable ownership of this binding is not represented."
+        }
+      ]
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 34,
   "code_line_count": 22,
   "public_symbol_count": 4

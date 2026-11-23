@@ -1,0 +1,196 @@
+{
+  "declarations": [
+    {
+      "kind": "declaration",
+      "qualified_name": "ExampleContainer",
+      "declaration_kind": "class"
+    }
+  ],
+  "callables": [
+    {
+      "kind": "callable",
+      "qualified_name": "self.example_method",
+      "callable_kind": "type_method"
+    }
+  ],
+  "attributes": [],
+  "namespaces": [],
+  "signatures": {},
+  "spans": [
+    {
+      "kind": "exact_span",
+      "owner": "self.example_method",
+      "start": 3,
+      "end": 4
+    }
+  ],
+  "owners": [],
+  "unresolved_methods": [
+    {
+      "declaration_id": {
+        "source_id": "ruby_ownership/src/dynamic_singleton.rb",
+        "family": "method",
+        "qualified_name": "self.example_method",
+        "ordinal": 56,
+        "content_digest": "1246ed946f0679e61e5bc9d0c461d2612cd82ce090582e944bcefff9c676e8ba"
+      },
+      "source_id": "ruby_ownership/src/dynamic_singleton.rb",
+      "name": "example_method",
+      "qualified_name": "self.example_method",
+      "kind": "type_method",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "declaration_annotations": [],
+      "line_start": 3,
+      "line_end": 4,
+      "line_count": 2,
+      "parameters": [],
+      "return_type": {
+        "kind": "absent"
+      },
+      "decorators": [],
+      "docstring": "",
+      "placement": {
+        "lexical_scope": {
+          "kind": "block",
+          "container": {
+            "kind": "declaration",
+            "declaration_id": {
+              "source_id": "ruby_ownership/src/dynamic_singleton.rb",
+              "family": "class",
+              "qualified_name": "ExampleContainer",
+              "ordinal": 1,
+              "content_digest": "1246ed946f0679e61e5bc9d0c461d2612cd82ce090582e944bcefff9c676e8ba"
+            }
+          },
+          "start_utf8_offset": 25,
+          "end_utf8_offset": 92
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "receiver_reference": "self",
+      "owner": {
+        "kind": "unresolved",
+        "reason": "dynamic"
+      }
+    }
+  ],
+  "parameters": {},
+  "returns": {},
+  "gaps": {},
+  "placements": [
+    [
+      {
+        "source_id": "ruby_ownership/src/dynamic_singleton.rb",
+        "family": "class",
+        "qualified_name": "ExampleContainer",
+        "ordinal": 1,
+        "content_digest": "1246ed946f0679e61e5bc9d0c461d2612cd82ce090582e944bcefff9c676e8ba"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "ruby_ownership/src/dynamic_singleton.rb",
+        "family": "method",
+        "qualified_name": "self.example_method",
+        "ordinal": 56,
+        "content_digest": "1246ed946f0679e61e5bc9d0c461d2612cd82ce090582e944bcefff9c676e8ba"
+      },
+      {
+        "lexical_scope": {
+          "kind": "block",
+          "container": {
+            "kind": "declaration",
+            "declaration_id": {
+              "source_id": "ruby_ownership/src/dynamic_singleton.rb",
+              "family": "class",
+              "qualified_name": "ExampleContainer",
+              "ordinal": 1,
+              "content_digest": "1246ed946f0679e61e5bc9d0c461d2612cd82ce090582e944bcefff9c676e8ba"
+            }
+          },
+          "start_utf8_offset": 25,
+          "end_utf8_offset": 92
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ]
+  ],
+  "exports": [],
+  "relations": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "member_inventories": [
+    [
+      {
+        "source_id": "ruby_ownership/src/dynamic_singleton.rb",
+        "family": "class",
+        "qualified_name": "ExampleContainer",
+        "ordinal": 1,
+        "content_digest": "1246ed946f0679e61e5bc9d0c461d2612cd82ce090582e944bcefff9c676e8ba"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ]
+  ]
+}

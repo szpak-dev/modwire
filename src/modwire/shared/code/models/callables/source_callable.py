@@ -1,9 +1,11 @@
-from typing import Self
+from typing import Annotated, Self
 
 from pydantic import Field, model_validator
 
-from ..declarations.declaration_family import DeclarationFamily
+from ....values.models.string_reference import StringReference
+from ....values.models.value_reference import ValueReference
 from ..declarations.declaration_identity import DeclarationIdentity
+from ..declarations.source_placement import SourcePlacement
 from ..declarations.source_symbol import SourceSymbol
 from ..failures.code_validation_error import CodeValidationError
 from ..failures.code_violation import CodeViolation
@@ -16,14 +18,17 @@ from .source_parameter import SourceParameter
 
 
 class SourceCallable(SourceSymbol):
-    declaration_id: DeclarationIdentity
-    source_id: FileId
+    declaration_id: Annotated[DeclarationIdentity, ValueReference()]
+    source_id: Annotated[FileId, StringReference()]
     qualified_name: str
     kind: SourceCallableKind
+    placement: Annotated[SourcePlacement, ValueReference()]
     line_start: int
     line_end: int
-    parameters: tuple[SourceParameter, ...] = Field(default_factory=tuple)
-    return_type: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported
+    parameters: tuple[Annotated[SourceParameter, ValueReference()], ...] = Field(default_factory=tuple)
+    return_type: Annotated[SourceTypeAbsent | SourceTypeReference | SourceTypeUnsupported, ValueReference()] = Field(
+        union_mode="left_to_right"
+    )
     decorators: tuple[str, ...] = Field(default_factory=tuple)
     docstring: str = ""
 
@@ -33,15 +38,6 @@ class SourceCallable(SourceSymbol):
             raise CodeValidationError(CodeViolation.FOREIGN_CALLABLE_DECLARATION, self.qualified_name)
         if self.declaration_id.qualified_name != self.qualified_name:
             raise CodeValidationError(CodeViolation.INCONSISTENT_CALLABLE_NAME, self.qualified_name)
-        families = {
-            SourceCallableKind.FUNCTION: DeclarationFamily.FUNCTION,
-            SourceCallableKind.INSTANCE_METHOD: DeclarationFamily.METHOD,
-            SourceCallableKind.TYPE_METHOD: DeclarationFamily.METHOD,
-            SourceCallableKind.STATIC_METHOD: DeclarationFamily.METHOD,
-            SourceCallableKind.CONSTRUCTOR: DeclarationFamily.METHOD,
-            SourceCallableKind.CALLABLE_VALUE: DeclarationFamily.VALUE,
-            SourceCallableKind.ANONYMOUS: DeclarationFamily.CALLABLE,
-        }
-        if self.declaration_id.family is not families[self.kind]:
+        if self.declaration_id.family is not self.kind.declaration_family:
             raise CodeValidationError(CodeViolation.INCONSISTENT_CALLABLE_FAMILY, self.qualified_name)
         return self

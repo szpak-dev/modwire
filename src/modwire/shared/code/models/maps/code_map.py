@@ -19,13 +19,16 @@ from .code_map_producer import CodeMapProducer
 
 
 class CodeMap(ValueModel):
-    schema_version: ClassVar[int] = 13
+    schema_version: ClassVar[int] = 14
     language: str
     producer: CodeMapProducer
     extraction: SourceExtraction
     dependency_graph: DependencyGraph
 
     @model_validator(mode="after")
+    def validate_document(self) -> Self:
+        return self.validate_facts()
+
     def validate_facts(self) -> Self:
         self.validate_producer_language()
         self.validate_resolved_call_targets()
@@ -37,33 +40,40 @@ class CodeMap(ValueModel):
             raise CodeValidationError(CodeViolation.INCONSISTENT_PRODUCER_LANGUAGE, self.language)
 
     def validate_resolved_call_targets(self) -> None:
+        targets = {
+            call.target_callable_id
+            for source_file in self.extraction.files.values()
+            for call in source_file.calls
+            if call.resolution is SourceCallResolution.RESOLVED
+        }
+        if not targets:
+            return
         callable_ids = {
-            item.declaration_id.canonical()
+            item.declaration_id
             for source_file in self.extraction.files.values()
             for item in source_file.canonical_callables()
         }
-        if any(
-            call.resolution is SourceCallResolution.RESOLVED
-            and (call.target_callable_id is None or call.target_callable_id.canonical() not in callable_ids)
-            for source_file in self.extraction.files.values()
-            for call in source_file.calls
-        ):
+        if not targets.issubset(callable_ids):
             raise CodeValidationError(CodeViolation.UNKNOWN_RESOLVED_CALL_TARGET, self.language)
 
     def validate_type_capability(self) -> None:
         coverage = next(
             item for item in self.producer.capabilities if item.capability is FactCapability.TYPE_REFERENCES
         )
-        slots = tuple(slot for source_file in self.extraction.files.values() for slot in self.type_slots(source_file))
-        kinds = tuple(kind for slot in slots for kind in self.type_kinds(slot))
-        has_unsupported = SourceTypeKind.UNSUPPORTED in kinds
-        has_observed = any(kind in {SourceTypeKind.REFERENCE, SourceTypeKind.ABSENT} for kind in kinds)
-        if coverage.status is CapabilityStatus.SUPPORTED and has_unsupported:
+        if coverage.status is CapabilityStatus.PARTIAL:
+            return
+        slots = {
+            id(slot): slot for source_file in self.extraction.files.values() for slot in self.type_slots(source_file)
+        }
+        kinds = (kind for slot in slots.values() for kind in self.type_kinds(slot))
+        if coverage.status is CapabilityStatus.SUPPORTED and any(kind is SourceTypeKind.UNSUPPORTED for kind in kinds):
             raise CodeValidationError(
                 CodeViolation.UNSUPPORTED_TYPE_WITH_SUPPORTED_CAPABILITY,
                 self.language,
             )
-        if coverage.status is CapabilityStatus.UNSUPPORTED and has_observed:
+        if coverage.status is CapabilityStatus.UNSUPPORTED and any(
+            kind in {SourceTypeKind.REFERENCE, SourceTypeKind.ABSENT} for kind in kinds
+        ):
             raise CodeValidationError(
                 CodeViolation.OBSERVED_TYPE_WITH_UNSUPPORTED_CAPABILITY,
                 self.language,

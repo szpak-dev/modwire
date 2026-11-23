@@ -4,6 +4,56 @@
   "imports": [],
   "exports": [
     {
+      "name": "ExampleNamespace",
+      "local_name": "ExampleNamespace",
+      "kind": "module",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 370,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example-capability-gaps.ts",
+            "family": "namespace",
+            "qualified_name": "ExampleNamespace",
+            "ordinal": 370,
+            "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+          }
+        ],
+        "kind": "resolved"
+      }
+    },
+    {
+      "name": "exampleValue",
+      "local_name": "exampleValue",
+      "kind": "value",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 423,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example-capability-gaps.ts",
+            "family": "value",
+            "qualified_name": "ExampleNamespace.exampleValue",
+            "ordinal": 423,
+            "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+          }
+        ],
+        "kind": "resolved"
+      }
+    },
+    {
       "name": "ExampleAssignedValue",
       "local_name": "ExampleAssignedValue",
       "kind": "class",
@@ -14,20 +64,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
-    },
-    {
-      "name": "ExampleRuntime",
-      "local_name": "ExampleRuntime",
-      "kind": "class",
-      "crossing_type": "symbol",
-      "path": "",
-      "is_relative": false,
-      "normalized_path": "",
-      "is_reexport": false,
-      "is_default": false,
-      "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 462,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example-capability-gaps.ts",
+            "family": "class",
+            "qualified_name": "ExampleAssignedValue",
+            "ordinal": 462,
+            "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
       "name": "ExampleFirst",
@@ -40,7 +89,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 692,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example-capability-gaps.ts",
+            "family": "interface",
+            "qualified_name": "ExampleFirst",
+            "ordinal": 692,
+            "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
       "name": "ExampleSecond",
@@ -53,7 +114,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 725,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example-capability-gaps.ts",
+            "family": "interface",
+            "qualified_name": "ExampleSecond",
+            "ordinal": 725,
+            "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+          }
+        ],
+        "kind": "resolved"
+      }
     },
     {
       "name": "ExampleCombined",
@@ -66,7 +139,64 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 759,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example-capability-gaps.ts",
+            "family": "type",
+            "qualified_name": "ExampleCombined",
+            "ordinal": 759,
+            "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+          }
+        ],
+        "kind": "resolved"
+      }
+    },
+    {
+      "name": "ExampleRuntime",
+      "local_name": "ExampleRuntime",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 869,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example-capability-gaps.ts",
+            "family": "class",
+            "qualified_name": "ExampleRuntime",
+            "ordinal": 869,
+            "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+          }
+        ],
+        "kind": "resolved"
+      }
+    }
+  ],
+  "namespaces": [
+    {
+      "kind": "namespace",
+      "declaration_id": {
+        "source_id": "typescript/src/example-capability-gaps.ts",
+        "family": "namespace",
+        "qualified_name": "ExampleNamespace",
+        "ordinal": 370,
+        "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+      },
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     }
   ],
   "declarations": [
@@ -82,36 +212,85 @@
         "source_id": "typescript/src/example-capability-gaps.ts",
         "family": "class",
         "qualified_name": "ExampleAssignedValue",
-        "ordinal": 462
+        "ordinal": 462,
+        "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      },
       "methods": [
         {
           "name": "exampleMethod",
           "visibility": "public",
           "visibility_intent": "public",
           "line_count": 4,
-          "declaration_annotations": [],
+          "declaration_annotations": [
+            "ExampleMethodDecorator"
+          ],
           "declaration_id": {
             "source_id": "typescript/src/example-capability-gaps.ts",
             "family": "method",
             "qualified_name": "ExampleAssignedValue.exampleMethod",
-            "ordinal": 595
+            "ordinal": 595,
+            "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
           },
           "source_id": "typescript/src/example-capability-gaps.ts",
           "qualified_name": "ExampleAssignedValue.exampleMethod",
           "kind": "instance_method",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "typescript/src/example-capability-gaps.ts",
+                "family": "class",
+                "qualified_name": "ExampleAssignedValue",
+                "ordinal": 462,
+                "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "line_start": 25,
           "line_end": 28,
           "return_type": {
             "name": "string",
             "kind": "reference"
           },
+          "decorators": [
+            "ExampleMethodDecorator"
+          ],
           "owner_declaration_id": {
             "source_id": "typescript/src/example-capability-gaps.ts",
             "family": "class",
             "qualified_name": "ExampleAssignedValue",
-            "ordinal": 462
+            "ordinal": 462,
+            "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
           }
         }
       ],
@@ -121,13 +300,15 @@
             "source_id": "typescript/src/example-capability-gaps.ts",
             "family": "property",
             "qualified_name": "ExampleAssignedValue.exampleValue",
-            "ordinal": 549
+            "ordinal": 549,
+            "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
           },
           "owner_declaration_id": {
             "source_id": "typescript/src/example-capability-gaps.ts",
             "family": "class",
             "qualified_name": "ExampleAssignedValue",
-            "ordinal": 462
+            "ordinal": 462,
+            "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
           },
           "name": "exampleValue",
           "is_optional": false,
@@ -136,6 +317,21 @@
           },
           "visibility": "public",
           "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "typescript/src/example-capability-gaps.ts",
+                "family": "class",
+                "qualified_name": "ExampleAssignedValue",
+                "ordinal": 462,
+                "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "assigned_values": [
             {
               "kind": "unsupported",
@@ -147,20 +343,6 @@
       ]
     },
     {
-      "name": "ExampleRuntime",
-      "visibility": "public",
-      "visibility_intent": "public",
-      "line_count": 1,
-      "declaration_annotations": [],
-      "declaration_id": {
-        "source_id": "typescript/src/example-capability-gaps.ts",
-        "family": "class",
-        "qualified_name": "ExampleRuntime",
-        "ordinal": 869
-      },
-      "kind": "class"
-    },
-    {
       "name": "ExampleFirst",
       "visibility": "public",
       "visibility_intent": "public",
@@ -170,9 +352,36 @@
         "source_id": "typescript/src/example-capability-gaps.ts",
         "family": "interface",
         "qualified_name": "ExampleFirst",
-        "ordinal": 692
+        "ordinal": 692,
+        "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
       },
-      "kind": "interface"
+      "kind": "interface",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
     },
     {
       "name": "ExampleSecond",
@@ -184,9 +393,36 @@
         "source_id": "typescript/src/example-capability-gaps.ts",
         "family": "interface",
         "qualified_name": "ExampleSecond",
-        "ordinal": 725
+        "ordinal": 725,
+        "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
       },
-      "kind": "interface"
+      "kind": "interface",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
     },
     {
       "name": "ExampleCombined",
@@ -198,26 +434,103 @@
         "source_id": "typescript/src/example-capability-gaps.ts",
         "family": "type",
         "qualified_name": "ExampleCombined",
-        "ordinal": 759
+        "ordinal": 759,
+        "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
       },
-      "kind": "type_alias"
+      "kind": "type_alias",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
+    },
+    {
+      "name": "ExampleRuntime",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_annotations": [],
+      "declaration_id": {
+        "source_id": "typescript/src/example-capability-gaps.ts",
+        "family": "class",
+        "qualified_name": "ExampleRuntime",
+        "ordinal": 869,
+        "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+      },
+      "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
     }
   ],
   "functions": [
     {
       "name": "ExampleClassDecorator",
-      "visibility": "private",
-      "visibility_intent": "private",
+      "visibility": "public",
+      "visibility_intent": "public",
       "line_count": 5,
       "declaration_annotations": [],
       "declaration_id": {
         "source_id": "typescript/src/example-capability-gaps.ts",
         "family": "function",
         "qualified_name": "ExampleClassDecorator",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
       },
       "source_id": "typescript/src/example-capability-gaps.ts",
       "qualified_name": "ExampleClassDecorator",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 1,
       "line_end": 5,
       "parameters": [
@@ -238,18 +551,27 @@
     },
     {
       "name": "ExampleMethodDecorator",
-      "visibility": "private",
-      "visibility_intent": "private",
+      "visibility": "public",
+      "visibility_intent": "public",
       "line_count": 9,
       "declaration_annotations": [],
       "declaration_id": {
         "source_id": "typescript/src/example-capability-gaps.ts",
         "family": "function",
         "qualified_name": "ExampleMethodDecorator",
-        "ordinal": 147
+        "ordinal": 147,
+        "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
       },
       "source_id": "typescript/src/example-capability-gaps.ts",
       "qualified_name": "ExampleMethodDecorator",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 7,
       "line_end": 15,
       "parameters": [
@@ -290,16 +612,67 @@
       "declaration_id": {
         "source_id": "typescript/src/example-capability-gaps.ts",
         "family": "value",
+        "qualified_name": "ExampleNamespace.exampleValue",
+        "ordinal": 423,
+        "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+      },
+      "name": "exampleValue",
+      "visibility": "public",
+      "visibility_intent": "public",
+      "line_count": 1,
+      "declaration_kind": "constant",
+      "value_kind": "value_literal",
+      "scope": "local",
+      "placement": {
+        "lexical_scope": {
+          "declaration_id": {
+            "source_id": "typescript/src/example-capability-gaps.ts",
+            "family": "namespace",
+            "qualified_name": "ExampleNamespace",
+            "ordinal": 370,
+            "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+          },
+          "kind": "declaration"
+        },
+        "namespace": {
+          "namespace_reference": "ExampleNamespace",
+          "target": {
+            "declaration_id": {
+              "source_id": "typescript/src/example-capability-gaps.ts",
+              "family": "namespace",
+              "qualified_name": "ExampleNamespace",
+              "ordinal": 370,
+              "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+            },
+            "kind": "resolved"
+          },
+          "kind": "member"
+        }
+      }
+    },
+    {
+      "declaration_id": {
+        "source_id": "typescript/src/example-capability-gaps.ts",
+        "family": "value",
         "qualified_name": "ExampleRuntimeBase",
-        "ordinal": 826
+        "ordinal": 826,
+        "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
       },
       "name": "ExampleRuntimeBase",
-      "visibility": "private",
-      "visibility_intent": "private",
+      "visibility": "public",
+      "visibility_intent": "public",
       "line_count": 1,
       "declaration_kind": "constant",
       "value_kind": "value_unknown",
-      "scope": "module"
+      "scope": "module",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
     }
   ],
   "declaration_relations": [
@@ -308,23 +681,80 @@
         "source_id": "typescript/src/example-capability-gaps.ts",
         "family": "class",
         "qualified_name": "ExampleAssignedValue",
-        "ordinal": 462
+        "ordinal": 462,
+        "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
       },
       "kind": "implements",
-      "target_reference": "ExampleFirst"
+      "target_reference": "ExampleFirst",
+      "target": {
+        "declaration_id": {
+          "source_id": "typescript/src/example-capability-gaps.ts",
+          "family": "interface",
+          "qualified_name": "ExampleFirst",
+          "ordinal": 692,
+          "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+        },
+        "kind": "resolved"
+      }
     },
     {
       "source_declaration_id": {
         "source_id": "typescript/src/example-capability-gaps.ts",
         "family": "class",
         "qualified_name": "ExampleRuntime",
-        "ordinal": 869
+        "ordinal": 869,
+        "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
       },
       "kind": "extends",
-      "target_reference": "ExampleRuntimeBase"
+      "target_reference": "ExampleRuntimeBase",
+      "target": {
+        "declaration_id": {
+          "source_id": "typescript/src/example-capability-gaps.ts",
+          "family": "value",
+          "qualified_name": "ExampleRuntimeBase",
+          "ordinal": 826,
+          "content_digest": "3131f46dbfece8aab08095ce87b0011071dba5f3ea54d823e8050ff476277ddc"
+        },
+        "kind": "resolved"
+      }
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 39,
   "code_line_count": 31,
-  "public_symbol_count": 5
+  "public_symbol_count": 7
 }

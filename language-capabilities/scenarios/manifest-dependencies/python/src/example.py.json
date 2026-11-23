@@ -10,7 +10,7 @@
       "is_aliased": false,
       "crossing_type": "module",
       "file_barrier_crossed": true,
-      "statement_id": 2,
+      "statement_id": 4294967297,
       "join_key": "json",
       "uses_joined_import": false,
       "resolution": "external"
@@ -28,7 +28,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 0,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "python/src/example.py",
+            "family": "function",
+            "qualified_name": "example_json",
+            "ordinal": 17179869185,
+            "content_digest": "0f97163864f0cc9290da3a8e425929c06d329e26a6b901fc5c438c7c674cc26c"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "functions": [
@@ -42,10 +54,19 @@
         "source_id": "python/src/example.py",
         "family": "function",
         "qualified_name": "example_json",
-        "ordinal": 17179869185
+        "ordinal": 17179869185,
+        "content_digest": "0f97163864f0cc9290da3a8e425929c06d329e26a6b901fc5c438c7c674cc26c"
       },
       "source_id": "python/src/example.py",
       "qualified_name": "example_json",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
       "line_start": 4,
       "line_end": 5,
       "parameters": [
@@ -71,7 +92,8 @@
         "source_id": "python/src/example.py",
         "family": "function",
         "qualified_name": "example_json",
-        "ordinal": 17179869185
+        "ordinal": 17179869185,
+        "content_digest": "0f97163864f0cc9290da3a8e425929c06d329e26a6b901fc5c438c7c674cc26c"
       },
       "ordinal": 1,
       "target_callable_id": null,
@@ -82,6 +104,41 @@
       "target_name": "json.dumps"
     }
   ],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
   "line_count": 5,
   "code_line_count": 3,
   "public_symbol_count": 1

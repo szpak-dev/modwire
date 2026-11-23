@@ -19,6 +19,9 @@ class SourceExtraction(ValueModel):
     directories_pruned: int
 
     @model_validator(mode="after")
+    def validate_document(self) -> Self:
+        return self.validate_manifest_sources()
+
     def validate_manifest_sources(self) -> Self:
         extracted = {str(file_id) for file_id in self.files}
         manifested = {source.source_id for source in self.manifest.sources}
@@ -33,6 +36,11 @@ class SourceExtraction(ValueModel):
         }
         if self.import_identities != expected_import_identities:
             raise CodeValidationError(CodeViolation.IMPORT_IDENTITY_INDEX_MISMATCH, "source extraction")
+        digests = {source.source_id: source.content_digest for source in self.manifest.sources}
+        for source_file in self.files.values():
+            digest = digests[str(source_file.file_id)]
+            if any(item.declaration_id.content_digest != digest for item in source_file.placement_inventory):
+                raise CodeValidationError(CodeViolation.INCONSISTENT_DECLARATION_CAPTURE, str(source_file.file_id))
         return self
 
     def files_dict(self) -> dict[FileId, SourceFile]:

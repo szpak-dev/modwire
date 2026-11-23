@@ -1,12 +1,13 @@
 import ast
 from abc import ABC, abstractmethod
-from collections.abc import Hashable, Mapping
+from collections.abc import Callable, Hashable, Mapping
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
 from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ......shared.code.models.declarations.source_placement import SourcePlacement
 from ......shared.code.models.declarations.source_visibility import SourceVisibility
 from ......shared.code.models.source_types.absent import SourceTypeAbsent
 from ......shared.code.models.source_types.reference import SourceTypeReference
@@ -20,6 +21,38 @@ from ...observations.property_candidate import PythonPropertyCandidate
 
 
 class PythonPropertyRule(ABC):
+    @cached_property
+    def is_class_target_dispatch(self) -> Callable[[ast.AST], bool]:
+        return self.is_class_target
+
+    @cached_property
+    def annotation_is_optional_dispatch(self) -> Callable[[ast.expr], bool]:
+        return self.annotation_is_optional
+
+    @cached_property
+    def annotation_name_dispatch(self) -> Callable[[ast.expr], str]:
+        return self.annotation_name
+
+    @cached_property
+    def annotated_type_is_optional_dispatch(self) -> Callable[[ast.expr], bool]:
+        return self.annotated_type_is_optional
+
+    @cached_property
+    def is_union_dispatch(self) -> Callable[[ast.operator], bool]:
+        return self.is_union
+
+    @cached_property
+    def value_is_none_dispatch(self) -> Callable[[ast.expr], bool]:
+        return self.value_is_none
+
+    @cached_property
+    def expression_name_dispatch(self) -> Callable[[ast.expr], str]:
+        return self.expression_name
+
+    @cached_property
+    def optional_parameters_dispatch(self) -> Callable[[ast.AST], set[str]]:
+        return self.optional_parameters
+
     @property
     @abstractmethod
     def order(self) -> int:
@@ -35,6 +68,8 @@ class PythonPropertyRule(ABC):
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
     ) -> SourceClassProperty:
         raise NotImplementedError
 
@@ -43,10 +78,11 @@ class PythonPropertyRule(ABC):
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
         is_optional: bool,
         type: SourceTypeReference | SourceTypeAbsent | SourceTypeUnsupported,
         visibility: SourceVisibility,
-        member_kind: SourceMemberKind,
         assigned_value: SourceAssignedValue,
     ) -> SourceClassProperty:
         return SourceClassProperty(
@@ -57,8 +93,17 @@ class PythonPropertyRule(ABC):
             type=type,
             visibility=visibility,
             member_kind=member_kind,
+            placement=placement,
             assigned_values=(assigned_value,),
         )
+
+    @singledispatchmethod
+    def is_class_target(self, target: ast.AST) -> bool:
+        return False
+
+    @is_class_target.register
+    def class_target(self, target: ast.Name) -> bool:
+        return True
 
     @singledispatchmethod
     def annotation_is_optional(self, node: ast.expr) -> bool:
@@ -78,17 +123,44 @@ class PythonPropertyRule(ABC):
 
     @annotation_is_optional.register
     def subscript_annotation_is_optional(self, node: ast.Subscript) -> bool:
-        return self.annotation_is_optional(node.value) or self.annotation_is_optional(node.slice)
+        constructor = self.annotation_name_dispatch(node.value)
+        if constructor == "Optional":
+            return True
+        if constructor == "Union":
+            return self.annotation_is_optional_dispatch(node.slice)
+        if constructor == "Annotated":
+            return self.annotated_type_is_optional_dispatch(node.slice)
+        return False
 
     @annotation_is_optional.register
     def union_annotation_is_optional(self, node: ast.BinOp) -> bool:
-        return self.is_union(node.op) and (
-            self.annotation_is_optional(node.left) or self.annotation_is_optional(node.right)
+        return self.is_union_dispatch(node.op) and (
+            self.annotation_is_optional_dispatch(node.left) or self.annotation_is_optional_dispatch(node.right)
         )
 
     @annotation_is_optional.register
     def tuple_annotation_is_optional(self, node: ast.Tuple) -> bool:
-        return any(self.annotation_is_optional(item) for item in node.elts)
+        return any(self.annotation_is_optional_dispatch(item) for item in node.elts)
+
+    @singledispatchmethod
+    def annotation_name(self, node: ast.expr) -> str:
+        return ""
+
+    @annotation_name.register
+    def named_annotation_name(self, node: ast.Name) -> str:
+        return node.id
+
+    @annotation_name.register
+    def qualified_annotation_name(self, node: ast.Attribute) -> str:
+        return node.attr
+
+    @singledispatchmethod
+    def annotated_type_is_optional(self, node: ast.expr) -> bool:
+        return self.annotation_is_optional_dispatch(node)
+
+    @annotated_type_is_optional.register
+    def annotated_arguments_type_is_optional(self, node: ast.Tuple) -> bool:
+        return bool(node.elts) and self.annotation_is_optional_dispatch(node.elts[0])
 
     @singledispatchmethod
     def is_union(self, operator: ast.operator) -> bool:
@@ -139,13 +211,13 @@ class PythonPropertyRule(ABC):
         optional = {
             argument.arg
             for argument in [*positional, *arguments.kwonlyargs]
-            if argument.annotation is not None and self.annotation_is_optional(argument.annotation)
+            if argument.annotation is not None and self.annotation_is_optional_dispatch(argument.annotation)
         }
-        optional.update(name for name, default in defaults_by_name.items() if self.value_is_none(default))
+        optional.update(name for name, default in defaults_by_name.items() if self.value_is_none_dispatch(default))
         optional.update(
             argument.arg
             for argument, default in zip(arguments.kwonlyargs, arguments.kw_defaults, strict=True)
-            if default is not None and self.value_is_none(default)
+            if default is not None and self.value_is_none_dispatch(default)
         )
         return optional
 
@@ -157,6 +229,8 @@ class PythonPropertyClassifier(ABC):
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
     ) -> SourceClassProperty:
         raise NotImplementedError
 
@@ -171,8 +245,10 @@ class OrderedPythonPropertyClassifier(PythonPropertyClassifier):
         candidate: PythonPropertyCandidate,
         declaration_id: DeclarationIdentity,
         owner_declaration_id: DeclarationIdentity,
+        member_kind: SourceMemberKind,
+        placement: SourcePlacement,
     ) -> SourceClassProperty:
         for rule in sorted(self.rules.values(), key=lambda item: item.order):
             if rule.applies(candidate):
-                return rule.classify(candidate, declaration_id, owner_declaration_id)
+                return rule.classify(candidate, declaration_id, owner_declaration_id, member_kind, placement)
         raise ExtractorInvariantError(ExtractorInvariantViolation.UNCLASSIFIED_PROPERTY, candidate.name)

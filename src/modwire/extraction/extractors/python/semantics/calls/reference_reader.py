@@ -1,7 +1,8 @@
 import ast
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -18,41 +19,40 @@ class PythonCallReferenceReader(ABC):
 @injectable(as_type=PythonCallReferenceReader)
 @dataclass(frozen=True)
 class SyntaxCallReferenceReader(PythonCallReferenceReader):
+    @cached_property
+    def read_expression_dispatch(self) -> Callable[[ast.expr], PythonCallReference]:
+        return self.read_expression
+
+    @cached_property
+    def attribute_name_dispatch(self) -> Callable[[ast.expr], str]:
+        return self.attribute_name
+
     def read(self, observation: PythonCallObservation) -> PythonCallReference:
-        return self.read_expression(observation.node.func, observation.owner_name)
+        return self.read_expression_dispatch(observation.node.func)
 
     @singledispatchmethod
-    def read_expression(self, node: ast.expr, owner_name: str) -> PythonCallReference:
+    def read_expression(self, node: ast.expr) -> PythonCallReference:
         expression = ast.unparse(node)
         return PythonCallReference(
             expression=expression,
             target_name=expression,
-            local_name="",
-            constructor_name="",
-            instance_qualified_name="",
             is_reference=False,
         )
 
     @read_expression.register
-    def read_name(self, node: ast.Name, owner_name: str) -> PythonCallReference:
+    def read_name(self, node: ast.Name) -> PythonCallReference:
         return PythonCallReference(
             expression=node.id,
             target_name=node.id,
-            local_name=node.id,
-            constructor_name=node.id,
-            instance_qualified_name="",
             is_reference=True,
         )
 
     @read_expression.register
-    def read_attribute(self, node: ast.Attribute, owner_name: str) -> PythonCallReference:
+    def read_attribute(self, node: ast.Attribute) -> PythonCallReference:
         expression = ast.unparse(node)
         return PythonCallReference(
             expression=expression,
-            target_name=self.attribute_name(node),
-            local_name="",
-            constructor_name=node.attr,
-            instance_qualified_name=self.instance_qualified_name(node.value, node.attr, owner_name),
+            target_name=self.attribute_name_dispatch(node),
             is_reference=True,
         )
 
@@ -66,15 +66,5 @@ class SyntaxCallReferenceReader(PythonCallReferenceReader):
 
     @attribute_name.register
     def nested_attribute_name(self, node: ast.Attribute) -> str:
-        parent = self.attribute_name(node.value)
+        parent = self.attribute_name_dispatch(node.value)
         return f"{parent}.{node.attr}" if parent else node.attr
-
-    @singledispatchmethod
-    def instance_qualified_name(self, node: ast.expr, attribute: str, owner_name: str) -> str:
-        return ""
-
-    @instance_qualified_name.register
-    def named_instance_qualified_name(self, node: ast.Name, attribute: str, owner_name: str) -> str:
-        if node.id not in {"self", "cls"}:
-            return ""
-        return ".".join(part for part in (owner_name, attribute) if part)

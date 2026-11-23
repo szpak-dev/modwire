@@ -1,6 +1,7 @@
 import ast
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import singledispatchmethod
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -12,6 +13,10 @@ from .classifier import PythonCallableRule
 @injectable(as_type=PythonCallableRule, qualifier="50-function")
 @dataclass(frozen=True)
 class FunctionCallableRule(PythonCallableRule):
+    @cached_property
+    def node_kind_dispatch(self) -> Callable[[ast.AST, PythonCallableCandidate], SourceCallableKind]:
+        return self.node_kind
+
     @property
     def order(self) -> int:
         return 50
@@ -20,27 +25,12 @@ class FunctionCallableRule(PythonCallableRule):
         return True
 
     def classify(self, candidate: PythonCallableCandidate) -> SourceCallableKind:
-        if candidate.requires_call:
-            return SourceCallableKind.ANONYMOUS
-        if candidate.qualified_name == candidate.name:
-            return (
-                SourceCallableKind.CALLABLE_VALUE
-                if candidate.name != self.function_name(candidate)
-                else SourceCallableKind.FUNCTION
-            )
-        return SourceCallableKind.FUNCTION
-
-    def function_name(self, candidate: PythonCallableCandidate) -> str:
-        return self.node_name(candidate.node)
+        return self.node_kind_dispatch(candidate.node, candidate)
 
     @singledispatchmethod
-    def node_name(self, node: ast.AST) -> str:
-        return ""
+    def node_kind(self, node: ast.AST, candidate: PythonCallableCandidate) -> SourceCallableKind:
+        return SourceCallableKind.FUNCTION
 
-    @node_name.register
-    def function_node_name(self, node: ast.FunctionDef) -> str:
-        return node.name
-
-    @node_name.register
-    def async_function_node_name(self, node: ast.AsyncFunctionDef) -> str:
-        return node.name
+    @node_kind.register
+    def lambda_kind(self, node: ast.Lambda, candidate: PythonCallableCandidate) -> SourceCallableKind:
+        return SourceCallableKind.ANONYMOUS if candidate.identity_node is node else SourceCallableKind.CALLABLE_VALUE

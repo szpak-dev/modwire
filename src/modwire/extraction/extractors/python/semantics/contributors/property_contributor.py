@@ -1,15 +1,26 @@
+import ast
+from collections.abc import Callable
 from dataclasses import dataclass
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
+from ......shared.code.models.callables.source_callable_kind import SourceCallableKind
 from ......shared.code.models.declarations.declaration_family import DeclarationFamily
+from ......shared.code.models.declarations.declaration_identity import DeclarationIdentity
+from ......shared.code.models.declarations.source_binding_kind import SourceBindingKind
+from ......shared.code.models.declarations.source_resolved_target import SourceResolvedTarget
+from ......shared.code.models.declarations.source_unresolved_target import SourceUnresolvedTarget
+from ......shared.code.models.inventories.inventory_limitation import InventoryLimitation
+from ......shared.code.models.inventories.inventory_limitation_kind import InventoryLimitationKind
+from ......shared.code.models.inventories.inventory_source_location import InventorySourceLocation
 from ......shared.code.models.source_types.kind import SourceTypeKind
 from ......shared.code.models.values.source_class_property import SourceClassProperty
 from ......shared.code.models.values.source_member_kind import SourceMemberKind
+from ...observations.property_candidate import PythonPropertyCandidate
 from ...observations.source_context import PythonSourceContext
 from ...observations.source_observation import PythonSourceObservation
 from ..catalog import PythonSemanticCatalog
-from ..classes.classifier import PythonClassClassifier
 from ..contribution import PythonSemanticContribution
 from ..policies.declaration_identity_factory import PythonDeclarationIdentityFactory
 from ..properties.classifier import PythonPropertyClassifier
@@ -20,60 +31,113 @@ from ..reader import PythonSemanticContributor
 @dataclass(frozen=True)
 class PropertySemanticContributor(PythonSemanticContributor):
     properties: PythonPropertyClassifier
-    classes: PythonClassClassifier
     identities: PythonDeclarationIdentityFactory
+
+    @cached_property
+    def owner_dispatch(
+        self,
+    ) -> Callable[
+        [ast.AST, PythonPropertyCandidate, PythonSemanticCatalog],
+        tuple[SourceResolvedTarget | SourceUnresolvedTarget, SourceMemberKind],
+    ]:
+        return self.owner
+
+    @cached_property
+    def class_member_kind_dispatch(self) -> Callable[[ast.stmt], SourceMemberKind]:
+        return self.class_member_kind
 
     @property
     def order(self) -> int:
         return 20
 
     def contribute(
-        self,
-        observation: PythonSourceObservation,
-        catalog: PythonSemanticCatalog,
-        context: PythonSourceContext,
+        self, observation: PythonSourceObservation, catalog: PythonSemanticCatalog, context: PythonSourceContext
     ) -> PythonSemanticContribution:
-        by_class: dict[str, dict[str, SourceClassProperty]] = {}
+        by_class: dict[DeclarationIdentity, dict[tuple[str, SourceMemberKind], SourceClassProperty]] = {}
+        class_ids = {catalog.scope_identities[item.node] for item in observation.classes}
         for candidate in observation.properties:
-            class_candidate = next(item for item in observation.classes if item.node.name == candidate.class_name)
-            owner_id = self.identities.create(
-                context.source_id,
-                self.classes.classify(class_candidate),
-                candidate.class_name,
-                candidate.class_line,
-                candidate.class_column,
+            if (
+                candidate.target in catalog.scope_identities
+                and catalog.scope_identities[candidate.target].family is DeclarationFamily.TYPE
+            ):
+                continue
+            owner, kind = self.owner_dispatch(candidate.target, candidate, catalog)
+            if owner.kind is SourceBindingKind.UNRESOLVED or owner.declaration_id not in class_ids:
+                start, end = candidate.source_span
+                catalog.inventory.unowned_properties.append(
+                    InventoryLimitation(
+                        kind=InventoryLimitationKind.UNRESOLVED_OWNERSHIP,
+                        location=InventorySourceLocation(start_line=start, end_line=end),
+                        description=f"Property receiver {ast.unparse(candidate.target)} has no exact source owner.",
+                    )
+                )
+                continue
+            owner_id = owner.declaration_id
+            if owner_id not in by_class:
+                by_class[owner_id] = {}
+            identity = self.identities.create(
+                context, DeclarationFamily.PROPERTY, f"{owner_id.qualified_name}.{candidate.name}", candidate.ordinal
             )
-            owner = str(owner_id.ordinal)
-            if owner not in by_class:
-                by_class[owner] = {}
-            declaration_id = self.identities.create(
-                context.source_id,
-                DeclarationFamily.PROPERTY,
-                f"{candidate.class_name}.{candidate.name}",
-                candidate.statement.lineno,
-                candidate.statement.col_offset,
+            incoming = self.properties.classify(
+                candidate, identity, owner_id, kind, catalog.placement(candidate.binding_scope)
             )
-            source_property = self.properties.classify(candidate, declaration_id, owner_id)
-            class_properties = by_class[owner]
-            if source_property.name in class_properties:
-                source_property = self.merge(class_properties[source_property.name], source_property)
-            class_properties[source_property.name] = source_property
+            properties = by_class[owner_id]
+            key = (candidate.name, kind)
+            properties[key] = self.merge(properties[key], incoming) if key in properties else incoming
         return PythonSemanticContribution(
             properties={owner: tuple(items.values()) for owner, items in by_class.items()}
         )
 
+    @singledispatchmethod
+    def owner(
+        self, target: ast.AST, candidate: PythonPropertyCandidate, catalog: PythonSemanticCatalog
+    ) -> tuple[SourceResolvedTarget | SourceUnresolvedTarget, SourceMemberKind]:
+        return (
+            SourceResolvedTarget(declaration_id=catalog.scope_identities[candidate.binding_scope]),
+            SourceMemberKind.INSTANCE,
+        )
+
+    @owner.register
+    def named_owner(
+        self, target: ast.Name, candidate: PythonPropertyCandidate, catalog: PythonSemanticCatalog
+    ) -> tuple[SourceResolvedTarget | SourceUnresolvedTarget, SourceMemberKind]:
+        return (
+            SourceResolvedTarget(declaration_id=catalog.scope_identities[candidate.binding_scope]),
+            self.class_member_kind_dispatch(candidate.statement),
+        )
+
+    @owner.register
+    def attribute_owner(
+        self, target: ast.Attribute, candidate: PythonPropertyCandidate, catalog: PythonSemanticCatalog
+    ) -> tuple[SourceResolvedTarget | SourceUnresolvedTarget, SourceMemberKind]:
+        receiver = ast.unparse(target.value)
+        owner, scope = catalog.resolve(receiver, candidate.binding_scope)
+        if scope in catalog.callable_kinds and receiver == catalog.receiver_name(scope):
+            kind = catalog.callable_kinds[scope]
+            return (
+                owner,
+                SourceMemberKind.STATIC if kind is SourceCallableKind.TYPE_METHOD else SourceMemberKind.INSTANCE,
+            )
+        return owner, SourceMemberKind.STATIC
+
+    @singledispatchmethod
+    def class_member_kind(self, statement: ast.stmt) -> SourceMemberKind:
+        return SourceMemberKind.STATIC
+
+    @class_member_kind.register
+    def annotated_member_kind(self, statement: ast.AnnAssign) -> SourceMemberKind:
+        annotation = ast.unparse(statement.annotation).split("[", 1)[0].rsplit(".", 1)[-1]
+        return SourceMemberKind.STATIC if annotation == "ClassVar" else SourceMemberKind.INSTANCE
+
     def merge(self, current: SourceClassProperty, incoming: SourceClassProperty) -> SourceClassProperty:
-        member_kind = SourceMemberKind.STATIC
-        if SourceMemberKind.INSTANCE in {current.member_kind, incoming.member_kind}:
-            member_kind = SourceMemberKind.INSTANCE
-        source_type = current.type if current.type.kind is not SourceTypeKind.ABSENT else incoming.type
         return SourceClassProperty(
             declaration_id=current.declaration_id,
             owner_declaration_id=current.owner_declaration_id,
             name=current.name,
             is_optional=current.is_optional or incoming.is_optional,
-            type=source_type,
+            type=current.type if current.type.kind is not SourceTypeKind.ABSENT else incoming.type,
             visibility=current.visibility,
-            member_kind=member_kind,
+            member_kind=current.member_kind,
             assigned_values=(*current.assigned_values, *incoming.assigned_values),
+            placement=current.placement,
         )

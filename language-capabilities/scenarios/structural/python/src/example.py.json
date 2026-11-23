@@ -96,13 +96,152 @@
   "namespaces": [],
   "signatures": {},
   "spans": [],
-  "owners": {
-    "ExampleOwner.ExampleNested.example_method": "ExampleOwner.ExampleNested",
-    "ExampleOwner.example_method": "ExampleOwner",
-    "ExampleOwner.example_static": "ExampleOwner",
-    "ExampleOwner.example_property": "ExampleOwner",
-    "ExampleOther.example_method": "ExampleOther"
-  },
+  "owners": [
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleOwner.ExampleNested.example_method",
+        "ordinal": 64424509449,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOwner.ExampleNested",
+        "ordinal": 60129542149,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_method",
+        "ordinal": 77309411333,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 47244640257,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_static",
+        "ordinal": 94489280517,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 47244640257,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_property",
+        "ordinal": 111669149701,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 47244640257,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_property",
+        "ordinal": 128849018885,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 47244640257,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleOther.example_method",
+        "ordinal": 158913789957,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOther",
+        "ordinal": 146028888065,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "property",
+        "qualified_name": "ExampleOwner.example_value",
+        "ordinal": 51539607557,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 47244640257,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "property",
+        "qualified_name": "ExampleOwner.example_property",
+        "ordinal": 111669149701,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 47244640257,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "property",
+        "qualified_name": "ExampleOther.example_value",
+        "ordinal": 150323855365,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOther",
+        "ordinal": 146028888065,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      }
+    ]
+  ],
   "parameters": {
     "ExampleOwner.example_method": [
       {
@@ -251,14 +390,731 @@
     }
   },
   "gaps": {
-    "declaration_owner": "Bind ExampleNested to ExampleOwner and ExampleLocal to example_function with exact containing identities.",
     "property_origin": "Distinguish annotated example_value, the getter/setter pair example_property, and the setter's authored instance write.",
     "positional_only": "self and example_value in example_function are positional-only; example_named is keyword-only and has an authored default.",
     "type_structure": "Retain the union inside list, tuple shape, Callable parameter-list structure, and local uncertainty provenance.",
     "alias_target": "ExampleAlias targets dict[str,int]; ExampleGeneric declares T bounded by str.",
     "type_parameters": "ExampleAlias targets dict[str,int]; ExampleGeneric declares T bounded by str.",
-    "visibility_origin": "Preserve authored visibility/modifiers separately from default or conventional visibility, and bind exports to exact declarations.",
-    "export_identity": "Preserve authored visibility/modifiers separately from default or conventional visibility, and bind exports to exact declarations.",
-    "local_inventory": "Distinguish complete-empty, unsupported-empty and partially observed inventories on each declaration; retain trustworthy siblings."
-  }
+    "visibility_origin": "Preserve authored visibility/modifiers separately from default or conventional visibility, and bind exports to exact declarations."
+  },
+  "placements": [
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleGeneric",
+        "ordinal": 30064771073,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 47244640257,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOwner.ExampleNested",
+        "ordinal": 60129542149,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleOwner",
+            "ordinal": 47244640257,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOther",
+        "ordinal": 146028888065,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "example_function.ExampleLocal",
+        "ordinal": 180388626437,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "function",
+            "qualified_name": "example_function",
+            "ordinal": 176093659137,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "type",
+        "qualified_name": "ExampleAlias",
+        "ordinal": 17179869190,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleOwner.ExampleNested.example_method",
+        "ordinal": 64424509449,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleOwner.ExampleNested",
+            "ordinal": 60129542149,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_method",
+        "ordinal": 77309411333,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleOwner",
+            "ordinal": 47244640257,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_static",
+        "ordinal": 94489280517,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleOwner",
+            "ordinal": 47244640257,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_property",
+        "ordinal": 111669149701,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleOwner",
+            "ordinal": 47244640257,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleOwner.example_property",
+        "ordinal": 128849018885,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleOwner",
+            "ordinal": 47244640257,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "method",
+        "qualified_name": "ExampleOther.example_method",
+        "ordinal": 158913789957,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleOther",
+            "ordinal": 146028888065,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "function",
+        "qualified_name": "example_function",
+        "ordinal": 176093659137,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "function",
+        "qualified_name": "example_types",
+        "ordinal": 206158430209,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "property",
+        "qualified_name": "ExampleOwner.example_value",
+        "ordinal": 51539607557,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleOwner",
+            "ordinal": 47244640257,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "property",
+        "qualified_name": "ExampleOwner.example_property",
+        "ordinal": 111669149701,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleOwner",
+            "ordinal": 47244640257,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "property",
+        "qualified_name": "ExampleOther.example_value",
+        "ordinal": 150323855365,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "lexical_scope": {
+          "kind": "declaration",
+          "declaration_id": {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleOther",
+            "ordinal": 146028888065,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      }
+    ]
+  ],
+  "exports": [
+    {
+      "name": "ExampleGeneric",
+      "local_name": "ExampleGeneric",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleGeneric",
+            "ordinal": 30064771073,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExampleOwner",
+      "local_name": "ExampleOwner",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleOwner",
+            "ordinal": 47244640257,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExampleOther",
+      "local_name": "ExampleOther",
+      "kind": "class",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "python/src/example.py",
+            "family": "class",
+            "qualified_name": "ExampleOther",
+            "ordinal": 146028888065,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ExampleAlias",
+      "local_name": "ExampleAlias",
+      "kind": "type",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "python/src/example.py",
+            "family": "type",
+            "qualified_name": "ExampleAlias",
+            "ordinal": 17179869190,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        ]
+      }
+    },
+    {
+      "name": "example_function",
+      "local_name": "example_function",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "python/src/example.py",
+            "family": "function",
+            "qualified_name": "example_function",
+            "ordinal": 176093659137,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        ]
+      }
+    },
+    {
+      "name": "example_types",
+      "local_name": "example_types",
+      "kind": "function",
+      "crossing_type": "symbol",
+      "path": "",
+      "is_relative": false,
+      "normalized_path": "",
+      "is_reexport": false,
+      "is_default": false,
+      "is_aliased": false,
+      "statement_id": 0,
+      "binding": {
+        "kind": "resolved",
+        "declaration_ids": [
+          {
+            "source_id": "python/src/example.py",
+            "family": "function",
+            "qualified_name": "example_types",
+            "ordinal": 206158430209,
+            "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+          }
+        ]
+      }
+    }
+  ],
+  "relations": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "not_applicable",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "not_applicable",
+      "limitations": []
+    }
+  },
+  "member_inventories": [
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleGeneric",
+        "ordinal": 30064771073,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOwner",
+        "ordinal": 47244640257,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOwner.ExampleNested",
+        "ordinal": 60129542149,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "ExampleOther",
+        "ordinal": 146028888065,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "class",
+        "qualified_name": "example_function.ExampleLocal",
+        "ordinal": 180388626437,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ],
+    [
+      {
+        "source_id": "python/src/example.py",
+        "family": "type",
+        "qualified_name": "ExampleAlias",
+        "ordinal": 17179869190,
+        "content_digest": "67f2e7516491a34b044de086fe1d7fdfc460dd2f5b6ed882607f3e5868494056"
+      },
+      {
+        "methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "properties": {
+          "status": "not_applicable",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "not_applicable",
+          "limitations": []
+        }
+      }
+    ]
+  ],
+  "unresolved_methods": []
 }

@@ -1,4 +1,7 @@
+import ast
+from collections.abc import Callable
 from dataclasses import dataclass
+from functools import cached_property, singledispatchmethod
 
 from wireup import injectable
 
@@ -10,12 +13,25 @@ from .classifier import PythonCallableRule
 @injectable(as_type=PythonCallableRule, qualifier="40-instance-method")
 @dataclass(frozen=True)
 class InstanceMethodCallableRule(PythonCallableRule):
+    @cached_property
+    def is_function_dispatch(self) -> Callable[[ast.AST], bool]:
+        return self.is_function
+
     @property
     def order(self) -> int:
         return 40
 
     def applies(self, candidate: PythonCallableCandidate) -> bool:
-        return bool(candidate.owner_name) and not candidate.requires_call
+        return self.is_class_scope_dispatch(candidate.binding_scope) and self.is_function_dispatch(candidate.node)
 
     def classify(self, candidate: PythonCallableCandidate) -> SourceCallableKind:
         return SourceCallableKind.INSTANCE_METHOD
+
+    @singledispatchmethod
+    def is_function(self, node: ast.AST) -> bool:
+        return False
+
+    @is_function.register(ast.FunctionDef)
+    @is_function.register(ast.AsyncFunctionDef)
+    def function_node(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+        return True

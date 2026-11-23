@@ -13,7 +13,8 @@
         "source_id": "src/commerce/payments/domain/model/例/payment",
         "family": "class",
         "qualified_name": "Payment",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "bc6cc5364afc862be73da3810fbfeaec32a272b4027c0f3bf0af04cc5cb073e3"
       },
       "kind": "class",
       "methods": [
@@ -27,7 +28,8 @@
             "source_id": "src/commerce/payments/domain/model/例/payment",
             "family": "method",
             "qualified_name": "Payment.capture",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "bc6cc5364afc862be73da3810fbfeaec32a272b4027c0f3bf0af04cc5cb073e3"
           },
           "source_id": "src/commerce/payments/domain/model/例/payment",
           "qualified_name": "Payment.capture",
@@ -41,14 +43,91 @@
             "source_id": "src/commerce/payments/domain/model/例/payment",
             "family": "class",
             "qualified_name": "Payment",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "bc6cc5364afc862be73da3810fbfeaec32a272b4027c0f3bf0af04cc5cb073e3"
+          },
+          "placement": {
+            "lexical_scope": {
+              "kind": "declaration",
+              "declaration_id": {
+                "source_id": "src/commerce/payments/domain/model/例/payment",
+                "family": "class",
+                "qualified_name": "Payment",
+                "ordinal": 1,
+                "content_digest": "bc6cc5364afc862be73da3810fbfeaec32a272b4027c0f3bf0af04cc5cb073e3"
+              }
+            },
+            "namespace": {
+              "kind": "none"
+            }
           }
         }
-      ]
+      ],
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      }
     }
   ],
   "functions": [],
   "line_count": 0,
   "code_line_count": 0,
-  "public_symbol_count": 1
+  "public_symbol_count": 1,
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
+  "unresolved_methods": []
 }

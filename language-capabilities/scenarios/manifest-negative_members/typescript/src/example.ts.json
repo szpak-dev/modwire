@@ -14,7 +14,19 @@
       "is_reexport": false,
       "is_default": false,
       "is_aliased": false,
-      "statement_id": 0
+      "statement_id": 1,
+      "binding": {
+        "declaration_ids": [
+          {
+            "source_id": "typescript/src/example.ts",
+            "family": "class",
+            "qualified_name": "ExampleValue",
+            "ordinal": 1,
+            "content_digest": "b89425edd495ba0f77ef78c6bf39471c81d0bc05b10f463cba7d0134a127ee2f"
+          }
+        ],
+        "kind": "resolved"
+      }
     }
   ],
   "declarations": [
@@ -28,22 +40,51 @@
         "source_id": "typescript/src/example.ts",
         "family": "class",
         "qualified_name": "ExampleValue",
-        "ordinal": 1
+        "ordinal": 1,
+        "content_digest": "b89425edd495ba0f77ef78c6bf39471c81d0bc05b10f463cba7d0134a127ee2f"
       },
       "kind": "class",
+      "placement": {
+        "lexical_scope": {
+          "kind": "file"
+        },
+        "namespace": {
+          "kind": "none"
+        }
+      },
+      "inventory": {
+        "methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "abstract_methods": {
+          "status": "complete",
+          "limitations": []
+        },
+        "properties": {
+          "status": "complete",
+          "limitations": []
+        },
+        "signatures": {
+          "status": "complete",
+          "limitations": []
+        }
+      },
       "properties": [
         {
           "declaration_id": {
             "source_id": "typescript/src/example.ts",
             "family": "property",
             "qualified_name": "ExampleValue.exampleDeclared",
-            "ordinal": 33
+            "ordinal": 33,
+            "content_digest": "b89425edd495ba0f77ef78c6bf39471c81d0bc05b10f463cba7d0134a127ee2f"
           },
           "owner_declaration_id": {
             "source_id": "typescript/src/example.ts",
             "family": "class",
             "qualified_name": "ExampleValue",
-            "ordinal": 1
+            "ordinal": 1,
+            "content_digest": "b89425edd495ba0f77ef78c6bf39471c81d0bc05b10f463cba7d0134a127ee2f"
           },
           "name": "exampleDeclared",
           "is_optional": false,
@@ -52,6 +93,21 @@
           },
           "visibility": "public",
           "member_kind": "instance",
+          "placement": {
+            "lexical_scope": {
+              "declaration_id": {
+                "source_id": "typescript/src/example.ts",
+                "family": "class",
+                "qualified_name": "ExampleValue",
+                "ordinal": 1,
+                "content_digest": "b89425edd495ba0f77ef78c6bf39471c81d0bc05b10f463cba7d0134a127ee2f"
+              },
+              "kind": "declaration"
+            },
+            "namespace": {
+              "kind": "none"
+            }
+          },
           "assigned_values": [
             {
               "kind": "unsupported",
@@ -64,6 +120,41 @@
     }
   ],
   "functions": [],
+  "unresolved_methods": [],
+  "inventory": {
+    "declarations": {
+      "status": "complete",
+      "limitations": []
+    },
+    "functions": {
+      "status": "complete",
+      "limitations": []
+    },
+    "values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "callable_values": {
+      "status": "complete",
+      "limitations": []
+    },
+    "anonymous_callables": {
+      "status": "complete",
+      "limitations": []
+    },
+    "namespaces": {
+      "status": "complete",
+      "limitations": []
+    },
+    "exports": {
+      "status": "complete",
+      "limitations": []
+    },
+    "unresolved_methods": {
+      "status": "complete",
+      "limitations": []
+    }
+  },
   "line_count": 6,
   "code_line_count": 4,
   "public_symbol_count": 1
