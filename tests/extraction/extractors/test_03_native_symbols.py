@@ -12,6 +12,25 @@ LANGUAGE_EXTENSIONS = ExtractionTestCase.repository / "tests/fixtures/code_map/l
 class TestNativeSymbols(ExtractionTestCase):
     contract = PolyglotFixtureContract(ExtractionTestCase.repository)
 
+    def test_python_nullability_describes_the_property_value(self) -> None:
+        root = self.repository / "tests/fixtures/property_nullability"
+        result = self.application.generate_queryable_map("python", str(root), self.scan_policy())
+        declaration = result.classes().first()
+
+        assert declaration is not None
+        assert {member.name: member.is_optional for member in declaration.item.properties} == {
+            "callback": False,
+            "optional_callback": True,
+            "nullable_elements": False,
+            "optional_container": True,
+            "optional_union": True,
+            "annotated_required": False,
+            "annotated_optional": True,
+            "qualified_required": False,
+            "qualified_optional": True,
+            "default_none": True,
+        }
+
     def normalized_name(self, value: str) -> str:
         return re.sub("[^a-z0-9]", "", value.casefold())
 

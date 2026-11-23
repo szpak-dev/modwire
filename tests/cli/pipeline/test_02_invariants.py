@@ -49,14 +49,7 @@ class TestNativeExtractionInvariants(NativeExtractionTestCase):
             }
         )
         excluded_root = (self.workspace / "src/example_generated").absolute()
-        scanned_directories: list[Path] = []
-        scan_directory = os.scandir
-
-        def record_scan(path: str | bytes | Path):
-            scanned_directories.append(Path(path).absolute())
-            return scan_directory(path)
-
-        with patch("os.scandir", side_effect=record_scan):
+        with patch("os.scandir", wraps=os.scandir) as record_scan:
             result = self.application.generate_map(
                 "python",
                 self.workspace,
@@ -66,6 +59,7 @@ class TestNativeExtractionInvariants(NativeExtractionTestCase):
         assert tuple(result.extraction.files) == ("src/example.py",)
         assert result.extraction.files_excluded == 0
         assert result.extraction.directories_pruned == 1
+        scanned_directories = (Path(call.args[0]).absolute() for call in record_scan.call_args_list)
         assert all(
             directory != excluded_root and excluded_root not in directory.parents for directory in scanned_directories
         )

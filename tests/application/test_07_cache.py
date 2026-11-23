@@ -31,6 +31,12 @@ class TestPersistentCache(ApplicationTestCase):
             encoding="utf-8",
         )
 
+    def remove_member_evidence(self, payload: dict[str, Any]) -> None:
+        member = next(
+            coverage for coverage in payload["producer"]["relationship_capabilities"] if coverage["family"] == "member"
+        )
+        member["evidence_requirements"] = []
+
     @pytest.mark.parametrize("language", ("python", "ruby"))
     def test_public_map_diagnostics_distinguish_cold_and_warm_cache_stages(self, language: str) -> None:
         root = self.workspace / "sources"
@@ -134,15 +140,7 @@ class TestPersistentCache(ApplicationTestCase):
         code_map_cache = next((self.workspace / "cache").rglob("code-map/*.cache"))
         original_source = source.read_bytes()
 
-        def remove_member_evidence(payload: dict[str, Any]) -> None:
-            member = next(
-                coverage
-                for coverage in payload["producer"]["relationship_capabilities"]
-                if coverage["family"] == "member"
-            )
-            member["evidence_requirements"] = []
-
-        self.tamper_cache_payload(code_map_cache, remove_member_evidence)
+        self.tamper_cache_payload(code_map_cache, self.remove_member_evidence)
 
         recovered = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)
         reused = self.application.generate_map_cached_with_diagnostics("python", root, self.scan_policy(), options)

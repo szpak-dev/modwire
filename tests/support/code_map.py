@@ -143,7 +143,7 @@ class CodeMapFactory:
                 **declaration,
                 "source_id": source_id,
                 "qualified_name": declaration["name"],
-                "placement": self.placement(),
+                "placement": self.file_placement(),
                 "declaration_id": {
                     "source_id": source_id,
                     "family": "function",
@@ -157,7 +157,7 @@ class CodeMapFactory:
         source_file["values"] = [
             {
                 **declaration,
-                "placement": self.placement(),
+                "placement": self.file_placement(),
                 "declaration_id": {
                     "source_id": source_id,
                     "family": "value",
@@ -183,7 +183,7 @@ class CodeMapFactory:
                     "source_id": source_id,
                     "qualified_name": f"{declaration['name']}.{method['name']}",
                     "owner_declaration_id": declaration_id,
-                    "placement": self.placement(declaration_id),
+                    "placement": self.declaration_placement(declaration_id),
                     "declaration_id": {
                         "source_id": source_id,
                         "family": "method",
@@ -198,7 +198,7 @@ class CodeMapFactory:
                 {
                     **property_definition,
                     "owner_declaration_id": declaration_id,
-                    "placement": self.placement(declaration_id),
+                    "placement": self.declaration_placement(declaration_id),
                     "declaration_id": {
                         "source_id": source_id,
                         "family": "property",
@@ -213,7 +213,7 @@ class CodeMapFactory:
                 {
                     **declaration,
                     "declaration_id": declaration_id,
-                    "placement": self.placement(),
+                    "placement": self.file_placement(),
                     "inventory": self.inventory(MemberInventoryCoverage),
                     "methods": methods,
                     "properties": properties,
@@ -234,9 +234,15 @@ class CodeMapFactory:
         ]
         return source_file
 
-    def placement(self, owner: Mapping[str, object] | None = None) -> dict[str, object]:
+    def file_placement(self) -> dict[str, object]:
         return {
-            "lexical_scope": {"kind": "file"} if owner is None else {"kind": "declaration", "declaration_id": owner},
+            "lexical_scope": {"kind": "file"},
+            "namespace": {"kind": "none"},
+        }
+
+    def declaration_placement(self, owner: Mapping[str, object]) -> dict[str, object]:
+        return {
+            "lexical_scope": {"kind": "declaration", "declaration_id": owner},
             "namespace": {"kind": "none"},
         }
 

@@ -4,27 +4,59 @@ from ..base_test import ExtractionTestCase
 
 
 class TestDependencyInvariants(ExtractionTestCase):
+    def test_bare_import_does_not_bind_to_an_unrelated_nested_basename(self) -> None:
+        result = self.extract(
+            {
+                "example.py": "import types\nimport example_package.local\nimport custom\n",
+                "src/example_package/__init__.py": "",
+                "src/example_package/types.py": "example_value = 1\n",
+                "src/example_package/local.py": "example_value = 2\n",
+                "custom.py": "example_value = 3\n",
+            }
+        )
+        source = result.source_file("example.py")
+
+        assert source is not None
+        assert {str(item.path): (item.resolution, item.target_file_id) for item in source.file.imports} == {
+            "types": ("external", None),
+            "example_package.local": ("resolved", "src/example_package/local.py"),
+            "custom": ("resolved", "custom.py"),
+        }
+
+    def test_registered_top_level_module_keeps_its_exact_identity(self) -> None:
+        result = self.extract(
+            {
+                "example.py": "import types\n",
+                "types.py": "example_value = 1\n",
+                "nested/types.py": "example_value = 2\n",
+            }
+        )
+        source = result.source_file("example.py")
+
+        assert source is not None
+        assert [(item.resolution, item.target_file_id) for item in source.file.imports] == [("resolved", "types.py")]
+
     def test_indexed_resolution_matches_complete_scans_for_every_language(self) -> None:
         for language in self.application.extraction.supported_languages():
             self.assert_indexed_resolution_matches_complete_scan(language)
 
+    def normalize(self, value: str) -> str:
+        parts = str(value).replace("\\", "/").strip("/").split("/")
+        return "/".join(re.sub("[^a-z0-9]", "", part.casefold()) for part in parts)
+
+    def same_suffix(self, left: str, right: str) -> bool:
+        if not left or not right:
+            return left == right
+        left_parts = left.split("/")
+        right_parts = right.split("/")
+        shared = 0
+        for left_part, right_part in zip(reversed(left_parts), reversed(right_parts)):
+            if left_part != right_part:
+                break
+            shared += 1
+        return shared == min(len(left_parts), len(right_parts)) or shared >= 2
+
     def assert_indexed_resolution_matches_complete_scan(self, language: str) -> None:
-        def normalize(value: str) -> str:
-            parts = str(value).replace("\\", "/").strip("/").split("/")
-            return "/".join(re.sub("[^a-z0-9]", "", part.casefold()) for part in parts)
-
-        def same_suffix(left: str, right: str) -> bool:
-            if not left or not right:
-                return left == right
-            left_parts = left.split("/")
-            right_parts = right.split("/")
-            shared = 0
-            for left_part, right_part in zip(reversed(left_parts), reversed(right_parts)):
-                if left_part != right_part:
-                    break
-                shared += 1
-            return shared == min(len(left_parts), len(right_parts)) or shared >= 2
-
         root = self.repository / "tests/fixtures/code_map/language_extensions" / language
         request = self.application.extraction.request(language, str(root))
         extraction = self.application.cli.extract(request, self.scan_policy())
@@ -32,22 +64,22 @@ class TestDependencyInvariants(ExtractionTestCase):
         modules = [
             (identity, file_id)
             for file_id, source in extraction.files.items()
-            for module in (normalize(source.import_identity),)
+            for module in (self.normalize(source.import_identity),)
             for identity in ((module, module.rsplit("/", 1)[0]) if module.endswith("/__init__") else (module,))
         ]
         symbols = [
             (module.rsplit("/", 1)[0] if "/" in module else "", exported.name.casefold(), file_id)
             for file_id, source in extraction.files.items()
-            for module in (normalize(source.import_identity),)
+            for module in (self.normalize(source.import_identity),)
             for exported in source.exports
         ]
         for file_id, source in extraction.files.items():
             for actual, imported in zip(result.extraction.files[file_id].imports, source.imports, strict=True):
-                specifier = normalize(imported.normalized_path)
+                specifier = self.normalize(imported.normalized_path)
                 candidates = {target for module, target in modules if module == specifier}
                 if imported.crossing_type == "symbol" and imported.imported_symbols:
                     names = {symbol.name.casefold() for symbol in imported.imported_symbols}
-                    parent = normalize(imported.join_key)
+                    parent = self.normalize(imported.join_key)
                     if not candidates:
                         candidates.update(
                             target
@@ -55,14 +87,14 @@ class TestDependencyInvariants(ExtractionTestCase):
                             if symbol_name in names and module_parent == parent
                         )
                 if not candidates:
-                    candidates = {target for module, target in modules if same_suffix(module, specifier)}
+                    candidates = {target for module, target in modules if self.same_suffix(module, specifier)}
                 if not candidates and imported.crossing_type == "symbol" and imported.imported_symbols:
                     names = {symbol.name.casefold() for symbol in imported.imported_symbols}
-                    parent = normalize(imported.join_key)
+                    parent = self.normalize(imported.join_key)
                     candidates.update(
                         target
                         for module_parent, symbol_name, target in symbols
-                        if symbol_name in names and same_suffix(module_parent, parent)
+                        if symbol_name in names and self.same_suffix(module_parent, parent)
                     )
                 expected_target = next(iter(candidates)) if len(candidates) == 1 else None
                 expected_resolution = (

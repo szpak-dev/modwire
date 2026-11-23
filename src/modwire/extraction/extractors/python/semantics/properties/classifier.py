@@ -30,6 +30,14 @@ class PythonPropertyRule(ABC):
         return self.annotation_is_optional
 
     @cached_property
+    def annotation_name_dispatch(self) -> Callable[[ast.expr], str]:
+        return self.annotation_name
+
+    @cached_property
+    def annotated_type_is_optional_dispatch(self) -> Callable[[ast.expr], bool]:
+        return self.annotated_type_is_optional
+
+    @cached_property
     def is_union_dispatch(self) -> Callable[[ast.operator], bool]:
         return self.is_union
 
@@ -115,7 +123,14 @@ class PythonPropertyRule(ABC):
 
     @annotation_is_optional.register
     def subscript_annotation_is_optional(self, node: ast.Subscript) -> bool:
-        return self.annotation_is_optional_dispatch(node.value) or self.annotation_is_optional_dispatch(node.slice)
+        constructor = self.annotation_name_dispatch(node.value)
+        if constructor == "Optional":
+            return True
+        if constructor == "Union":
+            return self.annotation_is_optional_dispatch(node.slice)
+        if constructor == "Annotated":
+            return self.annotated_type_is_optional_dispatch(node.slice)
+        return False
 
     @annotation_is_optional.register
     def union_annotation_is_optional(self, node: ast.BinOp) -> bool:
@@ -126,6 +141,26 @@ class PythonPropertyRule(ABC):
     @annotation_is_optional.register
     def tuple_annotation_is_optional(self, node: ast.Tuple) -> bool:
         return any(self.annotation_is_optional_dispatch(item) for item in node.elts)
+
+    @singledispatchmethod
+    def annotation_name(self, node: ast.expr) -> str:
+        return ""
+
+    @annotation_name.register
+    def named_annotation_name(self, node: ast.Name) -> str:
+        return node.id
+
+    @annotation_name.register
+    def qualified_annotation_name(self, node: ast.Attribute) -> str:
+        return node.attr
+
+    @singledispatchmethod
+    def annotated_type_is_optional(self, node: ast.expr) -> bool:
+        return self.annotation_is_optional_dispatch(node)
+
+    @annotated_type_is_optional.register
+    def annotated_arguments_type_is_optional(self, node: ast.Tuple) -> bool:
+        return bool(node.elts) and self.annotation_is_optional_dispatch(node.elts[0])
 
     @singledispatchmethod
     def is_union(self, operator: ast.operator) -> bool:

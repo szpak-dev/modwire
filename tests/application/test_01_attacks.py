@@ -89,6 +89,16 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
             }
         )
 
+    def repeat_identity_with_different_evidence(self, payload: dict[str, Any]) -> None:
+        repeated = {**payload["calls"][0], "line": payload["calls"][0]["line"] + 1}
+        payload["calls"].append(repeated)
+
+    def remove_relationship_evidence(self, payload: dict[str, Any]) -> None:
+        member = next(
+            coverage for coverage in payload["producer"]["relationship_capabilities"] if coverage["family"] == "member"
+        )
+        member["evidence_requirements"] = []
+
     @pytest.mark.parametrize("ordinal", (None, 0, True, "1", 1.0))
     def test_source_call_rejects_an_invalid_occurrence_ordinal(self, ordinal: bool | str | float | int | None) -> None:
         document = self.call_manifest_document(two_calls=False)
@@ -520,11 +530,7 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
     def test_manifest_rejects_duplicate_call_occurrence_identities(self) -> None:
         document = self.call_manifest_document(two_calls=False)
 
-        def repeat_identity_with_different_evidence(payload: dict[str, Any]) -> None:
-            repeated = {**payload["calls"][0], "line": payload["calls"][0]["line"] + 1}
-            payload["calls"].append(repeated)
-
-        invalid = self.tampered_document(document, repeat_identity_with_different_evidence)
+        invalid = self.tampered_document(document, self.repeat_identity_with_different_evidence)
 
         with pytest.raises(InvalidImplementationManifestError) as raised:
             self.application.read_implementation_manifest(invalid)
@@ -537,15 +543,7 @@ class TestModwireApplicationAttacks(ApplicationTestCase):
     def test_manifest_translates_nested_code_contract_failures(self) -> None:
         document = self.call_manifest_document(two_calls=False)
 
-        def remove_relationship_evidence(payload: dict[str, Any]) -> None:
-            member = next(
-                coverage
-                for coverage in payload["producer"]["relationship_capabilities"]
-                if coverage["family"] == "member"
-            )
-            member["evidence_requirements"] = []
-
-        invalid = self.tampered_document(document, remove_relationship_evidence)
+        invalid = self.tampered_document(document, self.remove_relationship_evidence)
 
         with pytest.raises(InvalidImplementationManifestError) as raised:
             self.application.read_implementation_manifest(invalid)

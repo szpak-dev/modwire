@@ -49,14 +49,7 @@ class TestSourceBatchScheduling(NativeExtractionTestCase):
 
     def test_line_count_and_digest_share_one_source_read(self) -> None:
         fixture = self.repository / "tests/fixtures/source_line_counts"
-        reads: list[Path] = []
-        read_bytes = Path.read_bytes
-
-        def record_read(path: Path) -> bytes:
-            reads.append(path)
-            return read_bytes(path)
-
-        with patch.object(Path, "read_bytes", record_read):
+        with patch.object(Path, "read_bytes", autospec=True, side_effect=Path.read_bytes) as record_read:
             observation = self.application.observe_sources("python", str(fixture), self.scan_policy())
 
         assert {str(entry.source_id): entry.line_count for entry in observation.entries} == {
@@ -66,4 +59,5 @@ class TestSourceBatchScheduling(NativeExtractionTestCase):
             "lf.py": 2,
             "unterminated.py": 1,
         }
+        reads = [call.args[0] for call in record_read.call_args_list]
         assert all(reads.count(Path(entry.path)) == 1 for entry in observation.entries)

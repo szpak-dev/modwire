@@ -9,13 +9,16 @@ if __name__ == "__main__":
     try:
         raise SystemExit(run_extractor("python"))
     except SourceParseError as error:
-        failure = ExtractorFailureDocument(
-            code=ModwireErrorCode.SOURCE_PARSE,
-            language=error.language,
-            path=error.path,
-            line=error.line,
-            column=error.column,
-            diagnostic=error.diagnostic,
+        print(
+            "modwire-error:"
+            + ExtractorFailureDocument(
+                code=ModwireErrorCode.SOURCE_PARSE,
+                language=error.language,
+                path=error.path,
+                line=error.line,
+                column=error.column,
+                diagnostic=error.diagnostic,
+            ).model_dump_json(),
+            file=sys.stderr,
         )
-        print(f"modwire-error:{failure.model_dump_json()}", file=sys.stderr)
         raise SystemExit(1) from error

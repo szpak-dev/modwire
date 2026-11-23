@@ -30,7 +30,7 @@ class PythonExtractor(SourceExtractor):
             order=0,
             descriptor=ExtractorDescriptor(
                 id="modwire.python.ast",
-                version="4",
+                version="5",
                 language="python",
                 runtime="python",
             ),
